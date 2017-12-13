@@ -14,15 +14,15 @@ setup(
     reentry_register=True,
     entry_points={
         'aiida.calculations': [
-            'lammps.combinate = plugins.jobs.lammps.combinate:CombinateCalculation',
-            'lammps.force = plugins.jobs.lammps.force:ForceCalculation',
-            'lammps.md = plugins.jobs.lammps.md:MdCalculation',
-            'lammps.optimize = plugins.jobs.lammps.optimize:OptimizeCalculation',
-            'dynaphopy = plugins.jobs.dynaphopy: DynaphopyCalculation'],
+            'lammps.combinate = aiida_lammps.calculations.lammps.combinate:CombinateCalculation',
+            'lammps.force = aiida_lammps.calculations.force:ForceCalculation',
+            'lammps.md = aiida_lammps.calculations.lammps.md:MdCalculation',
+            'lammps.optimize = aiida_lammps.calculations.lammps.optimize:OptimizeCalculation',
+            'dynaphopy = aiida_lammps.calculations.dynaphopy: DynaphopyCalculation'],
         'aiida.parsers': [
-            'lammps.force = plugins.parsers.lammps.force:ForceParser',
-            'lammps.md = plugins.parsers.lammps.md:MdParser',
-            'lammps.optimize = plugins.parsers.lammps.optimize:OptimizeParser',
-            'dynaphopy = plugins.parsers.dynaphopy: DynaphopyParser']
+            'lammps.force = aiida_lammps.parsers.lammps.force:ForceParser',
+            'lammps.md = aiida_lammps.parsers.lammps.md:MdParser',
+            'lammps.optimize = aiida_lammps.parsers.lammps.optimize:OptimizeParser',
+            'dynaphopy = aiida_lammps.parsers.dynaphopy: DynaphopyParser']
         }
     )
