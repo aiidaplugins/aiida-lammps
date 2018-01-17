@@ -142,58 +142,6 @@ def generate_LAMMPS_structure(structure):
     return lammps_data_file
 
 
-def generate_LAMMPS_input(parameters,
-                          potential_obj,
-                          structure_file='potential.pot',
-                          trajectory_file='trajectory.lammpstr',
-                          command=None):
-
-    random_number = np.random.randint(10000000)
-
-    names_str = ' '.join(potential_obj._names)
-
-    lammps_input_file = 'units           metal\n'
-    lammps_input_file += 'boundary        p p p\n'
-    lammps_input_file += 'box tilt large\n'
-    lammps_input_file += 'atom_style      atomic\n'
-    lammps_input_file += 'read_data       {}\n'.format(structure_file)
-
-    lammps_input_file += potential_obj.get_input_potential_lines()
-
-    lammps_input_file += 'neighbor        0.3 bin\n'
-    lammps_input_file += 'neigh_modify    every 1 delay 0 check no\n'
-
-    lammps_input_file += 'timestep        {}\n'.format(parameters.dict.timestep)
-
-    lammps_input_file += 'thermo_style    custom step etotal temp vol press\n'
-    lammps_input_file += 'thermo          100000\n'
-
-    lammps_input_file += 'velocity        all create {0} {1} dist gaussian mom yes\n'.format(parameters.dict.temperature, random_number)
-    lammps_input_file += 'velocity        all scale {}\n'.format(parameters.dict.temperature)
-
-    lammps_input_file += 'fix             int all nvt temp {0} {0} {1}\n'.format(parameters.dict.temperature, parameters.dict.thermostat_variable)
-
-    lammps_input_file += 'run             {}\n'.format(parameters.dict.equilibrium_steps)
-    lammps_input_file += 'reset_timestep  0\n'
-
-    lammps_input_file += 'dump            aiida all custom {0} {1} x y z\n'.format(parameters.dict.dump_rate, trajectory_file)
-    lammps_input_file += 'dump_modify     aiida format "%16.10f %16.10f %16.10f"\n'
-    lammps_input_file += 'dump_modify     aiida sort id\n'
-    lammps_input_file += 'dump_modify     aiida element {}\n'.format(names_str)
-
-    lammps_input_file += 'run             {}\n'.format(parameters.dict.total_steps)
-
-    if command:
-        lammps_input_file += 'shell       {}\n'.format(command)
-        lammps_input_file += 'shell       rm {}\n'.format(trajectory_file)
-
-    lammps_input_file += 'print           "end of script" \n'.format(1000)
-    lammps_input_file += 'run             {}\n'.format(1000)
-
-
-    return lammps_input_file
-
-
 def generate_LAMMPS_potential(pair_style):
 
 
@@ -215,10 +163,8 @@ class BaseLammpsCalculation(JobCalculation):
     _INPUT_POTENTIAL = 'potential.pot'
     _INPUT_STRUCTURE = 'input.data'
 
-    _INPUT_CELL = 'POSCAR'
-    _OUTPUT_FILE_NAME = 'OUTPUT'
-
-    _default_parser = 'dynaphopy'
+    _retrieve_list = []
+    _cmdline_params = ['-in', _INPUT_FILE_NAME]
 
     def _init_internal_params(self):
         super(BaseLammpsCalculation, self)._init_internal_params()
@@ -245,6 +191,9 @@ class BaseLammpsCalculation(JobCalculation):
                },
          }
         return retdict
+
+    def _create_additional_files(self, tempfolder, inputs_params):
+        pass
 
     def _prepare_for_submission(self, tempfolder, inputdict):
         """
@@ -289,36 +238,16 @@ class BaseLammpsCalculation(JobCalculation):
         # END OF INITIAL INPUT CHECK #
         ##############################
 
-        time_step = parameters_data.dict.timestep
-
-        # Dynaphopy command
-        cmdline_params = ['/usr/bin/python', '/home/abel/BIN/dynaphopy', self._INPUT_FILE_NAME_DYNA,
-                          self._OUTPUT_TRAJECTORY_FILE_NAME,
-                          '-ts', '{}'.format(time_step), '--silent',
-                          '-sfc', self._OUTPUT_FORCE_CONSTANTS, '-thm', # '--resolution 0.05',
-                          '-psm', '2', '--normalize_dos', '-sdata']  # PS algorithm
-
-        if 'temperature' in parameters_data.get_dict():
-            cmdline_params.append('--temperature')
-            cmdline_params.append('{}'.format(parameters_data.dict.temperature))
-
-        if 'md_commensurate' in parameters_data.get_dict():
-            if parameters_data.dict.md_commensurate:
-                cmdline_params.append('--MD_commensurate')
-
-        cmdline_params.append('> OUTPUT')
-
         # =================== prepare the python input files =====================
 
         structure_md = get_supercell(structure, supercell_shape)
         potential_object = LammpsPotential(potential_data, structure_md, potential_filename=self._INPUT_POTENTIAL)
 
         structure_txt = generate_LAMMPS_structure(structure_md)
-        input_txt = generate_LAMMPS_input(parameters_data,
-                                          potential_object,
-                                          structure_file=self._INPUT_STRUCTURE,
-                                          trajectory_file=self._OUTPUT_TRAJECTORY_FILE_NAME,
-                                          command=' '.join(cmdline_params))
+        input_txt = self._generate_input_function(parameters_data,
+                                                  potential_object,
+                                                  structure_file=self._INPUT_STRUCTURE,
+                                                  trajectory_file=self._OUTPUT_TRAJECTORY_FILE_NAME)
 
         potential_txt = potential_object.get_potential_file()
 
@@ -336,23 +265,27 @@ class BaseLammpsCalculation(JobCalculation):
         with open(potential_filename, 'w') as infile:
             infile.write(potential_txt)
 
-        # =+=========================  Dynaphopy =+==============================
+        # =+=========================  Dynaphopy =+== (this will be placed in to dynaphopy/combinate file)
 
-        cell_txt = structure_to_poscar(structure)
-        input_txt = parameters_to_input_file(parameters_data_dynaphopy)
-        force_constants_txt = get_FORCE_CONSTANTS_txt(force_constants)
+        if parameters_data_dynaphopy is not None:
+            cell_txt = structure_to_poscar(structure)
+            input_txt = parameters_to_input_file(parameters_data_dynaphopy)
 
-        input_filename = tempfolder.get_abs_path(self._INPUT_FILE_NAME_DYNA)
-        with open(input_filename, 'w') as infile:
-            infile.write(input_txt)
+            input_filename = tempfolder.get_abs_path(self._INPUT_FILE_NAME_DYNA)
+            with open(input_filename, 'w') as infile:
+                infile.write(input_txt)
 
-        cell_filename = tempfolder.get_abs_path(self._INPUT_CELL)
-        with open(cell_filename, 'w') as infile:
-            infile.write(cell_txt)
+            cell_filename = tempfolder.get_abs_path(self._INPUT_CELL)
+            with open(cell_filename, 'w') as infile:
+                infile.write(cell_txt)
 
-        force_constants_filename = tempfolder.get_abs_path(self._INPUT_FORCE_CONSTANTS)
-        with open(force_constants_filename, 'w') as infile:
-            infile.write(force_constants_txt)
+        if force_constants is not None:
+            force_constants_txt = get_FORCE_CONSTANTS_txt(force_constants)
+            force_constants_filename = tempfolder.get_abs_path(self._INPUT_FORCE_CONSTANTS)
+            with open(force_constants_filename, 'w') as infile:
+                infile.write(force_constants_txt)
+
+        self._create_additional_files(tempfolder, inputdict)
 
         # ============================ calcinfo ================================
 
@@ -368,12 +301,10 @@ class BaseLammpsCalculation(JobCalculation):
         calcinfo.remote_copy_list = remote_copy_list
 
         # Retrieve files
-        calcinfo.retrieve_list = [self._OUTPUT_FORCE_CONSTANTS,
-                                  self._OUTPUT_FILE_NAME,
-                                  self._OUTPUT_QUASIPARTICLES]
+        calcinfo.retrieve_list = self._retrieve_list
 
         codeinfo = CodeInfo()
-        codeinfo.cmdline_params = ['-in', self._INPUT_FILE_NAME]
+        codeinfo.cmdline_params = self._cmdline_params
 
         codeinfo.code_uuid = code.uuid
         codeinfo.withmpi = True

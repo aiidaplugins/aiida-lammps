@@ -28,7 +28,11 @@ def parse_quasiparticle_data(qp_file):
     f = open(qp_file, "r")
     quasiparticle_data = yaml.load(f)
     f.close()
-    return quasiparticle_data
+    data_dict = {}
+    for i, data in enumerate(quasiparticle_data):
+        data_dict['q_point_{}'.format(i)] = data
+
+    return data_dict
 
 
 def parse_dynaphopy_output(file):

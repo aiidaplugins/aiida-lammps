@@ -6,28 +6,9 @@ from aiida.common.exceptions import InputValidationError
 from aiida.common.datastructures import CalcInfo, CodeInfo
 from aiida.common.utils import classproperty
 
+from aiida_lammps.calculations.lammps import BaseLammpsCalculation
 from aiida_lammps.calculations.lammps.potentials import LammpsPotential
 import numpy as np
-
-
-def get_supercell(structure, supercell_shape):
-    import itertools
-
-    symbols = np.array([site.kind_name for site in structure.sites])
-    positions = np.array([site.position for site in structure.sites])
-    cell = np.array(structure.cell)
-    supercell_shape = np.array(supercell_shape.dict.shape)
-
-    supercell_array = np.dot(cell, np.diag(supercell_shape))
-
-    supercell = StructureData(cell=supercell_array)
-    for k in range(positions.shape[0]):
-        for r in itertools.product(*[range(i) for i in supercell_shape[::-1]]):
-            position = positions[k, :] + np.dot(np.array(r[::-1]), cell)
-            symbol = symbols[k]
-            supercell.append_atom(position=position, symbols=symbol)
-
-    return supercell
 
 
 def get_FORCE_CONSTANTS_txt(force_constants):
@@ -44,6 +25,22 @@ def get_FORCE_CONSTANTS_txt(force_constants):
 
     return fc_txt
 
+def get_FORCE_SETS_txt(data_sets_object):
+    data_sets = data_sets_object.get_force_sets()
+
+    displacements = data_sets['first_atoms']
+    forces = [x['forces'] for x in data_sets['first_atoms']]
+
+    # Write FORCE_SETS
+    force_sets_txt = "%-5d\n" % data_sets['natom']
+    force_sets_txt += "%-5d\n" % len(displacements)
+    for count, disp in enumerate(displacements):
+        force_sets_txt += "\n%-5d\n" % (disp['number'] + 1)
+        force_sets_txt += "%20.16f %20.16f %20.16f\n" % (tuple(disp['displacement']))
+
+        for f in forces[count]:
+            force_sets_txt += "%15.10f %15.10f %15.10f\n" % (tuple(f))
+    return force_sets_txt
 
 def structure_to_poscar(structure):
 
@@ -62,25 +59,6 @@ def structure_to_poscar(structure):
         poscar += '{0: 22.16f} {1: 22.16f} {2: 22.16f}\n'.format(*site.position)
 
     return poscar
-
-
-def parameters_to_input_file(parameters_object):
-
-    parameters = parameters_object.get_dict()
-    input_file = ('STRUCTURE FILE POSCAR\nPOSCAR\n\n')
-    input_file += ('FORCE CONSTANTS\nFORCE_CONSTANTS\n\n')
-    input_file += ('PRIMITIVE MATRIX\n')
-    input_file += ('{} {} {} \n').format(*np.array(parameters['primitive'])[0])
-    input_file += ('{} {} {} \n').format(*np.array(parameters['primitive'])[1])
-    input_file += ('{} {} {} \n').format(*np.array(parameters['primitive'])[2])
-    input_file += ('\n')
-    input_file += ('SUPERCELL MATRIX PHONOPY\n')
-    input_file += ('{} {} {} \n').format(*np.array(parameters['supercell'])[0])
-    input_file += ('{} {} {} \n').format(*np.array(parameters['supercell'])[1])
-    input_file += ('{} {} {} \n').format(*np.array(parameters['supercell'])[2])
-    input_file += ('\n')
-
-    return input_file
 
 
 def generate_LAMMPS_structure(structure):
@@ -144,9 +122,7 @@ def generate_LAMMPS_structure(structure):
 
 def generate_LAMMPS_input(parameters,
                           potential_obj,
-                          structure_file='potential.pot',
-                          trajectory_file='trajectory.lammpstr',
-                          command=None):
+                          structure_file='potential.pot'):
 
     random_number = np.random.randint(10000000)
 
@@ -163,271 +139,110 @@ def generate_LAMMPS_input(parameters,
     lammps_input_file += 'neighbor        0.3 bin\n'
     lammps_input_file += 'neigh_modify    every 1 delay 0 check no\n'
 
-    lammps_input_file += 'timestep        {}\n'.format(parameters.dict.timestep)
-
-    lammps_input_file += 'thermo_style    custom step etotal temp vol press\n'
-    lammps_input_file += 'thermo          100000\n'
-
     lammps_input_file += 'velocity        all create {0} {1} dist gaussian mom yes\n'.format(parameters.dict.temperature, random_number)
     lammps_input_file += 'velocity        all scale {}\n'.format(parameters.dict.temperature)
 
     lammps_input_file += 'fix             int all nvt temp {0} {0} {1}\n'.format(parameters.dict.temperature, parameters.dict.thermostat_variable)
 
-    lammps_input_file += 'run             {}\n'.format(parameters.dict.equilibrium_steps)
-    lammps_input_file += 'reset_timestep  0\n'
-
-    lammps_input_file += 'dump            aiida all custom {0} {1} x y z\n'.format(parameters.dict.dump_rate, trajectory_file)
-    lammps_input_file += 'dump_modify     aiida format "%16.10f %16.10f %16.10f"\n'
-    lammps_input_file += 'dump_modify     aiida sort id\n'
-    lammps_input_file += 'dump_modify     aiida element {}\n'.format(names_str)
-
-    lammps_input_file += 'run             {}\n'.format(parameters.dict.total_steps)
-
-    if command:
-        lammps_input_file += 'shell       {}\n'.format(command)
-        lammps_input_file += 'shell       rm {}\n'.format(trajectory_file)
-
-    lammps_input_file += 'print           "end of script" \n'.format(1000)
-    lammps_input_file += 'run             {}\n'.format(1000)
-
-
     return lammps_input_file
 
 
-def generate_LAMMPS_potential(pair_style):
+class CombinateCalculation(BaseLammpsCalculation, JobCalculation):
 
-
-    potential_file = '# Potential file generated by aiida plugin (please check citation in the orignal file)\n'
-    for key, value in pair_style.dict.data.iteritems():
-         potential_file += '{}    {}\n'.format(key, value)
-
-    return potential_file
-
-
-class CombinateCalculation(JobCalculation):
-    """
-    A basic plugin for calculating force constants using Lammps.
-
-    Requirement: the node should be able to import phonopy
-    """
+    _INPUT_FORCE_CONSTANTS = 'FORCE_CONSTANTS'
+    _INPUT_FORCE_SETS = 'FORCE_SETS'
+    _INPUT_FILE_NAME_DYNA = 'input_dynaphopy'
+    _OUTPUT_FORCE_CONSTANTS = 'FORCE_CONSTANTS_OUT'
+    _OUTPUT_FILE_NAME = 'OUTPUT'
+    _OUTPUT_QUASIPARTICLES = 'quasiparticles_data.yaml'
 
     def _init_internal_params(self):
         super(CombinateCalculation, self)._init_internal_params()
 
-        self._INPUT_FILE_NAME = 'input.in'
-        self._INPUT_POTENTIAL = 'potential.pot'
-        self._INPUT_STRUCTURE = 'input.data'
-
-        self._OUTPUT_TRAJECTORY_FILE_NAME = 'trajectory.lampstrj'
-
-  #      self._default_parser = "lammps.md"
-
-        self._INPUT_CELL = 'POSCAR'
-        self._INPUT_FORCE_CONSTANTS = 'FORCE_CONSTANTS'
-        self._INPUT_FILE_NAME_DYNA = 'input_dynaphopy'
-        self._OUTPUT_FORCE_CONSTANTS = 'FORCE_CONSTANTS_OUT'
-        self._OUTPUT_FILE_NAME = 'OUTPUT'
-        self._OUTPUT_QUASIPARTICLES = 'quasiparticles_data.yaml'
-
         self._default_parser = 'dynaphopy'
 
+        self._retrieve_list = [self._OUTPUT_QUASIPARTICLES, self._OUTPUT_FILE_NAME, self._OUTPUT_FORCE_CONSTANTS]
+        self._generate_input_function = generate_LAMMPS_input
 
     @classproperty
     def _use_methods(cls):
         """
-        Additional use_* methods for the namelists class.
+        Extend the parent _use_methods with further keys.
         """
         retdict = JobCalculation._use_methods
-        retdict.update({
-            "parameters": {
+        retdict.update(BaseLammpsCalculation._baseclass_use_methods)
+
+        retdict['parameters'] = {
                'valid_types': ParameterData,
                'additional_parameter': None,
                'linkname': 'parameters',
-               'docstring': ("Use a node that specifies the lammps input data "
-                             "for the namelists"),
-               },
-            "parameters_dynaphopy": {
+               'docstring': ("Node that specifies the lammps input data"),
+        }
+        retdict['parameters_dynaphopy'] = {
                'valid_types': ParameterData,
                'additional_parameter': None,
-               'linkname': 'parameters_phonopy',
-               'docstring': ("Use a node that specifies the dynaphopy input data "
-                             "for the namelists"),
-               },
-            "force_constants": {
-               'valid_types': ArrayData,
+               'linkname': 'parameters',
+               'docstring': ("Node that specifies the dynaphopy input data"),
+        }
+        retdict['force_constants'] = {
+               #'valid_types': ParameterData,
                'additional_parameter': None,
-               'linkname': 'force_constants',
-               'docstring': ("Use a node that specifies the force_constants "
-                             "for the namelists"),
-               },
-            "potential": {
-               'valid_types': ParameterData,
+               'linkname': 'parameters',
+               'docstring': ("Node that specified the force constants"),
+        }
+
+        retdict['force_sets'] = {
+               #'valid_types': ParameterData,
                'additional_parameter': None,
-               'linkname': 'potential',
-               'docstring': ("Use a node that specifies the lammps potential "
-                             "for the namelists"),
-               },
-            "structure": {
-               'valid_types': StructureData,
-               'additional_parameter': None,
-               'linkname': 'structure',
-               'docstring': "Use a node for the structure",
-               },
-            "supercell_md": {
-               'valid_types': ParameterData,
-               'additional_parameter': None,
-               'linkname': 'supercell_md',
-               'docstring': "Use a node for the supercell MD shape",
-               },
-         })
+               'linkname': 'parameters',
+               'docstring': ("Node that specified the force constants"),
+        }
+
         return retdict
 
-    def _prepare_for_submission(self,tempfolder, inputdict):
-        """
-        This is the routine to be called when you want to create
-        the input files and related stuff with a plugin.
+    def _create_additional_files(self, tempfolder, inputdict):
 
-        :param tempfolder: a aiida.common.folders.Folder subclass where
-                           the plugin should put all its files.
-        :param inputdict: a dictionary with the input nodes, as they would
-                be returned by get_inputdata_dict (without the Code!)
-        """
+        data_force = inputdict.pop(self.get_linkname('force_sets'), None)
+        force_constants = inputdict.pop(self.get_linkname('force_constants'), None)
 
-        try:
-            parameters_data = inputdict.pop(self.get_linkname('parameters'))
-        except KeyError:
-            raise InputValidationError("No parameters specified for this "
-                                       "calculation")
+        if force_constants is not None:
+            force_constants_txt = get_FORCE_CONSTANTS_txt(force_constants)
+            force_constants_filename = tempfolder.get_abs_path(self._INPUT_FORCE_CONSTANTS)
+            with open(force_constants_filename, 'w') as infile:
+                infile.write(force_constants_txt)
 
-        if not isinstance(parameters_data, ParameterData):
-            raise InputValidationError("parameters is not of type "
-                                       "ParameterData")
+        elif data_force is not None:
+            force_sets_txt = get_FORCE_SETS_txt(data_force)
+            force_sets_filename = tempfolder.get_abs_path(self._INPUT_FORCE_SETS)
+            with open(force_sets_filename, 'w') as infile:
+                infile.write(force_sets_txt)
+        else:
+             raise InputValidationError("no force_sets nor force_constants are specified for this calculation")
 
         try:
-            parameters_data_dynaphopy = inputdict.pop(self.get_linkname('parameters_dynaphopy'))
-            force_constants = inputdict.pop(self.get_linkname('force_constants'))
-
+            parameters_data = inputdict.pop(self.get_linkname('parameters_dynaphopy'))
         except KeyError:
-           raise InputValidationError("No dynaphopy parameters specified for this "
-                                       "calculation")
+            raise InputValidationError("No dynaphopy parameters specified for this calculation")
 
-        try:
-            potential_data = inputdict.pop(self.get_linkname('potential'))
-        except KeyError:
-            raise InputValidationError("No potential specified for this "
-                                       "calculation")
-
-        if not isinstance(potential_data, ParameterData):
-            raise InputValidationError("potential is not of type "
-                                       "ParameterData")
-
-        try:
-            structure = inputdict.pop(self.get_linkname('structure'))
-        except KeyError:
-            raise InputValidationError("no structure is specified for this calculation")
-
-        try:
-            supercell_shape = inputdict.pop(self.get_linkname('supercell_md'))
-        except KeyError:
-            raise InputValidationError("no supercell is specified for this calculation")
-
-
-        try:
-            code = inputdict.pop(self.get_linkname('code'))
-        except KeyError:
-            raise InputValidationError("no code is specified for this calculation")
-
-        ##############################
-        # END OF INITIAL INPUT CHECK #
-        ##############################
 
         time_step = parameters_data.dict.timestep
+        equilibrium_time = parameters_data.dict.equilibrium_steps * time_step
+        total_time = parameters_data.dict.total_steps * time_step
+        supercell_shape = parameters_data.dict.supercell_shape
 
-        # Dynaphopy command
-        cmdline_params = ['/usr/bin/python', '/home/abel/BIN/dynaphopy', self._INPUT_FILE_NAME_DYNA,
-                          self._OUTPUT_TRAJECTORY_FILE_NAME,
-                          '-ts', '{}'.format(time_step), '--silent',
-                          '-sfc', self._OUTPUT_FORCE_CONSTANTS, '-thm', # '--resolution 0.05',
-                          '-psm', '2', '--normalize_dos', '-sdata']  # PS algorithm
+        self._cmdline_params = [self._INPUT_FILE_NAME_DYNA,
+                                '--run_lammps', self._INPUT_FILE_NAME,
+                                '{}'.format(total_time), '{}'.format(time_step), '{}'.format(equilibrium_time),
+                                '--dim', '{}'.format(supercell_shape.dict.shape[0]),
+                                '{}'.format(supercell_shape.dict.shape[1]),
+                                '{}'.format(supercell_shape.dict.shape[2]),
+                                '--silent', '-sfc', self._OUTPUT_FORCE_CONSTANTS, '-thm',  # '--resolution 0.01',
+                                '-psm','2', '--normalize_dos', '-sdata', '--velocity_only']
 
         if 'temperature' in parameters_data.get_dict():
-            cmdline_params.append('--temperature')
-            cmdline_params.append('{}'.format(parameters_data.dict.temperature))
+            self._cmdline_params.append('--temperature')
+            self._cmdline_params.append('{}'.format(parameters_data.dict.temperature))
 
         if 'md_commensurate' in parameters_data.get_dict():
             if parameters_data.dict.md_commensurate:
-                cmdline_params.append('--MD_commensurate')
-
-        cmdline_params.append('> OUTPUT')
-
-        # =================== prepare the python input files =====================
-
-        structure_md = get_supercell(structure, supercell_shape)
-        potential_object = LammpsPotential(potential_data, structure_md, potential_filename=self._INPUT_POTENTIAL)
-
-        structure_txt = generate_LAMMPS_structure(structure_md)
-        input_txt = generate_LAMMPS_input(parameters_data,
-                                          potential_object,
-                                          structure_file=self._INPUT_STRUCTURE,
-                                          trajectory_file=self._OUTPUT_TRAJECTORY_FILE_NAME,
-                                          command=' '.join(cmdline_params))
-
-        potential_txt = potential_object.get_potential_file()
-
-        # =========================== dump to file =============================
-
-        input_filename = tempfolder.get_abs_path(self._INPUT_FILE_NAME)
-        with open(input_filename, 'w') as infile:
-            infile.write(input_txt)
-
-        structure_filename = tempfolder.get_abs_path(self._INPUT_STRUCTURE)
-        with open(structure_filename, 'w') as infile:
-            infile.write(structure_txt)
-
-        potential_filename = tempfolder.get_abs_path(self._INPUT_POTENTIAL)
-        with open(potential_filename, 'w') as infile:
-            infile.write(potential_txt)
-
-        # =+=========================  Dynaphopy =+==============================
-
-        cell_txt = structure_to_poscar(structure)
-        input_txt = parameters_to_input_file(parameters_data_dynaphopy)
-        force_constants_txt = get_FORCE_CONSTANTS_txt(force_constants)
-
-        input_filename = tempfolder.get_abs_path(self._INPUT_FILE_NAME_DYNA)
-        with open(input_filename, 'w') as infile:
-            infile.write(input_txt)
-
-        cell_filename = tempfolder.get_abs_path(self._INPUT_CELL)
-        with open(cell_filename, 'w') as infile:
-            infile.write(cell_txt)
-
-        force_constants_filename = tempfolder.get_abs_path(self._INPUT_FORCE_CONSTANTS)
-        with open(force_constants_filename, 'w') as infile:
-            infile.write(force_constants_txt)
-
-        # ============================ calcinfo ================================
-
-        local_copy_list = []
-        remote_copy_list = []
-        # additional_retrieve_list = settings_dict.pop("ADDITIONAL_RETRIEVE_LIST",[])
-
-        calcinfo = CalcInfo()
-
-        calcinfo.uuid = self.uuid
-        # Empty command line by default
-        calcinfo.local_copy_list = local_copy_list
-        calcinfo.remote_copy_list = remote_copy_list
-
-        # Retrieve files
-        calcinfo.retrieve_list = [self._OUTPUT_FORCE_CONSTANTS,
-                                  self._OUTPUT_FILE_NAME,
-                                  self._OUTPUT_QUASIPARTICLES]
-
-        codeinfo = CodeInfo()
-        codeinfo.cmdline_params = ['-in', self._INPUT_FILE_NAME]
-
-        codeinfo.code_uuid = code.uuid
-        codeinfo.withmpi = True
-        calcinfo.codes_info = [codeinfo]
-        return calcinfo
+                self._cmdline_params.append('--MD_commensurate')
