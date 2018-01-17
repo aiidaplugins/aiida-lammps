@@ -18,16 +18,6 @@ class LammpsPotential:
         except ImportError:
             raise ImportError('This lammps potential is not implemented')
 
-#        if self._type == 'tersoff':
-#            from tersoff import _generate_LAMMPS_potential, _get_input_potential_lines
-#        elif self._type == 'lennard_jones':
-#            from lennard_jones import _generate_LAMMPS_potential, _get_input_potential_lines
-#        else:
-#            raise ValueError('This lammps potential is not implemented')
-
-#        self._generate_LAMMPS_potential = _generate_LAMMPS_potential
-#        self._get_input_potential_lines = _get_input_potential_lines
-
     def get_potential_file(self):
         return self._potential_module.generate_LAMMPS_potential(self._data)
 

@@ -5,7 +5,7 @@ from aiida.common.exceptions import InputValidationError
 from aiida.common.datastructures import CalcInfo, CodeInfo
 from aiida.common.utils import classproperty
 
-from potentials import LammpsPotential
+from aiida_lammps.calculations.lammps.potentials import LammpsPotential
 
 
 def generate_LAMMPS_structure(structure):
@@ -139,7 +139,9 @@ class OptimizeCalculation(JobCalculation):
         """
         Additional use_* methods for the namelists class.
         """
+
         retdict = JobCalculation._use_methods
+
         retdict.update({
             "potential": {
                'valid_types': ParameterData,
@@ -162,9 +164,10 @@ class OptimizeCalculation(JobCalculation):
                'docstring': "Use a node for the structure",
                },
          })
+
         return retdict
 
-    def _prepare_for_submission(self,tempfolder, inputdict):
+    def _prepare_for_submission(self, tempfolder, inputdict):
         """
         This is the routine to be called when you want to create
         the input files and related stuff with a plugin.
@@ -181,20 +184,11 @@ class OptimizeCalculation(JobCalculation):
             raise InputValidationError("No potential specified for this "
                                        "calculation")
 
-        if not isinstance(potential_data, ParameterData):
-            raise InputValidationError("potential is not of type "
-                                       "ParameterData")
-
         try:
             parameters_data = inputdict.pop(self.get_linkname('parameters'))
         except KeyError:
             raise InputValidationError("No parameters specified for this "
                                        "calculation")
-
-        if not isinstance(parameters_data, ParameterData):
-            raise InputValidationError("parameters is not of type "
-                                       "ParameterData")
-
 
         try:
             structure = inputdict.pop(self.get_linkname('structure'))
@@ -205,6 +199,7 @@ class OptimizeCalculation(JobCalculation):
             code = inputdict.pop(self.get_linkname('code'))
         except KeyError:
             raise InputValidationError("no code is specified for this calculation")
+
 
         ##############################
         # END OF INITIAL INPUT CHECK #
@@ -237,6 +232,7 @@ class OptimizeCalculation(JobCalculation):
             potential_filename = tempfolder.get_abs_path(self._INPUT_POTENTIAL)
             with open(potential_filename, 'w') as infile:
                 infile.write(potential_txt)
+
 
         # ============================ calcinfo ================================
 

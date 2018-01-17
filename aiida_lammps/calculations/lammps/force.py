@@ -4,7 +4,7 @@ from aiida.common.datastructures import CalcInfo, CodeInfo
 from aiida.common.utils import classproperty
 from aiida.orm import DataFactory
 
-from potentials import LammpsPotential
+from aiida_lammps.calculations.lammps.potentials import LammpsPotential
 
 StructureData = DataFactory('structure')
 ParameterData = DataFactory('parameter')

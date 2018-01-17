@@ -6,7 +6,7 @@ from aiida.common.exceptions import InputValidationError
 from aiida.common.datastructures import CalcInfo, CodeInfo
 from aiida.common.utils import classproperty
 
-from potentials import LammpsPotential
+from aiida_lammps.calculations.lammps.potentials import LammpsPotential
 import numpy as np
 
 

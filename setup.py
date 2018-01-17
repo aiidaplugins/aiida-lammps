@@ -9,13 +9,13 @@ setup(
     author_email='abelcarreras83@gmail.com',
     license='MIT license',
     packages=find_packages(exclude=['aiida']),
-    requires=['phonopy', 'numpy', 'dynaphopy'],
+    requires=['numpy', 'dynaphopy'],
     setup_requires=['reentry'],
     reentry_register=True,
     entry_points={
         'aiida.calculations': [
             'lammps.combinate = aiida_lammps.calculations.lammps.combinate:CombinateCalculation',
-            'lammps.force = aiida_lammps.calculations.force:ForceCalculation',
+            'lammps.force = aiida_lammps.calculations.lammps.force:ForceCalculation',
             'lammps.md = aiida_lammps.calculations.lammps.md:MdCalculation',
             'lammps.optimize = aiida_lammps.calculations.lammps.optimize:OptimizeCalculation',
             'dynaphopy = aiida_lammps.calculations.dynaphopy: DynaphopyCalculation'],
