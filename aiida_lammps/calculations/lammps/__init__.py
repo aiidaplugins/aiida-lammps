@@ -1,10 +1,11 @@
 from aiida.orm.calculation.job import JobCalculation
-from aiida.orm.data.parameter import ParameterData
-from aiida.orm.data.structure import StructureData
-from aiida.orm.data.array import ArrayData
 from aiida.common.exceptions import InputValidationError
 from aiida.common.datastructures import CalcInfo, CodeInfo
 from aiida.common.utils import classproperty
+from aiida.orm import DataFactory
+
+StructureData = DataFactory('structure')
+ParameterData = DataFactory('parameter')
 
 from aiida_lammps.calculations.lammps.potentials import LammpsPotential
 import numpy as np
@@ -170,7 +171,7 @@ class BaseLammpsCalculation(JobCalculation):
         super(BaseLammpsCalculation, self)._init_internal_params()
 
     @classproperty
-    def _baseclass_methods(cls):
+    def _baseclass_use_methods(cls):
         """
         Common methods for LAMMPS.
         """
@@ -189,7 +190,16 @@ class BaseLammpsCalculation(JobCalculation):
                'linkname': 'structure',
                'docstring': "Use a node for the structure",
                },
+
+            "parameters": {
+               'valid_types': ParameterData,
+               'additional_parameter': None,
+               'linkname': 'parameters',
+               'docstring': "Use a node for the lammps input parameters",
+               },
          }
+
+
         return retdict
 
     def _create_additional_files(self, tempfolder, inputs_params):
@@ -208,10 +218,6 @@ class BaseLammpsCalculation(JobCalculation):
 
         parameters_data = inputdict.pop(self.get_linkname('parameters'), None)
 
-
-        parameters_data_dynaphopy = inputdict.pop(self.get_linkname('parameters_dynaphopy'), None)
-        force_constants = inputdict.pop(self.get_linkname('force_constants'), None)
-
         try:
             potential_data = inputdict.pop(self.get_linkname('potential'))
         except KeyError:
@@ -227,7 +233,7 @@ class BaseLammpsCalculation(JobCalculation):
         except KeyError:
             raise InputValidationError("no structure is specified for this calculation")
 
-        supercell_shape = inputdict.pop(self.get_linkname('supercell_md'), None)
+        print structure
 
         try:
             code = inputdict.pop(self.get_linkname('code'))
@@ -240,10 +246,10 @@ class BaseLammpsCalculation(JobCalculation):
 
         # =================== prepare the python input files =====================
 
-        structure_md = get_supercell(structure, supercell_shape)
-        potential_object = LammpsPotential(potential_data, structure_md, potential_filename=self._INPUT_POTENTIAL)
+        # structure_md = get_supercell(structure, supercell_shape)
+        potential_object = LammpsPotential(potential_data, structure, potential_filename=self._INPUT_POTENTIAL)
 
-        structure_txt = generate_LAMMPS_structure(structure_md)
+        structure_txt = generate_LAMMPS_structure(structure)
         input_txt = self._generate_input_function(parameters_data,
                                                   potential_object,
                                                   structure_file=self._INPUT_STRUCTURE,
@@ -265,28 +271,6 @@ class BaseLammpsCalculation(JobCalculation):
         with open(potential_filename, 'w') as infile:
             infile.write(potential_txt)
 
-        # =+=========================  Dynaphopy =+== (this will be placed in to dynaphopy/combinate file)
-
-        if parameters_data_dynaphopy is not None:
-            cell_txt = structure_to_poscar(structure)
-            input_txt = parameters_to_input_file(parameters_data_dynaphopy)
-
-            input_filename = tempfolder.get_abs_path(self._INPUT_FILE_NAME_DYNA)
-            with open(input_filename, 'w') as infile:
-                infile.write(input_txt)
-
-            cell_filename = tempfolder.get_abs_path(self._INPUT_CELL)
-            with open(cell_filename, 'w') as infile:
-                infile.write(cell_txt)
-
-        if force_constants is not None:
-            force_constants_txt = get_FORCE_CONSTANTS_txt(force_constants)
-            force_constants_filename = tempfolder.get_abs_path(self._INPUT_FORCE_CONSTANTS)
-            with open(force_constants_filename, 'w') as infile:
-                infile.write(force_constants_txt)
-
-        self._create_additional_files(tempfolder, inputdict)
-
         # ============================ calcinfo ================================
 
         local_copy_list = []
@@ -307,6 +291,6 @@ class BaseLammpsCalculation(JobCalculation):
         codeinfo.cmdline_params = self._cmdline_params
 
         codeinfo.code_uuid = code.uuid
-        codeinfo.withmpi = True
+        codeinfo.withmpi = False  # Set lammps openmpi environment properly
         calcinfo.codes_info = [codeinfo]
         return calcinfo

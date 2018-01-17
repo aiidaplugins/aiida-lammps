@@ -60,11 +60,4 @@ class ForceCalculation(BaseLammpsCalculation, JobCalculation):
         retdict = JobCalculation._use_methods
         retdict.update(BaseLammpsCalculation._baseclass_use_methods)
 
-        #retdict['bands'] = {
-        #    'valid_types': BandStructureData,
-        #    'additional_parameter': None,
-        #    'linkname': 'bands',
-        #    'docstring': "Use the node defining the band structure to use",
-        #}
-
         return retdict

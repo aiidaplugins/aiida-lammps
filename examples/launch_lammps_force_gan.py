@@ -8,7 +8,7 @@ import numpy as np
 StructureData = DataFactory('structure')
 ParameterData = DataFactory('parameter')
 
-codename = 'lammps_force@boston'
+codename = 'lammps_force@boston_in'
 
 ############################
 #  Define input parameters #
@@ -33,8 +33,6 @@ positions = np.dot(scaled_positions, cell)
 for i, scaled_position in enumerate(scaled_positions):
     structure.append_atom(position=np.dot(scaled_position, cell).tolist(),
                           symbols=symbols[i])
-
-structure.store()
 
 # GaN Tersoff
 tersoff_gan = {'Ga Ga Ga': '1.0 0.007874 1.846 1.918000 0.75000 -0.301300 1.0 1.0 1.44970 410.132 2.87 0.15 1.60916 535.199',
@@ -69,8 +67,6 @@ calc.description = "A much longer description"
 calc.use_code(code)
 calc.use_structure(structure)
 calc.use_potential(ParameterData(dict=potential))
-
-print "submitted calculation with PK={}".format(calc.dbnode.pk)
 
 test_only = False
 

@@ -172,12 +172,6 @@ class CombinateCalculation(BaseLammpsCalculation, JobCalculation):
         retdict = JobCalculation._use_methods
         retdict.update(BaseLammpsCalculation._baseclass_use_methods)
 
-        retdict['parameters'] = {
-               'valid_types': ParameterData,
-               'additional_parameter': None,
-               'linkname': 'parameters',
-               'docstring': ("Node that specifies the lammps input data"),
-        }
         retdict['parameters_dynaphopy'] = {
                'valid_types': ParameterData,
                'additional_parameter': None,
@@ -190,7 +184,6 @@ class CombinateCalculation(BaseLammpsCalculation, JobCalculation):
                'linkname': 'parameters',
                'docstring': ("Node that specified the force constants"),
         }
-
         retdict['force_sets'] = {
                #'valid_types': ParameterData,
                'additional_parameter': None,
@@ -220,15 +213,14 @@ class CombinateCalculation(BaseLammpsCalculation, JobCalculation):
              raise InputValidationError("no force_sets nor force_constants are specified for this calculation")
 
         try:
-            parameters_data = inputdict.pop(self.get_linkname('parameters_dynaphopy'))
+            parameters_data_dynaphopy = inputdict.pop(self.get_linkname('parameters_dynaphopy'))
         except KeyError:
             raise InputValidationError("No dynaphopy parameters specified for this calculation")
 
-
-        time_step = parameters_data.dict.timestep
-        equilibrium_time = parameters_data.dict.equilibrium_steps * time_step
-        total_time = parameters_data.dict.total_steps * time_step
-        supercell_shape = parameters_data.dict.supercell_shape
+        time_step = parameters_data_dynaphopy.dict.timestep
+        equilibrium_time = parameters_data_dynaphopy.dict.equilibrium_steps * time_step
+        total_time = parameters_data_dynaphopy.dict.total_steps * time_step
+        supercell_shape = parameters_data_dynaphopy.dict.supercell_shape
 
         self._cmdline_params = [self._INPUT_FILE_NAME_DYNA,
                                 '--run_lammps', self._INPUT_FILE_NAME,
@@ -239,10 +231,10 @@ class CombinateCalculation(BaseLammpsCalculation, JobCalculation):
                                 '--silent', '-sfc', self._OUTPUT_FORCE_CONSTANTS, '-thm',  # '--resolution 0.01',
                                 '-psm','2', '--normalize_dos', '-sdata', '--velocity_only']
 
-        if 'temperature' in parameters_data.get_dict():
+        if 'temperature' in parameters_data_dynaphopy.get_dict():
             self._cmdline_params.append('--temperature')
-            self._cmdline_params.append('{}'.format(parameters_data.dict.temperature))
+            self._cmdline_params.append('{}'.format(parameters_data_dynaphopy.dict.temperature))
 
-        if 'md_commensurate' in parameters_data.get_dict():
-            if parameters_data.dict.md_commensurate:
+        if 'md_commensurate' in parameters_data_dynaphopy.get_dict():
+            if parameters_data_dynaphopy.dict.md_commensurate:
                 self._cmdline_params.append('--MD_commensurate')

@@ -78,14 +78,6 @@ class OptimizeCalculation(BaseLammpsCalculation, JobCalculation):
         retdict = JobCalculation._use_methods
         retdict.update(BaseLammpsCalculation._baseclass_use_methods)
 
-        retdict['parameters'] = {
-               'valid_types': ParameterData,
-               'additional_parameter': None,
-               'linkname': 'parameters',
-               'docstring': ("Use a node that specifies the lammps input data "
-                             "for the namelists"),
-        }
-
         return retdict
 
 #$MPI -n $NSLOTS $LAMMPS -sf gpu -pk gpu 2 neigh no -in in.md_data
