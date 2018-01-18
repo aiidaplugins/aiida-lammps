@@ -13,14 +13,10 @@ def read_lammps_trajectory(file_name,
                            timestep=1):
 
     import mmap
- #Time in picoseconds
- #Coordinates in Angstroms
+    # Time in picoseconds
+    # Coordinates in Angstroms
 
-    #Starting reading
-    print("Reading LAMMPS trajectory")
-    print("This could take long, please wait..")
-
-    #Dimensionality of LAMMP calculation
+    # Dimensionality of LAMMP calculation
     number_of_dimensions = 3
 
     step_ids = []
@@ -40,7 +36,7 @@ def read_lammps_trajectory(file_name,
 
             counter += 1
 
-            #Read time steps
+            # Read time steps
             position_number=file_map.find('TIMESTEP')
             if position_number < 0: break
 
@@ -49,14 +45,14 @@ def read_lammps_trajectory(file_name,
             step_ids.append(float(file_map.readline()))
 
             if number_of_atoms is None:
-                #Read number of atoms
+                # Read number of atoms
                 position_number=file_map.find('NUMBER OF ATOMS')
                 file_map.seek(position_number)
                 file_map.readline()
                 number_of_atoms = int(file_map.readline())
 
             if True:
-                #Read cell
+                # Read cell
                 position_number=file_map.find('ITEM: BOX')
                 file_map.seek(position_number)
                 file_map.readline()
@@ -84,20 +80,17 @@ def read_lammps_trajectory(file_name,
                 super_cell = np.array([[xhi-xlo, xy,  xz],
                                        [0,  yhi-ylo,  yz],
                                        [0,   0,  zhi-zlo]])
-
                 cells.append(super_cell.T)
-
 
             position_number = file_map.find('ITEM: ATOMS')
             file_map.seek(position_number)
-            lammps_labels=file_map.readline()
+            lammps_labels=file_map.readline() # lammps_labels not used now but call is necessary!
 
-
-            #Initial cut control
+            # Initial cut control
             if initial_cut > counter:
                 continue
 
-            #Reading coordinates
+            # Reading coordinates
             read_coordinates = []
             read_elements = []
             for i in range (number_of_atoms):
@@ -106,19 +99,16 @@ def read_lammps_trajectory(file_name,
                 read_elements.append(line[0])
             try:
                 data.append(np.array(read_coordinates, dtype=float)) #in angstroms
-           #     print read_coordinates
             except ValueError:
                 print("Error reading step {0}".format(counter))
                 break
-        #        print(read_coordinates)
-            #security routine to limit maximum of steps to read and put in memory
+            # security routine to limit maximum of steps to read and put in memory
             if limit_number_steps+initial_cut < counter:
                 print("Warning! maximum number of steps reached! No more steps will be read")
                 break
 
             if end_cut is not None and end_cut <= counter:
                 break
-
 
     file_map.close()
 
@@ -153,6 +143,7 @@ class MdParser(Parser):
         # Check that the retrieved folder is there
         try:
             out_folder = retrieved[self._calc._get_linkname_retrieved()]
+            temporary_folder = retrieved[self.retrieved_temporary_folder_key]
         except KeyError:
             self.logger.error("No retrieved folder found")
             return False, ()
@@ -167,20 +158,11 @@ class MdParser(Parser):
             return successful, ()
 
         # Get file and do the parsing
-        outfile = out_folder.get_abs_path( self._calc._OUTPUT_FILE_NAME)
-        ouput_trajectory = out_folder.get_abs_path( self._calc._OUTPUT_TRAJECTORY_FILE_NAME)
+        outfile = out_folder.get_abs_path(self._calc._OUTPUT_FILE_NAME)
+        ouput_trajectory = temporary_folder.get_abs_path(self._calc._OUTPUT_TRAJECTORY_FILE_NAME)
 
         timestep = self._calc.inp.parameters.dict.timestep
         positions, step_ids, cells, symbols, time = read_lammps_trajectory(ouput_trajectory, timestep=timestep)
-
-        # Delete trajectory once parsed
-        try:
-            import os
-            os.remove(ouput_trajectory)
-        except:
-            pass
-
-#        force_constants = parse_FORCE_CONSTANTS(outfile)
 
         # look at warnings
         warnings = []

@@ -12,11 +12,9 @@ from aiida_lammps.calculations.lammps import BaseLammpsCalculation
 def generate_LAMMPS_input(parameters_data,
                           potential_obj,
                           structure_file='data.gan',
-                          optimize_path_file='path.lammpstrj'):
+                          trajectory_file='path.lammpstrj'):
 
     names_str = ' '.join(potential_obj._names)
-
-
 
     parameters = parameters_data.get_dict()
 
@@ -38,7 +36,7 @@ def generate_LAMMPS_input(parameters_data,
     lammps_input_file += 'variable        pr equal -(c_stgb[1]+c_stgb[2]+c_stgb[3])/(3*vol)\n'
     lammps_input_file += 'thermo_style    custom step temp press v_pr etotal c_stgb[1] c_stgb[2] c_stgb[3] c_stgb[4] c_stgb[5] c_stgb[6]\n'
 
-    lammps_input_file += 'dump            aiida all custom 1 {0} element x y z  fx fy fz\n'.format(optimize_path_file)
+    lammps_input_file += 'dump            aiida all custom 1 {0} element x y z  fx fy fz\n'.format(trajectory_file)
     lammps_input_file += 'dump_modify     aiida format "%4s  %16.10f %16.10f %16.10f  %16.10f %16.10f %16.10f"\n'
     lammps_input_file += 'dump_modify     aiida sort id\n'
     lammps_input_file += 'dump_modify     aiida element {}\n'.format(names_str)

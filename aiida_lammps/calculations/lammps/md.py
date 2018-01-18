@@ -49,7 +49,6 @@ def generate_LAMMPS_input(parameters,
     return lammps_input_file
 
 
-
 class MdCalculation(BaseLammpsCalculation, JobCalculation):
 
     _OUTPUT_TRAJECTORY_FILE_NAME = 'trajectory.lammpstrj'
@@ -60,7 +59,8 @@ class MdCalculation(BaseLammpsCalculation, JobCalculation):
 
         self._default_parser = 'lammps.md'
 
-        self._retrieve_list = [self._OUTPUT_TRAJECTORY_FILE_NAME, self._OUTPUT_FILE_NAME]
+        self._retrieve_list = [self._OUTPUT_FILE_NAME]
+        self._retrieve_temporary_list = [self._OUTPUT_TRAJECTORY_FILE_NAME]
         self._generate_input_function = generate_LAMMPS_input
 
     @classproperty

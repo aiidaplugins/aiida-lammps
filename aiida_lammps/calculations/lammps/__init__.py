@@ -165,6 +165,7 @@ class BaseLammpsCalculation(JobCalculation):
     _INPUT_STRUCTURE = 'input.data'
 
     _retrieve_list = []
+    _retrieve_temporary_list = []
     _cmdline_params = ['-in', _INPUT_FILE_NAME]
 
     def _init_internal_params(self):
@@ -286,7 +287,7 @@ class BaseLammpsCalculation(JobCalculation):
 
         # Retrieve files
         calcinfo.retrieve_list = self._retrieve_list
-
+        calcinfo.retrieve_temporary_list = self._retrieve_temporary_list
         codeinfo = CodeInfo()
         codeinfo.cmdline_params = self._cmdline_params
 
