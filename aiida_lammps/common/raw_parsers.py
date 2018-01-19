@@ -398,9 +398,6 @@ def read_lammps_positions_and_forces(file_name):
         cell=super_cell.T
 
 
-
-
-
         position_number = file_map.find('ITEM: ATOMS')
         file_map.seek(position_number)
         file_map.readline()

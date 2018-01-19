@@ -2,7 +2,7 @@ from aiida.parsers.parser import Parser
 from aiida.parsers.exceptions import OutputParsingError
 from aiida.orm import DataFactory
 
-from aiida_lammps.common.raw_parsers import read_log_file2 as read_log_file
+from aiida_lammps.common.raw_parsers import read_log_file2 as read_log_file, read_lammps_positions_and_forces
 
 ArrayData = DataFactory('array')
 ParameterData = DataFactory('parameter')
