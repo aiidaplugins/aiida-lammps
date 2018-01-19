@@ -167,7 +167,7 @@ class BaseLammpsCalculation(JobCalculation):
     _retrieve_list = []
     _retrieve_temporary_list = []
     _cmdline_params = ['-in', _INPUT_FILE_NAME]
-
+    _stdout_name = None
     def _init_internal_params(self):
         super(BaseLammpsCalculation, self)._init_internal_params()
 
@@ -217,7 +217,7 @@ class BaseLammpsCalculation(JobCalculation):
                 be returned by get_inputdata_dict (without the Code!)
         """
 
-        parameters_data = inputdict.pop(self.get_linkname('parameters'), None)
+        self._parameters_data = inputdict.pop(self.get_linkname('parameters'), None)
 
         try:
             potential_data = inputdict.pop(self.get_linkname('potential'))
@@ -230,11 +230,9 @@ class BaseLammpsCalculation(JobCalculation):
                                        "ParameterData")
 
         try:
-            structure = inputdict.pop(self.get_linkname('structure'))
+            self._structure = inputdict.pop(self.get_linkname('structure'))
         except KeyError:
             raise InputValidationError("no structure is specified for this calculation")
-
-        print structure
 
         try:
             code = inputdict.pop(self.get_linkname('code'))
@@ -247,11 +245,10 @@ class BaseLammpsCalculation(JobCalculation):
 
         # =================== prepare the python input files =====================
 
-        # structure_md = get_supercell(structure, supercell_shape)
-        potential_object = LammpsPotential(potential_data, structure, potential_filename=self._INPUT_POTENTIAL)
+        potential_object = LammpsPotential(potential_data, self._structure, potential_filename=self._INPUT_POTENTIAL)
 
-        structure_txt = generate_LAMMPS_structure(structure)
-        input_txt = self._generate_input_function(parameters_data,
+        structure_txt = generate_LAMMPS_structure(self._structure)
+        input_txt = self._generate_input_function(self._parameters_data,
                                                   potential_object,
                                                   structure_file=self._INPUT_STRUCTURE,
                                                   trajectory_file=self._OUTPUT_TRAJECTORY_FILE_NAME)
@@ -272,6 +269,8 @@ class BaseLammpsCalculation(JobCalculation):
         with open(potential_filename, 'w') as infile:
             infile.write(potential_txt)
 
+        self._create_additional_files(tempfolder, inputdict)
+
         # ============================ calcinfo ================================
 
         local_copy_list = []
@@ -290,8 +289,8 @@ class BaseLammpsCalculation(JobCalculation):
         calcinfo.retrieve_temporary_list = self._retrieve_temporary_list
         codeinfo = CodeInfo()
         codeinfo.cmdline_params = self._cmdline_params
-
         codeinfo.code_uuid = code.uuid
         codeinfo.withmpi = False  # Set lammps openmpi environment properly
         calcinfo.codes_info = [codeinfo]
+        codeinfo.stdout_name = self._stdout_name
         return calcinfo

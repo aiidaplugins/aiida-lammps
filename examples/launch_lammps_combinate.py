@@ -8,7 +8,7 @@ import numpy as np
 StructureData = DataFactory('structure')
 ParameterData = DataFactory('parameter')
 
-codename = 'lammps_comb@boston'
+codename = 'lammps_dynaphopy@stern_in'
 
 ############################
 #  Define input parameters #
@@ -54,12 +54,10 @@ dynaphopy_parameters ={'supercell': [[2, 0, 0],
                                       [0.0, 0.0, 1.0]],
                        'mesh': [40, 40, 40],
                        'md_commensurate': True,
-                       'temperature': 300}  # Temperature can be omitted (If ommited calculated from Max.-Boltz.)
-
-
+                       'md_supercell': [2, 2, 2]}
 
 from aiida.orm import load_node
-force_constants = load_node(20569)  # Loads node that contains the harmonic force constants (Array data)
+force_constants = load_node(83576)  # Loads node that contains the harmonic force constants (Array data)
 
 machine = {
     'num_machines': 1,
@@ -87,10 +85,8 @@ calc.use_structure(structure)
 calc.use_potential(ParameterData(dict=potential))
 calc.use_force_constants(force_constants)
 calc.use_parameters_dynaphopy(ParameterData(dict=dynaphopy_parameters))
-calc.use_supercell_md(ParameterData(dict={'shape': [2, 2, 2]}))
 
 calc.use_parameters(ParameterData(dict=parameters_md))
-
 
 test_only = False
 

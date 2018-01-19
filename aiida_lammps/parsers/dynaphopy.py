@@ -57,7 +57,6 @@ def parse_dynaphopy_output(file):
         fragment = data_lines[indices[i]: indices[i+1]]
         if 'kipped' in fragment:
             continue
- #       print q_points[i], i
         phonon_modes = {}
         for j, line in enumerate(fragment):
             if 'Peak' in line:
@@ -88,7 +87,7 @@ def parse_dynaphopy_output(file):
 
         f.close()
 
-    return phonons, thermal_properties
+    return thermal_properties
 
 
 class DynaphopyParser(Parser):
@@ -122,10 +121,10 @@ class DynaphopyParser(Parser):
         list_of_files = out_folder.get_folder_list()
 
         # OUTPUT file should exist
-        if not self._calc._OUTPUT_FILE_NAME in list_of_files:
-            successful = False
-            self.logger.error("Output file not found")
-            return successful, ()
+        #if not self._calc._OUTPUT_FILE_NAME in list_of_files:
+        #    successful = False
+        #    self.logger.error("Output file not found")
+        #    return successful, ()
 
         # Get file and do the parsing
         outfile = out_folder.get_abs_path( self._calc._OUTPUT_FILE_NAME)
@@ -133,7 +132,7 @@ class DynaphopyParser(Parser):
         qp_file = out_folder.get_abs_path(self._calc._OUTPUT_QUASIPARTICLES)
 
         try:
-            quasiparticle_data, thermal_properties = parse_dynaphopy_output(outfile)
+            thermal_properties = parse_dynaphopy_output(outfile)
             quasiparticle_data = parse_quasiparticle_data(qp_file)
         except ValueError:
             pass

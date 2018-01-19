@@ -25,6 +25,7 @@ def get_FORCE_CONSTANTS_txt(force_constants):
 
     return fc_txt
 
+
 def get_FORCE_SETS_txt(data_sets_object):
     data_sets = data_sets_object.get_force_sets()
 
@@ -41,6 +42,7 @@ def get_FORCE_SETS_txt(data_sets_object):
         for f in forces[count]:
             force_sets_txt += "%15.10f %15.10f %15.10f\n" % (tuple(f))
     return force_sets_txt
+
 
 def structure_to_poscar(structure):
 
@@ -61,68 +63,37 @@ def structure_to_poscar(structure):
     return poscar
 
 
-def generate_LAMMPS_structure(structure):
-    import numpy as np
+def generate_dynaphopy_input(parameters_object, poscar_name='POSCAR',
+                             force_constants_name='FORCE_CONSTANTS',
+                             force_sets_filename='FORCE_SETS',
+                             use_sets=False):
 
-    types = [site.kind_name for site in structure.sites]
+    parameters = parameters_object.get_dict()
+    input_file = 'STRUCTURE FILE POSCAR\n{}\n\n'.format(poscar_name)
 
-    type_index_unique = np.unique(types, return_index=True)[1]
-    count_index_unique = np.diff(np.append(type_index_unique, [len(types)]))
+    if use_sets:
+        input_file += 'FORCE SETS\n{}\n\n'.format(force_sets_filename)
+    else:
+        input_file += 'FORCE CONSTANTS\n{}\n\n'.format(force_constants_name)
 
-    atom_index = []
-    for i, index in enumerate(count_index_unique):
-        atom_index += [i for j in range(index)]
+    input_file += 'PRIMITIVE MATRIX\n'
+    input_file += '{} {} {} \n'.format(*np.array(parameters['primitive'])[0])
+    input_file += '{} {} {} \n'.format(*np.array(parameters['primitive'])[1])
+    input_file += '{} {} {} \n'.format(*np.array(parameters['primitive'])[2])
+    input_file += '\n'
+    input_file += 'SUPERCELL MATRIX PHONOPY\n'
+    input_file += '{} {} {} \n'.format(*np.array(parameters['supercell'])[0])
+    input_file += '{} {} {} \n'.format(*np.array(parameters['supercell'])[1])
+    input_file += '{} {} {} \n'.format(*np.array(parameters['supercell'])[2])
+    input_file += '\n'
 
-    masses = [site.mass for site in structure.kinds]
-    positions = [site.position for site in structure.sites]
-
-    number_of_atoms = len(positions)
-
-    lammps_data_file = 'Generated using dynaphopy\n\n'
-    lammps_data_file += '{0} atoms\n\n'.format(number_of_atoms)
-    lammps_data_file += '{0} atom types\n\n'.format(len(masses))
-
-    cell = np.array(structure.cell)
-
-    a = np.linalg.norm(cell[0])
-    b = np.linalg.norm(cell[1])
-    c = np.linalg.norm(cell[2])
-
-    alpha = np.arccos(np.dot(cell[1], cell[2])/(c*b))
-    gamma = np.arccos(np.dot(cell[1], cell[0])/(a*b))
-    beta = np.arccos(np.dot(cell[2], cell[0])/(a*c))
-
-    xhi = a
-    xy = b * np.cos(gamma)
-    xz = c * np.cos(beta)
-    yhi = np.sqrt(pow(b,2)- pow(xy,2))
-    yz = (b*c*np.cos(alpha)-xy * xz)/yhi
-    zhi = np.sqrt(pow(c,2)-pow(xz,2)-pow(yz,2))
-
-    xhi = xhi + max(0,0, xy, xz, xy+xz)
-    yhi = yhi + max(0,0, yz)
-
-    lammps_data_file += '\n{0:20.10f} {1:20.10f} xlo xhi\n'.format(0, xhi)
-    lammps_data_file += '{0:20.10f} {1:20.10f} ylo yhi\n'.format(0, yhi)
-    lammps_data_file += '{0:20.10f} {1:20.10f} zlo zhi\n'.format(0, zhi)
-    lammps_data_file += '{0:20.10f} {1:20.10f} {2:20.10f} xy xz yz\n\n'.format(xy, xz, yz)
-
-    lammps_data_file += 'Masses\n\n'
-
-    for i, mass in enumerate(masses):
-        lammps_data_file += '{0} {1:20.10f} \n'.format(i+1, mass)
-
-
-    lammps_data_file += '\nAtoms\n\n'
-    for i, row in enumerate(positions):
-        lammps_data_file += '{0} {1} {2:20.10f} {3:20.10f} {4:20.10f}\n'.format(i+1, atom_index[i]+1, row[0],row[1],row[2])
-
-    return lammps_data_file
+    return input_file
 
 
 def generate_LAMMPS_input(parameters,
                           potential_obj,
-                          structure_file='potential.pot'):
+                          structure_file='potential.pot',
+                          trajectory_file=None):
 
     random_number = np.random.randint(10000000)
 
@@ -149,19 +120,22 @@ def generate_LAMMPS_input(parameters,
 
 class CombinateCalculation(BaseLammpsCalculation, JobCalculation):
 
+    _POSCAR_NAME = 'POSCAR'
     _INPUT_FORCE_CONSTANTS = 'FORCE_CONSTANTS'
     _INPUT_FORCE_SETS = 'FORCE_SETS'
     _INPUT_FILE_NAME_DYNA = 'input_dynaphopy'
     _OUTPUT_FORCE_CONSTANTS = 'FORCE_CONSTANTS_OUT'
-    _OUTPUT_FILE_NAME = 'OUTPUT'
     _OUTPUT_QUASIPARTICLES = 'quasiparticles_data.yaml'
+    _OUTPUT_TRAJECTORY_FILE_NAME = None
+    _OUTPUT_FILE_NAME = 'OUTPUT'
+
 
     def _init_internal_params(self):
         super(CombinateCalculation, self)._init_internal_params()
 
         self._default_parser = 'dynaphopy'
 
-        self._retrieve_list = [self._OUTPUT_QUASIPARTICLES, self._OUTPUT_FILE_NAME, self._OUTPUT_FORCE_CONSTANTS]
+        self._retrieve_list = [self._OUTPUT_QUASIPARTICLES, self._OUTPUT_FORCE_CONSTANTS, self._OUTPUT_FILE_NAME]
         self._generate_input_function = generate_LAMMPS_input
 
     @classproperty
@@ -175,19 +149,19 @@ class CombinateCalculation(BaseLammpsCalculation, JobCalculation):
         retdict['parameters_dynaphopy'] = {
                'valid_types': ParameterData,
                'additional_parameter': None,
-               'linkname': 'parameters',
+               'linkname': 'parameters_dynaphopy',
                'docstring': ("Node that specifies the dynaphopy input data"),
         }
         retdict['force_constants'] = {
-               #'valid_types': ParameterData,
+               'valid_types': ArrayData,
                'additional_parameter': None,
-               'linkname': 'parameters',
+               'linkname': 'force_constants',
                'docstring': ("Node that specified the force constants"),
         }
         retdict['force_sets'] = {
-               #'valid_types': ParameterData,
+               'valid_types': ArrayData,
                'additional_parameter': None,
-               'linkname': 'parameters',
+               'linkname': 'force_sets',
                'docstring': ("Node that specified the force constants"),
         }
 
@@ -195,8 +169,13 @@ class CombinateCalculation(BaseLammpsCalculation, JobCalculation):
 
     def _create_additional_files(self, tempfolder, inputdict):
 
-        data_force = inputdict.pop(self.get_linkname('force_sets'), None)
         force_constants = inputdict.pop(self.get_linkname('force_constants'), None)
+        force_sets = inputdict.pop(self.get_linkname('force_sets'), None)
+
+        cell_txt = structure_to_poscar(self._structure)
+        cell_filename = tempfolder.get_abs_path(self._POSCAR_NAME)
+        with open(cell_filename, 'w') as infile:
+            infile.write(cell_txt)
 
         if force_constants is not None:
             force_constants_txt = get_FORCE_CONSTANTS_txt(force_constants)
@@ -204,37 +183,46 @@ class CombinateCalculation(BaseLammpsCalculation, JobCalculation):
             with open(force_constants_filename, 'w') as infile:
                 infile.write(force_constants_txt)
 
-        elif data_force is not None:
-            force_sets_txt = get_FORCE_SETS_txt(data_force)
+        elif force_sets is not None:
+            force_sets_txt = get_FORCE_SETS_txt(force_sets)
             force_sets_filename = tempfolder.get_abs_path(self._INPUT_FORCE_SETS)
             with open(force_sets_filename, 'w') as infile:
                 infile.write(force_sets_txt)
         else:
-             raise InputValidationError("no force_sets nor force_constants are specified for this calculation")
+            raise InputValidationError("no force_sets nor force_constants are specified for this calculation")
 
         try:
             parameters_data_dynaphopy = inputdict.pop(self.get_linkname('parameters_dynaphopy'))
         except KeyError:
             raise InputValidationError("No dynaphopy parameters specified for this calculation")
 
-        time_step = parameters_data_dynaphopy.dict.timestep
-        equilibrium_time = parameters_data_dynaphopy.dict.equilibrium_steps * time_step
-        total_time = parameters_data_dynaphopy.dict.total_steps * time_step
-        supercell_shape = parameters_data_dynaphopy.dict.supercell_shape
+        parameters_dynaphopy_txt = generate_dynaphopy_input(parameters_data_dynaphopy,
+                                                            poscar_name=self._POSCAR_NAME,
+                                                            force_constants_name=self._INPUT_FORCE_CONSTANTS,
+                                                            force_sets_filename=self._INPUT_FORCE_SETS,
+                                                            use_sets=force_sets is not None)
+
+        dynaphopy_filename = tempfolder.get_abs_path(self._INPUT_FILE_NAME_DYNA)
+        with open(dynaphopy_filename, 'w') as infile:
+            infile.write(parameters_dynaphopy_txt)
+
+        md_supercell = parameters_data_dynaphopy.dict.md_supercell
+
+        time_step = self._parameters_data.dict.timestep
+        equilibrium_time = self._parameters_data.dict.equilibrium_steps * time_step
+        total_time = self._parameters_data.dict.total_steps * time_step
 
         self._cmdline_params = [self._INPUT_FILE_NAME_DYNA,
                                 '--run_lammps', self._INPUT_FILE_NAME,
                                 '{}'.format(total_time), '{}'.format(time_step), '{}'.format(equilibrium_time),
-                                '--dim', '{}'.format(supercell_shape.dict.shape[0]),
-                                '{}'.format(supercell_shape.dict.shape[1]),
-                                '{}'.format(supercell_shape.dict.shape[2]),
+                                '--dim',
+                                '{}'.format(md_supercell[0]), '{}'.format(md_supercell[1]), '{}'.format(md_supercell[2]),
                                 '--silent', '-sfc', self._OUTPUT_FORCE_CONSTANTS, '-thm',  # '--resolution 0.01',
-                                '-psm','2', '--normalize_dos', '-sdata', '--velocity_only']
-
-        if 'temperature' in parameters_data_dynaphopy.get_dict():
-            self._cmdline_params.append('--temperature')
-            self._cmdline_params.append('{}'.format(parameters_data_dynaphopy.dict.temperature))
+                                '-psm','2', '--normalize_dos', '-sdata', '--velocity_only',
+                                '--temperature', '{}'.format(self._parameters_data.dict.temperature)]
 
         if 'md_commensurate' in parameters_data_dynaphopy.get_dict():
             if parameters_data_dynaphopy.dict.md_commensurate:
                 self._cmdline_params.append('--MD_commensurate')
+
+        self._stdout_name = self._OUTPUT_FILE_NAME
