@@ -3,91 +3,12 @@ from aiida.parsers.exceptions import OutputParsingError
 from aiida.orm.data.array import ArrayData
 from aiida.orm.data.parameter import ParameterData
 
+from aiida_lammps.common.raw_parsers import parse_dynaphopy_output, parse_quasiparticle_data
+from aiida_phonopy.common.raw_parsers import parse_FORCE_CONSTANTS
+
 import numpy as np
 
 
-def parse_FORCE_CONSTANTS(filename):
-
-    fcfile = open(filename)
-    num = int((fcfile.readline().strip().split())[0])
-    force_constants = np.zeros((num, num, 3, 3), dtype=float)
-    for i in range(num):
-        for j in range(num):
-            fcfile.readline()
-            tensor = []
-            for k in range(3):
-                tensor.append([float(x) for x in fcfile.readline().strip().split()])
-            force_constants[i, j] = np.array(tensor)
-    fcfile.close()
-    return force_constants
-
-
-def parse_quasiparticle_data(qp_file):
-    import yaml
-
-    f = open(qp_file, "r")
-    quasiparticle_data = yaml.load(f)
-    f.close()
-    data_dict = {}
-    for i, data in enumerate(quasiparticle_data):
-        data_dict['q_point_{}'.format(i)] = data
-
-    return data_dict
-
-
-def parse_dynaphopy_output(file):
-
-    thermal_properties = None
-    f = open(file, 'r')
-    data_lines = f.readlines()
-
-    indices = []
-    q_points = []
-    for i, line in enumerate(data_lines):
-        if 'Q-point' in line:
-    #        print i, np.array(line.replace(']', '').replace('[', '').split()[4:8], dtype=float)
-            indices.append(i)
-            q_points.append(np.array(line.replace(']', '').replace('[', '').split()[4:8],dtype=float))
-
-    indices.append(len(data_lines))
-
-    phonons = {}
-    for i, index in enumerate(indices[:-1]):
-
-        fragment = data_lines[indices[i]: indices[i+1]]
-        if 'kipped' in fragment:
-            continue
-        phonon_modes = {}
-        for j, line in enumerate(fragment):
-            if 'Peak' in line:
-                number = line.split()[2]
-                phonon_mode = {'width':     float(fragment[j+2].split()[1]),
-                               'positions': float(fragment[j+3].split()[1]),
-                               'shift':     float(fragment[j+12].split()[2])}
-                phonon_modes.update({number: phonon_mode})
-
-            if 'Thermal' in line:
-                free_energy = float(fragment[j+4].split()[4])
-                entropy = float(fragment[j+5].split()[3])
-                cv = float(fragment[j+6].split()[3])
-                total_energy = float(fragment[j+7].split()[4])
-
-                temperature = float(fragment[j].split()[5].replace('(',''))
-
-                thermal_properties = {'temperature': temperature,
-                                      'free_energy': free_energy,
-                                      'entropy': entropy,
-                                      'cv': cv,
-                                      'total_energy': total_energy}
-
-
-        phonon_modes.update({'q_point': q_points[i].tolist()})
-
-        phonons.update({'wave_vector_'+str(i): phonon_modes})
-
-        f.close()
-
-    return thermal_properties
 
 
 class DynaphopyParser(Parser):
@@ -166,9 +87,7 @@ class DynaphopyParser(Parser):
             pass
 
         try:
-            array_data = ArrayData()
-            array_data.set_array('force_constants', force_constants)
-            new_nodes_list.append(('array_data', array_data))
+            new_nodes_list.append(('force_constants', force_constants))
         except KeyError:  # keys not
             pass
 

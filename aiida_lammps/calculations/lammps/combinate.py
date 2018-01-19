@@ -1,67 +1,15 @@
 from aiida.orm.calculation.job import JobCalculation
-from aiida.orm.data.parameter import ParameterData
-from aiida.orm.data.structure import StructureData
-from aiida.orm.data.array import ArrayData
+from aiida.orm import DataFactory
 from aiida.common.exceptions import InputValidationError
-from aiida.common.datastructures import CalcInfo, CodeInfo
 from aiida.common.utils import classproperty
 
+from aiida_phonopy.common.raw_parsers import get_FORCE_CONSTANTS_txt, get_poscar_txt, get_FORCE_SETS_txt
 from aiida_lammps.calculations.lammps import BaseLammpsCalculation
-from aiida_lammps.calculations.lammps.potentials import LammpsPotential
 import numpy as np
 
 
-def get_FORCE_CONSTANTS_txt(force_constants):
-
-    force_constants = force_constants.get_array('force_constants')
-
-    fc_shape = force_constants.shape
-    fc_txt = "%4d\n" % (fc_shape[0])
-    for i in range(fc_shape[0]):
-        for j in range(fc_shape[1]):
-            fc_txt += "%4d%4d\n" % (i+1, j+1)
-            for vec in force_constants[i][j]:
-                fc_txt +=("%22.15f"*3 + "\n") % tuple(vec)
-
-    return fc_txt
-
-
-def get_FORCE_SETS_txt(data_sets_object):
-    data_sets = data_sets_object.get_force_sets()
-
-    displacements = data_sets['first_atoms']
-    forces = [x['forces'] for x in data_sets['first_atoms']]
-
-    # Write FORCE_SETS
-    force_sets_txt = "%-5d\n" % data_sets['natom']
-    force_sets_txt += "%-5d\n" % len(displacements)
-    for count, disp in enumerate(displacements):
-        force_sets_txt += "\n%-5d\n" % (disp['number'] + 1)
-        force_sets_txt += "%20.16f %20.16f %20.16f\n" % (tuple(disp['displacement']))
-
-        for f in forces[count]:
-            force_sets_txt += "%15.10f %15.10f %15.10f\n" % (tuple(f))
-    return force_sets_txt
-
-
-def structure_to_poscar(structure):
-
-    atom_type_unique = np.unique([site.kind_name for site in structure.sites], return_index=True)[1]
-    labels = np.diff(np.append(atom_type_unique, [len(structure.sites)]))
-
-    poscar = ' '.join(np.unique([site.kind_name for site in structure.sites]))
-    poscar += '\n1.0\n'
-    cell = structure.cell
-    for row in cell:
-        poscar += '{0: 22.16f} {1: 22.16f} {2: 22.16f}\n'.format(*row)
-    poscar += ' '.join(np.unique([site.kind_name for site in structure.sites]))+'\n'
-    poscar += ' '.join(np.array(labels, dtype=str))+'\n'
-    poscar += 'Cartesian\n'
-    for site in structure.sites:
-        poscar += '{0: 22.16f} {1: 22.16f} {2: 22.16f}\n'.format(*site.position)
-
-    return poscar
-
+ArrayData = DataFactory('array')
+ParameterData = DataFactory('parameter')
 
 def generate_dynaphopy_input(parameters_object, poscar_name='POSCAR',
                              force_constants_name='FORCE_CONSTANTS',
@@ -172,7 +120,7 @@ class CombinateCalculation(BaseLammpsCalculation, JobCalculation):
         force_constants = inputdict.pop(self.get_linkname('force_constants'), None)
         force_sets = inputdict.pop(self.get_linkname('force_sets'), None)
 
-        cell_txt = structure_to_poscar(self._structure)
+        cell_txt = get_poscar_txt(self._structure)
         cell_filename = tempfolder.get_abs_path(self._POSCAR_NAME)
         with open(cell_filename, 'w') as infile:
             infile.write(cell_txt)

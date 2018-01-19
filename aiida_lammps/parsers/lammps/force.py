@@ -1,107 +1,13 @@
 from aiida.parsers.parser import Parser
 from aiida.parsers.exceptions import OutputParsingError
-
 from aiida.orm import DataFactory
+
+from aiida_lammps.common.raw_parsers import read_lammps_forces, read_log_file
 
 ArrayData = DataFactory('array')
 ParameterData = DataFactory('parameter')
 
 
-import numpy as np
-
-def read_log_file(logfile):
-
-    f = open(logfile, 'r')
-    data = f.readlines()
-
-    data_dict = {}
-    for i, line in enumerate(data):
-        if 'Loop time' in line:
-            energy = float(data[i-1].split()[4])
-            data_dict['energy'] = energy
-
-    return data_dict
-
-def read_lammps_forces(file_name):
-
-    import mmap
-    # Time in picoseconds
-    # Coordinates in Angstroms
-
-    # Starting reading
-
-    # Dimensionality of LAMMP calculation
-    number_of_dimensions = 3
-
-    cells = []
-
-    with open(file_name, "r+") as f:
-
-        file_map = mmap.mmap(f.fileno(), 0)
-
-        # Read time steps
-        position_number=file_map.find('TIMESTEP')
-
-        file_map.seek(position_number)
-        file_map.readline()
-
-
-        #Read number of atoms
-        position_number=file_map.find('NUMBER OF ATOMS')
-        file_map.seek(position_number)
-        file_map.readline()
-        number_of_atoms = int(file_map.readline())
-
-
-        #Read cell
-        position_number=file_map.find('ITEM: BOX')
-        file_map.seek(position_number)
-        file_map.readline()
-
-
-        bounds = []
-        for i in range(3):
-            bounds.append(file_map.readline().split())
-
-        bounds = np.array(bounds, dtype=float)
-        if bounds.shape[1] == 2:
-            bounds = np.append(bounds, np.array([0, 0, 0])[None].T ,axis=1)
-
-
-        xy = bounds[0, 2]
-        xz = bounds[1, 2]
-        yz = bounds[2, 2]
-
-        xlo = bounds[0, 0] - np.min([0.0, xy, xz, xy+xz])
-        xhi = bounds[0, 1] - np.max([0.0, xy, xz, xy+xz])
-        ylo = bounds[1, 0] - np.min([0.0, yz])
-        yhi = bounds[1, 1] - np.max([0.0, yz])
-        zlo = bounds[2, 0]
-        zhi = bounds[2, 1]
-
-        super_cell = np.array([[xhi-xlo, xy,  xz],
-                               [0,  yhi-ylo,  yz],
-                               [0,   0,  zhi-zlo]])
-
-        cells.append(super_cell.T)
-
-        position_number = file_map.find('ITEM: ATOMS')
-        file_map.seek(position_number)
-        file_map.readline()
-
-        #Reading forces
-        forces = []
-        read_elements = []
-        for i in range (number_of_atoms):
-            line = file_map.readline().split()[0:number_of_dimensions+1]
-            forces.append(line[1:number_of_dimensions+1])
-            read_elements.append(line[0])
-
-    file_map.close()
-
-    forces = np.array([forces], dtype=float)
-
-    return forces
 
 
 class ForceParser(Parser):

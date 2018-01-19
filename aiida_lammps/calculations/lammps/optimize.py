@@ -1,11 +1,6 @@
 from aiida.orm.calculation.job import JobCalculation
-from aiida.orm.data.parameter import ParameterData
-from aiida.orm.data.structure import StructureData
-from aiida.common.exceptions import InputValidationError
-from aiida.common.datastructures import CalcInfo, CodeInfo
 from aiida.common.utils import classproperty
 
-from aiida_lammps.calculations.lammps.potentials import LammpsPotential
 from aiida_lammps.calculations.lammps import BaseLammpsCalculation
 
 

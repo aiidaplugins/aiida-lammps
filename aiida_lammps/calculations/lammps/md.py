@@ -1,8 +1,7 @@
 from aiida.orm.calculation.job import JobCalculation
-from aiida.orm.data.parameter import ParameterData
-
 from aiida.common.utils import classproperty
 from aiida_lammps.calculations.lammps import BaseLammpsCalculation
+
 import numpy as np
 
 

@@ -49,11 +49,11 @@ potential ={'pair_style': 'tersoff',
 dynaphopy_parameters ={'supercell': [[2, 0, 0],
                                      [0, 2, 0],
                                      [0, 0, 2]],
-                       'primitive':  [[1.0, 0.0, 0.0],
-                                      [0.0, 1.0, 0.0],
-                                      [0.0, 0.0, 1.0]],
+                       'primitive':  [[0.0, 0.5, 0.5],
+                                      [0.5, 0.0, 0.5],
+                                      [0.5, 0.5, 0.0]],
                        'mesh': [40, 40, 40],
-                       'md_commensurate': True,
+                       'md_commensurate': False,
                        'md_supercell': [2, 2, 2]}
 
 from aiida.orm import load_node
@@ -68,7 +68,7 @@ machine = {
 parameters_md = {'timestep': 0.001,
                  'temperature': 300,
                  'thermostat_variable': 0.5,
-                 'equilibrium_steps': 100,
+                 'equilibrium_steps': 2000,
                  'total_steps': 2000,
                  'dump_rate': 1}
 
