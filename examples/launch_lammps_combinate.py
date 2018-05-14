@@ -1,3 +1,6 @@
+# This script requires aiida-phonopy to be installed
+# https://github.com/abelcarreras/aiida-phonopy
+
 from aiida import load_dbenv
 load_dbenv()
 from aiida.orm import Code, DataFactory
@@ -8,7 +11,7 @@ import numpy as np
 StructureData = DataFactory('structure')
 ParameterData = DataFactory('parameter')
 
-codename = 'lammps_dynaphopy@stern_in'
+codename = 'lammps_combinate@stern'
 
 ############################
 #  Define input parameters #
@@ -57,7 +60,7 @@ dynaphopy_parameters ={'supercell': [[2, 0, 0],
                        'md_supercell': [2, 2, 2]}
 
 from aiida.orm import load_node
-force_constants = load_node(83576)  # Loads node that contains the harmonic force constants (Array data)
+force_constants = load_node(38)  # Loads node that contains the harmonic force constants (Array data)
 
 machine = {
     'num_machines': 1,

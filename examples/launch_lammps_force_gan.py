@@ -8,7 +8,7 @@ import numpy as np
 StructureData = DataFactory('structure')
 ParameterData = DataFactory('parameter')
 
-codename = 'lammps_force@boston_in'
+codename = 'lammps_force@stern'
 
 ############################
 #  Define input parameters #
@@ -53,7 +53,7 @@ potential ={'pair_style': 'tersoff',
 
 lammps_machine = {
     'num_machines': 1,
-    'parallel_env': 'mpi*',
+    'parallel_env': 'localmpi',
     'tot_num_mpiprocs': 16}
 
 

@@ -8,7 +8,7 @@ import numpy as np
 StructureData = DataFactory('structure')
 ParameterData = DataFactory('parameter')
 
-codename = 'lammps_optimize@boston_in'
+codename = 'lammps_optimize@stern'
 
 ############################
 #  Define input parameters #
