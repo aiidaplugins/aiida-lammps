@@ -14,8 +14,8 @@ This plugin contains 4 code types:
 Note: lammps.combinate requires aiida-phonopy (https://github.com/abelcarreras/aiida-phonopy) 
 plugin to work DynaPhoPy can be found in: https://github.com/abelcarreras/aiida-phonopy
 
-Supported Potentials
---------------------
+Currently supported Potentials
+------------------------------
  - EAM
  - Lennad Jones
  - Tersoff
