@@ -8,8 +8,8 @@ setup(
     author='Abel Carreras',
     author_email='abelcarreras83@gmail.com',
     license='MIT license',
-    packages=find_packages(exclude=['aiida']),
-    requires=['numpy', 'dynaphopy', 'aiida_phonopy'],
+    packages=find_packages(),
+    install_requires=['aiida-core>=0.12.0', 'numpy', 'dynaphopy', 'aiida_phonopy'],
     setup_requires=['reentry'],
     reentry_register=True,
     entry_points={

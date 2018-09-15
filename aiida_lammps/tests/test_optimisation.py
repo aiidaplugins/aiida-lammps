@@ -48,7 +48,7 @@ def test_example_fe_submission(new_database, new_workdir):
     from aiida.orm import Code
     code = Code(
         input_plugin_name='lammps.optimize',
-        remote_computer_exec=[computer, tests.get_path_to_executable('lammps-daily')],
+        remote_computer_exec=[computer, tests.get_path_to_executable('lammps')],
     )
     code.store()
 
