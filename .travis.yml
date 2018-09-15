@@ -8,6 +8,8 @@ services:
 - postgresql
 - rabbitmq  # required for aiida >= 1.0
 
+sudo: required
+
 addons:
   postgresql: "9.5"
   apt:
