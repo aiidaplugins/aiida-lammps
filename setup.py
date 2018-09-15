@@ -24,5 +24,14 @@ setup(
             'lammps.md = aiida_lammps.parsers.lammps.md:MdParser',
             'lammps.optimize = aiida_lammps.parsers.lammps.optimize:OptimizeParser',
             'dynaphopy = aiida_lammps.parsers.dynaphopy: DynaphopyParser']
+        },
+    extras_require={
+        "testing": {
+            "mock==2.0.0",
+            "pgtest==1.1.0",
+            "sqlalchemy-diff==0.1.3",
+            "pytest==3.6.3",
+            "wheel>=0.31",
         }
+    }
     )
