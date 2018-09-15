@@ -46,9 +46,8 @@ before_install:
 #- cd ../..
 
 # This downloads LAMMPS (11 Nov 2013)
-  - if [[ "$TEST_TYPE" == "tests" ]]; sudo apt-get update -q; fi
-  - if [[ "$TEST_TYPE" == "tests" ]]; sudo apt-get install lammps -y; fi
-  - if [[ "$TEST_TYPE" == "tests" ]]; then sudo apt-get install apt-show-versions; fi
+  - if [[ "$TEST_TYPE" == "tests" ]]; then sudo apt-get update -q; fi
+  - if [[ "$TEST_TYPE" == "tests" ]]; then sudo apt-get install lammps -y; fi
 
 # get version of lammps
 #  - if [[ "$TEST_TYPE" == "tests" ]]; then lammps -h || true; fi

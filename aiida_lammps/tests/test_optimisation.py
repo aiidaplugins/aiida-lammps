@@ -5,7 +5,6 @@ import numpy as np
 import pytest
 
 import aiida_lammps.tests.utils as tests
-from aiida_lammps.tests import TEST_DIR
 
 
 def example_fe_calc(workdir, configure):
@@ -31,7 +30,7 @@ def example_fe_calc(workdir, configure):
         structure.append_atom(position=np.dot(scaled_position, cell).tolist(),
                               symbols=symbols[i])
 
-    eam_path = os.path.join(TEST_DIR, 'input_files', 'Fe_mm.eam.fs')
+    eam_path = os.path.join(tests.TEST_DIR, 'input_files', 'Fe_mm.eam.fs')
     eam_data = {'type': 'fs',
                 'file_contents': open(eam_path).readlines()}
 
@@ -50,7 +49,7 @@ def example_fe_calc(workdir, configure):
     from aiida.orm import Code
     code = Code(
         input_plugin_name='lammps.optimize',
-        remote_computer_exec=[computer, tests.get_path_to_executable('lammps')],
+        remote_computer_exec=[computer, tests.get_path_to_executable(tests.TEST_EXECUTABLE)],
     )
     code.store()
 
