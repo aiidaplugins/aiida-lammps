@@ -10,6 +10,11 @@ services:
 
 addons:
   postgresql: "9.5"
+  apt:
+    sources:
+    - ppa:gladky-anton/lammps
+    packages:
+    - lammps-stable
 
 env:
   matrix:
@@ -28,15 +33,16 @@ matrix:
     - env: TEST_TYPE="tests" AIIDA_BRANCH="develop" TEST_AIIDA_BACKEND="django"
     - env: TEST_TYPE="tests" AIIDA_BRANCH="develop" TEST_AIIDA_BACKEND="sqlalchemy"
 
-before_install:
-  - sudo apt-get update -q
-  - sudo apt-get install software-properties-common
-  - sudo add-apt-repository ppa:gladky-anton/lammps -y
-  - sudo apt-get update -q
+
+#before_install:
+#  - sudo apt-get update -q
+#  - sudo apt-get install software-properties-common
+#  - sudo add-apt-repository ppa:gladky-anton/lammps -y
+#  - sudo apt-get update -q
 #  - sudo apt-get dist-upgrade
 #  - apt-cache search lammps
-  - sudo apt search .
-  - sudo apt-get install lammps-stable -y
+#  - sudo apt search .
+#  - sudo apt-get install lammps-stable -y
 #  - if [[ "$TEST_TYPE" == "tests" ]]; then sudo apt-get -qq update; fi
 #  - if [[ "$TEST_TYPE" == "tests" ]]; then sudo apt-get install apt-show-versions; fi
 #  - if [[ "$TEST_TYPE" == "tests" ]]; then sudo apt-show-versions lammps-stable; fi
