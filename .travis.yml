@@ -29,14 +29,18 @@ matrix:
     - env: TEST_TYPE="tests" AIIDA_BRANCH="develop" TEST_AIIDA_BACKEND="sqlalchemy"
 
 before_install:
-  - if [[ "$TEST_TYPE" == "tests" ]]; then sudo add-apt-repository ppa:gladky-anton/lammps -y; fi
-  - if [[ "$TEST_TYPE" == "tests" ]]; then sudo apt-get -qq update; fi
-  - if [[ "$TEST_TYPE" == "tests" ]]; then sudo apt-get install apt-show-versions; fi
-  - if [[ "$TEST_TYPE" == "tests" ]]; then sudo apt-show-versions lammps-stable; fi
-  - if [[ "$TEST_TYPE" == "tests" ]]; then apt-cache search lammps-stable; fi
+#  - if [[ "$TEST_TYPE" == "tests" ]]; then sudo add-apt-repository ppa:gladky-anton/lammps -y; fi
+#  - if [[ "$TEST_TYPE" == "tests" ]]; then sudo apt-get -qq update; fi
+#  - if [[ "$TEST_TYPE" == "tests" ]]; then sudo apt-get install apt-show-versions; fi
+#  - if [[ "$TEST_TYPE" == "tests" ]]; then sudo apt-show-versions lammps-stable; fi
+#  - if [[ "$TEST_TYPE" == "tests" ]]; then apt-cache search lammps-stable; fi
 #  - if [[ "$TEST_TYPE" == "tests" ]]; then sudo apt-get install -y lammps-stable; fi # this downloads LAMMPS (11 Nov 2013)
 # get version of lammps
-  - if [[ "$TEST_TYPE" == "tests" ]]; then lammps -h || true; fi
+#  - if [[ "$TEST_TYPE" == "tests" ]]; then lammps -h || true; fi
+- git clone -b stable_22Aug2018 https://github.com/lammps/lammps.git lammps
+- cd lammps
+- make serial
+- cd ..
 
 install:
 # Upgrade pip setuptools and wheel
