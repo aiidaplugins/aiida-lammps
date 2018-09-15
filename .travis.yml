@@ -38,9 +38,9 @@ before_install:
 # get version of lammps
 #  - if [[ "$TEST_TYPE" == "tests" ]]; then lammps -h || true; fi
 - git clone -b stable_22Aug2018 https://github.com/lammps/lammps.git lammps
-- cd lammps
+- cd lammps/src
 - make serial
-- cd ..
+- cd ../..
 
 install:
 # Upgrade pip setuptools and wheel
