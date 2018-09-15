@@ -9,7 +9,7 @@ setup(
     author_email='abelcarreras83@gmail.com',
     license='MIT license',
     packages=find_packages(),
-    install_requires=['aiida-core>=0.12.0', 'numpy', 'dynaphopy', 'aiida_phonopy'],
+    install_requires=['aiida-core>=0.12.0', 'numpy'],
     setup_requires=['reentry'],
     reentry_register=True,
     entry_points={
@@ -32,6 +32,10 @@ setup(
             "sqlalchemy-diff==0.1.3",
             "pytest==3.6.3",
             "wheel>=0.31",
+        },
+        "phonopy": {
+            'dynaphopy',
+            # 'aiida_phonopy' # needs to be added to pip
         }
     }
     )
