@@ -29,6 +29,7 @@ matrix:
     - env: TEST_TYPE="tests" AIIDA_BRANCH="develop" TEST_AIIDA_BACKEND="sqlalchemy"
 
 before_install:
+  - sudo apt-get install software-properties-common
   - sudo add-apt-repository ppa:gladky-anton/lammps -y
   - sudo apt-get update -q
   - apt-cache search lammps
