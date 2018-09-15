@@ -33,6 +33,7 @@ setup(
             "pytest==3.6.3",
             "pytest-timeout",
             "wheel>=0.31",
+            "packaging"
         },
         "phonopy": {
             'dynaphopy',
