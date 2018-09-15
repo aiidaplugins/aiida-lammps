@@ -31,6 +31,7 @@ matrix:
 before_install:
   - sudo add-apt-repository ppa:gladky-anton/lammps -y
   - sudo apt-get update -q
+  - apt-cache search lammps
   - sudo apt-get install lammps-stable -y
 #  - if [[ "$TEST_TYPE" == "tests" ]]; then sudo apt-get -qq update; fi
 #  - if [[ "$TEST_TYPE" == "tests" ]]; then sudo apt-get install apt-show-versions; fi
