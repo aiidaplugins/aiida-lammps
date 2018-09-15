@@ -29,9 +29,9 @@ matrix:
     - env: TEST_TYPE="tests" AIIDA_BRANCH="develop" TEST_AIIDA_BACKEND="sqlalchemy"
 
 before_install:
-  - if [[ "$TEST_TYPE" == "tests" ]]; then sudo add-apt-repository ppa:gladky-anton/lammps; fi
+  - if [[ "$TEST_TYPE" == "tests" ]]; then sudo add-apt-repository ppa:gladky-anton/lammps --assume-yes; fi
   - if [[ "$TEST_TYPE" == "tests" ]]; then sudo apt-get -qq update; fi
-  - if [[ "$TEST_TYPE" == "tests" ]]; then sudo apt-get install lammps-daily; fi
+  - if [[ "$TEST_TYPE" == "tests" ]]; then sudo apt-get install --assume-yes lammps-daily; fi
 
 install:
 # Upgrade pip setuptools and wheel
