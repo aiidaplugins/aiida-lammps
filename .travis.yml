@@ -34,8 +34,8 @@ matrix:
 
 before_install:
 #  - sudo apt-get update -q
-  - sudo apt-get install software-properties-common
-  - sudo add-apt-repository ppa:gladky-anton/lammps -y
+#  - sudo apt-get install software-properties-common
+  - sudo add-apt-repository ppa:gladky-anton/precise-backports -y
   - sudo apt-get update -q
 #  - sudo apt-get dist-upgrade
   - apt-cache search lammps
