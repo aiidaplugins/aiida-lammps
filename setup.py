@@ -31,6 +31,7 @@ setup(
             "pgtest==1.1.0",
             "sqlalchemy-diff==0.1.3",
             "pytest==3.6.3",
+            "pytest-timeout",
             "wheel>=0.31",
         },
         "phonopy": {
