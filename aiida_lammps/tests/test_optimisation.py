@@ -8,8 +8,9 @@ import aiida_lammps.tests.utils as tests
 from aiida_lammps.tests import TEST_DIR
 
 
-@pytest.fixture(scope='function')
-def example_fe_calc(new_database_with_daemon, new_workdir):
+def example_fe_calc(workdir, configure):
+    computer = tests.get_computer(workdir=workdir, configure=configure)
+
     from aiida.orm import DataFactory
     StructureData = DataFactory('structure')
     ParameterData = DataFactory('parameter')
@@ -45,8 +46,6 @@ def example_fe_calc(new_database_with_daemon, new_workdir):
                       'max_evaluations': 1000000,
                       'max_iterations': 500000}
     parameters = ParameterData(dict=parameters_opt)
-
-    computer = tests.get_computer(workdir=new_workdir, configure=True)
 
     from aiida.orm import Code
     code = Code(
@@ -84,9 +83,9 @@ def example_fe_calc(new_database_with_daemon, new_workdir):
     return calc, input_dict
 
 
-def test_example_fe_submission(example_fe_calc):
+def test_example_fe_submission(new_database, new_workdir):
 
-    calc, input_dict = example_fe_calc
+    calc, input_dict = example_fe_calc(new_workdir, False)
 
     from aiida.common.folders import SandboxFolder
 
@@ -107,8 +106,8 @@ def test_example_fe_submission(example_fe_calc):
 @pytest.mark.skipif(
     tests.aiida_version() < tests.cmp_version('1.0.0a1') and tests.is_sqla_backend(),
     reason='Error in obtaining authinfo for computer configuration')
-def test_example_fe_process(example_fe_calc):
-    calc, input_dict = example_fe_calc
+def test_example_fe_process(new_database_with_daemon, new_workdir):
+    calc, input_dict = example_fe_calc(new_workdir, True)
     process = calc.process()
 
     calcnode = tests.run_get_node(process, input_dict)
