@@ -9,7 +9,7 @@ setup(
     author_email='abelcarreras83@gmail.com',
     license='MIT license',
     packages=find_packages(),
-    install_requires=['aiida-core>=0.12.0', 'numpy'],
+    install_requires=['aiida-core>=0.12.0', 'numpy', 'packaging'],
     setup_requires=['reentry'],
     reentry_register=True,
     entry_points={
@@ -32,8 +32,7 @@ setup(
             "sqlalchemy-diff==0.1.3",
             "pytest==3.6.3",
             "pytest-timeout",
-            "wheel>=0.31",
-            "packaging"
+            "wheel>=0.31"
         },
         "phonopy": {
             'dynaphopy',
