@@ -8,7 +8,7 @@ import os
 from aiida.utils.fixtures import fixture_manager
 import pytest
 
-from aiida_lammps.tests.utils import aiida_version, cmp_version
+from aiida_lammps.utils import aiida_version, cmp_version
 
 
 @pytest.fixture(scope='session')

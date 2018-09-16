@@ -3,6 +3,7 @@ import os
 import sys
 
 import aiida_lammps.tests.utils as tests
+from aiida_lammps.utils import aiida_version, cmp_version
 import numpy as np
 import pytest
 
@@ -228,7 +229,7 @@ def test_md_submission(new_database, new_workdir, data_func):
 @pytest.mark.lammps_call
 @pytest.mark.timeout(120)
 @pytest.mark.skipif(
-    tests.aiida_version() < tests.cmp_version('1.0.0a1') and tests.is_sqla_backend(),
+    aiida_version() < cmp_version('1.0.0a1') and tests.is_sqla_backend(),
     reason='Error in obtaining authinfo for computer configuration')
 @pytest.mark.parametrize('data_func', [
     lj_data,
@@ -272,7 +273,7 @@ def test_opt_process(new_database_with_daemon, new_workdir, data_func):
 @pytest.mark.lammps_call
 @pytest.mark.timeout(120)
 @pytest.mark.skipif(
-    tests.aiida_version() < tests.cmp_version('1.0.0a1') and tests.is_sqla_backend(),
+    aiida_version() < cmp_version('1.0.0a1') and tests.is_sqla_backend(),
     reason='Error in obtaining authinfo for computer configuration')
 @pytest.mark.parametrize('data_func', [
     lj_data,
@@ -305,7 +306,7 @@ def test_md_process(new_database_with_daemon, new_workdir, data_func):
 
     pdict = calcnode.out.output_parameters.get_dict()
     assert set(pdict.keys()).issuperset(
-        ['warnings', 'energy_units', 'force_units', 'parser_class', 'parser_version'])
+        ['warnings', 'parser_class', 'parser_version'])
     assert pdict['warnings'] == []
 
     print(dict(calcnode.out.trajectory_data.iterarrays()))

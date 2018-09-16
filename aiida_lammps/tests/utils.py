@@ -1,7 +1,9 @@
 import os
-import sys
-import subprocess
 import re
+import subprocess
+import sys
+
+from aiida_lammps.utils import aiida_version, cmp_version
 
 TEST_DIR = os.path.dirname(os.path.realpath(__file__))
 TEST_COMPUTER = 'localhost-test'
@@ -18,22 +20,6 @@ def lammps_version():
     line = out.splitlines()[0]
     version = re.search("LAMMPS \((.*)\)", line).group(1)
     return version
-
-
-def aiida_version():
-    """get the version of aiida in use
-
-    :returns: packaging.version.Version
-    """
-    from aiida import __version__ as aiida_version_
-    from packaging import version
-    return version.parse(aiida_version_)
-
-
-def cmp_version(string):
-    """convert a version string to a packaging.version.Version"""
-    from packaging import version
-    return version.parse(string)
 
 
 def get_computer(name=TEST_COMPUTER, workdir=None, configure=False):

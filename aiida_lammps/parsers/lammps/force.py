@@ -2,6 +2,7 @@ from aiida.parsers.parser import Parser
 from aiida.parsers.exceptions import OutputParsingError
 from aiida.orm import DataFactory
 
+from aiida_lammps import __version__ as aiida_lammps_version
 from aiida_lammps.common.raw_parsers import read_lammps_forces, read_log_file
 
 ArrayData = DataFactory('array')
@@ -73,6 +74,8 @@ class ForceParser(Parser):
 
         # add the dictionary with warnings
         outputa_data.update({'warnings': warnings})
+        outputa_data["parser_class"] = self.__class__.__name__
+        outputa_data["parser_version"] = aiida_lammps_version
 
         parameters_data = ParameterData(dict=outputa_data)
         new_nodes_list.append((self.get_linkname_outparams(), parameters_data))
