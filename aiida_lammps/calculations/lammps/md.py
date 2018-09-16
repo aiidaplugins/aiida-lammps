@@ -3,6 +3,7 @@ from aiida.common.utils import classproperty
 from aiida_lammps.calculations.lammps import BaseLammpsCalculation
 
 import numpy as np
+from aiida_lammps.common.utils import convert_date_string
 
 
 def generate_LAMMPS_input(parameters,
@@ -13,6 +14,8 @@ def generate_LAMMPS_input(parameters,
     random_number = np.random.randint(10000000)
 
     names_str = ' '.join(potential_obj._names)
+
+    lammps_date = convert_date_string(parameters.get("lammps_version", None))
 
     lammps_input_file = 'units           metal\n'
     lammps_input_file += 'boundary        p p p\n'
@@ -39,6 +42,13 @@ def generate_LAMMPS_input(parameters,
     lammps_input_file += 'reset_timestep  0\n'
 
     lammps_input_file += 'dump            aiida all custom {0} {1} element x y z\n'.format(parameters.dict.dump_rate, trajectory_file)
+
+    # TODO find exact version when changes were made
+    if lammps_date <= convert_date_string('10 Feb 2015'):
+        lammps_input_file += 'dump_modify     aiida format "%4s  %16.10f %16.10f %16.10f  %16.10f %16.10f %16.10f"\n'
+    else:
+        lammps_input_file += 'dump_modify     aiida format line "%4s  %16.10f %16.10f %16.10f  %16.10f %16.10f %16.10f"\n'
+
     lammps_input_file += 'dump_modify     aiida format line "%4s  %16.10f %16.10f %16.10f"\n'
     lammps_input_file += 'dump_modify     aiida sort id\n'
     lammps_input_file += 'dump_modify     aiida element {}\n'.format(names_str)

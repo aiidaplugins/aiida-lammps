@@ -37,7 +37,9 @@ def example_fe_calc(workdir, configure):
     potential_dict = {'pair_style': 'eam', 'data': eam_data}
     potential = ParameterData(dict=potential_dict)
 
-    parameters_opt = {'relaxation': 'tri',  # iso/aniso/tri
+    parameters_opt = {
+                      'lammps_version': tests.lammps_version(),
+                      'relaxation': 'tri',  # iso/aniso/tri
                       'pressure': 0.0,  # kbars
                       'vmax': 0.000001,  # Angstrom^3
                       'energy_tolerance': 1.0e-25,  # eV
@@ -101,6 +103,7 @@ def test_example_fe_submission(new_database, new_workdir):
         assert subfolder.isfile('potential.pot')
 
 
+@pytest.mark.lammps_call
 @pytest.mark.timeout(120)
 @pytest.mark.skipif(
     tests.aiida_version() < tests.cmp_version('1.0.0a1') and tests.is_sqla_backend(),
@@ -115,10 +118,20 @@ def test_example_fe_process(new_database_with_daemon, new_workdir):
     assert set(calcnode.get_inputs_dict().keys()).issuperset(
         ['parameters', 'structure', 'potential'])
 
-    print(calcnode.get_outputs_dict())
+    assert set(calcnode.get_outputs_dict().keys()).issuperset(
+        ['output_parameters', 'output_array', 'output_structure'])
 
     sys.stdout.write(tests.get_calc_log(calcnode))
 
     from aiida.common.datastructures import calc_states
     assert calcnode.get_state() == calc_states.FINISHED
+
+    pdict = calcnode.out.output_parameters.get_dict()
+    assert pdict['warnings'] == []
+    assert pdict['energy'] == pytest.approx(-8.2448702)
+
+    assert set(calcnode.out.output_array.get_arraynames()).issuperset(
+        ['stress', 'forces']
+    )
+
 

@@ -1,9 +1,23 @@
 import os
 import sys
+import subprocess
+import re
 
 TEST_DIR = os.path.dirname(os.path.realpath(__file__))
 TEST_COMPUTER = 'localhost-test'
 TEST_EXECUTABLE = 'lammps'
+
+
+def lammps_version():
+    """get the version of lammps
+
+    we assume lammps -h returns e.g. 'LAMMPS (10 Feb 2015)' as first line
+    """
+    p = subprocess.Popen([TEST_EXECUTABLE, "-h"], stdout=subprocess.PIPE)
+    out, err = p.communicate()
+    line = out.splitlines()[0]
+    version = re.search("LAMMPS \((.*)\)", line).group(1)
+    return version
 
 
 def aiida_version():
