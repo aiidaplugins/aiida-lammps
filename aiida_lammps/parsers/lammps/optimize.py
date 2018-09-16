@@ -2,7 +2,8 @@ from aiida.parsers.parser import Parser
 from aiida.parsers.exceptions import OutputParsingError
 from aiida.orm import DataFactory
 
-from aiida_lammps.common.raw_parsers import read_log_file2 as read_log_file, read_lammps_positions_and_forces
+from aiida_lammps.common.raw_parsers import read_log_file2 as read_log_file, read_lammps_positions_and_forces, \
+    get_units_dict
 
 ArrayData = DataFactory('array')
 ParameterData = DataFactory('parameter')
@@ -54,6 +55,8 @@ class OptimizeParser(Parser):
         ouput_trajectory = out_folder.get_abs_path( self._calc._OUTPUT_TRAJECTORY_FILE_NAME)
 
         output_data, cell, stress_tensor = read_log_file(outfile)
+        output_data.update(get_units_dict('metal', ["energy", "force"]))
+
         positions, forces, symbols, cell2 = read_lammps_positions_and_forces(ouput_trajectory)
 
         # look at warnings
