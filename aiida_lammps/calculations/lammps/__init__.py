@@ -265,9 +265,11 @@ class BaseLammpsCalculation(JobCalculation):
         with open(structure_filename, 'w') as infile:
             infile.write(structure_txt)
 
-        potential_filename = tempfolder.get_abs_path(self._INPUT_POTENTIAL)
-        with open(potential_filename, 'w') as infile:
-            infile.write(potential_txt)
+        if potential_txt is not None:
+            potential_filename = tempfolder.get_abs_path(self._INPUT_POTENTIAL)
+            with open(potential_filename, 'w') as infile:
+                print(potential_txt)
+                infile.write(potential_txt)
 
         self._create_additional_files(tempfolder, inputdict)
 

@@ -1,8 +1,11 @@
+import os
 from aiida.parsers.parser import Parser
 from aiida.parsers.exceptions import OutputParsingError
 from aiida.orm import DataFactory
 
-from aiida_lammps.common.raw_parsers import read_lammps_trajectory
+from aiida_lammps import __version__ as aiida_lammps_version
+from aiida_lammps.common.raw_parsers import read_lammps_trajectory, get_units_dict
+from aiida_lammps.utils import aiida_version, cmp_version
 
 ArrayData = DataFactory('array')
 ParameterData = DataFactory('parameter')
@@ -48,10 +51,14 @@ class MdParser(Parser):
 
         # Get file and do the parsing
         outfile = out_folder.get_abs_path(self._calc._OUTPUT_FILE_NAME)
-        ouput_trajectory = temporary_folder.get_abs_path(self._calc._OUTPUT_TRAJECTORY_FILE_NAME)
+
+        if aiida_version() < cmp_version('1.0.0a1'):
+            output_trajectory = temporary_folder.get_abs_path(self._calc._OUTPUT_TRAJECTORY_FILE_NAME)
+        else:
+            output_trajectory = os.path.join(temporary_folder, self._calc._OUTPUT_TRAJECTORY_FILE_NAME)
 
         timestep = self._calc.inp.parameters.dict.timestep
-        positions, step_ids, cells, symbols, time = read_lammps_trajectory(ouput_trajectory, timestep=timestep)
+        positions, step_ids, cells, symbols, time = read_lammps_trajectory(output_trajectory, timestep=timestep)
 
         # look at warnings
         warnings = []
@@ -74,7 +81,13 @@ class MdParser(Parser):
             pass
 
         # add the dictionary with warnings
-        new_nodes_list.append((self.get_linkname_outparams(), ParameterData(dict={'warnings': warnings})))
+        param_dict = {'warnings': warnings,
+                      "parser_class": self.__class__.__name__,
+                      "parser_version": aiida_lammps_version}
+        # param_dict.update(get_units_dict('metal', ["energy", "force"]))
+        # TODO return energies per step
+
+        new_nodes_list.append((self.get_linkname_outparams(), ParameterData(dict=param_dict)))
 
         return successful, new_nodes_list
 
