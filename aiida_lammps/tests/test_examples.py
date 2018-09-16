@@ -176,7 +176,7 @@ def setup_calc(workdir, configure, struct_dict, potential_dict, ctype):
             'temperature': 300,
             'thermostat_variable': 0.5,
             'equilibrium_steps': 100,
-            'total_steps': 2000,
+            'total_steps': 1000,
             'dump_rate': 1}
         code_plugin = 'lammps.md'
     else:
@@ -324,7 +324,7 @@ def test_opt_process(new_database_with_daemon, new_workdir, data_func):
 
 
 @pytest.mark.lammps_call
-@pytest.mark.timeout(120)
+@pytest.mark.timeout(180)
 @pytest.mark.skipif(
     aiida_version() < cmp_version('1.0.0a1') and tests.is_sqla_backend(),
     reason='Error in obtaining authinfo for computer configuration')

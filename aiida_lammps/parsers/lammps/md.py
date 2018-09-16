@@ -85,7 +85,7 @@ class MdParser(Parser):
         # add units used
         with open(get_temp_path(self._calc._INPUT_UNITS)) as f:
             units = f.readlines()[0].strip()
-        param_dict.update(get_units_dict(units, ["distance"]))
+        param_dict.update(get_units_dict(units, ["distance", "time"]))
 
         # TODO return energies per step
 
