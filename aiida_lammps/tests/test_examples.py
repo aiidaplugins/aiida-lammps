@@ -29,7 +29,7 @@ def eam_data():
     potential_dict = {'pair_style': 'eam', 'data': eam_data}
 
     output_dict = {"energy": -8.2448702,
-                   "infiles": ['input.data', 'input.in', 'potential.pot']}
+                   "infiles": ['input.data', 'input.in', 'potential.pot', 'input.units']}
 
     return struct_dict, potential_dict, output_dict
 
@@ -58,7 +58,7 @@ def lj_data():
     }
 
     output_dict = {"energy": 0.0,  # TODO should LJ energy be 0?
-                   "infiles": ['input.data', 'input.in']}
+                   "infiles": ['input.data', 'input.in', 'input.units']}
 
     return struct_dict, potential_dict, output_dict
 
@@ -93,7 +93,7 @@ def tersoff_data():
                       'data': tersoff_gan}
 
     output_dict = {"energy": -18.11122,
-                   "infiles": ['input.data', 'input.in', 'potential.pot']}
+                   "infiles": ['input.data', 'input.in', 'potential.pot', 'input.units']}
 
     return struct_dict, potential_dict, output_dict
 

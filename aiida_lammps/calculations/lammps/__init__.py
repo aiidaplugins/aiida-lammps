@@ -163,11 +163,13 @@ class BaseLammpsCalculation(JobCalculation):
     _INPUT_FILE_NAME = 'input.in'
     _INPUT_POTENTIAL = 'potential.pot'
     _INPUT_STRUCTURE = 'input.data'
+    _INPUT_UNITS = 'input.units'
 
     _retrieve_list = []
     _retrieve_temporary_list = []
     _cmdline_params = ['-in', _INPUT_FILE_NAME]
     _stdout_name = None
+
     def _init_internal_params(self):
         super(BaseLammpsCalculation, self)._init_internal_params()
 
@@ -246,6 +248,13 @@ class BaseLammpsCalculation(JobCalculation):
         # =================== prepare the python input files =====================
 
         potential_object = LammpsPotential(potential_data, self._structure, potential_filename=self._INPUT_POTENTIAL)
+
+        # TODO is this the best way to tell the parser what units were used?
+        # depending on how the calculation is run, it can be either stored or unstored at this point,
+        # which prohibits using self.set_attr / self.set_extra / self._units =
+        input_units_filename = tempfolder.get_abs_path(self._INPUT_UNITS)
+        with open(input_units_filename, 'w') as infile:
+            infile.write(potential_object.default_units)
 
         structure_txt = generate_LAMMPS_structure(self._structure)
         input_txt = self._generate_input_function(self._parameters_data,

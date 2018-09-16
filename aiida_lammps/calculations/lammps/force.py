@@ -21,7 +21,7 @@ def generate_LAMMPS_input(parameters_data,
 
     names_str = ' '.join(potential_obj._names)
 
-    lammps_input_file =  'units           metal\n'
+    lammps_input_file = 'units           {0}\n'.format(potential_obj.default_units)
     lammps_input_file += 'boundary        p p p\n'
     lammps_input_file += 'box tilt large\n'
     lammps_input_file += 'atom_style      atomic\n'
@@ -60,6 +60,7 @@ class ForceCalculation(BaseLammpsCalculation, JobCalculation):
         self.__retrieve_list = []
         self._generate_input_function = generate_LAMMPS_input
         self._retrieve_list = [self._OUTPUT_TRAJECTORY_FILE_NAME, self._OUTPUT_FILE_NAME]
+        self._retrieve_temporary_list = [self._INPUT_UNITS]
 
     @classproperty
     def _use_methods(cls):

@@ -47,7 +47,7 @@ def generate_LAMMPS_input(parameters,
 
     names_str = ' '.join(potential_obj._names)
 
-    lammps_input_file = 'units           metal\n'
+    lammps_input_file = 'units           {0}\n'.format(potential_obj.default_units)
     lammps_input_file += 'boundary        p p p\n'
     lammps_input_file += 'box tilt large\n'
     lammps_input_file += 'atom_style      atomic\n'

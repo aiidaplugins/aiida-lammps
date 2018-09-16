@@ -17,7 +17,7 @@ def generate_LAMMPS_input(parameters,
 
     lammps_date = convert_date_string(parameters.get_dict().get("lammps_version", None))
 
-    lammps_input_file = 'units           metal\n'
+    lammps_input_file = 'units           {0}\n'.format(potential_obj.default_units)
     lammps_input_file += 'boundary        p p p\n'
     lammps_input_file += 'box tilt large\n'
     lammps_input_file += 'atom_style      atomic\n'
@@ -68,7 +68,7 @@ class MdCalculation(BaseLammpsCalculation, JobCalculation):
         self._default_parser = 'lammps.md'
 
         self._retrieve_list = [self._OUTPUT_FILE_NAME]
-        self._retrieve_temporary_list = [self._OUTPUT_TRAJECTORY_FILE_NAME]
+        self._retrieve_temporary_list = [self._OUTPUT_TRAJECTORY_FILE_NAME, self._INPUT_UNITS]
         self._generate_input_function = generate_LAMMPS_input
 
     @classproperty
