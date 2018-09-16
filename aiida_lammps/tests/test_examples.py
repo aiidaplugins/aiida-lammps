@@ -3,9 +3,9 @@ import os
 import sys
 
 import aiida_lammps.tests.utils as tests
-from aiida_lammps.utils import aiida_version, cmp_version
 import numpy as np
 import pytest
+from aiida_lammps.utils import aiida_version, cmp_version
 
 
 def eam_data():
@@ -23,13 +23,14 @@ def eam_data():
                    "scaled_positions": scaled_positions}
 
     eam_path = os.path.join(tests.TEST_DIR, 'input_files', 'Fe_mm.eam.fs')
-    eam_data = {'type': 'fs',
-                'file_contents': open(eam_path).readlines()}
+    data = {'type': 'fs',
+            'file_contents': open(eam_path).readlines()}
 
-    potential_dict = {'pair_style': 'eam', 'data': eam_data}
+    potential_dict = {'pair_style': 'eam', 'data': data}
 
     output_dict = {"energy": -8.2448702,
-                   "infiles": ['input.data', 'input.in', 'potential.pot', 'input.units']}
+                   "infiles": ['input.data', 'input.in', 'potential.pot', 'input.units'],
+                   "warnings": []}
 
     return struct_dict, potential_dict, output_dict
 
@@ -58,7 +59,8 @@ def lj_data():
     }
 
     output_dict = {"energy": 0.0,  # TODO should LJ energy be 0?
-                   "infiles": ['input.data', 'input.in', 'input.units']}
+                   "infiles": ['input.data', 'input.in', 'input.units'],
+                   "warnings": []}
 
     return struct_dict, potential_dict, output_dict
 
@@ -92,8 +94,51 @@ def tersoff_data():
     potential_dict = {'pair_style': 'tersoff',
                       'data': tersoff_gan}
 
-    output_dict = {"energy": -18.11122,
-                   "infiles": ['input.data', 'input.in', 'potential.pot', 'input.units']}
+    output_dict = {"energy": -18.110852,
+                   "infiles": ['input.data', 'input.in', 'potential.pot', 'input.units'],
+                   "warnings": []}
+
+    return struct_dict, potential_dict, output_dict
+
+
+def reaxff_data():
+    # pyrite
+    cell = [[5.38, 0.000000, 0.000000],
+            [0.000000, 5.38, 0.000000],
+            [0.000000, 0.000000, 5.38]]
+
+    scaled_positions = [[0.0, 0.0, 0.0],
+                        [0.5, 0.0, 0.5],
+                        [0.0, 0.5, 0.5],
+                        [0.5, 0.5, 0.0],
+                        [0.338, 0.338, 0.338],
+                        [0.662, 0.662, 0.662],
+                        [0.162, 0.662, 0.838],
+                        [0.838, 0.338, 0.162],
+                        [0.662, 0.838, 0.162],
+                        [0.338, 0.162, 0.838],
+                        [0.838, 0.162, 0.662],
+                        [0.162, 0.838, 0.338]]
+
+    symbols = ['Fe']*4 + ['S']*8
+
+    struct_dict = {"cell": cell,
+                   "symbols": symbols,
+                   "scaled_positions": scaled_positions}
+
+    reaxff_path = os.path.join(tests.TEST_DIR, 'input_files', 'FeCrOSCH.reaxff')
+    reaxff_data = {
+        'file_contents': open(reaxff_path).readlines(),
+        'safezone': 1.6,
+        'neighbor_bin': 2.0,
+        'neighbor_list': 10
+    }
+
+    potential_dict = {'pair_style': 'reaxff', 'data': reaxff_data}
+
+    output_dict = {"energy": -1030.3543,
+                   "infiles": ['input.data', 'input.in', 'potential.pot', 'input.units'],
+                   "warnings": ['Warning: changed valency_val to valency_boc for X']}
 
     return struct_dict, potential_dict, output_dict
 
@@ -116,13 +161,13 @@ def setup_calc(workdir, configure, struct_dict, potential_dict, ctype):
     if ctype == "optimisation":
         parameters_opt = {
             'lammps_version': tests.lammps_version(),
-            'relaxation': 'tri',  # iso/aniso/tri
+            'relaxation': 'iso',  # iso/aniso/tri
             'pressure': 0.0,  # kbars
-            'vmax': 0.000001,  # Angstrom^3
+            'vmax': 0.001,  # Angstrom^3
             'energy_tolerance': 1.0e-25,  # eV
             'force_tolerance': 1.0e-25,  # eV angstrom
-            'max_evaluations': 1000000,
-            'max_iterations': 500000}
+            'max_evaluations': 100000,
+            'max_iterations': 50000}
         code_plugin = 'lammps.optimize'
     elif ctype == "md":
         parameters_opt = {
@@ -179,7 +224,8 @@ def setup_calc(workdir, configure, struct_dict, potential_dict, ctype):
 @pytest.mark.parametrize('data_func', [
     lj_data,
     tersoff_data,
-    eam_data
+    eam_data,
+    reaxff_data
 ])
 def test_opt_submission(new_database, new_workdir, data_func):
     struct_dict, potential_dict, output_dict = data_func()
@@ -199,12 +245,18 @@ def test_opt_submission(new_database, new_workdir, data_func):
         ])
         for infile in output_dict['infiles']:
             assert subfolder.isfile(infile)
+            print('---')
+            print('infile')
+            print('---')
+            with subfolder.open(infile) as f:
+                print(f.read())
 
 
 @pytest.mark.parametrize('data_func', [
     lj_data,
     tersoff_data,
-    eam_data
+    eam_data,
+    reaxff_data
 ])
 def test_md_submission(new_database, new_workdir, data_func):
     struct_dict, potential_dict, output_dict = data_func()
@@ -234,7 +286,8 @@ def test_md_submission(new_database, new_workdir, data_func):
 @pytest.mark.parametrize('data_func', [
     lj_data,
     tersoff_data,
-    eam_data
+    eam_data,
+    reaxff_data
 ])
 def test_opt_process(new_database_with_daemon, new_workdir, data_func):
     struct_dict, potential_dict, output_dict = data_func()
@@ -262,7 +315,7 @@ def test_opt_process(new_database_with_daemon, new_workdir, data_func):
     pdict = calcnode.out.output_parameters.get_dict()
     assert set(pdict.keys()).issuperset(
         ['energy', 'warnings', 'energy_units', 'force_units', 'parser_class', 'parser_version'])
-    assert pdict['warnings'] == []
+    assert pdict['warnings'] == output_dict["warnings"]
     assert pdict['energy'] == pytest.approx(output_dict['energy'])
 
     assert set(calcnode.out.output_array.get_arraynames()).issuperset(
@@ -278,7 +331,8 @@ def test_opt_process(new_database_with_daemon, new_workdir, data_func):
 @pytest.mark.parametrize('data_func', [
     lj_data,
     tersoff_data,
-    eam_data
+    eam_data,
+    reaxff_data
 ])
 def test_md_process(new_database_with_daemon, new_workdir, data_func):
     struct_dict, potential_dict, output_dict = data_func()
@@ -307,7 +361,7 @@ def test_md_process(new_database_with_daemon, new_workdir, data_func):
     pdict = calcnode.out.output_parameters.get_dict()
     assert set(pdict.keys()).issuperset(
         ['warnings', 'parser_class', 'parser_version'])
-    assert pdict['warnings'] == []
+    assert pdict['warnings'] == output_dict["warnings"]
 
     print(dict(calcnode.out.trajectory_data.iterarrays()))
 

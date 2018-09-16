@@ -63,11 +63,8 @@ class ForceParser(Parser):
         forces = read_lammps_forces(ouput_trajectory)
 
         # look at warnings
-        warnings = []
-        with open(out_folder.get_abs_path( self._calc._SCHED_ERROR_FILE )) as f:
-            errors = f.read()
-        if errors:
-            warnings = [errors]
+        with open(out_folder.get_abs_path(self._calc._SCHED_ERROR_FILE)) as f:
+            warnings = f.read().splitlines()
 
         # ====================== prepare the output node ======================
 

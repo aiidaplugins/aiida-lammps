@@ -29,3 +29,7 @@ class LammpsPotential:
     @property
     def default_units(self):
         return self._potential_module.DEFAULT_UNITS
+
+    @property
+    def atom_style(self):
+        return self._potential_module.ATOM_STYLE

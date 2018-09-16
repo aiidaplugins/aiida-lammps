@@ -150,7 +150,6 @@ def read_lammps_forces(file_name):
 
     return forces
 
-import numpy as np
 
 def read_log_file(logfile):
 
@@ -282,8 +281,11 @@ def read_lammps_trajectory(file_name,
 
 def read_log_file2(logfile):
 
-    f = open(logfile, 'r')
-    data = f.readlines()
+    with open(logfile, 'r') as f:
+        data = f.readlines()
+
+    if not data:
+        raise IOError('The logfile is empty: {}'.format(logfile))
 
     data_dict = {}
     for i, line in enumerate(data):
@@ -294,7 +296,6 @@ def read_log_file2(logfile):
             stress = np.array([[xx, xy, xz],
                                [xy, yy, yz],
                                [xz, yz, zz]], dtype=float)
-
 
         if '$(xlo)' in line:
             a = data[i+1].split()
@@ -325,7 +326,7 @@ def read_log_file2(logfile):
                            [0,  yhi-ylo,  yz],
                            [0,   0,  zhi-zlo]])
 
-    cell=super_cell.T
+    cell = super_cell.T
 
     if np.linalg.det(cell) < 0:
         cell = -1.0*cell
@@ -334,6 +335,7 @@ def read_log_file2(logfile):
     stress = -stress/volume * 1.e-3  # bar*A^3 -> kbar
 
     return data_dict, cell, stress
+
 
 def read_lammps_positions_and_forces(file_name):
 
