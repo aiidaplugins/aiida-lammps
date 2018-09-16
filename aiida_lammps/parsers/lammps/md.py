@@ -2,7 +2,8 @@ from aiida.parsers.parser import Parser
 from aiida.parsers.exceptions import OutputParsingError
 from aiida.orm import DataFactory
 
-from aiida_lammps.common.raw_parsers import read_lammps_trajectory
+from aiida_lammps import __version__ as aiida_lammps_version
+from aiida_lammps.common.raw_parsers import read_lammps_trajectory, get_units_dict
 
 ArrayData = DataFactory('array')
 ParameterData = DataFactory('parameter')
@@ -74,7 +75,12 @@ class MdParser(Parser):
             pass
 
         # add the dictionary with warnings
-        new_nodes_list.append((self.get_linkname_outparams(), ParameterData(dict={'warnings': warnings})))
+        param_dict = {'warnings': warnings}
+        param_dict.update(get_units_dict('metal', ["energy", "force"]))
+        param_dict["parser_class"] = self.__class__.__name__
+        param_dict["parser_version"] = aiida_lammps_version
+
+        new_nodes_list.append((self.get_linkname_outparams(), ParameterData(dict=param_dict)))
 
         return successful, new_nodes_list
 

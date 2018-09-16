@@ -6,6 +6,7 @@ from aiida.orm import DataFactory
 from aiida_lammps.calculations.lammps import BaseLammpsCalculation
 
 from aiida_lammps.calculations.lammps.potentials import LammpsPotential
+from aiida_lammps.common.utils import convert_date_string
 
 StructureData = DataFactory('structure')
 ParameterData = DataFactory('parameter')
@@ -15,6 +16,8 @@ def generate_LAMMPS_input(parameters_data,
                           potential_obj,
                           structure_file='data.gan',
                           trajectory_file='trajectory.lammpstr'):
+
+    lammps_date = convert_date_string(parameters_data.get_dict().get("lammps_version", None))
 
     names_str = ' '.join(potential_obj._names)
 
@@ -30,7 +33,13 @@ def generate_LAMMPS_input(parameters_data,
     lammps_input_file += 'neighbor        0.3 bin\n'
     lammps_input_file += 'neigh_modify    every 1 delay 0 check no\n'
     lammps_input_file += 'dump            aiida all custom 1 {0} element fx fy fz\n'.format(trajectory_file)
-    lammps_input_file += 'dump_modify     aiida format line "%4s  %16.10f %16.10f %16.10f"\n'
+
+    # TODO find exact version when changes were made
+    if lammps_date <= convert_date_string('10 Feb 2015'):
+        lammps_input_file += 'dump_modify     aiida format "%4s  %16.10f %16.10f %16.10f"\n'
+    else:
+        lammps_input_file += 'dump_modify     aiida format line "%4s  %16.10f %16.10f %16.10f"\n'
+
     lammps_input_file += 'dump_modify     aiida sort id\n'
     lammps_input_file += 'dump_modify     aiida element {}\n'.format(names_str)
 

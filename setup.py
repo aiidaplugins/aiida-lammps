@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='aiida-lammps',
-    version='0.1',
+    version='0.1.0a1',
     description='AiiDA plugin for LAMMPS',
     url='https://github.com/abelcarreras/aiida_extensions',
     author='Abel Carreras',

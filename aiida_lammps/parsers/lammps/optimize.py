@@ -2,16 +2,13 @@ from aiida.parsers.parser import Parser
 from aiida.parsers.exceptions import OutputParsingError
 from aiida.orm import DataFactory
 
+from aiida_lammps import __version__ as aiida_lammps_version
 from aiida_lammps.common.raw_parsers import read_log_file2 as read_log_file, read_lammps_positions_and_forces, \
     get_units_dict
 
 ArrayData = DataFactory('array')
 ParameterData = DataFactory('parameter')
 StructureData = DataFactory('structure')
-
-import numpy as np
-
-
 
 
 class OptimizeParser(Parser):
@@ -56,6 +53,8 @@ class OptimizeParser(Parser):
 
         output_data, cell, stress_tensor = read_log_file(outfile)
         output_data.update(get_units_dict('metal', ["energy", "force"]))
+        output_data["parser_class"] = self.__class__.__name__
+        output_data["parser_version"] = aiida_lammps_version
 
         positions, forces, symbols, cell2 = read_lammps_positions_and_forces(ouput_trajectory)
 
@@ -92,8 +91,5 @@ class OptimizeParser(Parser):
 
         parameters_data = ParameterData(dict=output_data)
         new_nodes_list.append((self.get_linkname_outparams(), parameters_data))
-
-        # add the dictionary with warnings
-        # new_nodes_list.append((self.get_linkname_outparams(), ParameterData(dict={'warnings': warnings})))
 
         return successful, new_nodes_list

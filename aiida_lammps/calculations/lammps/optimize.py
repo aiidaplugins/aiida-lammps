@@ -40,6 +40,7 @@ def generate_LAMMPS_input(parameters_data,
 
     lammps_input_file += 'dump            aiida all custom 1 {0} element x y z  fx fy fz\n'.format(trajectory_file)
 
+    # TODO find exact version when changes were made
     if lammps_date <= convert_date_string('10 Feb 2015'):
         lammps_input_file += 'dump_modify     aiida format "%4s  %16.10f %16.10f %16.10f  %16.10f %16.10f %16.10f"\n'
     else:

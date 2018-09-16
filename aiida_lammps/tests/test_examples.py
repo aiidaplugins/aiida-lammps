@@ -56,7 +56,7 @@ def lj_data():
                  }
     }
 
-    output_dict = {"energy": 0.0,  # TODO should LJ energy be be 0?
+    output_dict = {"energy": 0.0,  # TODO should LJ energy be 0?
                    "infiles": ['input.data', 'input.in']}
 
     return struct_dict, potential_dict, output_dict
@@ -97,7 +97,7 @@ def tersoff_data():
     return struct_dict, potential_dict, output_dict
 
 
-def optimisation_calc(workdir, configure, struct_dict, potential_dict):
+def setup_calc(workdir, configure, struct_dict, potential_dict, ctype):
     from aiida.orm import DataFactory
     StructureData = DataFactory('structure')
     ParameterData = DataFactory('parameter')
@@ -112,20 +112,36 @@ def optimisation_calc(workdir, configure, struct_dict, potential_dict):
 
     potential = ParameterData(dict=potential_dict)
 
-    parameters_opt = {
-        'lammps_version': tests.lammps_version(),
-        'relaxation': 'tri',  # iso/aniso/tri
-        'pressure': 0.0,  # kbars
-        'vmax': 0.000001,  # Angstrom^3
-        'energy_tolerance': 1.0e-25,  # eV
-        'force_tolerance': 1.0e-25,  # eV angstrom
-        'max_evaluations': 1000000,
-        'max_iterations': 500000}
+    if ctype == "optimisation":
+        parameters_opt = {
+            'lammps_version': tests.lammps_version(),
+            'relaxation': 'tri',  # iso/aniso/tri
+            'pressure': 0.0,  # kbars
+            'vmax': 0.000001,  # Angstrom^3
+            'energy_tolerance': 1.0e-25,  # eV
+            'force_tolerance': 1.0e-25,  # eV angstrom
+            'max_evaluations': 1000000,
+            'max_iterations': 500000}
+        code_plugin = 'lammps.optimize'
+    elif ctype == "md":
+        parameters_opt = {
+            'lammps_version': tests.lammps_version(),
+            'timestep': 0.001,
+            'temperature': 300,
+            'thermostat_variable': 0.5,
+            'equilibrium_steps': 100,
+            'total_steps': 2000,
+            'dump_rate': 1}
+        code_plugin = 'lammps.md'
+    else:
+        raise NotImplementedError
+
     parameters = ParameterData(dict=parameters_opt)
 
     from aiida.orm import Code
+
     code = Code(
-        input_plugin_name='lammps.optimize',
+        input_plugin_name=code_plugin,
         remote_computer_exec=[computer, tests.get_path_to_executable(tests.TEST_EXECUTABLE)],
     )
     code.store()
@@ -160,14 +176,40 @@ def optimisation_calc(workdir, configure, struct_dict, potential_dict):
 
 
 @pytest.mark.parametrize('data_func', [
-    eam_data,
     lj_data,
     tersoff_data,
+    eam_data
 ])
 def test_opt_submission(new_database, new_workdir, data_func):
     struct_dict, potential_dict, output_dict = data_func()
 
-    calc, input_dict = optimisation_calc(new_workdir, False, struct_dict, potential_dict)
+    calc, input_dict = setup_calc(new_workdir, False,
+                                  struct_dict, potential_dict, 'optimisation')
+
+    from aiida.common.folders import SandboxFolder
+
+    # output input files and scripts to temporary folder
+    with SandboxFolder() as folder:
+        subfolder, script_filename = calc.submit_test(folder=folder)
+        print("inputs created successfully at {}".format(subfolder.abspath))
+        print([
+            os.path.basename(p)
+            for p in glob.glob(os.path.join(subfolder.abspath, "*"))
+        ])
+        for infile in output_dict['infiles']:
+            assert subfolder.isfile(infile)
+
+
+@pytest.mark.parametrize('data_func', [
+    lj_data,
+    tersoff_data,
+    eam_data
+])
+def test_md_submission(new_database, new_workdir, data_func):
+    struct_dict, potential_dict, output_dict = data_func()
+
+    calc, input_dict = setup_calc(new_workdir, False,
+                                  struct_dict, potential_dict, 'md')
 
     from aiida.common.folders import SandboxFolder
 
@@ -189,14 +231,15 @@ def test_opt_submission(new_database, new_workdir, data_func):
     tests.aiida_version() < tests.cmp_version('1.0.0a1') and tests.is_sqla_backend(),
     reason='Error in obtaining authinfo for computer configuration')
 @pytest.mark.parametrize('data_func', [
-    eam_data,
     lj_data,
-    tersoff_data
+    tersoff_data,
+    eam_data
 ])
 def test_opt_process(new_database_with_daemon, new_workdir, data_func):
     struct_dict, potential_dict, output_dict = data_func()
 
-    calc, input_dict = optimisation_calc(new_workdir, True, struct_dict, potential_dict)
+    calc, input_dict = setup_calc(new_workdir, True,
+                                  struct_dict, potential_dict, 'optimisation')
 
     process = calc.process()
 
@@ -216,10 +259,57 @@ def test_opt_process(new_database_with_daemon, new_workdir, data_func):
     assert calcnode.get_state() == calc_states.FINISHED
 
     pdict = calcnode.out.output_parameters.get_dict()
-    assert set(pdict.keys()).issuperset(['energy', 'warnings', 'energy_units', 'force_units'])
+    assert set(pdict.keys()).issuperset(
+        ['energy', 'warnings', 'energy_units', 'force_units', 'parser_class', 'parser_version'])
     assert pdict['warnings'] == []
     assert pdict['energy'] == pytest.approx(output_dict['energy'])
 
     assert set(calcnode.out.output_array.get_arraynames()).issuperset(
         ['stress', 'forces']
     )
+
+
+@pytest.mark.lammps_call
+@pytest.mark.timeout(120)
+@pytest.mark.skipif(
+    tests.aiida_version() < tests.cmp_version('1.0.0a1') and tests.is_sqla_backend(),
+    reason='Error in obtaining authinfo for computer configuration')
+@pytest.mark.parametrize('data_func', [
+    lj_data,
+    tersoff_data,
+    eam_data
+])
+def test_md_process(new_database_with_daemon, new_workdir, data_func):
+    struct_dict, potential_dict, output_dict = data_func()
+
+    calc, input_dict = setup_calc(new_workdir, True,
+                                  struct_dict, potential_dict, 'md')
+
+    process = calc.process()
+
+    calcnode = tests.run_get_node(process, input_dict)
+
+    sys.stdout.write(tests.get_calc_log(calcnode))
+
+    print(calcnode.get_inputs_dict())
+    print(calcnode.get_outputs_dict())
+
+    assert set(calcnode.get_inputs_dict().keys()).issuperset(
+        ['parameters', 'structure', 'potential'])
+
+    assert set(calcnode.get_outputs_dict().keys()).issuperset(
+        ['output_parameters', 'trajectory_data'])
+
+    from aiida.common.datastructures import calc_states
+    assert calcnode.get_state() == calc_states.FINISHED
+
+    pdict = calcnode.out.output_parameters.get_dict()
+    assert set(pdict.keys()).issuperset(
+        ['warnings', 'energy_units', 'force_units', 'parser_class', 'parser_version'])
+    assert pdict['warnings'] == []
+
+    print(dict(calcnode.out.trajectory_data.iterarrays()))
+
+    # assert set(calcnode.out.trajectory_data.get_arraynames()).issuperset(
+    #     ['stress', 'forces']
+    # )
