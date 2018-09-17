@@ -418,3 +418,136 @@ def read_lammps_positions_and_forces(file_name):
     forces = np.array([forces], dtype=float)
 
     return positions, forces, read_elements, cell
+
+
+def get_units_dict(style, quantities):
+    """
+
+    :param style: the unit style set in the lammps input
+    :type style: str
+    :param quantities: the quantities to get units for
+    :type quantities: list of str
+    :return:
+    """
+
+    units_dict = {
+    'real':
+        {
+        'mass': 'grams/mole',
+        'distance': 'Angstroms',
+        'time': 'femtoseconds',
+        'energy': 'Kcal/mole',
+        'velocity': 'Angstroms/femtosecond',
+        'force': 'Kcal/mole-Angstrom',
+        'torque': 'Kcal/mole',
+        'temperature': 'Kelvin',
+        'pressure': 'atmospheres',
+        'dynamic_viscosity': 'Poise',
+        'charge': 'multiple of electron charge (1.0 is a proton)',
+        'dipole': 'charge*Angstroms',
+        'electric field': 'volts/Angstrom',
+        'density': 'gram/cm^dim',
+    },
+    'metal': {
+
+        'mass': 'grams/mole',
+        'distance': 'Angstroms',
+        'time': 'picoseconds',
+        'energy': 'eV',
+        'velocity': 'Angstroms/picosecond',
+        'force': 'eV/Angstrom',
+        'torque': 'eV',
+        'temperature': 'Kelvin',
+        'pressure': 'bars',
+        'dynamic_viscosity': 'Poise',
+        'charge': 'multiple of electron charge (1.0 is a proton)',
+        'dipole': 'charge*Angstroms',
+        'electric field': 'volts/Angstrom',
+        'density': 'gram/cm^dim',
+    },
+    'si': {
+        'mass': 'kilograms',
+        'distance': 'meters',
+        'time': 'seconds',
+        'energy': 'Joules',
+        'velocity': 'meters/second',
+        'force': 'Newtons',
+        'torque': 'Newton-meters',
+        'temperature': 'Kelvin',
+        'pressure': 'Pascals',
+        'dynamic_viscosity': 'Pascal*second',
+        'charge': 'Coulombs', # (1.6021765e-19 is a proton)
+        'dipole': 'Coulombs*meters',
+        'electric field': 'volts/meter',
+        'density': 'kilograms/meter^dim',
+    },
+    'cgs': {
+
+        'mass': 'grams',
+        'distance': 'centimeters',
+        'time': 'seconds',
+        'energy': 'ergs',
+        'velocity': 'centimeters/second',
+        'force': 'dynes',
+        'torque': 'dyne-centimeters',
+        'temperature': 'Kelvin',
+        'pressure': 'dyne/cm^2', # or barye': '1.0e-6 bars
+        'dynamic_viscosity': 'Poise',
+        'charge': 'statcoulombs', # or esu (4.8032044e-10 is a proton)
+        'dipole': 'statcoul-cm', #: '10^18 debye
+        'electric_field': 'statvolt/cm', # or dyne/esu
+        'density': 'grams/cm^dim',
+    },
+    'electron':{
+
+        'mass': 'amu',
+        'distance': 'Bohr',
+        'time': 'femtoseconds',
+        'energy': 'Hartrees',
+        'velocity': 'Bohr/atu', #[1.03275e-15 seconds]
+        'force': 'Hartrees/Bohr',
+        'temperature': 'Kelvin',
+        'pressure': 'Pascals',
+        'charge': 'multiple of electron charge (1.0 is a proton)',
+        'dipole_moment': 'Debye',
+        'electric_field': 'volts/cm',
+    },
+    'micro':{
+
+        'mass': 'picograms',
+        'distance': 'micrometers',
+        'time': 'microseconds',
+        'energy': 'picogram-micrometer^2/microsecond^2',
+        'velocity': 'micrometers/microsecond',
+        'force': 'picogram-micrometer/microsecond^2',
+        'torque': 'picogram-micrometer^2/microsecond^2',
+        'temperature': 'Kelvin',
+        'pressure': 'picogram/(micrometer-microsecond^2)',
+        'dynamic_viscosity': 'picogram/(micrometer-microsecond)',
+        'charge': 'picocoulombs', # (1.6021765e-7 is a proton)
+        'dipole': 'picocoulomb-micrometer',
+        'electric field': 'volt/micrometer',
+        'density': 'picograms/micrometer^dim',
+    },
+    'nano':{
+
+        'mass': 'attograms',
+        'distance': 'nanometers',
+        'time': 'nanoseconds',
+        'energy': 'attogram-nanometer^2/nanosecond^2',
+        'velocity': 'nanometers/nanosecond',
+        'force': 'attogram-nanometer/nanosecond^2',
+        'torque': 'attogram-nanometer^2/nanosecond^2',
+        'temperature': 'Kelvin',
+        'pressure': 'attogram/(nanometer-nanosecond^2)',
+        'dynamic_viscosity': 'attogram/(nanometer-nanosecond)',
+        'charge': 'multiple of electron charge (1.0 is a proton)',
+        'dipole': 'charge-nanometer',
+        'electric_field': 'volt/nanometer',
+        'density': 'attograms/nanometer^dim'
+    }
+    }
+    out_dict = {}
+    for quantity in quantities:
+        out_dict[quantity + "_units"] = units_dict[style][quantity]
+    return out_dict

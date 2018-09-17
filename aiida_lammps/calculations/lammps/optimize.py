@@ -1,7 +1,7 @@
-from aiida.orm.calculation.job import JobCalculation
 from aiida.common.utils import classproperty
-
+from aiida.orm.calculation.job import JobCalculation
 from aiida_lammps.calculations.lammps import BaseLammpsCalculation
+from aiida_lammps.common.utils import convert_date_string
 
 
 def generate_LAMMPS_input(parameters_data,
@@ -12,6 +12,8 @@ def generate_LAMMPS_input(parameters_data,
     names_str = ' '.join(potential_obj._names)
 
     parameters = parameters_data.get_dict()
+
+    lammps_date = convert_date_string(parameters.get("lammps_version", None))
 
     lammps_input_file =  'units           metal\n'
     lammps_input_file += 'boundary        p p p\n'
@@ -25,14 +27,25 @@ def generate_LAMMPS_input(parameters_data,
                                                                                     parameters['pressure'] * 1000,  # pressure kb -> bar
                                                                                     parameters['vmax'])
 
-    lammps_input_file += 'compute         stpa all stress/atom NULL\n'
+    # TODO find exact version when changes were made
+    if lammps_date <= convert_date_string('11 Nov 2013'):
+        lammps_input_file += 'compute         stpa all stress/atom\n'
+    else:
+        lammps_input_file += 'compute         stpa all stress/atom NULL\n'
+
                                                               #  xx,       yy,        zz,       xy,       xz,       yz
     lammps_input_file += 'compute         stgb all reduce sum c_stpa[1] c_stpa[2] c_stpa[3] c_stpa[4] c_stpa[5] c_stpa[6]\n'
     lammps_input_file += 'variable        pr equal -(c_stgb[1]+c_stgb[2]+c_stgb[3])/(3*vol)\n'
     lammps_input_file += 'thermo_style    custom step temp press v_pr etotal c_stgb[1] c_stgb[2] c_stgb[3] c_stgb[4] c_stgb[5] c_stgb[6]\n'
 
     lammps_input_file += 'dump            aiida all custom 1 {0} element x y z  fx fy fz\n'.format(trajectory_file)
-    lammps_input_file += 'dump_modify     aiida format line "%4s  %16.10f %16.10f %16.10f  %16.10f %16.10f %16.10f"\n'
+
+    # TODO find exact version when changes were made
+    if lammps_date <= convert_date_string('10 Feb 2015'):
+        lammps_input_file += 'dump_modify     aiida format "%4s  %16.10f %16.10f %16.10f  %16.10f %16.10f %16.10f"\n'
+    else:
+        lammps_input_file += 'dump_modify     aiida format line "%4s  %16.10f %16.10f %16.10f  %16.10f %16.10f %16.10f"\n'
+
     lammps_input_file += 'dump_modify     aiida sort id\n'
     lammps_input_file += 'dump_modify     aiida element {}\n'.format(names_str)
     lammps_input_file += 'min_style       cg\n'
