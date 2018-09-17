@@ -1,14 +1,15 @@
+from aiida.common.exceptions import InputValidationError
 from aiida.common.utils import classproperty
 from aiida.orm.calculation.job import JobCalculation
 from aiida_lammps.calculations.lammps import BaseLammpsCalculation
-from aiida_lammps.common.utils import convert_date_string
+from aiida_lammps.common.utils import convert_date_string, join_keywords
+from aiida_lammps.validation import validate_with_json
 
 
 def generate_LAMMPS_input(parameters_data,
                           potential_obj,
                           structure_file='data.gan',
                           trajectory_file='path.lammpstrj'):
-
     names_str = ' '.join(potential_obj._names)
 
     parameters = parameters_data.get_dict()
@@ -23,9 +24,11 @@ def generate_LAMMPS_input(parameters_data,
 
     lammps_input_file += potential_obj.get_input_potential_lines()
 
-    lammps_input_file += 'fix             int all box/relax {} {} vmax {}\n'.format(parameters['relaxation'],
-                                                                                    parameters['pressure'] * 1000,  # pressure kb -> bar
-                                                                                    parameters['vmax'])
+    lammps_input_file += 'fix             int all box/relax {} {} {}\n'.format(parameters['relax']['type'],
+                                                                               parameters['relax']['pressure'],
+                                                                               join_keywords(parameters['relax'],
+                                                                                             ignore=['type',
+                                                                                                     'pressure']))
 
     # TODO find exact version when changes were made
     if lammps_date <= convert_date_string('11 Nov 2013'):
@@ -33,7 +36,7 @@ def generate_LAMMPS_input(parameters_data,
     else:
         lammps_input_file += 'compute         stpa all stress/atom NULL\n'
 
-                                                              #  xx,       yy,        zz,       xy,       xz,       yz
+        #  xx,       yy,        zz,       xy,       xz,       yz
     lammps_input_file += 'compute         stgb all reduce sum c_stpa[1] c_stpa[2] c_stpa[3] c_stpa[4] c_stpa[5] c_stpa[6]\n'
     lammps_input_file += 'variable        pr equal -(c_stgb[1]+c_stgb[2]+c_stgb[3])/(3*vol)\n'
     lammps_input_file += 'thermo_style    custom step temp press v_pr etotal c_stgb[1] c_stgb[2] c_stgb[3] c_stgb[4] c_stgb[5] c_stgb[6]\n'
@@ -48,14 +51,15 @@ def generate_LAMMPS_input(parameters_data,
 
     lammps_input_file += 'dump_modify     aiida sort id\n'
     lammps_input_file += 'dump_modify     aiida element {}\n'.format(names_str)
-    lammps_input_file += 'min_style       cg\n'
-    lammps_input_file += 'minimize        {} {} {} {}\n'.format(parameters['energy_tolerance'],
-                                                                           parameters['force_tolerance'],
-                                                                           parameters['max_iterations'],
-                                                                           parameters['max_evaluations'])
-  #  lammps_input_file += 'print           "$(xlo - xhi) $(xy) $(xz)"\n'
-  #  lammps_input_file += 'print           "0.000 $(yhi - ylo) $(yz)"\n'
-  #  lammps_input_file += 'print           "0.000 0.000   $(zhi-zlo)"\n'
+    lammps_input_file += 'min_style       {}\n'.format(parameters['minimize']['style'])
+    # lammps_input_file += 'min_style       cg\n'
+    lammps_input_file += 'minimize        {} {} {} {}\n'.format(parameters['minimize']['energy_tolerance'],
+                                                                parameters['minimize']['force_tolerance'],
+                                                                parameters['minimize']['max_iterations'],
+                                                                parameters['minimize']['max_evaluations'])
+    #  lammps_input_file += 'print           "$(xlo - xhi) $(xy) $(xz)"\n'
+    #  lammps_input_file += 'print           "0.000 $(yhi - ylo) $(yz)"\n'
+    #  lammps_input_file += 'print           "0.000 0.000   $(zhi-zlo)"\n'
     lammps_input_file += 'print           "$(xlo) $(xhi) $(xy)"\n'
     lammps_input_file += 'print           "$(ylo) $(yhi) $(xz)"\n'
     lammps_input_file += 'print           "$(zlo) $(zhi) $(yz)"\n'
@@ -64,7 +68,6 @@ def generate_LAMMPS_input(parameters_data,
 
 
 class OptimizeCalculation(BaseLammpsCalculation, JobCalculation):
-
     _OUTPUT_TRAJECTORY_FILE_NAME = 'path.lammpstrj'
     _OUTPUT_FILE_NAME = 'log.lammps'
 
@@ -87,4 +90,19 @@ class OptimizeCalculation(BaseLammpsCalculation, JobCalculation):
 
         return retdict
 
-#$MPI -n $NSLOTS $LAMMPS -sf gpu -pk gpu 2 neigh no -in in.md_data
+    def validate_parameters(self, param_data, potential_object):
+        if param_data is None:
+            raise InputValidationError("parameter data not set")
+        validate_with_json(param_data.get_dict(), "optimize")
+
+        # ensure the potential and paramters are in the same unit systems
+        # TODO convert between unit systems (e.g. using https://pint.readthedocs.io)
+        punits = param_data.get_dict()['units']
+        if not punits == potential_object.default_units:
+            raise InputValidationError('the units of the parameters ({}) and potential ({}) are different'.format(
+                punits, potential_object.default_units
+            ))
+
+        return True
+
+# $MPI -n $NSLOTS $LAMMPS -sf gpu -pk gpu 2 neigh no -in in.md_data

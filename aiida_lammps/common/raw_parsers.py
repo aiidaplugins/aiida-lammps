@@ -445,7 +445,7 @@ def get_units_dict(style, quantities):
         'temperature': 'Kelvin',
         'pressure': 'atmospheres',
         'dynamic_viscosity': 'Poise',
-        'charge': 'multiple of electron charge (1.0 is a proton)',
+        'charge': 'e',  # multiple of electron charge (1.0 is a proton)
         'dipole': 'charge*Angstroms',
         'electric field': 'volts/Angstrom',
         'density': 'gram/cm^dim',
@@ -462,7 +462,7 @@ def get_units_dict(style, quantities):
         'temperature': 'Kelvin',
         'pressure': 'bars',
         'dynamic_viscosity': 'Poise',
-        'charge': 'multiple of electron charge (1.0 is a proton)',
+        'charge': 'e',  # multiple of electron charge (1.0 is a proton)
         'dipole': 'charge*Angstroms',
         'electric field': 'volts/Angstrom',
         'density': 'gram/cm^dim',
@@ -478,7 +478,7 @@ def get_units_dict(style, quantities):
         'temperature': 'Kelvin',
         'pressure': 'Pascals',
         'dynamic_viscosity': 'Pascal*second',
-        'charge': 'Coulombs', # (1.6021765e-19 is a proton)
+        'charge': 'Coulombs',  # (1.6021765e-19 is a proton)
         'dipole': 'Coulombs*meters',
         'electric field': 'volts/meter',
         'density': 'kilograms/meter^dim',
@@ -493,11 +493,11 @@ def get_units_dict(style, quantities):
         'force': 'dynes',
         'torque': 'dyne-centimeters',
         'temperature': 'Kelvin',
-        'pressure': 'dyne/cm^2', # or barye': '1.0e-6 bars
+        'pressure': 'dyne/cm^2',  # or barye': '1.0e-6 bars
         'dynamic_viscosity': 'Poise',
-        'charge': 'statcoulombs', # or esu (4.8032044e-10 is a proton)
-        'dipole': 'statcoul-cm', #: '10^18 debye
-        'electric_field': 'statvolt/cm', # or dyne/esu
+        'charge': 'statcoulombs',  # or esu (4.8032044e-10 is a proton)
+        'dipole': 'statcoul-cm',  #: '10^18 debye
+        'electric_field': 'statvolt/cm',  # or dyne/esu
         'density': 'grams/cm^dim',
     },
     'electron':{
@@ -510,11 +510,11 @@ def get_units_dict(style, quantities):
         'force': 'Hartrees/Bohr',
         'temperature': 'Kelvin',
         'pressure': 'Pascals',
-        'charge': 'multiple of electron charge (1.0 is a proton)',
+        'charge': 'e',  # multiple of electron charge (1.0 is a proton)
         'dipole_moment': 'Debye',
         'electric_field': 'volts/cm',
     },
-    'micro':{
+    'micro': {
 
         'mass': 'picograms',
         'distance': 'micrometers',
@@ -531,7 +531,7 @@ def get_units_dict(style, quantities):
         'electric field': 'volt/micrometer',
         'density': 'picograms/micrometer^dim',
     },
-    'nano':{
+    'nano': {
 
         'mass': 'attograms',
         'distance': 'nanometers',
@@ -543,7 +543,7 @@ def get_units_dict(style, quantities):
         'temperature': 'Kelvin',
         'pressure': 'attogram/(nanometer-nanosecond^2)',
         'dynamic_viscosity': 'attogram/(nanometer-nanosecond)',
-        'charge': 'multiple of electron charge (1.0 is a proton)',
+        'charge': 'e',  # multiple of electron charge (1.0 is a proton)
         'dipole': 'charge-nanometer',
         'electric_field': 'volt/nanometer',
         'density': 'attograms/nanometer^dim'

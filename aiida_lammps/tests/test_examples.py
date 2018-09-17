@@ -120,7 +120,7 @@ def reaxff_data():
                         [0.838, 0.162, 0.662],
                         [0.162, 0.838, 0.338]]
 
-    symbols = ['Fe']*4 + ['S']*8
+    symbols = ['Fe'] * 4 + ['S'] * 8
 
     struct_dict = {"cell": cell,
                    "symbols": symbols,
@@ -130,20 +130,19 @@ def reaxff_data():
     reaxff_data = {
         'file_contents': open(reaxff_path).readlines(),
         'safezone': 1.6,
-        'neighbor_bin': 2.0,
-        'neighbor_list': 10
     }
 
     potential_dict = {'pair_style': 'reaxff', 'data': reaxff_data}
 
     output_dict = {"energy": -1030.3543,
+                   "units": "real",
                    "infiles": ['input.data', 'input.in', 'potential.pot', 'input.units'],
                    "warnings": ['Warning: changed valency_val to valency_boc for X']}
 
     return struct_dict, potential_dict, output_dict
 
 
-def setup_calc(workdir, configure, struct_dict, potential_dict, ctype):
+def setup_calc(workdir, configure, struct_dict, potential_dict, ctype, units='metal'):
     from aiida.orm import DataFactory
     StructureData = DataFactory('structure')
     ParameterData = DataFactory('parameter')
@@ -161,20 +160,33 @@ def setup_calc(workdir, configure, struct_dict, potential_dict, ctype):
     if ctype == "optimisation":
         parameters_opt = {
             'lammps_version': tests.lammps_version(),
-            'relaxation': 'iso',  # iso/aniso/tri
-            'pressure': 0.0,  # kbars
-            'vmax': 0.001,  # Angstrom^3
-            'energy_tolerance': 1.0e-25,  # eV
-            'force_tolerance': 1.0e-25,  # eV angstrom
-            'max_evaluations': 100000,
-            'max_iterations': 50000}
+            'units': units,
+            'relax': {
+                'type': 'iso',
+                'pressure': 0.0,
+                'vmax': 0.001,
+            },
+            "minimize": {
+                'style': 'cg',
+                'energy_tolerance': 1.0e-25,
+                'force_tolerance': 1.0e-25,
+                'max_evaluations': 100000,
+                'max_iterations': 50000}
+        }
         code_plugin = 'lammps.optimize'
     elif ctype == "md":
         parameters_opt = {
             'lammps_version': tests.lammps_version(),
+            'units': units,
             'timestep': 0.001,
-            'temperature': 300,
-            'thermostat_variable': 0.5,
+            'integration': {
+                'style': 'nvt',
+                'constraints': {
+                    'temp': [300, 300, 0.5]
+                }
+            },
+            "neighbor": [0.3, "bin"],
+            "neigh_modify": {"every": 1, "delay": 0, "check": False},
             'equilibrium_steps': 100,
             'total_steps': 1000,
             'dump_rate': 1}
@@ -231,7 +243,8 @@ def test_opt_submission(new_database, new_workdir, data_func):
     struct_dict, potential_dict, output_dict = data_func()
 
     calc, input_dict = setup_calc(new_workdir, False,
-                                  struct_dict, potential_dict, 'optimisation')
+                                  struct_dict, potential_dict, 'optimisation',
+                                  output_dict.get('units', 'metal'))
 
     from aiida.common.folders import SandboxFolder
 
@@ -246,7 +259,7 @@ def test_opt_submission(new_database, new_workdir, data_func):
         for infile in output_dict['infiles']:
             assert subfolder.isfile(infile)
             print('---')
-            print('infile')
+            print(infile)
             print('---')
             with subfolder.open(infile) as f:
                 print(f.read())
@@ -262,7 +275,8 @@ def test_md_submission(new_database, new_workdir, data_func):
     struct_dict, potential_dict, output_dict = data_func()
 
     calc, input_dict = setup_calc(new_workdir, False,
-                                  struct_dict, potential_dict, 'md')
+                                  struct_dict, potential_dict, 'md',
+                                  output_dict.get('units', 'metal'))
 
     from aiida.common.folders import SandboxFolder
 
@@ -276,6 +290,11 @@ def test_md_submission(new_database, new_workdir, data_func):
         ])
         for infile in output_dict['infiles']:
             assert subfolder.isfile(infile)
+            print('---')
+            print(infile)
+            print('---')
+            with subfolder.open(infile) as f:
+                print(f.read())
 
 
 @pytest.mark.lammps_call
@@ -293,7 +312,8 @@ def test_opt_process(new_database_with_daemon, new_workdir, data_func):
     struct_dict, potential_dict, output_dict = data_func()
 
     calc, input_dict = setup_calc(new_workdir, True,
-                                  struct_dict, potential_dict, 'optimisation')
+                                  struct_dict, potential_dict, 'optimisation',
+                                  output_dict.get('units', 'metal'))
 
     process = calc.process()
 
@@ -338,7 +358,8 @@ def test_md_process(new_database_with_daemon, new_workdir, data_func):
     struct_dict, potential_dict, output_dict = data_func()
 
     calc, input_dict = setup_calc(new_workdir, True,
-                                  struct_dict, potential_dict, 'md')
+                                  struct_dict, potential_dict, 'md',
+                                  output_dict.get('units', 'metal'))
 
     process = calc.process()
 

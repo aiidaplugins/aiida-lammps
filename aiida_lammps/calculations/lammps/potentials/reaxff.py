@@ -15,10 +15,6 @@ def get_input_potential_lines(data, names=None, potential_filename='potential.po
         lammps_input_text += 'safezone {0} '.format(data['safezone'])
     lammps_input_text += "\n"
     lammps_input_text += 'pair_coeff      * * {} {}\n'.format(potential_filename, ' '.join(names))
-    if "neighbor_bin" in data:
-        lammps_input_text += "neighbor {0} bin\n".format(data["neighbor_bin"])
-    if "neighbor_list" in data:
-        lammps_input_text += "neigh_modify delay {} check yes\n".format(data["neighbor_list"])
     lammps_input_text += "fix qeq all qeq/reax 1 0.0 10.0 1e-6 reax/c\n"
     lammps_input_text += "fix_modify qeq energy yes\n"
 

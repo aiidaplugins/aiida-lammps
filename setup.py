@@ -9,9 +9,10 @@ setup(
     author_email='abelcarreras83@gmail.com',
     license='MIT license',
     packages=find_packages(),
-    install_requires=['aiida-core>=0.12.0', 'numpy', 'packaging'],
+    install_requires=['aiida-core>=0.12.0', 'numpy', 'packaging', 'jsonschema'],
     setup_requires=['reentry'],
     reentry_register=True,
+    include_package_data=True,  # puts non-code files into the distribution, reads list from MANIFEST.in
     entry_points={
         'aiida.calculations': [
             'lammps.combinate = aiida_lammps.calculations.lammps.combinate:CombinateCalculation',

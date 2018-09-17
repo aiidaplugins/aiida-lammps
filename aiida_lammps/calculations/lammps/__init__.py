@@ -210,6 +210,9 @@ class BaseLammpsCalculation(JobCalculation):
     def _create_additional_files(self, tempfolder, inputs_params):
         pass
 
+    def validate_parameters(self, param_data, potential_object):
+        return True
+
     def _prepare_for_submission(self, tempfolder, inputdict):
         """
         This is the routine to be called when you want to create
@@ -250,6 +253,9 @@ class BaseLammpsCalculation(JobCalculation):
         # =================== prepare the python input files =====================
 
         potential_object = LammpsPotential(potential_data, self._structure, potential_filename=self._INPUT_POTENTIAL)
+
+        # validate the parameters
+        self.validate_parameters(self._parameters_data, potential_object)
 
         # TODO is this the best way to tell the parser what units were used?
         # depending on how the calculation is run, it can be either stored or unstored at this point,
