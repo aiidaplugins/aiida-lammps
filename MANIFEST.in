@@ -1,0 +1,3 @@
+include aiida_lammps/tests/input_files/*
+include aiida_lammps/validation/*.json
+

@@ -40,6 +40,11 @@ class MdParser(Parser):
             self.logger.error("No retrieved folder found")
             return False, ()
 
+        if aiida_version() < cmp_version('1.0.0a1'):
+            get_temp_path = temporary_folder.get_abs_path
+        else:
+            get_temp_path = lambda x: os.path.join(temporary_folder, x)
+
         # check what is inside the folder
         list_of_files = out_folder.get_folder_list()
 
@@ -51,21 +56,14 @@ class MdParser(Parser):
 
         # Get file and do the parsing
         outfile = out_folder.get_abs_path(self._calc._OUTPUT_FILE_NAME)
-
-        if aiida_version() < cmp_version('1.0.0a1'):
-            output_trajectory = temporary_folder.get_abs_path(self._calc._OUTPUT_TRAJECTORY_FILE_NAME)
-        else:
-            output_trajectory = os.path.join(temporary_folder, self._calc._OUTPUT_TRAJECTORY_FILE_NAME)
+        output_trajectory = get_temp_path(self._calc._OUTPUT_TRAJECTORY_FILE_NAME)
 
         timestep = self._calc.inp.parameters.dict.timestep
         positions, step_ids, cells, symbols, time = read_lammps_trajectory(output_trajectory, timestep=timestep)
 
         # look at warnings
-        warnings = []
-        with open(out_folder.get_abs_path( self._calc._SCHED_ERROR_FILE )) as f:
-            errors = f.read()
-        if errors:
-            warnings = [errors]
+        with open(out_folder.get_abs_path(self._calc._SCHED_ERROR_FILE)) as f:
+            warnings = f.read().splitlines()
 
         # ====================== prepare the output node ======================
 
@@ -84,7 +82,12 @@ class MdParser(Parser):
         param_dict = {'warnings': warnings,
                       "parser_class": self.__class__.__name__,
                       "parser_version": aiida_lammps_version}
-        # param_dict.update(get_units_dict('metal', ["energy", "force"]))
+
+        # add units used
+        with open(get_temp_path(self._calc._INPUT_UNITS)) as f:
+            units = f.readlines()[0].strip()
+        param_dict.update(get_units_dict(units, ["distance", "time"]))
+
         # TODO return energies per step
 
         new_nodes_list.append((self.get_linkname_outparams(), ParameterData(dict=param_dict)))
