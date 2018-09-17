@@ -2,9 +2,10 @@ import glob
 import os
 import sys
 
-import aiida_lammps.tests.utils as tests
 import numpy as np
 import pytest
+
+import aiida_lammps.tests.utils as tests
 from aiida_lammps.utils import aiida_version, cmp_version
 
 
@@ -23,6 +24,7 @@ def eam_data():
                    "scaled_positions": scaled_positions}
 
     eam_path = os.path.join(tests.TEST_DIR, 'input_files', 'Fe_mm.eam.fs')
+
     data = {'type': 'fs',
             'file_contents': open(eam_path).readlines()}
 
@@ -93,11 +95,10 @@ def tersoff_data():
 
     potential_dict = {'pair_style': 'tersoff',
                       'data': tersoff_gan}
-
+    
     output_dict = {"energy": -18.110852,
                    "infiles": ['input.data', 'input.in', 'potential.pot', 'input.units'],
                    "warnings": []}
-
     return struct_dict, potential_dict, output_dict
 
 
@@ -143,6 +144,7 @@ def reaxff_data():
 
 
 def setup_calc(workdir, configure, struct_dict, potential_dict, ctype, units='metal'):
+
     from aiida.orm import DataFactory
     StructureData = DataFactory('structure')
     ParameterData = DataFactory('parameter')
@@ -173,6 +175,7 @@ def setup_calc(workdir, configure, struct_dict, potential_dict, ctype, units='me
                 'max_evaluations': 100000,
                 'max_iterations': 50000}
         }
+
         code_plugin = 'lammps.optimize'
     elif ctype == "md":
         parameters_opt = {

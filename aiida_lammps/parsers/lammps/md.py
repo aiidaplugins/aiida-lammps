@@ -82,6 +82,7 @@ class MdParser(Parser):
         param_dict = {'warnings': warnings,
                       "parser_class": self.__class__.__name__,
                       "parser_version": aiida_lammps_version}
+
         # add units used
         with open(get_temp_path(self._calc._INPUT_UNITS)) as f:
             units = f.readlines()[0].strip()
