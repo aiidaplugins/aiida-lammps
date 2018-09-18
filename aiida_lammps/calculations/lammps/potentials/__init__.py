@@ -25,3 +25,11 @@ class LammpsPotential:
         return self._potential_module.get_input_potential_lines(self._data,
                                                                 potential_filename=self._potential_filename,
                                                                 names=self._names)
+
+    @property
+    def default_units(self):
+        return self._potential_module.DEFAULT_UNITS
+
+    @property
+    def atom_style(self):
+        return self._potential_module.ATOM_STYLE

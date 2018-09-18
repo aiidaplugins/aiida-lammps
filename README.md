@@ -19,6 +19,7 @@ Currently supported Potentials
  - EAM
  - Lennad Jones
  - Tersoff
+ - ReaxFF
  
  
 Examples

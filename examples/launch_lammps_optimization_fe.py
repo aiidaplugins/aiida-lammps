@@ -44,13 +44,21 @@ lammps_machine = {'num_machines': 1,
                   'parallel_env': 'mpi*',
                   'tot_num_mpiprocs': 16}
 
-parameters_opt = {'relaxation': 'tri',  # iso/aniso/tri
-                  'pressure': 0.0,  # kbars
-                  'vmax': 0.000001,  # Angstrom^3
-                  'energy_tolerance': 1.0e-25,  # eV
-                  'force_tolerance': 1.0e-25,  # eV angstrom
-                  'max_evaluations': 1000000,
-                  'max_iterations': 500000}
+parameters_opt = {
+    'units': 'metal',
+    'relax': {
+        'type': 'tri',  # iso/aniso/tri
+        'pressure': 0.0,  # bars
+        'vmax': 0.000001,  # Angstrom^3
+    },
+    "minimize": {
+        'style': 'cg',
+        'energy_tolerance': 1.0e-25,  # eV
+        'force_tolerance': 1.0e-25,  # eV angstrom
+        'max_evaluations': 100000,
+        'max_iterations': 50000
+    }
+}
 
 code = Code.get_from_string(codename)
 
