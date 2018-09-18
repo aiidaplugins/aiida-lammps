@@ -1,0 +1,848 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Schema for ReaxFF Potential",
+  "required": [
+    "angles", 
+    "bonds", 
+    "descript", 
+    "hbonds", 
+    "off-diagonals", 
+    "params", 
+    "species", 
+    "torsions"
+  ], 
+  "type": "object", 
+  "properties": {
+    "bonds": {
+      "required": [
+        "dummy1", 
+        "idx1", 
+        "idx2", 
+        "reaxff2_bo1", 
+        "reaxff2_bo2", 
+        "reaxff2_bo3", 
+        "reaxff2_bo4", 
+        "reaxff2_bo5", 
+        "reaxff2_bo6", 
+        "reaxff2_bo7", 
+        "reaxff2_bo8", 
+        "reaxff2_bo9", 
+        "reaxff2_bond1", 
+        "reaxff2_bond2", 
+        "reaxff2_bond3", 
+        "reaxff2_bond4", 
+        "reaxff2_bond5", 
+        "reaxff2_over"
+      ], 
+      "type": "object", 
+      "properties": {
+        "reaxff2_bo3": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff2_bo2": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff2_bo1": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff2_bond4": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff2_bo7": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff2_bo6": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff2_bo5": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff2_bo4": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff2_bond5": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff2_over": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff2_bond3": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff2_bond2": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff2_bond1": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff2_bo8": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "idx2": {
+          "items": {
+            "type": "integer"
+          }, 
+          "type": "array"
+        }, 
+        "idx1": {
+          "items": {
+            "type": "integer"
+          }, 
+          "type": "array"
+        }, 
+        "dummy1": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff2_bo9": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }
+      }
+    }, 
+    "off-diagonals": {
+      "required": [
+        "idx1", 
+        "idx2", 
+        "reaxff2_morse1", 
+        "reaxff2_morse2", 
+        "reaxff2_morse3", 
+        "reaxff2_morse4", 
+        "reaxff2_morse5", 
+        "reaxff2_morse6"
+      ], 
+      "type": "object", 
+      "properties": {
+        "reaxff2_morse1": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff2_morse3": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff2_morse2": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff2_morse5": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff2_morse4": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff2_morse6": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "idx2": {
+          "items": {
+            "type": "integer"
+          }, 
+          "type": "array"
+        }, 
+        "idx1": {
+          "items": {
+            "type": "integer"
+          }, 
+          "type": "array"
+        }
+      }
+    }, 
+    "descript": {
+      "type": "string"
+    }, 
+    "torsions": {
+      "required": [
+        "dummy1", 
+        "dummy2", 
+        "idx1", 
+        "idx2", 
+        "idx3", 
+        "idx4", 
+        "reaxff4_torsion1", 
+        "reaxff4_torsion2", 
+        "reaxff4_torsion3", 
+        "reaxff4_torsion4", 
+        "reaxff4_torsion5"
+      ], 
+      "type": "object", 
+      "properties": {
+        "idx3": {
+          "items": {
+            "type": "integer"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff4_torsion5": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff4_torsion4": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff4_torsion3": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff4_torsion2": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff4_torsion1": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "dummy2": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "idx2": {
+          "items": {
+            "type": "integer"
+          }, 
+          "type": "array"
+        }, 
+        "idx1": {
+          "items": {
+            "type": "integer"
+          }, 
+          "type": "array"
+        }, 
+        "dummy1": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "idx4": {
+          "items": {
+            "type": "integer"
+          }, 
+          "type": "array"
+        }
+      }
+    }, 
+    "params": {
+      "required": [
+        "C2-correction", 
+        "Conjugation", 
+        "Double bond/angle", 
+        "Double bond/angle: overcoord 1", 
+        "Double bond/angle: overcoord 2", 
+        "Lower Taper-radius", 
+        "Not used 1", 
+        "Not used 2", 
+        "Not used 3", 
+        "Not used 4", 
+        "Not used 5", 
+        "Not used 6", 
+        "Not used 7", 
+        "Not used 8", 
+        "Overcoordination 1", 
+        "Overcoordination 2", 
+        "Torsion overcoordination 1", 
+        "Torsion overcoordination 2", 
+        "Torsion/BO", 
+        "Triple bond stabilisation", 
+        "Triple bond stabilisation 1", 
+        "Triple bond stabilisation 2", 
+        "Triple bond stabilization energy", 
+        "Undercoordination 1", 
+        "Undercoordination 2", 
+        "Undercoordination 3", 
+        "Upper Taper-radius", 
+        "Valency angle 1", 
+        "Valency angle 2", 
+        "Valency angle conjugation 1",
+        "Valency angle conjugation 2",
+        "Valency angle conjugation 3",
+        "Valency angle/lone pair",
+        "Valency overcoordination 1", 
+        "Valency overcoordination 2", 
+        "Valency undercoordination", 
+        "Valency/lone pair", 
+        "bond order cutoff", 
+        "vdWaals shielding"
+      ], 
+      "type": "object", 
+      "properties": {
+        "Overcoordination 1": {
+          "type": "number"
+        }, 
+        "Torsion/BO": {
+          "type": "number"
+        }, 
+        "Overcoordination 2": {
+          "type": "number"
+        }, 
+        "Lower Taper-radius": {
+          "type": "number"
+        }, 
+        "Valency overcoordination 1": {
+          "type": "number"
+        }, 
+        "Valency overcoordination 2": {
+          "type": "number"
+        }, 
+        "Conjugation": {
+          "type": "number"
+        }, 
+        "Double bond/angle": {
+          "type": "number"
+        }, 
+        "Triple bond stabilisation": {
+          "type": "number"
+        }, 
+        "Valency undercoordination": {
+          "type": "number"
+        }, 
+        "Valency angle/lone pair": {
+          "type": "number"
+        }, 
+        "Triple bond stabilisation 2": {
+          "type": "number"
+        }, 
+        "Triple bond stabilisation 1": {
+          "type": "number"
+        }, 
+        "C2-correction": {
+          "type": "number"
+        }, 
+        "Not used 8": {
+          "type": "number"
+        }, 
+        "Not used 4": {
+          "type": "number"
+        }, 
+        "Not used 5": {
+          "type": "number"
+        }, 
+        "Not used 6": {
+          "type": "number"
+        }, 
+        "Upper Taper-radius": {
+          "type": "number"
+        }, 
+        "Not used 1": {
+          "type": "number"
+        }, 
+        "Not used 2": {
+          "type": "number"
+        }, 
+        "Undercoordination 3": {
+          "type": "number"
+        }, 
+        "Torsion overcoordination 1": {
+          "type": "number"
+        }, 
+        "Torsion overcoordination 2": {
+          "type": "number"
+        }, 
+        "vdWaals shielding": {
+          "type": "number"
+        }, 
+        "Valency/lone pair": {
+          "type": "number"
+        }, 
+        "Valency angle 2": {
+          "type": "number"
+        }, 
+        "Double bond/angle: overcoord 2": {
+          "type": "number"
+        }, 
+        "Double bond/angle: overcoord 1": {
+          "type": "number"
+        }, 
+        "Valency angle 1": {
+          "type": "number"
+        }, 
+        "Triple bond stabilization energy": {
+          "type": "number"
+        }, 
+        "bond order cutoff": {
+          "type": "number"
+        }, 
+        "Valency angle conjugation 1": {
+          "type": "number"
+        }, 
+        "Valency angle conjugation 2": {
+          "type": "number"
+        },
+        "Valency angle conjugation 3": {
+          "type": "number"
+        },
+        "Not used 7": {
+          "type": "number"
+        }, 
+        "Undercoordination 1": {
+          "type": "number"
+        }, 
+        "Undercoordination 2": {
+          "type": "number"
+        }, 
+        "Not used 3": {
+          "type": "number"
+        }
+      }
+    }, 
+    "angles": {
+      "required": [
+        "idx1", 
+        "idx2", 
+        "idx3", 
+        "reaxff3_angle1", 
+        "reaxff3_angle2", 
+        "reaxff3_angle3", 
+        "reaxff3_angle4", 
+        "reaxff3_angle5", 
+        "reaxff3_conj", 
+        "reaxff3_penalty"
+      ], 
+      "type": "object", 
+      "properties": {
+        "reaxff3_penalty": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff3_conj": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff3_angle3": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff3_angle2": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff3_angle1": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff3_angle5": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff3_angle4": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "idx3": {
+          "items": {
+            "type": "integer"
+          }, 
+          "type": "array"
+        }, 
+        "idx2": {
+          "items": {
+            "type": "integer"
+          }, 
+          "type": "array"
+        }, 
+        "idx1": {
+          "items": {
+            "type": "integer"
+          }, 
+          "type": "array"
+        }
+      }
+    }, 
+    "hbonds": {
+      "required": [
+        "idx1", 
+        "idx2", 
+        "idx3", 
+        "reaxff3_hbond1", 
+        "reaxff3_hbond2", 
+        "reaxff3_hbond3", 
+        "reaxff3_hbond4"
+      ], 
+      "type": "object", 
+      "properties": {
+        "reaxff3_hbond1": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff3_hbond3": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff3_hbond2": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff3_hbond4": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "idx3": {
+          "items": {
+            "type": "integer"
+          }, 
+          "type": "array"
+        }, 
+        "idx2": {
+          "items": {
+            "type": "integer"
+          }, 
+          "type": "array"
+        }, 
+        "idx1": {
+          "items": {
+            "type": "integer"
+          }, 
+          "type": "array"
+        }
+      }
+    }, 
+    "species": {
+      "required": [
+        "dummy1", 
+        "dummy11", 
+        "dummy2", 
+        "dummy3", 
+        "dummy4", 
+        "dummy5", 
+        "dummy6", 
+        "dummy7", 
+        "dummy8", 
+        "idx", 
+        "mass", 
+        "reaxff1_angle1", 
+        "reaxff1_angle2", 
+        "reaxff1_lonepair1", 
+        "reaxff1_lonepair2", 
+        "reaxff1_morse1", 
+        "reaxff1_morse2", 
+        "reaxff1_morse3", 
+        "reaxff1_morse4", 
+        "reaxff1_over1", 
+        "reaxff1_over2", 
+        "reaxff1_over3", 
+        "reaxff1_over4", 
+        "reaxff1_radii1", 
+        "reaxff1_radii2", 
+        "reaxff1_radii3", 
+        "reaxff1_under", 
+        "reaxff1_valence1", 
+        "reaxff1_valence2", 
+        "reaxff1_valence3", 
+        "reaxff1_valence4", 
+        "reaxff_chi", 
+        "reaxff_gamma", 
+        "reaxff_mu", 
+        "symbol"
+      ], 
+      "type": "object", 
+      "properties": {
+        "reaxff1_over4": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff1_over3": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff1_over2": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff1_over1": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "dummy8": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff1_under": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "dummy2": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "dummy3": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "dummy1": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "dummy6": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "dummy7": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "dummy4": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "dummy5": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "dummy11": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff_gamma": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff_chi": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff1_radii3": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff1_radii2": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff1_radii1": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff1_angle1": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff1_lonepair2": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "mass": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "symbol": {
+          "items": {
+            "type": "string"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff1_angle2": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff1_valence4": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff1_valence1": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff1_valence2": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff1_valence3": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff_mu": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "idx": {
+          "items": {
+            "type": "integer"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff1_morse1": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff1_morse2": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff1_morse3": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff1_morse4": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }, 
+        "reaxff1_lonepair1": {
+          "items": {
+            "type": "number"
+          }, 
+          "type": "array"
+        }
+      }
+    }
+  }
+}

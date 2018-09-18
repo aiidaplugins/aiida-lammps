@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 
 import aiida_lammps.tests.utils as tests
+from aiida_lammps.common.reaxff_convert import read_reaxff_file
 from aiida_lammps.utils import aiida_version, cmp_version
 
 
@@ -128,12 +129,51 @@ def reaxff_data():
                    "scaled_positions": scaled_positions}
 
     reaxff_path = os.path.join(tests.TEST_DIR, 'input_files', 'FeCrOSCH.reaxff')
-    reaxff_data = {
+    reaxff_params = {
         'file_contents': open(reaxff_path).readlines(),
         'safezone': 1.6,
     }
 
-    potential_dict = {'pair_style': 'reaxff', 'data': reaxff_data}
+    potential_dict = {'pair_style': 'reaxff', 'data': reaxff_params}
+
+    output_dict = {"energy": -1030.3543,
+                   "units": "real",
+                   "infiles": ['input.data', 'input.in', 'potential.pot', 'input.units'],
+                   "warnings": ['Warning: changed valency_val to valency_boc for X']}
+
+    return struct_dict, potential_dict, output_dict
+
+
+def reaxff_data_param_dict():
+    # pyrite
+    cell = [[5.38, 0.000000, 0.000000],
+            [0.000000, 5.38, 0.000000],
+            [0.000000, 0.000000, 5.38]]
+
+    scaled_positions = [[0.0, 0.0, 0.0],
+                        [0.5, 0.0, 0.5],
+                        [0.0, 0.5, 0.5],
+                        [0.5, 0.5, 0.0],
+                        [0.338, 0.338, 0.338],
+                        [0.662, 0.662, 0.662],
+                        [0.162, 0.662, 0.838],
+                        [0.838, 0.338, 0.162],
+                        [0.662, 0.838, 0.162],
+                        [0.338, 0.162, 0.838],
+                        [0.838, 0.162, 0.662],
+                        [0.162, 0.838, 0.338]]
+
+    symbols = ['Fe'] * 4 + ['S'] * 8
+
+    struct_dict = {"cell": cell,
+                   "symbols": symbols,
+                   "scaled_positions": scaled_positions}
+
+    reaxff_path = os.path.join(tests.TEST_DIR, 'input_files', 'FeCrOSCH.reaxff')
+    reaxff_params = read_reaxff_file(reaxff_path)
+    reaxff_params['safezone'] = 1.6
+
+    potential_dict = {'pair_style': 'reaxff', 'data': reaxff_params}
 
     output_dict = {"energy": -1030.3543,
                    "units": "real",
@@ -240,7 +280,8 @@ def setup_calc(workdir, configure, struct_dict, potential_dict, ctype, units='me
     lj_data,
     tersoff_data,
     eam_data,
-    reaxff_data
+    reaxff_data,
+    reaxff_data_param_dict
 ])
 def test_opt_submission(new_database, new_workdir, data_func):
     struct_dict, potential_dict, output_dict = data_func()
@@ -309,7 +350,8 @@ def test_md_submission(new_database, new_workdir, data_func):
     lj_data,
     tersoff_data,
     eam_data,
-    reaxff_data
+    reaxff_data,
+    reaxff_data_param_dict
 ])
 def test_opt_process(new_database_with_daemon, new_workdir, data_func):
     struct_dict, potential_dict, output_dict = data_func()

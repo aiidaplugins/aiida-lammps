@@ -1,9 +1,16 @@
+from aiida_lammps.common.reaxff_convert import write_lammps
+from aiida_lammps.validation import validate_with_json
+
 
 def generate_LAMMPS_potential(data):
 
-    potential_file = ''
-    for line in data['file_contents']:
-        potential_file += '{}'.format(line)
+    if 'file_contents' in data:
+        potential_file = ''
+        for line in data['file_contents']:
+            potential_file += '{}'.format(line)
+    else:
+        validate_with_json(data, 'reaxff')
+        potential_file = write_lammps(data)
 
     return potential_file
 
