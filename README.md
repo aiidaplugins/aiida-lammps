@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/abelcarreras/aiida-lammps.svg?branch=master)](https://travis-ci.org/abelcarreras/aiida-lammps)
 
 AiiDA LAMMPS plugin
 ====================
