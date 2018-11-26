@@ -1,8 +1,13 @@
 # This script requires aiida-phonopy to be installed
 # https://github.com/abelcarreras/aiida-phonopy
+#
+# Also it should be run under aiida environment:
+#
+# verdi run launch_lammps_md_si.py
+#
 
-from aiida import load_dbenv
-load_dbenv()
+#from aiida import load_dbenv
+#load_dbenv()
 from aiida.orm import Code, DataFactory
 
 import numpy as np

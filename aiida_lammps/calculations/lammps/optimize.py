@@ -14,7 +14,10 @@ def generate_LAMMPS_input(parameters_data,
 
     parameters = parameters_data.get_dict()
 
-    lammps_date = convert_date_string(parameters.get("lammps_version", None))
+    try:
+        lammps_date = convert_date_string(parameters_data.get_dict().get("lammps_version", None))
+    except AttributeError:
+        lammps_date = None
 
     lammps_input_file = 'units           {0}\n'.format(potential_obj.default_units)
     lammps_input_file += 'boundary        p p p\n'

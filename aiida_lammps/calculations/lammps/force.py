@@ -17,7 +17,10 @@ def generate_LAMMPS_input(parameters_data,
                           structure_file='data.gan',
                           trajectory_file='trajectory.lammpstr'):
 
-    lammps_date = convert_date_string(parameters_data.get_dict().get("lammps_version", None))
+    try:
+        lammps_date = convert_date_string(parameters_data.get_dict().get("lammps_version", None))
+    except AttributeError:
+        lammps_date = None
 
     names_str = ' '.join(potential_obj._names)
 

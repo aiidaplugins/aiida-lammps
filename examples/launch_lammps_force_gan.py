@@ -1,5 +1,9 @@
-from aiida import load_dbenv
-load_dbenv()
+# This script should be run under aiida environment:
+#
+# verdi run launch_lammps_md_si.py
+#
+#from aiida import load_dbenv
+#load_dbenv()
 from aiida.orm import Code, DataFactory
 
 import numpy as np
@@ -8,7 +12,7 @@ import numpy as np
 StructureData = DataFactory('structure')
 ParameterData = DataFactory('parameter')
 
-codename = 'lammps_force@stern'
+codename = 'lammps_force@iqtc'
 
 ############################
 #  Define input parameters #
@@ -53,20 +57,23 @@ potential ={'pair_style': 'tersoff',
 
 lammps_machine = {
     'num_machines': 1,
-    'parallel_env': 'localmpi',
-    'tot_num_mpiprocs': 16}
+    'parallel_env': 'smp',
+    'tot_num_mpiprocs': 1}
 
 
 code = Code.get_from_string(codename)
 
 calc = code.new_calc(max_wallclock_seconds=3600,
-                     resources=lammps_machine)
+                     resources=lammps_machine,
+                     queue_name='iqtc04.q',
+                     import_sys_environment=False)
 
 calc.label = "test lammps calculation"
 calc.description = "A much longer description"
 calc.use_code(code)
 calc.use_structure(structure)
 calc.use_potential(ParameterData(dict=potential))
+calc.use_parameters(ParameterData(dict={'lammps_version': '28 Jun 2014'}))
 
 test_only = False
 

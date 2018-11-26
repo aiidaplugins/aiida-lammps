@@ -1,4 +1,4 @@
-# This script should be run by using aiida environment:
+# This script should be run under aiida environment:
 #
 # verdi run launch_lammps_md_si.py
 #
