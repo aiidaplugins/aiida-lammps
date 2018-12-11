@@ -20,7 +20,7 @@ def generate_LAMMPS_input(parameters_data,
     try:
         lammps_date = convert_date_string(parameters_data.get_dict().get("lammps_version", None))
     except AttributeError:
-        lammps_date = None
+        lammps_date = convert_date_string('10 Feb 2015')
 
     names_str = ' '.join(potential_obj._names)
 
