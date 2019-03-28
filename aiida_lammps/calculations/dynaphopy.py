@@ -1,8 +1,8 @@
-from aiida.orm.calculation.job import JobCalculation
-from aiida.orm.data.parameter import ParameterData
-from aiida.orm.data.structure import StructureData
-from aiida.orm.data.array.trajectory import TrajectoryData
-from aiida.orm.data.array import ArrayData
+from aiida.engine.calculation.job import CalcJob
+from aiida.orm.nodes.parameter import Dict
+from aiida.orm.nodes.structure import StructureData
+from aiida.orm.nodes.array.trajectory import TrajectoryData
+from aiida.orm.nodes.array import ArrayData
 from aiida.common.exceptions import InputValidationError
 from aiida.common.datastructures import CalcInfo, CodeInfo
 from aiida.common.utils import classproperty
@@ -11,7 +11,7 @@ from aiida_phonopy.common.raw_parsers import get_FORCE_CONSTANTS_txt, get_poscar
 from aiida_lammps.common.generate_input_files import get_trajectory_txt, parameters_to_input_file
 
 
-class DynaphopyCalculation(JobCalculation):
+class DynaphopyCalculation(CalcJob):
     """
     A basic plugin for calculating force constants using Phonopy.
 

@@ -7,9 +7,10 @@
   "author_email": "abelcarreras83@gmail.com",
   "license": "MIT license",
   "install_requires": [
-    "aiida-core>=0.12.0",
+    "aiida-core>=1.0.0b1",
     "numpy",
     "packaging",
+    "dateutils",
     "jsonschema"
   ],
   "setup_requires": [

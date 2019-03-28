@@ -151,18 +151,96 @@ def read_lammps_forces(file_name):
     return forces
 
 
-def read_log_file(logfile):
+def read_log_file(logdata_txt):
 
-    f = open(logfile, 'r')
-    data = f.readlines()
+    data = logdata_txt.split('\n')
 
     data_dict = {}
+    units = None
     for i, line in enumerate(data):
         if 'Loop time' in line:
             energy = float(data[i-1].split()[4])
             data_dict['energy'] = energy
+        if 'units' in line:
+            units = line.split()[1]
 
-    return data_dict
+    return data_dict, units
+
+
+def read_lammps_trajectory_txt(data_txt,
+                           limit_number_steps=100000000,
+                           initial_cut=1,
+                           timestep=1):
+
+    # Dimensionality of LAMMP calculation
+    number_of_dimensions = 3
+
+    import re
+    blocks = [m.start() for m in re.finditer('TIMESTEP', data_txt)]
+    blocks = [(blocks[i], blocks[i+1]) for i in range(len(blocks)-1)]
+
+    blocks = blocks[initial_cut:initial_cut+limit_number_steps]
+
+    step_ids = []
+    position_list = []
+
+    read_elements = None
+    cells = []
+
+    time_steps = []
+    for ini, end in blocks:
+        # Read number of atoms
+        block_lines = data_txt[ini:end].split('\n')
+        id = block_lines.index('TIMESTEP')
+        time_steps.append(block_lines[id+1])
+
+        id = get_index('NUMBER OF ATOMS', block_lines)
+        number_of_atoms = int(block_lines[id+1])
+
+        id = get_index('ITEM: BOX', block_lines)
+        bounds = [line.split() for line in block_lines[id + 1:id + 4]]
+        bounds = np.array(bounds, dtype=float)
+        if bounds.shape[1] == 2:
+            bounds = np.append(bounds, np.array([0, 0, 0])[None].T, axis=1)
+
+        xy = bounds[0, 2]
+        xz = bounds[1, 2]
+        yz = bounds[2, 2]
+
+        xlo = bounds[0, 0] - np.min([0.0, xy, xz, xy + xz])
+        xhi = bounds[0, 1] - np.max([0.0, xy, xz, xy + xz])
+        ylo = bounds[1, 0] - np.min([0.0, yz])
+        yhi = bounds[1, 1] - np.max([0.0, yz])
+        zlo = bounds[2, 0]
+        zhi = bounds[2, 1]
+
+        super_cell = np.array([[xhi - xlo, xy, xz],
+                               [0, yhi - ylo, yz],
+                               [0, 0, zhi - zlo]])
+        cell = super_cell.T
+
+        #id = [i for i, s in enumerate(block_lines) if 'ITEM: BOX BOUNDS' in s][0]
+
+        # Reading positions
+        id = get_index('ITEM: ATOMS', block_lines)
+
+        positions = []
+        read_elements = []
+        for i in range(number_of_atoms):
+            line = block_lines[id + i+ 1].split()
+            positions.append(line[1:number_of_dimensions + 1])
+            read_elements.append(line[0])
+
+        position_list.append(positions)
+        cells.append(cell)
+
+    positions = np.array(position_list, dtype=float)
+    step_ids = np.array(time_steps, dtype=int)
+    cells = np.array(cells)
+    elements = np.array(read_elements)
+    time = np.array(step_ids)*timestep
+
+    return positions, step_ids, cells, elements, time
 
 
 def read_lammps_trajectory(file_name,
@@ -170,7 +248,7 @@ def read_lammps_trajectory(file_name,
                            initial_cut=1,
                            end_cut=None,
                            timestep=1):
-
+    print('dins!')
     import mmap
     # Time in picoseconds
     # Coordinates in Angstroms
@@ -181,6 +259,7 @@ def read_lammps_trajectory(file_name,
     step_ids = []
     data = []
     cells = []
+    read_elements = []
     counter = 0
     bounds = None
     number_of_atoms = None
@@ -196,7 +275,7 @@ def read_lammps_trajectory(file_name,
             counter += 1
 
             # Read time steps
-            position_number=file_map.find('TIMESTEP')
+            position_number=file_map.find(b'TIMESTEP')
             if position_number < 0: break
 
             file_map.seek(position_number)
@@ -205,14 +284,14 @@ def read_lammps_trajectory(file_name,
 
             if number_of_atoms is None:
                 # Read number of atoms
-                position_number=file_map.find('NUMBER OF ATOMS')
+                position_number=file_map.find(b'NUMBER OF ATOMS')
                 file_map.seek(position_number)
                 file_map.readline()
                 number_of_atoms = int(file_map.readline())
 
             if True:
                 # Read cell
-                position_number=file_map.find('ITEM: BOX')
+                position_number=file_map.find(b'ITEM: BOX')
                 file_map.seek(position_number)
                 file_map.readline()
 
@@ -241,7 +320,7 @@ def read_lammps_trajectory(file_name,
                                        [0,   0,  zhi-zlo]])
                 cells.append(super_cell.T)
 
-            position_number = file_map.find('ITEM: ATOMS')
+            position_number = file_map.find(b'ITEM: ATOMS')
             file_map.seek(position_number)
             lammps_labels=file_map.readline() # lammps_labels not used now but call is necessary!
 
@@ -274,21 +353,32 @@ def read_lammps_trajectory(file_name,
     data = np.array(data)
     step_ids = np.array(step_ids, dtype=int)
     cells = np.array(cells)
-    elements = np.array(read_elements)
+    elements = np.array(read_elements, dtype='str')
+
     time = np.array(step_ids)*timestep
     return data, step_ids, cells, elements, time
 
 
-def read_log_file2(logfile):
+def read_log_file_long(logdata_txt):
 
-    with open(logfile, 'r') as f:
-        data = f.readlines()
+
+    # Dimensionality of LAMMP calculation
+    number_of_dimensions = 3
+
+    data = logdata_txt.split('\n')
+
+    #with open(logfile, 'r') as f:
+    #    data = f.readlines()
 
     if not data:
-        raise IOError('The logfile is empty: {}'.format(logfile))
+        raise IOError('The logfile is empty')
 
     data_dict = {}
+    units = None
     for i, line in enumerate(data):
+        if 'units' in line:
+            units = line.split()[1]
+
         if 'Loop time' in line:
             energy = float(data[i-1].split()[4])
             data_dict['energy'] = energy
@@ -305,11 +395,6 @@ def read_log_file2(logfile):
             c = data[i+1].split()
 
     bounds = np.array([a, b, c], dtype=float)
-
- #   lammps_input_file += 'print           "$(xlo) $(xhi) $(xy)"\n'
- #   lammps_input_file += 'print           "$(ylo) $(yhi) $(xz)"\n'
- #   lammps_input_file += 'print           "$(zlo) $(zhi) $(yz)"\n'
-
 
     xy = bounds[0, 2]
     xz = bounds[1, 2]
@@ -334,7 +419,7 @@ def read_log_file2(logfile):
     volume = np.linalg.det(cell)
     stress = -stress/volume * 1.e-3  # bar*A^3 -> kbar
 
-    return data_dict, cell, stress
+    return data_dict, cell, stress, units
 
 
 def read_lammps_positions_and_forces(file_name):
@@ -418,6 +503,84 @@ def read_lammps_positions_and_forces(file_name):
 
     positions = np.array([positions])
     forces = np.array([forces], dtype=float)
+
+    return positions, forces, read_elements, cell
+
+
+def get_index(string, lines):
+    for i, item in enumerate(lines):
+        if string in item:
+            return i
+
+
+def read_lammps_positions_and_forces_txt(data_txt):
+
+    # Dimensionality of LAMMP calculation
+    number_of_dimensions = 3
+
+    import re
+    blocks = [m.start() for m in re.finditer('TIMESTEP', data_txt)]
+    blocks = [(blocks[i], blocks[i+1]) for i in range(len(blocks)-1)]
+
+    position_list = []
+    forces_list=[]
+
+    read_elements = None
+    cell = None
+
+    time_steps = []
+    for ini, end in blocks:
+        # Read number of atoms
+        block_lines = data_txt[ini:end].split('\n')
+
+        id = block_lines.index('TIMESTEP')
+        time_steps.append(block_lines[id+1])
+
+        id = get_index('NUMBER OF ATOMS', block_lines)
+        number_of_atoms = int(block_lines[id+1])
+
+        id = get_index('ITEM: BOX', block_lines)
+        bounds = [line.split() for line in block_lines[id + 1:id + 4]]
+        bounds = np.array(bounds, dtype=float)
+        if bounds.shape[1] == 2:
+            bounds = np.append(bounds, np.array([0, 0, 0])[None].T, axis=1)
+
+        xy = bounds[0, 2]
+        xz = bounds[1, 2]
+        yz = bounds[2, 2]
+
+        xlo = bounds[0, 0] - np.min([0.0, xy, xz, xy + xz])
+        xhi = bounds[0, 1] - np.max([0.0, xy, xz, xy + xz])
+        ylo = bounds[1, 0] - np.min([0.0, yz])
+        yhi = bounds[1, 1] - np.max([0.0, yz])
+        zlo = bounds[2, 0]
+        zhi = bounds[2, 1]
+
+        super_cell = np.array([[xhi - xlo, xy, xz],
+                               [0, yhi - ylo, yz],
+                               [0, 0, zhi - zlo]])
+        cell = super_cell.T
+
+        #id = [i for i, s in enumerate(block_lines) if 'ITEM: BOX BOUNDS' in s][0]
+
+        # Reading positions
+        id = get_index('ITEM: ATOMS', block_lines)
+
+        positions = []
+        forces = []
+        read_elements = []
+        for i in range(number_of_atoms):
+            line = block_lines[id + i+ 1].split()
+            positions.append(line[1:number_of_dimensions + 1])
+
+            forces.append(line[1 + number_of_dimensions:number_of_dimensions * 2 + 1])
+            read_elements.append(line[0])
+
+        position_list.append(positions)
+        forces_list.append(forces)
+
+    positions = np.array(position_list, dtype=float)
+    forces = np.array(forces_list, dtype=float)
 
     return positions, forces, read_elements, cell
 

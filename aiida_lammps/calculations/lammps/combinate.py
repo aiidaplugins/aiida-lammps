@@ -1,5 +1,5 @@
-from aiida.orm.calculation.job import JobCalculation
-from aiida.orm import DataFactory
+from aiida.engine import CalcJob
+from aiida.plugins import DataFactory
 from aiida.common.exceptions import InputValidationError
 from aiida.common.utils import classproperty
 
@@ -66,7 +66,7 @@ def generate_LAMMPS_input(parameters,
     return lammps_input_file
 
 
-class CombinateCalculation(BaseLammpsCalculation, JobCalculation):
+class CombinateCalculation(BaseLammpsCalculation, CalcJob):
 
     _POSCAR_NAME = 'POSCAR'
     _INPUT_FORCE_CONSTANTS = 'FORCE_CONSTANTS'

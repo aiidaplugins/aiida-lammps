@@ -1,16 +1,12 @@
 import os
 from aiida.parsers.parser import Parser
-from aiida.parsers.exceptions import OutputParsingError
-from aiida.orm import DataFactory
+from aiida.common import OutputParsingError, exceptions
+
+from aiida.orm import Dict, ArrayData, StructureData
 
 from aiida_lammps import __version__ as aiida_lammps_version
-from aiida_lammps.common.raw_parsers import read_lammps_forces, read_log_file, get_units_dict
+from aiida_lammps.common.raw_parsers import read_lammps_positions_and_forces_txt, read_log_file, get_units_dict
 from aiida_lammps.utils import aiida_version, cmp_version
-
-ArrayData = DataFactory('array')
-ParameterData = DataFactory('parameter')
-
-
 
 
 class ForceParser(Parser):
@@ -18,79 +14,64 @@ class ForceParser(Parser):
     Simple Parser for LAMMPS.
     """
 
-    def __init__(self, calc):
+    def __init__(self, node):
         """
-        Initialize the instance of LammpsParser
+        Initialize the instance of Force LammpsParser
         """
-        super(ForceParser, self).__init__(calc)
+        super(ForceParser, self).__init__(node)
 
-    def parse_with_retrieved(self, retrieved):
+    def parse(self, **kwargs):
         """
         Parses the datafolder, stores results.
         """
 
-        # suppose at the start that the job is successful
-        successful = True
-
-        # select the folder object
         # Check that the retrieved folder is there
         try:
-            out_folder = retrieved[self._calc._get_linkname_retrieved()]
-            temporary_folder = retrieved[self.retrieved_temporary_folder_key]
-        except KeyError:
-            self.logger.error("No retrieved folder found")
-            return False, ()
-
-        if aiida_version() < cmp_version('1.0.0a1'):
-            get_temp_path = temporary_folder.get_abs_path
-        else:
-            get_temp_path = lambda x: os.path.join(temporary_folder, x)
+            out_folder = self.retrieved
+            # temporary_folder = kwargs['retrieved_temporary_folder']
+        except exceptions.NotExistent:
+            return self.exit_codes.ERROR_NO_RETRIEVED_FOLDER
 
         # check what is inside the folder
-        list_of_files = out_folder.get_folder_list()
+        list_of_files = out_folder.list_object_names()
 
-        # OUTPUT file should exist
-        if not self._calc._OUTPUT_FILE_NAME in list_of_files:
-            successful = False
-            self.logger.error("Output file not found")
-            return successful, ()
+        output_filename = self.node.options['output_filename'].default
+        if not output_filename in list_of_files:
+            raise OutputParsingError('Output file not found')
 
-        # Get file and do the parsing
-        outfile = out_folder.get_abs_path( self._calc._OUTPUT_FILE_NAME)
-        ouput_trajectory = out_folder.get_abs_path( self._calc._OUTPUT_TRAJECTORY_FILE_NAME)
+        trajectory_filename = self.node.options['trajectory_name'].default
+        if not trajectory_filename in list_of_files:
+            raise OutputParsingError('Trajectory file not found')
 
-        outputa_data = read_log_file(outfile)
-        forces = read_lammps_forces(ouput_trajectory)
+        output_txt = out_folder.get_object_content(output_filename)
+        output_data, units = read_log_file(output_txt)
 
-        # look at warnings
-        with open(out_folder.get_abs_path(self._calc._SCHED_ERROR_FILE)) as f:
-            warnings = f.read().splitlines()
+        #output_data, cell, stress_tensor, units = read_log_file(output_txt)
+
+        trajectory_txt = out_folder.get_object_content(trajectory_filename)
+
+        positions, forces, symbols, cell2 = read_lammps_positions_and_forces_txt(trajectory_txt)
+
+        warnings = out_folder.get_object_content('_scheduler-stderr.txt')
 
         # ====================== prepare the output node ======================
 
-        # save the outputs
-        new_nodes_list = []
+        # add units used
+        output_data.update(get_units_dict(units, ["energy", "force", "distance"]))
 
-        # save trajectory into node
 
+
+        # save forces and stresses into node
         array_data = ArrayData()
         array_data.set_array('forces', forces)
-        new_nodes_list.append(('output_array', array_data))
+        self.out('arrays', array_data)
 
         # add the dictionary with warnings
-        outputa_data.update({'warnings': warnings})
-        outputa_data["parser_class"] = self.__class__.__name__
-        outputa_data["parser_version"] = aiida_lammps_version
+        output_data.update({'warnings': warnings})
+        output_data["parser_class"] = self.__class__.__name__
+        output_data["parser_version"] = aiida_lammps_version
 
-        # add units used
-        with open(get_temp_path(self._calc._INPUT_UNITS)) as f:
-            units = f.readlines()[0].strip()
-        outputa_data.update(get_units_dict(units, ["energy", "force", "distance"]))
+        parameters_data = Dict(dict=output_data)
 
-        parameters_data = ParameterData(dict=outputa_data)
-        new_nodes_list.append((self.get_linkname_outparams(), parameters_data))
-
-        # add the dictionary with warnings
-        # new_nodes_list.append((self.get_linkname_outparams(), ParameterData(dict={'warnings': warnings})))
-
-        return successful, new_nodes_list
+        # self.out(self.node.get_linkname_outparams(), parameters_data)
+        self.out('parameters', parameters_data)

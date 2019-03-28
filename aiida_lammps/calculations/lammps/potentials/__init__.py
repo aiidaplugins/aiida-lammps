@@ -33,3 +33,7 @@ class LammpsPotential:
     @property
     def atom_style(self):
         return self._potential_module.ATOM_STYLE
+
+    @property
+    def names(self):
+        return self._names

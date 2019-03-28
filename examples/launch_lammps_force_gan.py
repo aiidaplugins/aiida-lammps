@@ -1,12 +1,11 @@
 from aiida import load_dbenv
 load_dbenv()
-from aiida.orm import Code, DataFactory
-
+from aiida.plugins import CalculationFactory
+from aiida.orm import Code, Dict, StructureData
+from aiida.engine import submit, run_get_node
+from aiida.common.extendeddicts import AttributeDict
 import numpy as np
 
-
-StructureData = DataFactory('structure')
-ParameterData = DataFactory('parameter')
 
 codename = 'lammps_force@stern'
 
@@ -51,36 +50,34 @@ tersoff_gan = {'Ga Ga Ga': '1.0 0.007874 1.846 1.918000 0.75000 -0.301300 1.0 1.
 potential ={'pair_style': 'tersoff',
                           'data': tersoff_gan}
 
-lammps_machine = {
-    'num_machines': 1,
-    'parallel_env': 'localmpi',
-    'tot_num_mpiprocs': 16}
+
+LammpsForceCalculation = CalculationFactory('lammps.force')
+inputs = LammpsForceCalculation.get_builder()
+
+# Computer options
+options = AttributeDict()
+options.account = ''
+options.qos = ''
+options.resources = {'num_machines': 1, 'num_mpiprocs_per_machine': 1,
+                     'parallel_env': 'localmpi', 'tot_num_mpiprocs': 1}
+#options.queue_name = 'iqtc04.q'
+options.max_wallclock_seconds = 3600
+inputs.metadata.options = options
+
+# Setup code
+inputs.code = Code.get_from_string(codename)
+
+# setup nodes
+inputs.structure = structure
+inputs.potential = Dict(dict=potential)
+
+# run calculation
+result, node = run_get_node(LammpsForceCalculation, **inputs)
+print('results:', result)
+print('node:', node)
+
+# submit to deamon
+#submit(LammpsOptimizeCalculation, **inputs)
 
 
-code = Code.get_from_string(codename)
 
-calc = code.new_calc(max_wallclock_seconds=3600,
-                     resources=lammps_machine)
-
-calc.label = "test lammps calculation"
-calc.description = "A much longer description"
-calc.use_code(code)
-calc.use_structure(structure)
-calc.use_potential(ParameterData(dict=potential))
-
-test_only = False
-
-if test_only:  # It will not be submitted
-    import os
-    subfolder, script_filename = calc.submit_test()
-    print "Test_submit for calculation (uuid='{}')".format(calc.uuid)
-    print "Submit file in {}".format(os.path.join(
-                                     os.path.relpath(subfolder.abspath),
-                                     script_filename))
-else:
-    calc.store_all()
-    print "created calculation; calc=Calculation(uuid='{}') # ID={}".format(
-        calc.uuid, calc.dbnode.pk)
-    calc.submit()
-    print "submitted calculation; calc=Calculation(uuid='{}') # ID={}".format(
-        calc.uuid, calc.dbnode.pk)

@@ -5,7 +5,7 @@ import tempfile
 import shutil
 import os
 
-from aiida.utils.fixtures import fixture_manager
+from aiida.manage.fixtures import fixture_manager
 import pytest
 
 from aiida_lammps.utils import aiida_version, cmp_version

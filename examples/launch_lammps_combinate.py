@@ -1,15 +1,12 @@
-# This script requires aiida-phonopy to be installed
-# https://github.com/abelcarreras/aiida-phonopy
+# This calculation requires also phonopy plugin to work
 
 from aiida import load_dbenv
 load_dbenv()
-from aiida.orm import Code, DataFactory
-
+from aiida.plugins import CalculationFactory
+from aiida.orm import Code, Dict, StructureData
+from aiida.engine import submit, run_get_node
+from aiida.common.extendeddicts import AttributeDict
 import numpy as np
-
-
-StructureData = DataFactory('structure')
-ParameterData = DataFactory('parameter')
 
 codename = 'lammps_combinate@stern'
 
@@ -75,35 +72,32 @@ parameters_md = {'timestep': 0.001,
                  'total_steps': 2000,
                  'dump_rate': 1}
 
+CombinateCalculation = CalculationFactory('lammps.force')
+inputs = CombinateCalculation.get_builder()
 
-code = Code.get_from_string(codename)
+# Computer options
+options = AttributeDict()
+options.account = ''
+options.qos = ''
+options.resources = {'num_machines': 1, 'num_mpiprocs_per_machine': 1,
+                     'parallel_env': 'localmpi', 'tot_num_mpiprocs': 1}
+#options.queue_name = 'iqtc04.q'
+options.max_wallclock_seconds = 3600
+inputs.metadata.options = options
 
-calc = code.new_calc(max_wallclock_seconds=3600,
-                     resources=machine)
+# Setup code
+inputs.code = Code.get_from_string(codename)
 
-calc.label = "test lammps calculation"
-calc.description = "A much longer description"
-calc.use_code(code)
-calc.use_structure(structure)
-calc.use_potential(ParameterData(dict=potential))
-calc.use_force_constants(force_constants)
-calc.use_parameters_dynaphopy(ParameterData(dict=dynaphopy_parameters))
+# setup nodes
+inputs.structure = structure
+inputs.potential = Dict(dict=potential)
+inputs.force_constants(force_constants)
+inputs.parameters_dynaphopy(Dict(dict=dynaphopy_parameters))
 
-calc.use_parameters(ParameterData(dict=parameters_md))
+# run calculation
+result, node = run_get_node(CombinateCalculation, **inputs)
+print('results:', result)
+print('node:', node)
 
-test_only = False
-
-if test_only:  # It will not be submitted
-    import os
-    subfolder, script_filename = calc.submit_test()
-    print "Test_submit for calculation (uuid='{}')".format(calc.uuid)
-    print "Submit file in {}".format(os.path.join(
-                                     os.path.relpath(subfolder.abspath),
-                                     script_filename))
-else:
-    calc.store_all()
-    print "created calculation; calc=Calculation(uuid='{}') # ID={}".format(
-        calc.uuid, calc.dbnode.pk)
-    calc.submit()
-    print "submitted calculation; calc=Calculation(uuid='{}') # ID={}".format(
-        calc.uuid, calc.dbnode.pk)
+# submit to deamon
+#submit(LammpsOptimizeCalculation, **inputs)

@@ -1,11 +1,9 @@
-from aiida.orm.calculation.job import JobCalculation
-from aiida.common.exceptions import InputValidationError
-from aiida.common.datastructures import CalcInfo, CodeInfo
-from aiida.common.utils import classproperty
-from aiida.orm import DataFactory
-
-StructureData = DataFactory('structure')
-ParameterData = DataFactory('parameter')
+from aiida.engine import CalcJob
+from aiida.common import InputValidationError
+from aiida.common import CalcInfo, CodeInfo
+from aiida.orm import StructureData, Dict
+from aiida_lammps.common.utils import convert_date_string
+import six, os
 
 from aiida_lammps.calculations.lammps.potentials import LammpsPotential
 import numpy as np
@@ -155,7 +153,7 @@ def generate_LAMMPS_potential(pair_style):
     return potential_file
 
 
-class BaseLammpsCalculation(JobCalculation):
+class BaseLammpsCalculation(CalcJob):
     """
     A basic plugin for calculating force constants using Lammps.
 
@@ -165,118 +163,69 @@ class BaseLammpsCalculation(JobCalculation):
     _INPUT_FILE_NAME = 'input.in'
     _INPUT_POTENTIAL = 'potential.pot'
     _INPUT_STRUCTURE = 'input.data'
-    _INPUT_UNITS = 'input.units'
 
-    _retrieve_list = []
+    _OUTPUT_FILE_NAME = 'log.lammps'
+
+    _retrieve_list = ['log.lammps']
     _retrieve_temporary_list = []
     _cmdline_params = ['-in', _INPUT_FILE_NAME]
     _stdout_name = None
 
-    def _init_internal_params(self):
-        super(BaseLammpsCalculation, self)._init_internal_params()
+    @classmethod
+    def define(cls, spec):
+        super(BaseLammpsCalculation, cls).define(spec)
 
-    @classproperty
-    def _baseclass_use_methods(cls):
-        """
-        Common methods for LAMMPS.
-        """
-
-        retdict = {
-            "potential": {
-               'valid_types': ParameterData,
-               'additional_parameter': None,
-               'linkname': 'potential',
-               'docstring': ("Use a node that specifies the lammps potential "
-                             "for the namelists"),
-               },
-            "structure": {
-               'valid_types': StructureData,
-               'additional_parameter': None,
-               'linkname': 'structure',
-               'docstring': "Use a node for the structure",
-               },
-
-            "parameters": {
-               'valid_types': ParameterData,
-               'additional_parameter': None,
-               'linkname': 'parameters',
-               'docstring': "Use a node for the lammps input parameters",
-               },
-         }
-
-
-        return retdict
-
-    def _create_additional_files(self, tempfolder, inputs_params):
-        pass
+        spec.input('structure', valid_type=StructureData, help='the structure')
+        spec.input('potential', valid_type=Dict, help='lammps potential')
+        spec.input('parameters', valid_type=Dict, help='the parameters', required=False, default=Dict())
+        spec.input('metadata.options.output_filename', valid_type=six.string_types, default=cls._OUTPUT_FILE_NAME)
 
     def validate_parameters(self, param_data, potential_object):
         return True
 
-    def _prepare_for_submission(self, tempfolder, inputdict):
+    #def prepare_extra_files(self, tempfolder, potential_object):
+    #    return True
+
+    def prepare_for_submission(self, tempfolder):
+
+        """Create the input files from the input nodes passed to this instance of the `CalcJob`.
+
+        :param tempfolder: an `aiida.common.folders.Folder` to temporarily write files on disk
+        :return: `aiida.common.CalcInfo` instance
         """
-        This is the routine to be called when you want to create
-        the input files and related stuff with a plugin.
 
-        :param tempfolder: a aiida.common.folders.Folder subclass where
-                           the plugin should put all its files.
-        :param inputdict: a dictionary with the input nodes, as they would
-                be returned by get_inputdata_dict (without the Code!)
-        """
+        # Setup potential
+        potential_object = LammpsPotential(self.inputs.potential,
+                                           self.inputs.structure,
+                                           potential_filename=self._INPUT_POTENTIAL)
+        potential_txt = potential_object.get_potential_file()
 
-        self._parameters_data = inputdict.pop(self.get_linkname('parameters'), None)
+        # Setup structure
+        structure_txt = generate_LAMMPS_structure(self.inputs.structure,
+                                                  potential_object.atom_style)
 
-        try:
-            potential_data = inputdict.pop(self.get_linkname('potential'))
-        except KeyError:
-            raise InputValidationError("No potential specified for this "
-                                       "calculation")
+        # Check lammps version date in parameters
+        lammps_date = convert_date_string(self.inputs.parameters.get_dict().get("lammps_version", '11 Aug 2017'))
 
-        if not isinstance(potential_data, ParameterData):
-            raise InputValidationError("potential is not of type "
-                                       "ParameterData")
+        # Setup input parameters
+        input_txt = self._generate_input_function(self.inputs.parameters,
+                                                  potential_object,
+                                                  self._INPUT_STRUCTURE,
+                                                  self._OUTPUT_TRAJECTORY_FILE_NAME,
+                                                  version_date=lammps_date)
 
-        try:
-            self._structure = inputdict.pop(self.get_linkname('structure'))
-        except KeyError:
-            raise InputValidationError("no structure is specified for this calculation")
+        input_filename = tempfolder.get_abs_path(self._INPUT_FILE_NAME)
 
-        try:
-            code = inputdict.pop(self.get_linkname('code'))
-        except KeyError:
-            raise InputValidationError("no code is specified for this calculation")
+        with open(input_filename, 'w') as infile:
+            infile.write(input_txt)
 
-        ##############################
-        # END OF INITIAL INPUT CHECK #
-        ##############################
-
-        # =================== prepare the python input files =====================
-
-        potential_object = LammpsPotential(potential_data, self._structure, potential_filename=self._INPUT_POTENTIAL)
+        self.validate_parameters(self.inputs.parameters, potential_object)
 
         # validate the parameters
-        self.validate_parameters(self._parameters_data, potential_object)
-
-        # TODO is this the best way to tell the parser what units were used?
-        # depending on how the calculation is run, it can be either stored or unstored at this point,
-        # which prohibits using self.set_attr / self.set_extra / self._units =
-        input_units_filename = tempfolder.get_abs_path(self._INPUT_UNITS)
-        with open(input_units_filename, 'w') as infile:
-            infile.write(potential_object.default_units)
-
-        structure_txt = generate_LAMMPS_structure(self._structure, potential_object.atom_style)
-        input_txt = self._generate_input_function(self._parameters_data,
-                                                  potential_object,
-                                                  structure_file=self._INPUT_STRUCTURE,
-                                                  trajectory_file=self._OUTPUT_TRAJECTORY_FILE_NAME)
-
-        potential_txt = potential_object.get_potential_file()
+        # self.prepare_extra_files(tempfolder, potential_object)
 
         # =========================== dump to file =============================
 
-        input_filename = tempfolder.get_abs_path(self._INPUT_FILE_NAME)
-        with open(input_filename, 'w') as infile:
-            infile.write(input_txt)
 
         structure_filename = tempfolder.get_abs_path(self._INPUT_STRUCTURE)
         with open(structure_filename, 'w') as infile:
@@ -288,28 +237,18 @@ class BaseLammpsCalculation(JobCalculation):
                 # print(potential_txt)
                 infile.write(potential_txt)
 
-        self._create_additional_files(tempfolder, inputdict)
-
         # ============================ calcinfo ================================
 
-        local_copy_list = []
-        remote_copy_list = []
-        # additional_retrieve_list = settings_dict.pop("ADDITIONAL_RETRIEVE_LIST",[])
-
-        calcinfo = CalcInfo()
-
-        calcinfo.uuid = self.uuid
-        # Empty command line by default
-        calcinfo.local_copy_list = local_copy_list
-        calcinfo.remote_copy_list = remote_copy_list
-
-        # Retrieve files
-        calcinfo.retrieve_list = self._retrieve_list
-        calcinfo.retrieve_temporary_list = self._retrieve_temporary_list
         codeinfo = CodeInfo()
         codeinfo.cmdline_params = self._cmdline_params
-        codeinfo.code_uuid = code.uuid
+        codeinfo.code_uuid = self.inputs.code.uuid
         codeinfo.withmpi = False  # Set lammps openmpi environment properly
-        calcinfo.codes_info = [codeinfo]
         codeinfo.stdout_name = self._stdout_name
+
+        calcinfo = CalcInfo()
+        calcinfo.uuid = self.uuid
+        calcinfo.retrieve_list = self._retrieve_list
+        calcinfo.retrieve_temporary_list = self._retrieve_temporary_list
+        calcinfo.codes_info = [codeinfo]
+
         return calcinfo

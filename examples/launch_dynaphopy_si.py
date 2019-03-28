@@ -1,12 +1,10 @@
 from aiida import load_dbenv
 load_dbenv()
-from aiida.orm import Code, DataFactory
-
+from aiida.plugins import CalculationFactory
+from aiida.orm import Code, Dict, StructureData
+from aiida.engine import submit, run_get_node
+from aiida.common.extendeddicts import AttributeDict
 import numpy as np
-
-
-StructureData = DataFactory('structure')
-ParameterData = DataFactory('parameter')
 
 codename = 'dynaphopy@stern'
 
@@ -71,7 +69,7 @@ calc.description = "A much longer description"
 calc.use_code(code)
 
 calc.use_structure(structure)
-calc.use_parameters(ParameterData(dict=dynaphopy_parameters))
+calc.use_parameters(Dict(dict=dynaphopy_parameters))
 calc.use_force_constants(force_constants)
 calc.use_trajectory(trajectory)
 
@@ -79,4 +77,37 @@ calc.store_all()
 
 
 calc.submit()
-print "submitted calculation with PK={}".format(calc.dbnode.pk)
+print("submitted calculation with PK={}".format(calc.dbnode.pk))
+
+
+LammpsOptimizeCalculation = CalculationFactory('lammps.optimize')
+inputs = LammpsOptimizeCalculation.get_builder()
+
+# Computer options
+options = AttributeDict()
+options.account = ''
+options.qos = ''
+options.resources = {'num_machines': 1, 'num_mpiprocs_per_machine': 1,
+                     'parallel_env': 'localmpi', 'tot_num_mpiprocs': 1}
+#options.queue_name = 'iqtc04.q'
+options.max_wallclock_seconds = 3600
+inputs.metadata.options = options
+
+# Setup code
+inputs.code = Code.get_from_string(codename)
+
+# setup nodes
+inputs.structure = structure
+inputs.parameters = Dict(dict=dynaphopy_parameters)
+inputs.force_constants = force_constants
+inputs.trajectory = trajectory
+
+# run calculation
+result, node = run_get_node(LammpsOptimizeCalculation, **inputs)
+print('results:', result)
+print('node:', node)
+
+# submit to deamon
+#submit(LammpsOptimizeCalculation, **inputs)
+
+

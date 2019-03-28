@@ -38,7 +38,7 @@ def get_computer(name=TEST_COMPUTER, workdir=None, configure=False):
     from aiida.common.exceptions import NotExistent
 
     try:
-        computer = Computer.get(name)
+        computer = Computer.objects.get(name)
     except NotExistent:
 
         if workdir is None:
@@ -58,7 +58,7 @@ def get_computer(name=TEST_COMPUTER, workdir=None, configure=False):
         if configure:
             try:
                 # aiida-core v1
-                from aiida.control.computer import configure_computer
+                from aiida.orm.utils import configure_computer
                 configure_computer(computer)
             except ImportError:
                 configure_computer_v012(computer)
@@ -171,7 +171,7 @@ def run_get_node(process, inputs_dict):
         workchain.run_until_complete()
         calcnode = workchain.calc
     else:
-        from aiida.work.launch import run_get_node  # pylint: disable=import-error
+        from aiida.engine.launch import run_get_node  # pylint: disable=import-error
         for key in ["_options", "_label", "_description"]:
             if key in inputs_dict:
                 inputs_dict[key[1:]] = inputs_dict.pop(key)
@@ -190,8 +190,13 @@ def get_calc_log(calcnode):
         if isinstance(o, (datetime.date, datetime.datetime)):
             return o.isoformat()
 
-    log_string = "- Calc State:\n{0}\n- Scheduler Out:\n{1}\n- Scheduler Err:\n{2}\n- Log:\n{3}".format(
+    #log_string = "- Calc State:\n{0}\n- Scheduler Out:\n{1}\n- Scheduler Err:\n{2}\n- Log:\n{3}".format(
+    #    calcnode.get_state(),
+    #    calcnode.get_scheduler_output(), calcnode.get_scheduler_error(),
+    #    json.dumps(get_log_messages(calcnode), default=default, indent=2))
+
+    log_string = "- Calc State:\n{0}\n- Scheduler Out:\n{1}\n- Scheduler Err:\n{2}\n".format(
         calcnode.get_state(),
-        calcnode.get_scheduler_output(), calcnode.get_scheduler_error(),
-        json.dumps(get_log_messages(calcnode), default=default, indent=2))
+        calcnode.get_scheduler_output(), calcnode.get_scheduler_error())
+
     return log_string
