@@ -248,7 +248,6 @@ def read_lammps_trajectory(file_name,
                            initial_cut=1,
                            end_cut=None,
                            timestep=1):
-    print('dins!')
     import mmap
     # Time in picoseconds
     # Coordinates in Angstroms

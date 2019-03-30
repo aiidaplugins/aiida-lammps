@@ -182,7 +182,7 @@ def run_get_node(process, inputs_dict):
 
 def get_calc_log(calcnode):
     """get a formatted string of the calculation log"""
-    from aiida.backends.utils import get_log_messages
+    #from aiida.backends.utils import get_log_messages
     import json
     import datetime
 

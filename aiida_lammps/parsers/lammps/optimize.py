@@ -82,4 +82,4 @@ class OptimizeParser(Parser):
         parameters_data = Dict(dict=output_data)
 
         #self.out(self.node.get_linkname_outparams(), parameters_data)
-        self.out('parameters', parameters_data)
+        self.out('results', parameters_data)

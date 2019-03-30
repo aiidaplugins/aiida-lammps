@@ -1,3 +1,5 @@
+# Not working with Aiida 1.0
+
 from aiida.parsers.parser import Parser
 from aiida.parsers.exceptions import OutputParsingError
 from aiida.orm.data.array import ArrayData

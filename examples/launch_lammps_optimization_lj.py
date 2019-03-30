@@ -4,6 +4,7 @@ from aiida.plugins import CalculationFactory
 from aiida.orm import Code, Dict, StructureData
 from aiida.engine import submit, run_get_node
 from aiida.common.extendeddicts import AttributeDict
+from aiida_lammps.data.potential import EmpiricalPotential
 import numpy as np
 
 
@@ -79,7 +80,10 @@ inputs.code = Code.get_from_string(codename)
 
 # setup nodes
 inputs.structure = structure
-inputs.potential = Dict(dict=potential)
+inputs.potential = EmpiricalPotential(structure=structure,
+                                      type='lennard_jones',
+                                      data={'1  1':  '0.01029   3.4    2.5'})
+
 inputs.parameters = Dict(dict=parameters_opt)
 
 # run calculation

@@ -72,5 +72,5 @@ class MdParser(Parser):
 
         parameters_data = Dict(dict=output_data)
 
-        self.out('parameters', parameters_data)
+        self.out('results', parameters_data)
 

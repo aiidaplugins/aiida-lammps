@@ -79,6 +79,7 @@ class OptimizeCalculation(BaseLammpsCalculation):
 
         spec.input('metadata.options.trajectory_name', valid_type=six.string_types, default=cls._OUTPUT_TRAJECTORY_FILE_NAME)
         spec.input('metadata.options.parser_name', valid_type=six.string_types, default='lammps.optimize')
+        spec.default_output_port = 'results'
         # spec.input('settings', valid_type=six.string_types, default='lammps.optimize')
 
     def validate_parameters(self, param_data, potential_object):
@@ -102,5 +103,3 @@ class OptimizeCalculation(BaseLammpsCalculation):
         self._retrieve_temporary_list += []
 
         return True
-
-# $MPI -n $NSLOTS $LAMMPS -sf gpu -pk gpu 2 neigh no -in in.md_data

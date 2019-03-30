@@ -50,6 +50,7 @@ class ForceCalculation(BaseLammpsCalculation):
 
         spec.input('metadata.options.trajectory_name', valid_type=six.string_types, default=cls._OUTPUT_TRAJECTORY_FILE_NAME)
         spec.input('metadata.options.parser_name', valid_type=six.string_types, default='lammps.force')
+        spec.default_output_port = 'results'
         # spec.input('settings', valid_type=six.string_types, default='lammps.optimize')
 
     def validate_parameters(self, param_data, potential_object):

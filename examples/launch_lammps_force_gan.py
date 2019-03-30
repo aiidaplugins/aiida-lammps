@@ -4,6 +4,7 @@ from aiida.plugins import CalculationFactory
 from aiida.orm import Code, Dict, StructureData
 from aiida.engine import submit, run_get_node
 from aiida.common.extendeddicts import AttributeDict
+from aiida_lammps.data.potential import EmpiricalPotential
 import numpy as np
 
 
@@ -69,7 +70,10 @@ inputs.code = Code.get_from_string(codename)
 
 # setup nodes
 inputs.structure = structure
-inputs.potential = Dict(dict=potential)
+#inputs.potential = Dict(dict=potential)
+inputs.potential = EmpiricalPotential(structure=structure,
+                                      type='tersoff',
+                                      data=tersoff_gan)
 
 # run calculation
 result, node = run_get_node(LammpsForceCalculation, **inputs)
@@ -77,7 +81,7 @@ print('results:', result)
 print('node:', node)
 
 # submit to deamon
-#submit(LammpsOptimizeCalculation, **inputs)
+# submit(LammpsForceCalculation, **inputs)
 
 
 

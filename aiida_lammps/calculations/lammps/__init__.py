@@ -3,9 +3,9 @@ from aiida.common import InputValidationError
 from aiida.common import CalcInfo, CodeInfo
 from aiida.orm import StructureData, Dict
 from aiida_lammps.common.utils import convert_date_string
-import six, os
+from aiida_lammps.data.potential import EmpiricalPotential
+import six
 
-from aiida_lammps.calculations.lammps.potentials import LammpsPotential
 import numpy as np
 
 
@@ -174,17 +174,16 @@ class BaseLammpsCalculation(CalcJob):
     @classmethod
     def define(cls, spec):
         super(BaseLammpsCalculation, cls).define(spec)
-
         spec.input('structure', valid_type=StructureData, help='the structure')
-        spec.input('potential', valid_type=Dict, help='lammps potential')
+        spec.input('potential', valid_type=EmpiricalPotential, help='lammps potential')
         spec.input('parameters', valid_type=Dict, help='the parameters', required=False, default=Dict())
         spec.input('metadata.options.output_filename', valid_type=six.string_types, default=cls._OUTPUT_FILE_NAME)
 
     def validate_parameters(self, param_data, potential_object):
         return True
 
-    #def prepare_extra_files(self, tempfolder, potential_object):
-    #    return True
+    def prepare_extra_files(self, tempfolder, potential_object):
+        return True
 
     def prepare_for_submission(self, tempfolder):
 
@@ -195,21 +194,18 @@ class BaseLammpsCalculation(CalcJob):
         """
 
         # Setup potential
-        potential_object = LammpsPotential(self.inputs.potential,
-                                           self.inputs.structure,
-                                           potential_filename=self._INPUT_POTENTIAL)
-        potential_txt = potential_object.get_potential_file()
+        potential_txt = self.inputs.potential.get_potential_file()
 
         # Setup structure
         structure_txt = generate_LAMMPS_structure(self.inputs.structure,
-                                                  potential_object.atom_style)
+                                                  self.inputs.potential.atom_style)
 
         # Check lammps version date in parameters
         lammps_date = convert_date_string(self.inputs.parameters.get_dict().get("lammps_version", '11 Aug 2017'))
 
         # Setup input parameters
         input_txt = self._generate_input_function(self.inputs.parameters,
-                                                  potential_object,
+                                                  self.inputs.potential,
                                                   self._INPUT_STRUCTURE,
                                                   self._OUTPUT_TRAJECTORY_FILE_NAME,
                                                   version_date=lammps_date)
@@ -219,10 +215,10 @@ class BaseLammpsCalculation(CalcJob):
         with open(input_filename, 'w') as infile:
             infile.write(input_txt)
 
-        self.validate_parameters(self.inputs.parameters, potential_object)
+        self.validate_parameters(self.inputs.parameters, self.inputs.potential)
 
-        # validate the parameters
-        # self.prepare_extra_files(tempfolder, potential_object)
+        # prepare extra files if needed
+        self.prepare_extra_files(tempfolder, self.inputs.potential)
 
         # =========================== dump to file =============================
 

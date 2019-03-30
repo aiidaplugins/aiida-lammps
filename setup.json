@@ -31,6 +31,9 @@
       "lammps.md = aiida_lammps.parsers.lammps.md:MdParser",
       "lammps.optimize = aiida_lammps.parsers.lammps.optimize:OptimizeParser",
       "dynaphopy = aiida_lammps.parsers.dynaphopy: DynaphopyParser"
+    ],
+    "aiida.data": [
+      "lammps.potential = aiida_lammps.data.potential:EmpiricalPotential"
     ]
   },
   "extras_require": {

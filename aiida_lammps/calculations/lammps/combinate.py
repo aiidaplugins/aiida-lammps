@@ -1,15 +1,13 @@
-from aiida.engine import CalcJob
-from aiida.plugins import DataFactory
-from aiida.common.exceptions import InputValidationError
-from aiida.common.utils import classproperty
+# Not working with Aiida 1.0
 
+from aiida.common.exceptions import InputValidationError
 from aiida_phonopy.common.raw_parsers import get_FORCE_CONSTANTS_txt, get_poscar_txt, get_FORCE_SETS_txt
 from aiida_lammps.calculations.lammps import BaseLammpsCalculation
+from aiida.orm import Dict, ArrayData
 import numpy as np
+import six
 
 
-ArrayData = DataFactory('array')
-ParameterData = DataFactory('parameter')
 
 def generate_dynaphopy_input(parameters_object, poscar_name='POSCAR',
                              force_constants_name='FORCE_CONSTANTS',
@@ -66,7 +64,7 @@ def generate_LAMMPS_input(parameters,
     return lammps_input_file
 
 
-class CombinateCalculation(BaseLammpsCalculation, CalcJob):
+class CombinateCalculation(BaseLammpsCalculation):
 
     _POSCAR_NAME = 'POSCAR'
     _INPUT_FORCE_CONSTANTS = 'FORCE_CONSTANTS'
@@ -74,54 +72,37 @@ class CombinateCalculation(BaseLammpsCalculation, CalcJob):
     _INPUT_FILE_NAME_DYNA = 'input_dynaphopy'
     _OUTPUT_FORCE_CONSTANTS = 'FORCE_CONSTANTS_OUT'
     _OUTPUT_QUASIPARTICLES = 'quasiparticles_data.yaml'
-    _OUTPUT_TRAJECTORY_FILE_NAME = None
     _OUTPUT_FILE_NAME = 'OUTPUT'
+    _generate_input_function = generate_LAMMPS_input
 
+    #self._retrieve_list = [self._OUTPUT_QUASIPARTICLES, self._OUTPUT_FORCE_CONSTANTS, self._OUTPUT_FILE_NAME]
 
-    def _init_internal_params(self):
-        super(CombinateCalculation, self)._init_internal_params()
+    @classmethod
+    def define(cls, spec):
+        super(CombinateCalculation, cls).define(spec)
+        spec.input('metadata.options.parser_name', valid_type=six.string_types, default='dynaphopy')
+        spec.input('parameters_dynaphopy', valid_type=Dict, help='dynaphopy parameters')
+        spec.input('force_constants', valid_type=ArrayData, help='harmonic force constants')
+        spec.input('force_sets', valid_type=ArrayData, help='phonopy force sets')
 
-        self._default_parser = 'dynaphopy'
+        spec.default_output_port = 'results'
+        # spec.input('settings', valid_type=six.string_types, default='lammps.optimize')
 
-        self._retrieve_list = [self._OUTPUT_QUASIPARTICLES, self._OUTPUT_FORCE_CONSTANTS, self._OUTPUT_FILE_NAME]
-        self._generate_input_function = generate_LAMMPS_input
+    def prepare_extra_files(self, tempfolder, potential_object):
 
-    @classproperty
-    def _use_methods(cls):
-        """
-        Extend the parent _use_methods with further keys.
-        """
-        retdict = JobCalculation._use_methods
-        retdict.update(BaseLammpsCalculation._baseclass_use_methods)
+        if 'fore_constants' in self.inputs:
+            force_constants = self.inputs.force_constants
+        else:
+            force_constants = None
 
-        retdict['parameters_dynaphopy'] = {
-               'valid_types': ParameterData,
-               'additional_parameter': None,
-               'linkname': 'parameters_dynaphopy',
-               'docstring': ("Node that specifies the dynaphopy input data"),
-        }
-        retdict['force_constants'] = {
-               'valid_types': ArrayData,
-               'additional_parameter': None,
-               'linkname': 'force_constants',
-               'docstring': ("Node that specified the force constants"),
-        }
-        retdict['force_sets'] = {
-               'valid_types': ArrayData,
-               'additional_parameter': None,
-               'linkname': 'force_sets',
-               'docstring': ("Node that specified the force constants"),
-        }
+        if 'fore_constants' in self.inputs:
+            force_sets = self.inputs.force_sets
+        else:
+            force_sets = None
 
-        return retdict
+        cell_txt = get_poscar_txt(self.inputs.structure)
 
-    def _create_additional_files(self, tempfolder, inputdict):
-
-        force_constants = inputdict.pop(self.get_linkname('force_constants'), None)
-        force_sets = inputdict.pop(self.get_linkname('force_sets'), None)
-
-        cell_txt = get_poscar_txt(self._structure)
-        cell_filename = tempfolder.get_abs_path(self._POSCAR_NAME)
+        cell_filename = tempfolder (self._POSCAR_NAME)
         with open(cell_filename, 'w') as infile:
             infile.write(cell_txt)
 
@@ -140,7 +121,7 @@ class CombinateCalculation(BaseLammpsCalculation, CalcJob):
             raise InputValidationError("no force_sets nor force_constants are specified for this calculation")
 
         try:
-            parameters_data_dynaphopy = inputdict.pop(self.get_linkname('parameters_dynaphopy'))
+            parameters_data_dynaphopy = Dict.pop(self.get_linkname('parameters_dynaphopy'))
         except KeyError:
             raise InputValidationError("No dynaphopy parameters specified for this calculation")
 
@@ -172,5 +153,3 @@ class CombinateCalculation(BaseLammpsCalculation, CalcJob):
         if 'md_commensurate' in parameters_data_dynaphopy.get_dict():
             if parameters_data_dynaphopy.dict.md_commensurate:
                 self._cmdline_params.append('--MD_commensurate')
-
-        self._stdout_name = self._OUTPUT_FILE_NAME
