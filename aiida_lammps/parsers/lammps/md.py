@@ -1,10 +1,10 @@
+import os
 from aiida.parsers.parser import Parser
 from aiida.common import OutputParsingError, exceptions
 from aiida.orm import Dict, TrajectoryData
 from aiida_lammps import __version__ as aiida_lammps_version
 from aiida_lammps.common.raw_parsers import read_lammps_trajectory, get_units_dict, read_log_file
-from aiida_lammps.utils import aiida_version, cmp_version
-import os
+
 
 class MdParser(Parser):
     """
@@ -34,17 +34,17 @@ class MdParser(Parser):
         list_of_temp_files = os.listdir(temporary_folder)
 
         # check outout folder
-        output_filename = self.node.options['output_filename'].default
-        if not output_filename in list_of_files:
+        output_filename = self.node.get_option('output_filename')
+        if output_filename not in list_of_files:
             raise OutputParsingError('Output file not found')
 
         # check temporal folder
-        trajectory_filename = self.node.options['trajectory_name'].default
-        if not trajectory_filename in list_of_temp_files:
+        trajectory_filename = self.node.get_option('trajectory_name')
+        if trajectory_filename not in list_of_temp_files:
             raise OutputParsingError('Trajectory file not found')
 
         # Read trajectory from temporal folder
-        trajectory_filepath = temporary_folder + '/' + self.node.options['trajectory_name'].default
+        trajectory_filepath = temporary_folder + '/' + self.node.get_option('trajectory_name')
         timestep = self.node.inputs.parameters.dict.timestep
         positions, step_ids, cells, symbols, time = read_lammps_trajectory(trajectory_filepath, timestep=timestep)
 
@@ -73,4 +73,3 @@ class MdParser(Parser):
         parameters_data = Dict(dict=output_data)
 
         self.out('results', parameters_data)
-

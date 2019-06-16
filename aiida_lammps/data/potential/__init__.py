@@ -1,5 +1,7 @@
+import importlib
+import io
+import os
 from aiida.orm import Dict
-import importlib, os
 
 
 class EmpiricalPotential(Dict):
@@ -17,7 +19,7 @@ class EmpiricalPotential(Dict):
         super(EmpiricalPotential, self).__init__(**kwargs)
 
         dirname = os.path.dirname(__file__)
-        types_list = [os.path.splitext(l)[0] for l in  os.listdir(dirname)]
+        types_list = [os.path.splitext(l)[0] for l in os.listdir(dirname)]
         types_list.remove('__init__')
         self.update_dict({'types_list': types_list})
 
@@ -35,8 +37,6 @@ class EmpiricalPotential(Dict):
             self.set_data(potential_data)
         if data_from_file:
             self.set_data_from_file(data_from_file)
-
-
 
     def set_type(self, potential_type):
         """
@@ -61,8 +61,8 @@ class EmpiricalPotential(Dict):
         """
         read data from file
         """
-
-        data = open(filename).readlines()
+        with io.open(filename) as handle:
+            data = handle.readlines()
         self.update_dict({'potential_data': data})
 
     def set_data(self, data):
@@ -72,8 +72,8 @@ class EmpiricalPotential(Dict):
         self.update_dict({'potential_data': data})
 
     def create_potential_file(self, filename):
-        f = open(filename, 'r')
-        f.write(self.get_data_txt())
+        with io.open(filename, 'r') as handle:
+            handle.write(self.get_data_txt())
 
     def _get_module(self):
 

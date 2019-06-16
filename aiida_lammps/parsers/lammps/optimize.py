@@ -5,7 +5,6 @@ from aiida.orm import ArrayData, Dict, StructureData
 from aiida_lammps import __version__ as aiida_lammps_version
 from aiida_lammps.common.raw_parsers import read_log_file_long as read_log_file, read_lammps_positions_and_forces_txt, \
     get_units_dict
-from aiida_lammps.utils import aiida_version, cmp_version
 
 
 class OptimizeParser(Parser):
@@ -34,12 +33,12 @@ class OptimizeParser(Parser):
         # check what is inside the folder
         list_of_files = out_folder.list_object_names()
 
-        output_filename = self.node.options['output_filename'].default
-        if not output_filename in list_of_files:
+        output_filename = self.node.get_option('output_filename')
+        if output_filename not in list_of_files:
             raise OutputParsingError('Output file not found')
 
-        trajectory_filename = self.node.options['trajectory_name'].default
-        if not trajectory_filename in list_of_files:
+        trajectory_filename = self.node.get_option('trajectory_name')
+        if trajectory_filename not in list_of_files:
             raise OutputParsingError('Trajectory file not found')
 
         # parser_name = self.node.options['parser_name'].default
@@ -81,5 +80,5 @@ class OptimizeParser(Parser):
 
         parameters_data = Dict(dict=output_data)
 
-        #self.out(self.node.get_linkname_outparams(), parameters_data)
+        # self.out(self.node.get_linkname_outparams(), parameters_data)
         self.out('results', parameters_data)

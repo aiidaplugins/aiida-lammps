@@ -85,7 +85,6 @@ class CombinateCalculation(BaseLammpsCalculation):
         spec.input('force_constants', valid_type=ArrayData, help='harmonic force constants')
         spec.input('force_sets', valid_type=ArrayData, help='phonopy force sets')
 
-        spec.default_output_port = 'results'
         # spec.input('settings', valid_type=six.string_types, default='lammps.optimize')
 
     def prepare_extra_files(self, tempfolder, potential_object):

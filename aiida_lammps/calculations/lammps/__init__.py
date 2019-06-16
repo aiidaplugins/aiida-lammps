@@ -2,6 +2,7 @@ from aiida.engine import CalcJob
 from aiida.common import InputValidationError
 from aiida.common import CalcInfo, CodeInfo
 from aiida.orm import StructureData, Dict
+from aiida.plugins import DataFactory
 from aiida_lammps.common.utils import convert_date_string
 from aiida_lammps.data.potential import EmpiricalPotential
 import six
@@ -178,6 +179,12 @@ class BaseLammpsCalculation(CalcJob):
         spec.input('potential', valid_type=EmpiricalPotential, help='lammps potential')
         spec.input('parameters', valid_type=Dict, help='the parameters', required=False, default=Dict())
         spec.input('metadata.options.output_filename', valid_type=six.string_types, default=cls._OUTPUT_FILE_NAME)
+
+        spec.default_output_port = 'results'
+        spec.output('results',
+                    valid_type=DataFactory('dict'),
+                    required=True,
+                    help='the data extracted from the main output file')
 
     def validate_parameters(self, param_data, potential_object):
         return True

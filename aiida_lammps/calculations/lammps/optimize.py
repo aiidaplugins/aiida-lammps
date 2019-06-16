@@ -2,7 +2,7 @@ from aiida.common.exceptions import InputValidationError
 from aiida_lammps.calculations.lammps import BaseLammpsCalculation
 from aiida_lammps.common.utils import convert_date_string, join_keywords
 from aiida_lammps.validation import validate_with_json
-from aiida.orm import Dict
+from aiida.plugins import DataFactory
 import six
 
 
@@ -79,8 +79,16 @@ class OptimizeCalculation(BaseLammpsCalculation):
 
         spec.input('metadata.options.trajectory_name', valid_type=six.string_types, default=cls._OUTPUT_TRAJECTORY_FILE_NAME)
         spec.input('metadata.options.parser_name', valid_type=six.string_types, default='lammps.optimize')
-        spec.default_output_port = 'results'
         # spec.input('settings', valid_type=six.string_types, default='lammps.optimize')
+
+        spec.output('structure',
+                    valid_type=DataFactory('structure'),
+                    required=True,
+                    help='the structure output from the calculation')
+        spec.output('arrays',
+                    valid_type=DataFactory('array'),
+                    required=True,
+                    help='forces, stresses and positions data per step')
 
     def validate_parameters(self, param_data, potential_object):
         if param_data is None:

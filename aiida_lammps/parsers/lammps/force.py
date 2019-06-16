@@ -1,12 +1,10 @@
-import os
 from aiida.parsers.parser import Parser
 from aiida.common import OutputParsingError, exceptions
 
-from aiida.orm import Dict, ArrayData, StructureData
+from aiida.orm import Dict, ArrayData
 
 from aiida_lammps import __version__ as aiida_lammps_version
 from aiida_lammps.common.raw_parsers import read_lammps_positions_and_forces_txt, read_log_file, get_units_dict
-from aiida_lammps.utils import aiida_version, cmp_version
 
 
 class ForceParser(Parser):
@@ -35,18 +33,18 @@ class ForceParser(Parser):
         # check what is inside the folder
         list_of_files = out_folder.list_object_names()
 
-        output_filename = self.node.options['output_filename'].default
-        if not output_filename in list_of_files:
+        output_filename = self.node.get_option('output_filename')
+        if output_filename not in list_of_files:
             raise OutputParsingError('Output file not found')
 
-        trajectory_filename = self.node.options['trajectory_name'].default
-        if not trajectory_filename in list_of_files:
+        trajectory_filename = self.node.get_option('trajectory_name')
+        if trajectory_filename not in list_of_files:
             raise OutputParsingError('Trajectory file not found')
 
         output_txt = out_folder.get_object_content(output_filename)
         output_data, units = read_log_file(output_txt)
 
-        #output_data, cell, stress_tensor, units = read_log_file(output_txt)
+        # output_data, cell, stress_tensor, units = read_log_file(output_txt)
 
         trajectory_txt = out_folder.get_object_content(trajectory_filename)
 
@@ -58,8 +56,6 @@ class ForceParser(Parser):
 
         # add units used
         output_data.update(get_units_dict(units, ["energy", "force", "distance"]))
-
-
 
         # save forces and stresses into node
         array_data = ArrayData()

@@ -4,9 +4,9 @@ import numpy as np
 def parse_quasiparticle_data(qp_file):
     import yaml
 
-    f = open(qp_file, "r")
-    quasiparticle_data = yaml.load(f)
-    f.close()
+    with open(qp_file, "r") as handle:
+        quasiparticle_data = yaml.load(handle)
+
     data_dict = {}
     for i, data in enumerate(quasiparticle_data):
         data_dict['q_point_{}'.format(i)] = data
@@ -17,8 +17,9 @@ def parse_quasiparticle_data(qp_file):
 def parse_dynaphopy_output(file):
 
     thermal_properties = None
-    f = open(file, 'r')
-    data_lines = f.readlines()
+
+    with open(file, 'r') as handle:
+        data_lines = handle.readlines()
 
     indices = []
     q_points = []

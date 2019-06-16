@@ -34,10 +34,11 @@ for i, scaled_position in enumerate(scaled_positions):
 structure.store()
 
 
-eam_data = {'type': 'fs',
-            'file_contents': open('Fe_mm.eam.fs').readlines()}
+with open('Fe_mm.eam.fs') as handle:
+    eam_data = {'type': 'fs',
+                'file_contents': handle.readlines()}
 
-potential ={'pair_style': 'eam',
+potential = {'pair_style': 'eam',
                           'data': eam_data}
 
 lammps_machine = {'num_machines': 1,
