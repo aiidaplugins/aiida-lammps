@@ -1,6 +1,6 @@
 import os
 from aiida.parsers.parser import Parser
-from aiida.common import OutputParsingError, exceptions
+from aiida.common import exceptions
 from aiida.orm import Dict, TrajectoryData
 from aiida_lammps import __version__ as aiida_lammps_version
 from aiida_lammps.common.raw_parsers import read_lammps_trajectory, get_units_dict, read_log_file
@@ -36,12 +36,12 @@ class MdParser(Parser):
         # check outout folder
         output_filename = self.node.get_option('output_filename')
         if output_filename not in list_of_files:
-            raise OutputParsingError('Output file not found')
+            return self.exit_codes.ERROR_OUTPUT_FILE_MISSING
 
         # check temporal folder
         trajectory_filename = self.node.get_option('trajectory_name')
         if trajectory_filename not in list_of_temp_files:
-            raise OutputParsingError('Trajectory file not found')
+            return self.exit_codes.ERROR_TRAJ_FILE_MISSING
 
         # Read trajectory from temporal folder
         trajectory_filepath = temporary_folder + '/' + self.node.get_option('trajectory_name')
@@ -55,7 +55,7 @@ class MdParser(Parser):
             self.out('trajectory_data', trajectory_data)
 
         except KeyError:  # keys not found in json
-            raise OutputParsingError('Trajectory not parsed correctly')
+            return self.exit_codes.ERROR_TRAJ_PARSING
 
         # Read other data from output folder
         warnings = out_folder.get_object_content('_scheduler-stderr.txt')

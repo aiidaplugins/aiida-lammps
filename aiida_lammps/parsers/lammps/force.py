@@ -1,5 +1,5 @@
 from aiida.parsers.parser import Parser
-from aiida.common import OutputParsingError, exceptions
+from aiida.common import exceptions
 
 from aiida.orm import Dict, ArrayData
 
@@ -35,11 +35,11 @@ class ForceParser(Parser):
 
         output_filename = self.node.get_option('output_filename')
         if output_filename not in list_of_files:
-            raise OutputParsingError('Output file not found')
+            return self.exit_codes.ERROR_OUTPUT_FILE_MISSING
 
         trajectory_filename = self.node.get_option('trajectory_name')
         if trajectory_filename not in list_of_files:
-            raise OutputParsingError('Trajectory file not found')
+            return self.exit_codes.ERROR_TRAJ_FILE_MISSING
 
         output_txt = out_folder.get_object_content(output_filename)
         output_data, units = read_log_file(output_txt)
