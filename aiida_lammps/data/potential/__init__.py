@@ -1,4 +1,5 @@
 from hashlib import md5
+import six
 
 from aiida.orm import Data
 from aiida.plugins.entry_point import load_entry_point, get_entry_point_names
@@ -68,13 +69,13 @@ class EmpiricalPotential(Data):
         if pot_contents is not None:
             self.set_attribute('potential_md5', md5(pot_contents.encode("utf-8")).hexdigest())
             with self.open(self.potential_filename, mode="w") as handle:
-                handle.write(pot_contents)
+                handle.write(six.ensure_text(pot_contents))
         elif self.potential_filename in self.list_object_names():
             self.delete_object(self.potential_filename)
 
         self.set_attribute('input_lines_md5', md5(pot_lines.encode("utf-8")).hexdigest())
         with self.open(self.pot_lines_fname, mode="w") as handle:
-            handle.write(pot_lines)
+            handle.write(six.ensure_text(pot_lines))
 
     @property
     def kind_names(self):
