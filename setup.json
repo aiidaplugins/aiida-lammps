@@ -40,6 +40,7 @@
       "pgtest==1.2.0",
       "sqlalchemy-diff==0.1.3",
       "pytest==3.6.3",
+      "pytest-cov",
       "pytest-timeout",
       "pytest-regressions",
       "wheel>=0.31"

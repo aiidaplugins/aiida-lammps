@@ -88,7 +88,7 @@ def get_or_create_local_computer(work_directory, name='localhost'):
             name=name,
             hostname='localhost',
             description=('localhost computer, '
-                         'set up by aiida_crystal17 tests'),
+                         'set up by aiida_lammps tests'),
             transport_type='local',
             scheduler_type='direct',
             workdir=os.path.abspath(work_directory))
