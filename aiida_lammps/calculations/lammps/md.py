@@ -17,7 +17,7 @@ def generate_LAMMPS_input(calc,
 
     random_number = np.random.randint(10000000)
 
-    names_str = ' '.join(potential_obj.names)
+    names_str = ' '.join(potential_obj.kind_names)
 
     #lammps_date = convert_date_string(pdict.get("lammps_version", None))
 

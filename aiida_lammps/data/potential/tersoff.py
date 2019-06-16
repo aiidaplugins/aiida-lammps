@@ -15,5 +15,6 @@ def get_input_potential_lines(data, names=None, potential_filename='potential.po
 
     return lammps_input_text
 
+
 DEFAULT_UNITS = 'metal'
 ATOM_STYLE = 'atomic'

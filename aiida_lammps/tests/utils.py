@@ -24,19 +24,6 @@ def lammps_version():
     return version
 
 
-def get_default_metadata():
-    return {
-        "options": {
-            "resources": {
-                "num_machines": 1,
-                "num_mpiprocs_per_machine": 1
-            },
-            "withmpi": False,
-            "max_wallclock_seconds": 60
-        }
-    }
-
-
 def get_path_to_executable(executable):
     """ Get path to local executable.
 

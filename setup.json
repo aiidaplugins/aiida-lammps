@@ -32,6 +32,12 @@
     ],
     "aiida.data": [
       "lammps.potential = aiida_lammps.data.potential:EmpiricalPotential"
+    ],
+    "lammps.potentials": [
+      "eam =  aiida_lammps.data.potential.eam",
+      "lennard_jones =  aiida_lammps.data.potential.lennard_jones",
+      "reaxff =  aiida_lammps.data.potential.reaxff",
+      "tersoff =  aiida_lammps.data.potential.tersoff"
     ]
   },
   "extras_require": {

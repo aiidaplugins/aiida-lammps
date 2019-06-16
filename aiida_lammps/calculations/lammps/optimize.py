@@ -13,7 +13,7 @@ def generate_LAMMPS_input(calc,
                           trajectory_file='path.lammpstrj',
                           version_date='11 Aug 2017'):
 
-    names_str = ' '.join(potential_obj.names)
+    names_str = ' '.join(potential_obj.kind_names)
 
     parameters = parameters_data.get_dict()
 

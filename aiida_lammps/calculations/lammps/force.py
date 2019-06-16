@@ -10,7 +10,7 @@ def generate_LAMMPS_input(calc,
                           trajectory_file='trajectory.lammpstr',
                           version_date='11 Aug 2017'):
 
-    names_str = ' '.join(potential_obj.names)
+    names_str = ' '.join(potential_obj.kind_names)
 
     lammps_input_file =  'units          {0}\n'.format(potential_obj.default_units)
     lammps_input_file += 'boundary        p p p\n'

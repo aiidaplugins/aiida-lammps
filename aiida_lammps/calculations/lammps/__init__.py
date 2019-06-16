@@ -162,7 +162,6 @@ class BaseLammpsCalculation(CalcJob):
     """
 
     _INPUT_FILE_NAME = 'input.in'
-    _INPUT_POTENTIAL = 'potential.pot'
     _INPUT_STRUCTURE = 'input.data'
 
     _OUTPUT_FILE_NAME = 'log.lammps'
@@ -235,7 +234,7 @@ class BaseLammpsCalculation(CalcJob):
             infile.write(structure_txt)
 
         if potential_txt is not None:
-            potential_filename = tempfolder.get_abs_path(self._INPUT_POTENTIAL)
+            potential_filename = tempfolder.get_abs_path(self.inputs.potential.potential_filename)
             with open(potential_filename, 'w') as infile:
                 # print(potential_txt)
                 infile.write(potential_txt)

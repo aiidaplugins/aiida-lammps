@@ -1,141 +1,109 @@
-import importlib
-import io
-import os
-from aiida.orm import Dict
+from hashlib import md5
+
+from aiida.orm import Data
+from aiida.plugins.entry_point import load_entry_point, get_entry_point_names
 
 
-class EmpiricalPotential(Dict):
+class EmpiricalPotential(Data):
     """
-    Store the band structure.
+    Store the empirical potential data
     """
+    entry_name = 'lammps.potentials'
+    potential_filename = 'potential.pot'
+    pot_lines_fname = 'potential_lines.txt'
+
+    @classmethod
+    def list_types(cls):
+        return get_entry_point_names(cls.entry_name)
+
+    @classmethod
+    def load_type(cls, entry_name):
+        return load_entry_point(cls.entry_name, entry_name)
 
     def __init__(self, **kwargs):
 
         structure = kwargs.pop('structure', None)
+        kind_names = kwargs.pop('kind_names', None)
         potential_type = kwargs.pop('type', None)
         potential_data = kwargs.pop('data', None)
-        data_from_file = kwargs.pop('data_from_file', None)
 
         super(EmpiricalPotential, self).__init__(**kwargs)
 
-        dirname = os.path.dirname(__file__)
-        types_list = [os.path.splitext(l)[0] for l in os.listdir(dirname)]
-        types_list.remove('__init__')
-        self.update_dict({'types_list': types_list})
+        self._set_kind_names(structure, kind_names)
+        self.set_data(potential_type, potential_data)
 
-        if structure:
-            print(structure)
+    def _set_kind_names(self, structure=None, kind_names=None):
+        if structure is not None and kind_names is not None:
+            raise ValueError("only one of 'structure' or 'kind_names' must be provided")
+        elif structure is not None:
             names = [site.name for site in structure.kinds]
-
-            self.update_dict({'names': names})
+            self.set_attribute('kind_names', names)
+        elif kind_names is not None:
+            self.set_attribute('kind_names', kind_names)
         else:
-            raise RuntimeError('structure not provided')
+            raise ValueError("one of 'structure' or 'kind_names' must be provided")
 
-        if potential_type:
-            self.set_type(potential_type)
-        if potential_data:
-            self.set_data(potential_data)
-        if data_from_file:
-            self.set_data_from_file(data_from_file)
-
-    def set_type(self, potential_type):
+    def set_data(self, potential_type, data=None):
         """
         Store the potential type (ex. Tersoff, EAM, LJ, ..)
         """
+        if potential_type is None:
+            raise ValueError("'potential_type' must be provided")
+        if potential_type not in self.list_types():
+            raise ValueError("'potential_type' must be in: {}".format(self.list_types()))
+        module = self.load_type(potential_type)
 
-        if potential_type in self.dict.types_list:
-            self.update_dict({'potential_type': potential_type})
-        else:
-            print('This lammps potential is not implemented, set as generic')
-            self.update_dict({'potential_type': 'generic'})
+        atom_style = module.ATOM_STYLE
+        default_units = module.DEFAULT_UNITS
 
-    def get_type(self):
+        data = {} if data is None else data
+        pot_contents = module.generate_LAMMPS_potential(data)
+        pot_lines = module.get_input_potential_lines(
+            data, names=self.kind_names, potential_filename=self.potential_filename)
+
+        self.set_attribute("potential_type", potential_type)
+        self.set_attribute("atom_style", atom_style)
+        self.set_attribute("default_units", default_units)
+
+        if pot_contents is not None:
+            self.set_attribute('potential_md5', md5(pot_contents.encode("utf-8")).hexdigest())
+            with self.open(self.potential_filename, mode="w") as handle:
+                handle.write(pot_contents)
+        elif self.potential_filename in self.list_object_names():
+            self.delete_object(self.potential_filename)
+
+        self.set_attribute('input_lines_md5', md5(pot_lines.encode("utf-8")).hexdigest())
+        with self.open(self.pot_lines_fname, mode="w") as handle:
+            handle.write(pot_lines)
+
+    @property
+    def kind_names(self):
+        return self.get_attribute('kind_names')
+
+    @property
+    def potential_type(self):
+        return self.get_attribute('potential_type')
+
+    @property
+    def atom_style(self):
+        """get lammps atom style
         """
-        Store the potential type (ex. Tersoff, EAM, LJ, ..)
-        """
-        if 'potential_type' not in self.get_dict():
-            return 'generic'
-        return self.dict.potential_type
+        return self.get_attribute('atom_style')
 
-    def set_data_from_file(self, filename):
-        """
-        read data from file
-        """
-        with io.open(filename) as handle:
-            data = handle.readlines()
-        self.update_dict({'potential_data': data})
-
-    def set_data(self, data):
-        """
-        read data from file
-        """
-        self.update_dict({'potential_data': data})
-
-    def create_potential_file(self, filename):
-        with io.open(filename, 'r') as handle:
-            handle.write(self.get_data_txt())
-
-    def _get_module(self):
-
-        pottype = self.get_type()
-        if pottype not in self.dict.types_list:
-            return None
-        else:
-            return importlib.import_module('.{}'.format(pottype), __name__)
+    @property
+    def default_units(self):
+        return self.get_attribute('default_units')
 
     def get_potential_file(self):
+        if self.potential_filename in self.list_object_names():
+            return self.get_object_content(self.potential_filename, 'r')
+        return None
 
-        if self._get_module() is None:
-            return self.dict.potential_data
-        else:
-            return self._get_module().generate_LAMMPS_potential(self.dict.potential_data)
-
-    def get_input_potential_lines(self, names=None, potential_filename='potential.pot'):
-
-        if self._get_module() is None:
-            return self.dict.input_potential_lines
-        else:
-            return self._get_module().get_input_potential_lines(self.dict.potential_data,
-                                                                names=self.names,
-                                                                potential_filename=potential_filename)
-
-    def set_input_potential_lines(self, data):
+    def get_input_potential_lines(self):
         """
-        set the string command to put in lammps input to setup the potential
+        get the string command to put in lammps input to setup the potential
         Ex:
              pair_style      eam
              pair_coeff      * *  Si
         """
-        self.update_dict({'input_potential_lines': data})
-
-    def set_atom_style(self, data):
-        """
-        set lammps atom style
-        Ex: atomic
-        """
-        self.update_dict({'atom_style': data})
-
-    def set_default_units(self, data):
-        """
-        set default lammps unit set
-        Ex: metal
-        """
-        self.update_dict({'atom_style': data})
-
-    @property
-    def default_units(self):
-        if self._get_module() is None:
-            return self.dict.default_units
-        else:
-            return self._get_module().DEFAULT_UNITS
-
-    @property
-    def atom_style(self):
-        if self._get_module() is None:
-            return self.dict.atom_style
-        else:
-            return self._get_module().ATOM_STYLE
-
-    @property
-    def names(self):
-        return self.dict.names
+        return self.get_object_content(self.pot_lines_fname, 'r')

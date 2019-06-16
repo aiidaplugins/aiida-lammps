@@ -44,7 +44,7 @@ def db_test_app(aiida_environment):
 
 
 potential_data = namedtuple(
-    'PotentialTestData', ['potential', 'structure', 'units', 'input_files', 'output'])
+    'PotentialTestData', ['type', 'data', 'structure', 'output'])
 
 
 @pytest.fixture(scope='function')
@@ -69,8 +69,6 @@ def get_potential_data():
 
             symbols = ['Fe', 'Fe']
 
-            input_files = ['input.data', 'input.in', 'potential.pot']
-
             output_dict = {
                 "energy": -8.2448702,
                 "warnings": ''
@@ -93,8 +91,6 @@ def get_potential_data():
                 # '2  2':   '1.0      1.0    2.5',
                 # '1  2':   '1.0      1.0    2.5'
             }
-
-            input_files = ['input.data', 'input.in']
 
             output_dict = {
                 "energy": 0.0,  # TODO should LJ energy be 0?
@@ -125,8 +121,6 @@ def get_potential_data():
                 'Ga N  Ga': '1.0 0.007874 1.846 1.918000 0.75000 -0.301300 1.0 0.0 0.00000 0.00000 2.87 0.15 0.00000 0.00000'}
 
             pair_style = 'tersoff'
-
-            input_files = ['input.data', 'input.in', 'potential.pot']
 
             output_dict = {
                 "energy": -18.110852,
@@ -163,8 +157,6 @@ def get_potential_data():
 
             symbols = ['Fe'] * 4 + ['S'] * 8
 
-            input_files = ['input.data', 'input.in', 'potential.pot']
-
             output_dict = {
                 "energy": -1030.3543,
                 "units": "real",
@@ -181,11 +173,6 @@ def get_potential_data():
                 position=np.dot(scaled_position, cell).tolist(),
                 symbols=symbols)
 
-        # create potential from dict
-        potential = DataFactory("lammps.potential")(
-            structure=structure, type=pair_style, data=potential_dict
-        )
-
-        return potential_data(potential, structure, potential.default_units, input_files, output_dict)
+        return potential_data(pair_style, potential_dict, structure, output_dict)
 
     return _get_potential_data

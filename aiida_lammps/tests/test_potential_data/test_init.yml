@@ -1,0 +1,6 @@
+atom_style: atomic
+default_units: metal
+kind_names:
+- A
+- B
+potential_type: lennard_jones
