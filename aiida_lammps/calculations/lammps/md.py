@@ -1,5 +1,6 @@
 import numpy as np
 from aiida.common.exceptions import InputValidationError
+from aiida.plugins import DataFactory
 from aiida_lammps.calculations.lammps import BaseLammpsCalculation
 from aiida_lammps.common.utils import convert_date_string, join_keywords, get_path
 from aiida_lammps.validation import validate_with_json
@@ -16,7 +17,7 @@ def generate_LAMMPS_input(calc,
 
     random_number = np.random.randint(10000000)
 
-    names_str = ' '.join(potential_obj.names)
+    names_str = ' '.join(potential_obj.kind_names)
 
     #lammps_date = convert_date_string(pdict.get("lammps_version", None))
 
@@ -90,6 +91,11 @@ class MdCalculation(BaseLammpsCalculation):
         spec.input('metadata.options.parser_name', valid_type=six.string_types, default='lammps.md')
         spec.default_output_port = 'results'
         # spec.input('settings', valid_type=six.string_types, default='lammps.optimize')
+
+        spec.output('trajectory_data',
+                    valid_type=DataFactory('array.trajectory'),
+                    required=True,
+                    help='forces, stresses and positions data per step')
 
     def validate_parameters(self, param_data, potential_object):
         if param_data is None:

@@ -11,9 +11,10 @@ def get_input_potential_lines(data, names=None, potential_filename='potential.po
 
     lammps_input_text = 'pair_style  lj/cut {}\n'.format(cut)
 
-    for key, value in data.items():
-        lammps_input_text += 'pair_coeff {}    {}\n'.format(key, value)
+    for key in sorted(data.keys()):
+        lammps_input_text += 'pair_coeff {}    {}\n'.format(key, data[key])
     return lammps_input_text
+
 
 DEFAULT_UNITS = 'metal'
 ATOM_STYLE = 'atomic'

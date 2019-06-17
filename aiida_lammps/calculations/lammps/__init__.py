@@ -2,6 +2,7 @@ from aiida.engine import CalcJob
 from aiida.common import InputValidationError
 from aiida.common import CalcInfo, CodeInfo
 from aiida.orm import StructureData, Dict
+from aiida.plugins import DataFactory
 from aiida_lammps.common.utils import convert_date_string
 from aiida_lammps.data.potential import EmpiricalPotential
 import six
@@ -161,7 +162,6 @@ class BaseLammpsCalculation(CalcJob):
     """
 
     _INPUT_FILE_NAME = 'input.in'
-    _INPUT_POTENTIAL = 'potential.pot'
     _INPUT_STRUCTURE = 'input.data'
 
     _OUTPUT_FILE_NAME = 'log.lammps'
@@ -178,6 +178,40 @@ class BaseLammpsCalculation(CalcJob):
         spec.input('potential', valid_type=EmpiricalPotential, help='lammps potential')
         spec.input('parameters', valid_type=Dict, help='the parameters', required=False, default=Dict())
         spec.input('metadata.options.output_filename', valid_type=six.string_types, default=cls._OUTPUT_FILE_NAME)
+
+        spec.default_output_port = 'results'
+        spec.output('results',
+                    valid_type=DataFactory('dict'),
+                    required=True,
+                    help='the data extracted from the main output file')
+
+        # TODO review aiidateam/aiida_core#2997, when closed, for exit code formalization
+
+        # Unrecoverable errors: resources like the retrieved folder or its expected contents are missing
+        spec.exit_code(
+            200, 'ERROR_NO_RETRIEVED_FOLDER',
+            message='The retrieved folder data node could not be accessed.')
+        spec.exit_code(
+            210, 'ERROR_OUTPUT_FILE_MISSING',
+            message='the main output file was not found')
+        spec.exit_code(
+            220, 'ERROR_TRAJ_FILE_MISSING',
+            message='the trajectory output file was not found')
+
+        # Unrecoverable errors: required retrieved files could not be read, parsed or are otherwise incomplete
+        spec.exit_code(
+            300, 'ERROR_OUTPUT_PARSING',
+            message=('An error was flagged trying to parse the '
+                     'main lammps output file'))
+        spec.exit_code(
+            310, 'ERROR_TRAJ_PARSING',
+            message=('An error was flagged trying to parse the '
+                     'trajectory output file'))
+
+        # Significant errors but calculation can be used to restart
+        spec.exit_code(
+            400, 'ERROR_LAMMPS_RUN',
+            message='The main lammps output file flagged an error')
 
     def validate_parameters(self, param_data, potential_object):
         return True
@@ -222,15 +256,13 @@ class BaseLammpsCalculation(CalcJob):
 
         # =========================== dump to file =============================
 
-
         structure_filename = tempfolder.get_abs_path(self._INPUT_STRUCTURE)
         with open(structure_filename, 'w') as infile:
             infile.write(structure_txt)
 
         if potential_txt is not None:
-            potential_filename = tempfolder.get_abs_path(self._INPUT_POTENTIAL)
+            potential_filename = tempfolder.get_abs_path(self.inputs.potential.potential_filename)
             with open(potential_filename, 'w') as infile:
-                # print(potential_txt)
                 infile.write(potential_txt)
 
         # ============================ calcinfo ================================

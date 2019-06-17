@@ -1,129 +1,27 @@
+from contextlib import contextmanager
+import distutils.spawn
 import os
 import re
 import subprocess
 import sys
 
-from aiida_lammps.utils import aiida_version, cmp_version
+import six
 
 TEST_DIR = os.path.dirname(os.path.realpath(__file__))
-TEST_COMPUTER = 'localhost-test'
 TEST_EXECUTABLE = 'lammps'
 
 
 def lammps_version():
     """get the version of lammps
 
-    we assume lammps -h returns e.g. 'LAMMPS (10 Feb 2015)' as first line
+    we assume `lammps -h` returns e.g. 'LAMMPS (10 Feb 2015)' as first line
     """
     p = subprocess.Popen([TEST_EXECUTABLE, "-h"], stdout=subprocess.PIPE)
-    out, err = p.communicate()
-    line = out.splitlines()[0]
-    version = re.search("LAMMPS \((.*)\)", line).group(1)
+    stdout, stderr = p.communicate()
+    out_text = six.ensure_str(stdout)
+    line = out_text.splitlines()[0]
+    version = re.search(r"LAMMPS \((.*)\)", line).group(1)
     return version
-
-
-def get_computer(name=TEST_COMPUTER, workdir=None, configure=False):
-    """Get local computer.
-
-    Sets up local computer with 'name' or reads it from database,
-    if it exists.
-
-    :param name: Name of local computer
-    :param workdir: path to work directory (required if creating a new computer)
-
-    :return: The computer node
-    :rtype: :py:class:`aiida.orm.Computer`
-    """
-    from aiida.orm import Computer
-    from aiida.common.exceptions import NotExistent
-
-    try:
-        computer = Computer.objects.get(name)
-    except NotExistent:
-
-        if workdir is None:
-            raise ValueError(
-                "to create a new computer, a work directory must be supplied")
-
-        computer = Computer(
-            name=name,
-            description='localhost computer set up by aiida_lammps tests',
-            hostname=name,
-            workdir=workdir,
-            transport_type='local',
-            scheduler_type='direct',
-            enabled_state=True)
-        computer.store()
-
-        if configure:
-            try:
-                # aiida-core v1
-                from aiida.orm.utils import configure_computer
-                configure_computer(computer)
-            except ImportError:
-                configure_computer_v012(computer)
-
-    return computer
-
-
-def get_backend():
-    """ Return database backend.
-
-    Reads from 'TEST_AIIDA_BACKEND' environment variable.
-    Defaults to django backend.
-    """
-    from aiida.backends.profile import BACKEND_DJANGO, BACKEND_SQLA
-    if os.environ.get('TEST_AIIDA_BACKEND') == BACKEND_SQLA:
-        return BACKEND_SQLA
-    return BACKEND_DJANGO
-
-
-def is_sqla_backend():
-    """return True if the backend is sqlalchemy"""
-    from aiida.backends.profile import BACKEND_SQLA
-    return get_backend() == BACKEND_SQLA
-
-
-def configure_computer_v012(computer):
-    """Configure the authentication information for a given computer
-
-    adapted from aiida-core v0.12.2:
-    aiida_core.aiida.cmdline.commands.computer.Computer.computer_configure
-
-    :param computer: the computer to authenticate against
-    :param authparams: a dictionary of additional authorisation parameters to use (in string format)
-    :return:
-    """
-    from aiida.backends.utils import get_automatic_user
-
-    user = get_automatic_user()
-
-    authinfo = get_auth_info_v012(computer, user)
-
-    authinfo.set_auth_params({})
-    authinfo.save()
-
-
-def get_auth_info_v012(computer, user):
-    from aiida.backends.profile import BACKEND_DJANGO, BACKEND_SQLA
-    from django.core.exceptions import ObjectDoesNotExist
-
-    BACKEND = get_backend()
-    if BACKEND == BACKEND_DJANGO:
-        from aiida.backends.djsite.db.models import DbAuthInfo
-
-        try:
-            authinfo = DbAuthInfo.objects.get(
-                dbcomputer=computer.dbcomputer, aiidauser=user)
-
-        except ObjectDoesNotExist:
-            authinfo = DbAuthInfo(
-                dbcomputer=computer.dbcomputer, aiidauser=user)
-
-    elif BACKEND == BACKEND_SQLA:
-        raise NotImplementedError()
-
-    return authinfo
 
 
 def get_path_to_executable(executable):
@@ -134,69 +32,293 @@ def get_path_to_executable(executable):
 
     :return: path to executable
     :rtype: str
+
     """
     path = None
 
-    # issue with distutils finding scripts within the python path (i.e. those created by pip install)
+    # issue with distutils finding scripts within the python path
+    # (i.e. those created by pip install)
     script_path = os.path.join(os.path.dirname(sys.executable), executable)
     if os.path.exists(script_path):
         path = script_path
-
     if path is None:
-        # pylint issue https://github.com/PyCQA/pylint/issues/73
-        import distutils.spawn  # pylint: disable=no-name-in-module,import-error
         path = distutils.spawn.find_executable(executable)
-
     if path is None:
-        raise ValueError("{} executable not found in PATH.".format(executable))
+        raise ValueError(
+            "{} executable not found in PATH.".format(executable))
 
     return os.path.abspath(path)
 
 
-def run_get_node(process, inputs_dict):
-    """ an implementation of run_get_node which is compatible with both aiida v0.12 and v1.0.0
+def get_or_create_local_computer(work_directory, name='localhost'):
+    """Retrieve or setup a local computer
 
-    it will also convert "options" "label" and "description" to/from the _ variant
+    Parameters
+    ----------
+    work_directory : str
+        path to a local directory for running computations in
+    name : str
+        name of the computer
 
-    :param process: a process
-    :param inputs_dict: a dictionary of inputs
-    :type inputs_dict: dict
-    :return: the calculation Node
+    Returns
+    -------
+    aiida.orm.computers.Computer
+
     """
-    if aiida_version() < cmp_version("1.0.0a1"):
-        for key in ["options", "label", "description"]:
-            if key in inputs_dict:
-                inputs_dict["_" + key] = inputs_dict.pop(key)
-        workchain = process.new_instance(inputs=inputs_dict)
-        workchain.run_until_complete()
-        calcnode = workchain.calc
-    else:
-        from aiida.engine.launch import run_get_node  # pylint: disable=import-error
-        for key in ["_options", "_label", "_description"]:
-            if key in inputs_dict:
-                inputs_dict[key[1:]] = inputs_dict.pop(key)
-        _, calcnode = run_get_node(process, **inputs_dict)
+    from aiida.orm import Computer
+    from aiida.common import NotExistent
 
-    return calcnode
+    try:
+        computer = Computer.objects.get(name=name)
+    except NotExistent:
+        computer = Computer(
+            name=name,
+            hostname='localhost',
+            description=('localhost computer, '
+                         'set up by aiida_lammps tests'),
+            transport_type='local',
+            scheduler_type='direct',
+            workdir=os.path.abspath(work_directory))
+        computer.store()
+        computer.configure()
+
+    return computer
 
 
-def get_calc_log(calcnode):
-    """get a formatted string of the calculation log"""
-    #from aiida.backends.utils import get_log_messages
-    import json
-    import datetime
+def get_or_create_code(entry_point, computer, executable, exec_path=None):
+    """Setup code on localhost computer"""
+    from aiida.orm import Code, Computer
+    from aiida.common import NotExistent
 
-    def default(o):
-        if isinstance(o, (datetime.date, datetime.datetime)):
-            return o.isoformat()
+    if isinstance(computer, six.string_types):
+        computer = Computer.objects.get(name=computer)
 
-    #log_string = "- Calc State:\n{0}\n- Scheduler Out:\n{1}\n- Scheduler Err:\n{2}\n- Log:\n{3}".format(
-    #    calcnode.get_state(),
-    #    calcnode.get_scheduler_output(), calcnode.get_scheduler_error(),
-    #    json.dumps(get_log_messages(calcnode), default=default, indent=2))
+    try:
+        code = Code.objects.get(
+            label='{}-{}@{}'.format(entry_point, executable, computer.name))
+    except NotExistent:
+        if exec_path is None:
+            exec_path = get_path_to_executable(executable)
+        code = Code(
+            input_plugin_name=entry_point,
+            remote_computer_exec=[computer, exec_path],
+        )
+        code.label = '{}-{}@{}'.format(
+            entry_point, executable, computer.name)
+        code.store()
 
-    log_string = "- Calc State:\n{0}\n- Scheduler Out:\n{1}\n- Scheduler Err:\n{2}\n".format(
-        calcnode.get_state(),
-        calcnode.get_scheduler_output(), calcnode.get_scheduler_error())
+    return code
 
-    return log_string
+
+def get_default_metadata(max_num_machines=1, max_wallclock_seconds=1800, with_mpi=False,
+                         num_mpiprocs_per_machine=1):
+    """
+    Return an instance of the metadata dictionary with the minimally required parameters
+    for a CalcJob and set to default values unless overridden
+
+    :param max_num_machines: set the number of nodes, default=1
+    :param max_wallclock_seconds: set the maximum number of wallclock seconds, default=1800
+    :param with_mpi: whether to run the calculation with MPI enabled
+    :param num_mpiprocs_per_machine: set the number of cpus per node, default=1
+
+    :rtype: dict
+    """
+    return {
+        'options': {
+            'resources': {
+                'num_machines': int(max_num_machines),
+                'num_mpiprocs_per_machine': int(num_mpiprocs_per_machine)
+            },
+            'max_wallclock_seconds': int(max_wallclock_seconds),
+            'withmpi': with_mpi,
+        }}
+
+
+class AiidaTestApp(object):
+    def __init__(self, work_directory, executable_map, environment=None):
+        """a class providing methods for testing purposes
+
+        Parameters
+        ----------
+        work_directory : str
+            path to a local work directory (used when creating computers)
+        executable_map : dict
+            mapping of computation entry points to the executable name
+        environment : None or aiida.manage.fixtures.FixtureManager
+            manager of a temporary AiiDA environment
+
+        """
+        self._environment = environment
+        self._work_directory = work_directory
+        self._executables = executable_map
+
+    @property
+    def work_directory(self):
+        """return path to the work directory"""
+        return self._work_directory
+
+    @property
+    def environment(self):
+        """return manager of a temporary AiiDA environment"""
+        return self._environment
+
+    def get_or_create_computer(self, name='localhost'):
+        """Setup localhost computer"""
+        return get_or_create_local_computer(self.work_directory, name)
+
+    def get_or_create_code(self, entry_point, computer_name='localhost'):
+        """Setup code on localhost computer"""
+
+        computer = self.get_or_create_computer(computer_name)
+
+        try:
+            executable = self._executables[entry_point]
+        except KeyError:
+            raise KeyError(
+                "Entry point {} not recognized. Allowed values: {}".format(
+                    entry_point, self._executables.keys()))
+
+        return get_or_create_code(entry_point, computer, executable)
+
+    @staticmethod
+    def get_default_metadata(max_num_machines=1, max_wallclock_seconds=1800, with_mpi=False):
+        return get_default_metadata(max_num_machines, max_wallclock_seconds, with_mpi)
+
+    @staticmethod
+    def get_parser_cls(entry_point_name):
+        """load a parser class
+
+        Parameters
+        ----------
+        entry_point_name : str
+            entry point name of the parser class
+
+        Returns
+        -------
+        aiida.parsers.parser.Parser
+
+        """
+        from aiida.plugins import ParserFactory
+        return ParserFactory(entry_point_name)
+
+    @staticmethod
+    def get_data_node(entry_point_name, **kwargs):
+        """load a data node instance
+
+        Parameters
+        ----------
+        entry_point_name : str
+            entry point name of the data node class
+
+        Returns
+        -------
+        aiida.orm.nodes.data.Data
+
+        """
+        from aiida.plugins import DataFactory
+        return DataFactory(entry_point_name)(**kwargs)
+
+    @staticmethod
+    def get_calc_cls(entry_point_name):
+        """load a data node class
+
+        Parameters
+        ----------
+        entry_point_name : str
+            entry point name of the data node class
+
+        """
+        from aiida.plugins import CalculationFactory
+        return CalculationFactory(entry_point_name)
+
+    def generate_calcjob_node(self, entry_point_name, retrieved,
+                              computer_name='localhost', attributes=None):
+        """Fixture to generate a mock `CalcJobNode` for testing parsers.
+
+        Parameters
+        ----------
+        entry_point_name : str
+            entry point name of the calculation class
+        retrieved : aiida.orm.FolderData
+            containing the file(s) to be parsed
+        computer_name : str
+            used to get or create a ``Computer``, by default 'localhost'
+        attributes : None or dict
+            any additional attributes to set on the node
+
+        Returns
+        -------
+        aiida.orm.CalcJobNode
+            instance with the `retrieved` node linked as outgoing
+
+        """
+        from aiida.common.links import LinkType
+        from aiida.orm import CalcJobNode
+        from aiida.plugins.entry_point import format_entry_point_string
+
+        process = self.get_calc_cls(entry_point_name)
+        computer = self.get_or_create_computer(computer_name)
+        entry_point = format_entry_point_string(
+            'aiida.calculations', entry_point_name)
+
+        node = CalcJobNode(computer=computer, process_type=entry_point)
+        spec_options = process.spec().inputs['metadata']['options']
+        # TODO post v1.0.0b2, this can be replaced with process.spec_options
+        node.set_options({
+            k: v.default for k, v in spec_options.items() if v.has_default()})
+        node.set_option('resources', {'num_machines': 1,
+                                      'num_mpiprocs_per_machine': 1})
+        node.set_option('max_wallclock_seconds', 1800)
+
+        if attributes:
+            node.set_attributes(attributes)
+
+        node.store()
+
+        retrieved.add_incoming(
+            node, link_type=LinkType.CREATE, link_label='retrieved')
+        retrieved.store()
+
+        return node
+
+    @contextmanager
+    def sandbox_folder(self):
+        """AiiDA folder object context.
+
+        Yields
+        ------
+        aiida.common.folders.SandboxFolder
+
+        """
+        from aiida.common.folders import SandboxFolder
+        with SandboxFolder() as folder:
+            yield folder
+
+    @staticmethod
+    def generate_calcinfo(entry_point_name, folder, inputs=None):
+        """generate a `CalcInfo` instance for testing calculation jobs.
+
+        A new `CalcJob` process instance is instantiated,
+        and `prepare_for_submission` is called to populate the supplied folder,
+        with raw inputs.
+
+        Parameters
+        ----------
+        entry_point_name: str
+        folder: aiida.common.folders.Folder
+        inputs: dict or None
+
+        """
+        from aiida.engine.utils import instantiate_process
+        from aiida.manage.manager import get_manager
+        from aiida.plugins import CalculationFactory
+
+        manager = get_manager()
+        runner = manager.get_runner()
+
+        process_class = CalculationFactory(entry_point_name)
+        process = instantiate_process(runner, process_class, **inputs)
+
+        calc_info = process.prepare_for_submission(folder)
+
+        return calc_info

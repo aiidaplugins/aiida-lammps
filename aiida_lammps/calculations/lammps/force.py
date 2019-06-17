@@ -10,7 +10,7 @@ def generate_LAMMPS_input(calc,
                           trajectory_file='trajectory.lammpstr',
                           version_date='11 Aug 2017'):
 
-    names_str = ' '.join(potential_obj.names)
+    names_str = ' '.join(potential_obj.kind_names)
 
     lammps_input_file =  'units          {0}\n'.format(potential_obj.default_units)
     lammps_input_file += 'boundary        p p p\n'
@@ -50,7 +50,7 @@ class ForceCalculation(BaseLammpsCalculation):
 
         spec.input('metadata.options.trajectory_name', valid_type=six.string_types, default=cls._OUTPUT_TRAJECTORY_FILE_NAME)
         spec.input('metadata.options.parser_name', valid_type=six.string_types, default='lammps.force')
-        spec.default_output_port = 'results'
+
         # spec.input('settings', valid_type=six.string_types, default='lammps.optimize')
 
     def validate_parameters(self, param_data, potential_object):

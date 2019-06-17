@@ -11,3 +11,4 @@
 .idea/vcs.xml
 postgres*.log
 .aiida_envs.yaml
+.vscode/

@@ -1,42 +1,35 @@
-sudo: required
-
 language: python
-python:
-- "2.7"
-- "3.6"
-
-branches:
-  only:
-    - support_0.12
-
+sudo: required
 cache: pip
 
 services:
 - postgresql
-- rabbitmq  # required for aiida >= 1.0
+- rabbitmq
 
 addons:
-  postgresql: "9.5"
-
-env:
-  matrix:
-    - TEST_TYPE: tests
-      TEST_AIIDA_BACKEND: django
-    - TEST_TYPE: tests
-      TEST_AIIDA_BACKEND: sqlalchemy
-#    - TEST_TYPE: pre-commit
-#    - TEST_TYPE: docs
-#      READTHEDOCS: 'True'
-    - TEST_TYPE="tests" AIIDA_BRANCH="develop" TEST_AIIDA_BACKEND="django"
-    - TEST_TYPE="tests" AIIDA_BRANCH="develop" TEST_AIIDA_BACKEND="sqlalchemy"
+  postgresql: "10.6"
 
 matrix:
-  allow_failures:
-    - env: TEST_TYPE="tests" AIIDA_BRANCH="develop" TEST_AIIDA_BACKEND="django"
-    - env: TEST_TYPE="tests" AIIDA_BRANCH="develop" TEST_AIIDA_BACKEND="sqlalchemy"
+  include:
+    - python: 3.6
+      env: TEST_TYPE="code-style"
+    - python: 3.6
+      env: TEST_TYPE="version"
+    - python: 3.6
+      env: TEST_TYPE="pytest" TEST_AIIDA_BACKEND="django"
+    - python: 2.7
+      env: TEST_TYPE="pytest" TEST_AIIDA_BACKEND="django"
+    - python: 3.6 
+      env: TEST_TYPE="pytest" TEST_AIIDA_BACKEND="sqlalchemy"
 
+  allow_failures:
+    - env: TEST_TYPE="code-style"
 
 before_install:
+
+  # This installs a relatively old version of LAMMPS (11 Nov 2013)
+  - if [[ "$TEST_TYPE" == "pytest" ]]; then sudo apt-get update -q; fi
+  - if [[ "$TEST_TYPE" == "pytest" ]]; then sudo apt-get install lammps -y; fi
 
 # Ideally we would want to run this, however, they are only built for debian-xenial not trusty
 #  - sudo add-apt-repository ppa:gladky-anton/lammps -y
@@ -50,46 +43,41 @@ before_install:
 #- ls
 #- cd ../..
 
-# This downloads LAMMPS (11 Nov 2013)
-  - if [[ "$TEST_TYPE" == "tests" ]]; then sudo apt-get update -q; fi
-  - if [[ "$TEST_TYPE" == "tests" ]]; then sudo apt-get install lammps -y; fi
-
 # get version of lammps
-#  - if [[ "$TEST_TYPE" == "tests" ]]; then lammps -h || true; fi
+#  - if [[ "$TEST_TYPE" == "pytest" ]]; then lammps -h || true; fi
 
 install:
-# Upgrade pip setuptools and wheel
-- pip install -U pip wheel setuptools
-- pip install -e .[testing]
-- >
-  if [[ ! -z "${AIIDA_BRANCH}" ]]; then
-    cur_path="$(pwd)";
-    cd ..;
-    git clone --branch=${AIIDA_BRANCH} https://github.com/aiidateam/aiida_core.git;
-    cd aiida_core;
-    pip install -U .[testing];
-    cd "$cur_path";
-  fi
-#- pip install coveralls
+- pip install -U pip wheel setuptools "reentry>=1.3"
+- |
+    if [[ "$TEST_TYPE" == "pytest" ]]; then
+      pip uninstall -y numpy
+      pip install -e .[testing]
+      pip install coveralls
+    fi
+- |
+    if [[ "$TEST_TYPE" == "code-style" ]]; then
+      pip install "flake8<3.8.0,>=3.7.0"
+    fi
 
 before_script:
-- reentry scan
+- |
+    if [[ "$TEST_TYPE" == "pytest" ]]; then
+      reentry scan
+    fi
 
 script:
-- >
-  if [[ "$TEST_TYPE" == "tests" ]]; then
-    if [[ ! -z "${AIIDA_BRANCH}" ]]; then
-      pytest -v aiida_lammps;
-    else
-      pytest -v aiida_lammps;
-    fi
+- |
+  if [[ "$TEST_TYPE" == "pytest" ]]; then
+      pytest -v --cov=aiida_lammps --cov-report= aiida_lammps
   fi
-#- >
-#  if [[ "$TEST_TYPE" == "pre-commit" ]]; then
-#  pre-commit install;
-#  pre-commit run --all-files || ( git status --short; git diff ; exit 1 ) ;
-#  fi
-#- if [[ "$TEST_TYPE" == "docs" ]]; then cd docs; make; fi
+- |
+  if [[ "$TEST_TYPE" == "code-style" ]]; then
+    flake8 .
+  fi
+- |
+  if [[ "$TEST_TYPE" == "version" ]]; then
+    python ./.travis-data/check_version.py
+  fi
 
-#after_success:
-#- coveralls
+# after_success:
+# - coveralls

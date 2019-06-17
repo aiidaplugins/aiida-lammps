@@ -1,0 +1,8 @@
+atom_style: charge
+default_units: real
+input_lines_md5: 6564bc40d8841625b0e790161f59ec5d
+kind_names:
+- Fe
+- S
+potential_md5: 0296f86bcdfae0e931fa80977fb5fcb2
+potential_type: reaxff
