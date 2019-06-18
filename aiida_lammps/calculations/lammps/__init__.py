@@ -181,11 +181,11 @@ class BaseLammpsCalculation(CalcJob):
         spec.input('metadata.options.output_filename',
                    valid_type=six.string_types, default=cls._OUTPUT_FILE_NAME)
 
-        spec.default_output_node = 'results'
         spec.output('results',
                     valid_type=DataFactory('dict'),
                     required=True,
                     help='the data extracted from the main output file')
+        spec.default_output_node = 'results'
 
         # TODO review aiidateam/aiida_core#2997, when closed, for exit code formalization
 
