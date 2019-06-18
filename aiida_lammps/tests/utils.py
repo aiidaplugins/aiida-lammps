@@ -8,15 +8,14 @@ import sys
 import six
 
 TEST_DIR = os.path.dirname(os.path.realpath(__file__))
-TEST_EXECUTABLE = 'lammps'
 
 
-def lammps_version():
+def lammps_version(executable="lammps"):
     """get the version of lammps
 
     we assume `lammps -h` returns e.g. 'LAMMPS (10 Feb 2015)' as first line
     """
-    p = subprocess.Popen([TEST_EXECUTABLE, "-h"], stdout=subprocess.PIPE)
+    p = subprocess.Popen([executable, "-h"], stdout=subprocess.PIPE)
     stdout, stderr = p.communicate()
     out_text = six.ensure_str(stdout)
     line = out_text.splitlines()[0]
