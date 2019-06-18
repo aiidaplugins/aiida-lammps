@@ -70,6 +70,7 @@ def get_potential_data():
             symbols = ['Fe', 'Fe']
 
             output_dict = {
+                "initial_energy": -8.2441284,
                 "energy": -8.2448702,
                 "warnings": ''
             }
@@ -93,6 +94,7 @@ def get_potential_data():
             }
 
             output_dict = {
+                "initial_energy": 0.0,
                 "energy": 0.0,  # TODO should LJ energy be 0?
                 "warnings": ''
             }
@@ -123,6 +125,7 @@ def get_potential_data():
             pair_style = 'tersoff'
 
             output_dict = {
+                "initial_energy": -18.109886,
                 "energy": -18.110852,
                 "warnings": ''
             }
@@ -158,6 +161,7 @@ def get_potential_data():
             symbols = ['Fe'] * 4 + ['S'] * 8
 
             output_dict = {
+                "initial_energy": -1027.9739,
                 "energy": -1030.3543,
                 "units": "real",
                 "warnings": 'Warning: changed valency_val to valency_boc for X'
