@@ -25,9 +25,12 @@ class MdParser(Parser):
         # Check that the retrieved folder is there
         try:
             out_folder = self.retrieved
-            temporary_folder = kwargs['retrieved_temporary_folder']
         except exceptions.NotExistent:
             return self.exit_codes.ERROR_NO_RETRIEVED_FOLDER
+
+        if 'retrieved_temporary_folder' not in kwargs:
+            return self.exit_codes.ERROR_NO_RETRIEVED_TEMP_FOLDER
+        temporary_folder = kwargs['retrieved_temporary_folder']
 
         # check what is inside the folder
         list_of_files = out_folder.list_object_names()

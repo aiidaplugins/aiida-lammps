@@ -26,7 +26,6 @@ class ForceParser(Parser):
         # Check that the retrieved folder is there
         try:
             out_folder = self.retrieved
-            # temporary_folder = kwargs['retrieved_temporary_folder']
         except exceptions.NotExistent:
             return self.exit_codes.ERROR_NO_RETRIEVED_FOLDER
 

@@ -194,6 +194,9 @@ class BaseLammpsCalculation(CalcJob):
             200, 'ERROR_NO_RETRIEVED_FOLDER',
             message='The retrieved folder data node could not be accessed.')
         spec.exit_code(
+            201, 'ERROR_NO_RETRIEVED_TEMP_FOLDER',
+            message='The retrieved temporary folder data node could not be accessed.')
+        spec.exit_code(
             210, 'ERROR_OUTPUT_FILE_MISSING',
             message='the main output file was not found')
         spec.exit_code(
