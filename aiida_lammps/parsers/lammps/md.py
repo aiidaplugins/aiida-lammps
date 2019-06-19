@@ -49,6 +49,7 @@ class MdParser(Parser):
         # Read trajectory from temporal folder
         trajectory_filepath = temporary_folder + '/' + self.node.get_option('trajectory_name')
         timestep = self.node.inputs.parameters.dict.timestep
+        # TODO test if trajectory path is empty, before parsing
         positions, step_ids, cells, symbols, time = read_lammps_trajectory(trajectory_filepath, timestep=timestep)
 
         # save trajectory into node

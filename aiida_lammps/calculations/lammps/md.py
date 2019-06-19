@@ -111,6 +111,7 @@ class MdCalculation(BaseLammpsCalculation):
             ))
 
         self._retrieve_list += []
-        self._retrieve_temporary_list += [self._OUTPUT_TRAJECTORY_FILE_NAME]
+        if self._OUTPUT_TRAJECTORY_FILE_NAME not in self._retrieve_temporary_list:
+            self._retrieve_temporary_list += [self._OUTPUT_TRAJECTORY_FILE_NAME]
 
         return True
