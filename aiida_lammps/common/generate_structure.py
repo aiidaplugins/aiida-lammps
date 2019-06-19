@@ -194,9 +194,9 @@ def generate_lammps_structure(structure,
             xy, xz, yz)
 
     filestring += 'Masses\n\n'
-    for kind_name, kind_id in kind_name_id_map.items():
+    for kind_name in sorted(list(kind_name_id_map.keys())):
         filestring += '{0} {1:20.10f} \n'.format(
-            kind_id, kind_mass_dict[kind_name])
+            kind_name_id_map[kind_name], kind_mass_dict[kind_name])
     filestring += "\n"
 
     filestring += "Atoms\n\n"
