@@ -3,6 +3,7 @@ from aiida.common import CalcInfo, CodeInfo
 from aiida.orm import StructureData, Dict
 from aiida.plugins import DataFactory
 from aiida_lammps.common.utils import convert_date_string
+from aiida_lammps.common.generate_structure import generate_lammps_structure
 from aiida_lammps.data.potential import EmpiricalPotential
 import six
 
@@ -37,9 +38,9 @@ def get_FORCE_CONSTANTS_txt(force_constants):
     fc_txt = "%4d\n" % (fc_shape[0])
     for i in range(fc_shape[0]):
         for j in range(fc_shape[1]):
-            fc_txt += "%4d%4d\n" % (i+1, j+1)
+            fc_txt += "%4d%4d\n" % (i + 1, j + 1)
             for vec in force_constants[i][j]:
-                fc_txt +=("%22.15f"*3 + "\n") % tuple(vec)
+                fc_txt += ("%22.15f" * 3 + "\n") % tuple(vec)
 
     return fc_txt
 
@@ -54,8 +55,8 @@ def structure_to_poscar(structure):
     cell = structure.cell
     for row in cell:
         poscar += '{0: 22.16f} {1: 22.16f} {2: 22.16f}\n'.format(*row)
-    poscar += ' '.join(np.unique([site.kind_name for site in structure.sites]))+'\n'
-    poscar += ' '.join(np.array(labels, dtype=str))+'\n'
+    poscar += ' '.join(np.unique([site.kind_name for site in structure.sites])) + '\n'
+    poscar += ' '.join(np.array(labels, dtype=str)) + '\n'
     poscar += 'Cartesian\n'
     for site in structure.sites:
         poscar += '{0: 22.16f} {1: 22.16f} {2: 22.16f}\n'.format(*site.position)
@@ -80,68 +81,6 @@ def parameters_to_input_file(parameters_object):
     input_file += ('\n')
 
     return input_file
-
-
-def generate_LAMMPS_structure(structure, atom_style):
-    import numpy as np
-
-    types = [site.kind_name for site in structure.sites]
-
-    type_index_unique = np.unique(types, return_index=True)[1]
-    count_index_unique = np.diff(np.append(type_index_unique, [len(types)]))
-
-    atom_index = []
-    for i, index in enumerate(count_index_unique):
-        atom_index += [i for j in range(index)]
-
-    masses = [site.mass for site in structure.kinds]
-    positions = [site.position for site in structure.sites]
-
-    number_of_atoms = len(positions)
-
-    lammps_data_file = 'Generated using dynaphopy\n\n'
-    lammps_data_file += '{0} atoms\n\n'.format(number_of_atoms)
-    lammps_data_file += '{0} atom types\n\n'.format(len(masses))
-
-    cell = np.array(structure.cell)
-
-    a = np.linalg.norm(cell[0])
-    b = np.linalg.norm(cell[1])
-    c = np.linalg.norm(cell[2])
-
-    alpha = np.arccos(np.dot(cell[1], cell[2])/(c*b))
-    gamma = np.arccos(np.dot(cell[1], cell[0])/(a*b))
-    beta = np.arccos(np.dot(cell[2], cell[0])/(a*c))
-
-    xhi = a
-    xy = b * np.cos(gamma)
-    xz = c * np.cos(beta)
-    yhi = np.sqrt(pow(b,2)- pow(xy,2))
-    yz = (b*c*np.cos(alpha)-xy * xz)/yhi
-    zhi = np.sqrt(pow(c,2)-pow(xz,2)-pow(yz,2))
-
-    xhi = xhi + max(0,0, xy, xz, xy+xz)
-    yhi = yhi + max(0,0, yz)
-
-    lammps_data_file += '\n{0:20.10f} {1:20.10f} xlo xhi\n'.format(0, xhi)
-    lammps_data_file += '{0:20.10f} {1:20.10f} ylo yhi\n'.format(0, yhi)
-    lammps_data_file += '{0:20.10f} {1:20.10f} zlo zhi\n'.format(0, zhi)
-    lammps_data_file += '{0:20.10f} {1:20.10f} {2:20.10f} xy xz yz\n\n'.format(xy, xz, yz)
-
-    lammps_data_file += 'Masses\n\n'
-
-    for i, mass in enumerate(masses):
-        lammps_data_file += '{0} {1:20.10f} \n'.format(i+1, mass)
-
-    lammps_data_file += '\nAtoms\n\n'
-    for i, row in enumerate(positions):
-        if atom_style == 'charge':
-            # TODO variable initial charge
-            lammps_data_file += '{0} {1} 0.0 {2:20.10f} {3:20.10f} {4:20.10f}\n'.format(i+1, atom_index[i]+1, row[0],row[1],row[2])
-        else:
-            lammps_data_file += '{0} {1} {2:20.10f} {3:20.10f} {4:20.10f}\n'.format(i+1, atom_index[i]+1, row[0],row[1],row[2])
-
-    return lammps_data_file
 
 
 def generate_LAMMPS_potential(pair_style):
@@ -235,7 +174,7 @@ class BaseLammpsCalculation(CalcJob):
         potential_txt = self.inputs.potential.get_potential_file()
 
         # Setup structure
-        structure_txt = generate_LAMMPS_structure(self.inputs.structure,
+        structure_txt = generate_lammps_structure(self.inputs.structure,
                                                   self.inputs.potential.atom_style)
 
         if "parameters" in self.inputs:

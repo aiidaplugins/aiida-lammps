@@ -43,12 +43,104 @@ def db_test_app(aiida_environment):
     shutil.rmtree(work_directory)
 
 
+@pytest.fixture(scope='function')
+def get_structure_data():
+    def _get_structure_data(pkey):
+        """ return test structure data
+        """
+        if pkey == "Fe":
+
+            cell = [[2.848116, 0.000000, 0.000000],
+                    [0.000000, 2.848116, 0.000000],
+                    [0.000000, 0.000000, 2.848116]]
+
+            positions = [(0.0000000, 0.0000000, 0.0000000),
+                         (0.5000000, 0.5000000, 0.5000000)]
+            fractional = True
+
+            symbols = ['Fe', 'Fe']
+
+        elif pkey == "Ar":
+
+            cell = [[3.987594, 0.000000, 0.000000],
+                    [-1.993797, 3.453358, 0.000000],
+                    [0.000000, 0.000000, 6.538394]]
+
+            symbols = ['Ar'] * 2
+            positions = [(0.33333, 0.66666, 0.25000),
+                         (0.66667, 0.33333, 0.75000)]
+            fractional = True
+
+        elif pkey == "GaN":
+
+            cell = [[3.1900000572, 0, 0],
+                    [-1.5950000286, 2.762621076, 0],
+                    [0.0, 0, 5.1890001297]]
+
+            positions = [(0.6666669, 0.3333334, 0.0000000),
+                         (0.3333331, 0.6666663, 0.5000000),
+                         (0.6666669, 0.3333334, 0.3750000),
+                         (0.3333331, 0.6666663, 0.8750000)]
+            fractional = True
+
+            symbols = ['Ga', 'Ga', 'N', 'N']
+
+        elif pkey == "pyrite":
+
+            cell = [[5.38, 0.000000, 0.000000],
+                    [0.000000, 5.38, 0.000000],
+                    [0.000000, 0.000000, 5.38]]
+
+            positions = [
+                [0.0, 0.0, 0.0],
+                [0.5, 0.0, 0.5],
+                [0.0, 0.5, 0.5],
+                [0.5, 0.5, 0.0],
+                [0.338, 0.338, 0.338],
+                [0.662, 0.662, 0.662],
+                [0.162, 0.662, 0.838],
+                [0.838, 0.338, 0.162],
+                [0.662, 0.838, 0.162],
+                [0.338, 0.162, 0.838],
+                [0.838, 0.162, 0.662],
+                [0.162, 0.838, 0.338]]
+            fractional = True
+
+            symbols = ['Fe'] * 4 + ['S'] * 8
+
+        elif pkey == "fes_cubic-zincblende":
+            cell = [[2.71, -2.71, 0.0],
+                    [2.71, 0.0, 2.71],
+                    [0.0, -2.71, 2.71]]
+            symbols = ['Fe', 'S']
+            positions = [
+                [0, 0, 0],
+                [4.065, -4.065, 4.065]
+            ]
+            fractional = False
+        else:
+            raise ValueError('Unknown structure key: {}'.format(pkey))
+
+        # create structure
+        structure = DataFactory('structure')(cell=cell)
+        for position, symbols in zip(positions, symbols):
+            if fractional:
+                position = np.dot(position, cell).tolist()
+            structure.append_atom(
+                position=position,
+                symbols=symbols)
+
+        return structure
+
+    return _get_structure_data
+
+
 potential_data = namedtuple(
     'PotentialTestData', ['type', 'data', 'structure', 'output'])
 
 
 @pytest.fixture(scope='function')
-def get_potential_data():
+def get_potential_data(get_structure_data):
     def _get_potential_data(pkey):
         """ return data to create a potential,
         and accompanying structure data and expected output data to test it with
@@ -60,15 +152,7 @@ def get_potential_data():
                     'type': 'fs',
                     'file_contents': handle.readlines()
                 }
-            cell = [[2.848116, 0.000000, 0.000000],
-                    [0.000000, 2.848116, 0.000000],
-                    [0.000000, 0.000000, 2.848116]]
-
-            scaled_positions = [(0.0000000, 0.0000000, 0.0000000),
-                                (0.5000000, 0.5000000, 0.5000000)]
-
-            symbols = ['Fe', 'Fe']
-
+            structure = get_structure_data("Fe")
             output_dict = {
                 "initial_energy": -8.2441284,
                 "energy": -8.2448702,
@@ -77,13 +161,7 @@ def get_potential_data():
 
         elif pkey == "lennard-jones":
 
-            cell = [[3.987594, 0.000000, 0.000000],
-                    [-1.993797, 3.453358, 0.000000],
-                    [0.000000, 0.000000, 6.538394]]
-
-            symbols = ['Ar'] * 2
-            scaled_positions = [(0.33333, 0.66666, 0.25000),
-                                (0.66667, 0.33333, 0.75000)]
+            structure = get_structure_data("Ar")
 
             # Example LJ parameters for Argon. These may not be accurate at all
             pair_style = 'lennard_jones'
@@ -101,16 +179,7 @@ def get_potential_data():
 
         elif pkey == "tersoff":
 
-            cell = [[3.1900000572, 0, 0],
-                    [-1.5950000286, 2.762621076, 0],
-                    [0.0, 0, 5.1890001297]]
-
-            scaled_positions = [(0.6666669, 0.3333334, 0.0000000),
-                                (0.3333331, 0.6666663, 0.5000000),
-                                (0.6666669, 0.3333334, 0.3750000),
-                                (0.3333331, 0.6666663, 0.8750000)]
-
-            symbols = ['Ga', 'Ga', 'N', 'N']
+            structure = get_structure_data("GaN")
 
             potential_dict = {
                 'Ga Ga Ga': '1.0 0.007874 1.846 1.918000 0.75000 -0.301300 1.0 1.0 1.44970 410.132 2.87 0.15 1.60916 535.199',
@@ -140,25 +209,7 @@ def get_potential_data():
                     'safezone': 1.6,
                 }
 
-            # pyrite
-            cell = [[5.38, 0.000000, 0.000000],
-                    [0.000000, 5.38, 0.000000],
-                    [0.000000, 0.000000, 5.38]]
-
-            scaled_positions = [[0.0, 0.0, 0.0],
-                                [0.5, 0.0, 0.5],
-                                [0.0, 0.5, 0.5],
-                                [0.5, 0.5, 0.0],
-                                [0.338, 0.338, 0.338],
-                                [0.662, 0.662, 0.662],
-                                [0.162, 0.662, 0.838],
-                                [0.838, 0.338, 0.162],
-                                [0.662, 0.838, 0.162],
-                                [0.338, 0.162, 0.838],
-                                [0.838, 0.162, 0.662],
-                                [0.162, 0.838, 0.338]]
-
-            symbols = ['Fe'] * 4 + ['S'] * 8
+            structure = get_structure_data("pyrite")
 
             output_dict = {
                 "initial_energy": -1027.9739,
@@ -169,13 +220,6 @@ def get_potential_data():
 
         else:
             raise ValueError('Unknown potential key: {}'.format(pkey))
-
-        # create structure
-        structure = DataFactory('structure')(cell=cell)
-        for scaled_position, symbols in zip(scaled_positions, symbols):
-            structure.append_atom(
-                position=np.dot(scaled_position, cell).tolist(),
-                symbols=symbols)
 
         return potential_data(pair_style, potential_dict, structure, output_dict)
 
