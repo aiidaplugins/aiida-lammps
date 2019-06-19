@@ -47,25 +47,30 @@
       "description": "the timestep (in time units of style used)",
       "type": "number",
       "minimum": 0,
-      "exclusiveMinimum": "true"
+      "exclusiveMinimum": true
     },
     "equilibrium_steps": {
       "description": "number of initial time steps to equilibrate",
       "type": "integer",
       "minimum": 0,
-      "exclusiveMinimum": "true"
+      "exclusiveMinimum": true
     },
     "total_steps": {
       "description": "number of time steps to record (after equilibration)",
       "type": "integer",
       "minimum": 0,
-      "exclusiveMinimum": "true"
+      "exclusiveMinimum": true
     },
     "dump_rate": {
       "description": "record trajectory every x steps",
       "type": "number",
       "minimum": 0,
-      "exclusiveMinimum": "true"
+      "exclusiveMinimum": true
+    },
+    "restart": {
+      "description": "Write out a binary restart file with the current state of the simulation every x steps",
+      "type": "integer",
+      "minimum": 0
     },
     "integration": {
       "description": "the time integration method to update the position and velocity for atoms at each time step",

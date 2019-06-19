@@ -9,11 +9,12 @@ def generate_LAMMPS_input(calc,
                           potential_obj,
                           structure_file='data.gan',
                           trajectory_file='trajectory.lammpstr',
+                          restart_filename="lammps.restart",
                           version_date='11 Aug 2017'):
 
     names_str = ' '.join(potential_obj.kind_names)
 
-    lammps_input_file =  'units          {0}\n'.format(potential_obj.default_units)
+    lammps_input_file = 'units          {0}\n'.format(potential_obj.default_units)
     lammps_input_file += 'boundary        p p p\n'
     lammps_input_file += 'box tilt large\n'
     lammps_input_file += 'atom_style      {0}\n'.format(potential_obj.atom_style)
@@ -42,14 +43,12 @@ def generate_LAMMPS_input(calc,
 
 class ForceCalculation(BaseLammpsCalculation):
 
-    _OUTPUT_TRAJECTORY_FILE_NAME = 'trajectory.lammpstrj'
     _generate_input_function = generate_LAMMPS_input
 
     @classmethod
     def define(cls, spec):
         super(ForceCalculation, cls).define(spec)
 
-        spec.input('metadata.options.trajectory_name', valid_type=six.string_types, default=cls._OUTPUT_TRAJECTORY_FILE_NAME)
         spec.input('metadata.options.parser_name', valid_type=six.string_types, default='lammps.force')
 
         # spec.input('settings', valid_type=six.string_types, default='lammps.optimize')
@@ -60,5 +59,6 @@ class ForceCalculation(BaseLammpsCalculation):
                     help='force data per step')
 
     def validate_parameters(self, param_data, potential_object):
-        self._retrieve_list += [self._OUTPUT_TRAJECTORY_FILE_NAME]
+        if self.options.trajectory_name not in self._retrieve_list:
+            self._retrieve_list += [self.options.trajectory_name]
         self._retrieve_temporary_list += []

@@ -47,7 +47,8 @@ def get_FORCE_CONSTANTS_txt(force_constants):
 
 def structure_to_poscar(structure):
 
-    atom_type_unique = np.unique([site.kind_name for site in structure.sites], return_index=True)[1]
+    atom_type_unique = np.unique(
+        [site.kind_name for site in structure.sites], return_index=True)[1]
     labels = np.diff(np.append(atom_type_unique, [len(structure.sites)]))
 
     poscar = ' '.join(np.unique([site.kind_name for site in structure.sites]))
@@ -59,7 +60,8 @@ def structure_to_poscar(structure):
     poscar += ' '.join(np.array(labels, dtype=str)) + '\n'
     poscar += 'Cartesian\n'
     for site in structure.sites:
-        poscar += '{0: 22.16f} {1: 22.16f} {2: 22.16f}\n'.format(*site.position)
+        poscar += '{0: 22.16f} {1: 22.16f} {2: 22.16f}\n'.format(
+            *site.position)
 
     return poscar
 
@@ -102,7 +104,9 @@ class BaseLammpsCalculation(CalcJob):
     _INPUT_FILE_NAME = 'input.in'
     _INPUT_STRUCTURE = 'input.data'
 
-    _OUTPUT_FILE_NAME = 'log.lammps'
+    _DEFAULT_OUTPUT_FILE_NAME = 'log.lammps'
+    _DEFAULT_TRAJECTORY_FILE_NAME = 'trajectory.lammpstrj'
+    _DEFAULT_OUTPUT_RESTART_FILE_NAME = 'lammps.restart'
 
     _retrieve_list = ['log.lammps']
     _retrieve_temporary_list = []
@@ -118,7 +122,11 @@ class BaseLammpsCalculation(CalcJob):
         spec.input('parameters', valid_type=Dict,
                    help='the parameters', required=False)
         spec.input('metadata.options.output_filename',
-                   valid_type=six.string_types, default=cls._OUTPUT_FILE_NAME)
+                   valid_type=six.string_types, default=cls._DEFAULT_OUTPUT_FILE_NAME)
+        spec.input('metadata.options.trajectory_name',
+                   valid_type=six.string_types, default=cls._DEFAULT_TRAJECTORY_FILE_NAME)
+        spec.input('metadata.options.restart_filename',
+                   valid_type=six.string_types, default=cls._DEFAULT_OUTPUT_RESTART_FILE_NAME)
 
         spec.output('results',
                     valid_type=DataFactory('dict'),
@@ -190,7 +198,8 @@ class BaseLammpsCalculation(CalcJob):
         input_txt = self._generate_input_function(parameters,
                                                   self.inputs.potential,
                                                   self._INPUT_STRUCTURE,
-                                                  self._OUTPUT_TRAJECTORY_FILE_NAME,
+                                                  self.options.trajectory_name,
+                                                  self.options.restart_filename,
                                                   version_date=lammps_date)
 
         input_filename = tempfolder.get_abs_path(self._INPUT_FILE_NAME)

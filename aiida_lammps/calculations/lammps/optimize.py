@@ -11,6 +11,7 @@ def generate_LAMMPS_input(calc,
                           potential_obj,
                           structure_file='data.gan',
                           trajectory_file='path.lammpstrj',
+                          restart_filename="lammps.restart",
                           version_date='11 Aug 2017'):
 
     names_str = ' '.join(potential_obj.kind_names)
@@ -19,10 +20,12 @@ def generate_LAMMPS_input(calc,
 
     # lammps_date = convert_date_string(parameters.get("lammps_version", None))
 
-    lammps_input_file =  'units          {0}\n'.format(potential_obj.default_units)
+    lammps_input_file = 'units          {0}\n'.format(
+        potential_obj.default_units)
     lammps_input_file += 'boundary        p p p\n'
     lammps_input_file += 'box tilt large\n'
-    lammps_input_file += 'atom_style      {0}\n'.format(potential_obj.atom_style)
+    lammps_input_file += 'atom_style      {0}\n'.format(
+        potential_obj.atom_style)
     lammps_input_file += 'read_data       {}\n'.format(structure_file)
 
     lammps_input_file += potential_obj.get_input_potential_lines()
@@ -30,7 +33,7 @@ def generate_LAMMPS_input(calc,
     lammps_input_file += 'fix             int all box/relax {} {} {}\n'.format(parameters['relax']['type'],
                                                                                parameters['relax']['pressure'],
                                                                                join_keywords(parameters['relax'],
-                                                                               ignore=['type', 'pressure']))
+                                                                                             ignore=['type', 'pressure']))
 
     # TODO find exact version when changes were made
     if version_date <= convert_date_string('11 Nov 2013'):
@@ -53,7 +56,8 @@ def generate_LAMMPS_input(calc,
 
     lammps_input_file += 'dump_modify     aiida sort id\n'
     lammps_input_file += 'dump_modify     aiida element {}\n'.format(names_str)
-    lammps_input_file += 'min_style       {}\n'.format(parameters['minimize']['style'])
+    lammps_input_file += 'min_style       {}\n'.format(
+        parameters['minimize']['style'])
     # lammps_input_file += 'min_style       cg\n'
     lammps_input_file += 'minimize        {} {} {} {}\n'.format(parameters['minimize']['energy_tolerance'],
                                                                 parameters['minimize']['force_tolerance'],
@@ -70,16 +74,15 @@ def generate_LAMMPS_input(calc,
 
 
 class OptimizeCalculation(BaseLammpsCalculation):
-    _OUTPUT_TRAJECTORY_FILE_NAME = 'path.lammpstrj'
+
     _generate_input_function = generate_LAMMPS_input
 
     @classmethod
     def define(cls, spec):
         super(OptimizeCalculation, cls).define(spec)
 
-        spec.input('metadata.options.trajectory_name', valid_type=six.string_types, default=cls._OUTPUT_TRAJECTORY_FILE_NAME)
-        spec.input('metadata.options.parser_name', valid_type=six.string_types, default='lammps.optimize')
-        # spec.input('settings', valid_type=six.string_types, default='lammps.optimize')
+        spec.input('metadata.options.parser_name',
+                   valid_type=six.string_types, default='lammps.optimize')
 
         spec.output('structure',
                     valid_type=DataFactory('structure'),
@@ -104,10 +107,12 @@ class OptimizeCalculation(BaseLammpsCalculation):
                     punits, potential_object.default_units
                 ))
         else:
-            self.logger.log('No units defined, using:', potential_object.default_units)
+            self.logger.log('No units defined, using:',
+                            potential_object.default_units)
 
         # Update retrieve list
-        self._retrieve_list += [self._OUTPUT_TRAJECTORY_FILE_NAME]
+        if self.options.trajectory_name not in self._retrieve_list:
+            self._retrieve_list += [self.options.trajectory_name]
         self._retrieve_temporary_list += []
 
         return True

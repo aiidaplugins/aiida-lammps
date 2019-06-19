@@ -12,6 +12,7 @@ def generate_lammps_input(calc,
                           potential_obj,
                           structure_file='potential.pot',
                           trajectory_file='trajectory.lammpstr',
+                          restart_filename="lammps.restart",
                           version_date='11 Aug 2017'):
 
     pdict = parameters.get_dict()
@@ -46,6 +47,10 @@ def generate_lammps_input(calc,
 
     lammps_input_file += 'thermo_style    custom step etotal temp vol press\n'
     lammps_input_file += 'thermo          1000\n'
+
+    restart = pdict.get("restart", False)
+    if restart:
+        lammps_input_file += 'restart        {0} {1}\n'.format(restart, restart_filename)
 
     initial_temp, _, _ = get_path(pdict, ["integration", "constraints", "temp"],
                                   default=[None, None, None], raise_error=False)
@@ -88,15 +93,13 @@ def generate_lammps_input(calc,
 
 
 class MdCalculation(BaseLammpsCalculation):
-    _OUTPUT_TRAJECTORY_FILE_NAME = 'trajectory.lammpstrj'
+
     _generate_input_function = generate_lammps_input
 
     @classmethod
     def define(cls, spec):
         super(MdCalculation, cls).define(spec)
 
-        spec.input('metadata.options.trajectory_name',
-                   valid_type=six.string_types, default=cls._OUTPUT_TRAJECTORY_FILE_NAME)
         spec.input('metadata.options.parser_name',
                    valid_type=six.string_types, default='lammps.md')
         spec.default_output_port = 'results'
@@ -121,8 +124,7 @@ class MdCalculation(BaseLammpsCalculation):
             ))
 
         self._retrieve_list += []
-        if self._OUTPUT_TRAJECTORY_FILE_NAME not in self._retrieve_temporary_list:
-            self._retrieve_temporary_list += [
-                self._OUTPUT_TRAJECTORY_FILE_NAME]
+        if self.options.trajectory_name not in self._retrieve_temporary_list:
+            self._retrieve_temporary_list += [self.options.trajectory_name]
 
         return True
