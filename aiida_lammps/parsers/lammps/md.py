@@ -1,4 +1,5 @@
 import os
+import traceback
 from aiida.parsers.parser import Parser
 from aiida.common import exceptions
 from aiida.orm import Dict, TrajectoryData
@@ -49,16 +50,15 @@ class MdParser(Parser):
         # Read trajectory from temporal folder
         trajectory_filepath = temporary_folder + '/' + self.node.get_option('trajectory_name')
         timestep = self.node.inputs.parameters.dict.timestep
-        # TODO test if trajectory path is empty, before parsing
-        positions, step_ids, cells, symbols, time = read_lammps_trajectory(trajectory_filepath, timestep=timestep)
 
         # save trajectory into node
         try:
+            positions, step_ids, cells, symbols, time = read_lammps_trajectory(trajectory_filepath, timestep=timestep)
             trajectory_data = TrajectoryData()
             trajectory_data.set_trajectory(symbols, positions, stepids=step_ids, cells=cells, times=time)
             self.out('trajectory_data', trajectory_data)
-
-        except KeyError:  # keys not found in json
+        except Exception:
+            traceback.print_exc()
             return self.exit_codes.ERROR_TRAJ_PARSING
 
         # Read other data from output folder
