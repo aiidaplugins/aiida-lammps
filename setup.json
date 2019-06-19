@@ -12,7 +12,8 @@
     "packaging",
     "dateutils",
     "jsonschema",
-    "six"
+    "six",
+    "ase>=3.12.0,<4.0.0"
   ],
   "reentry_register": true,
   "include_package_data": true,
