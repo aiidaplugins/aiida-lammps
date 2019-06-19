@@ -10,7 +10,11 @@ import aiida_lammps.tests.utils as tests
 
 def get_calc_parameters(plugin_name, units):
 
-    if plugin_name == 'lammps.optimize':
+    if plugin_name == 'lammps.force':
+        parameters_opt = {
+            'lammps_version': tests.lammps_version(),
+        }
+    elif plugin_name == 'lammps.optimize':
         parameters_opt = {
             'lammps_version': tests.lammps_version(),
             'units': units,
@@ -47,6 +51,36 @@ def get_calc_parameters(plugin_name, units):
         raise ValueError(plugin_name)
 
     return Dict(dict=parameters_opt)
+
+
+@pytest.mark.parametrize('potential_type', [
+    "lennard-jones",
+    "tersoff",
+    "eam",
+    "reaxff",
+])
+def test_force_submission(db_test_app, get_potential_data, potential_type):
+    calc_plugin = 'lammps.force'
+    code = db_test_app.get_or_create_code(calc_plugin)
+    pot_data = get_potential_data(potential_type)
+    potential = DataFactory("lammps.potential")(
+        structure=pot_data.structure, type=pot_data.type, data=pot_data.data
+    )
+    parameters = get_calc_parameters(calc_plugin, potential.default_units)
+    builder = code.get_builder()
+    builder._update({
+        "metadata": tests.get_default_metadata(),
+        "code": code,
+        "structure": pot_data.structure,
+        "potential": potential,
+        "parameters": parameters
+    })
+
+    with db_test_app.sandbox_folder() as folder:
+        calc_info = db_test_app.generate_calcinfo(calc_plugin, folder, builder)
+
+        assert calc_info.codes_info[0].cmdline_params == ['-in', 'input.in']
+        assert set(folder.get_content_list()).issuperset(['input.data', 'input.in'])
 
 
 @pytest.mark.parametrize('potential_type', [
@@ -107,6 +141,54 @@ def test_md_submission(db_test_app, get_potential_data, potential_type):
 
         assert calc_info.codes_info[0].cmdline_params == ['-in', 'input.in']
         assert set(folder.get_content_list()).issuperset(['input.data', 'input.in'])
+
+
+@pytest.mark.lammps_call
+@pytest.mark.parametrize('potential_type', [
+    "lennard-jones",
+    "tersoff",
+    "eam",
+    "reaxff",
+])
+def test_force_process(db_test_app, get_potential_data, potential_type):
+    calc_plugin = 'lammps.force'
+    code = db_test_app.get_or_create_code(calc_plugin)
+    pot_data = get_potential_data(potential_type)
+    potential = DataFactory("lammps.potential")(
+        structure=pot_data.structure, type=pot_data.type, data=pot_data.data
+    )
+    parameters = get_calc_parameters(calc_plugin, potential.default_units)
+    builder = code.get_builder()
+    builder._update({
+        "metadata": tests.get_default_metadata(),
+        "code": code,
+        "structure": pot_data.structure,
+        "potential": potential,
+        "parameters": parameters
+    })
+
+    output = run_get_node(builder)
+    calc_node = output.node
+
+    if not calc_node.is_finished_ok:
+        print(calc_node.attributes)
+        print(get_calcjob_report(calc_node))
+        raise Exception("finished with exit message: {}".format(
+            calc_node.exit_message))
+
+    link_labels = calc_node.get_outgoing().all_link_labels()
+    assert set(link_labels).issuperset(
+        ['results', 'arrays'])
+
+    pdict = calc_node.outputs.results.get_dict()
+    assert set(pdict.keys()).issuperset(
+        ['energy', 'warnings', 'energy_units', 'force_units', 'parser_class', 'parser_version'])
+    assert pdict['warnings'].strip() == pot_data.output["warnings"]
+    assert pdict['energy'] == pytest.approx(pot_data.output['initial_energy'])
+
+    assert set(calc_node.outputs.arrays.get_arraynames()).issuperset(
+        ['forces']
+    )
 
 
 @pytest.mark.lammps_call

@@ -239,7 +239,7 @@ def read_lammps_trajectory_txt(data_txt,
     step_ids = np.array(time_steps, dtype=int)
     cells = np.array(cells)
     elements = np.array(read_elements)
-    time = np.array(step_ids)*timestep
+    time = np.array(step_ids) * float(timestep)
 
     return positions, step_ids, cells, elements, time
 

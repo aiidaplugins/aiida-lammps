@@ -1,3 +1,4 @@
+from aiida.plugins import DataFactory
 from aiida_lammps.calculations.lammps import BaseLammpsCalculation
 from aiida_lammps.common.utils import convert_date_string
 import six
@@ -52,6 +53,11 @@ class ForceCalculation(BaseLammpsCalculation):
         spec.input('metadata.options.parser_name', valid_type=six.string_types, default='lammps.force')
 
         # spec.input('settings', valid_type=six.string_types, default='lammps.optimize')
+
+        spec.output('arrays',
+                    valid_type=DataFactory('array'),
+                    required=True,
+                    help='force data per step')
 
     def validate_parameters(self, param_data, potential_object):
         self._retrieve_list += [self._OUTPUT_TRAJECTORY_FILE_NAME]
