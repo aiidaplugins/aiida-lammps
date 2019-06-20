@@ -5,7 +5,7 @@ from aiida.parsers.parser import Parser
 from aiida.common import exceptions
 
 from aiida_lammps import __version__ as aiida_lammps_version
-from aiida_lammps.common.raw_parsers import read_log_file, read_log_file_long
+from aiida_lammps.common.raw_parsers import read_log_file
 
 
 class LAMMPSBaseParser(Parser):
@@ -67,27 +67,16 @@ class LAMMPSBaseParser(Parser):
 
         return (trajectory_filename, trajectory_filepath, info_filepath), None
 
-    def parse_log_file(self):
+    def parse_log_file(self, compute_stress=False):
         """ parse the log file """
         output_filename = self.node.get_option('output_filename')
         output_txt = self.retrieved.get_object_content(output_filename)
         try:
-            output_data, units = read_log_file(output_txt)
+            output_data = read_log_file(output_txt, compute_stress=compute_stress)
         except Exception:
             traceback.print_exc()
-            return None, None, self.exit_codes.ERROR_LOG_PARSING
-        return output_data, units, None
-
-    def parse_log_file_long(self, long=False):
-        """ parse the log file """
-        output_filename = self.node.get_option('output_filename')
-        output_txt = self.retrieved.get_object_content(output_filename)
-        try:
-            output_data, cell, stress_tensor, units = read_log_file_long(output_txt)
-        except Exception:
-            traceback.print_exc()
-            return None, None, None, None, self.exit_codes.ERROR_LOG_PARSING
-        return output_data, cell, stress_tensor, units, None
+            return None, self.exit_codes.ERROR_LOG_PARSING
+        return output_data, None
 
     def add_warnings_and_errors(self, output_data):
         """ add warning and errors to the output data """

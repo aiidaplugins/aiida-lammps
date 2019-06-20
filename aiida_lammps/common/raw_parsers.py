@@ -146,7 +146,10 @@ def read_lammps_forces(file_name):
     return forces
 
 
-def read_log_file(logdata_txt):
+def read_log_file(logdata_txt, compute_stress=False):
+    """ read the log.lammps file """
+    # Dimensionality of LAMMP calculation
+    # number_of_dimensions = 3
 
     data = logdata_txt.splitlines()
 
@@ -154,20 +157,48 @@ def read_log_file(logdata_txt):
         raise IOError('The logfile is empty')
 
     data_dict = {}
-    units = None
+    cell_params = None
+    stress_params = None
     for i, line in enumerate(data):
-        if 'Loop time' in line:
-            energy = float(data[i - 1].split()[4])
-            data_dict['energy'] = energy
         if 'units' in line:
-            units = line.split()[1]
-            data_dict['units_style'] = units
+            data_dict['units_style'] = line.split()[1]
+        if line.startswith("final_energy:"):
+            data_dict['energy'] = float(line.split()[1])
         if line.startswith("final_variable:"):
             if 'final_variables' not in data_dict:
                 data_dict['final_variables'] = {}
-            data_dict['final_variables'][line.split()[1]] = float(line.split()[3])
+            data_dict['final_variables'][line.split()[1]] = float(
+                line.split()[3])
 
-    return data_dict, units
+        if line.startswith("final_cell:"):
+            cell_params = [float(v) for v in line.split()[1:10]]
+        if line.startswith("final_stress:"):
+            stress_params = [float(v) for v in line.split()[1:7]]
+
+    if not compute_stress:
+        return {"data": data_dict}
+
+    if cell_params is None:
+        raise IOError("'final_cell' could not be found")
+    if stress_params is None:
+        raise IOError("'final_stress' could not be found")
+
+    xlo, xhi, xy, ylo, yhi, xz, zlo, zhi, yz = cell_params
+    super_cell = np.array([[xhi - xlo, xy, xz],
+                           [0, yhi - ylo, yz],
+                           [0, 0, zhi - zlo]])
+    cell = super_cell.T
+    if np.linalg.det(cell) < 0:
+        cell = -1.0 * cell
+    volume = np.linalg.det(cell)
+
+    xx, yy, zz, xy, xz, yz = stress_params
+    stress = np.array([[xx, xy, xz],
+                       [xy, yy, yz],
+                       [xz, yz, zz]], dtype=float)
+    stress = -stress / volume * 1.e-3  # bar*A^3 -> kbar
+
+    return {"data": data_dict, "cell": cell, "stress": stress}
 
 
 def read_lammps_trajectory_txt(data_txt,
@@ -363,72 +394,6 @@ def read_lammps_trajectory(file_name,
 
     time = np.array(step_ids) * timestep
     return data, step_ids, cells, elements, time
-
-
-def read_log_file_long(logdata_txt):
-
-    # Dimensionality of LAMMP calculation
-    number_of_dimensions = 3
-
-    data = logdata_txt.splitlines()
-
-    # with open(logfile, 'r') as f:
-    #    data = f.readlines()
-
-    if not data:
-        raise IOError('The logfile is empty')
-
-    data_dict = {}
-    units = None
-    for i, line in enumerate(data):
-        if 'units' in line:
-            units = line.split()[1]
-            data_dict['units_style'] = units
-        if 'Loop time' in line:
-            energy = float(data[i - 1].split()[4])
-            data_dict['energy'] = energy
-            xx, yy, zz, xy, xz, yz = data[i - 1].split()[5:11]
-            stress = np.array([[xx, xy, xz],
-                               [xy, yy, yz],
-                               [xz, yz, zz]], dtype=float)
-
-        if '$(xlo)' in line:
-            a = data[i + 1].split()
-        if '$(ylo)' in line:
-            b = data[i + 1].split()
-        if '$(zlo)' in line:
-            c = data[i + 1].split()
-        if line.startswith("final_variable:"):
-            if 'final_variables' not in data_dict:
-                data_dict['final_variables'] = {}
-            data_dict['final_variables'][line.split()[1]] = float(line.split()[3])
-
-    bounds = np.array([a, b, c], dtype=float)
-
-    xy = bounds[0, 2]
-    xz = bounds[1, 2]
-    yz = bounds[2, 2]
-
-    xlo = bounds[0, 0]
-    xhi = bounds[0, 1]
-    ylo = bounds[1, 0]
-    yhi = bounds[1, 1]
-    zlo = bounds[2, 0]
-    zhi = bounds[2, 1]
-
-    super_cell = np.array([[xhi - xlo, xy, xz],
-                           [0, yhi - ylo, yz],
-                           [0, 0, zhi - zlo]])
-
-    cell = super_cell.T
-
-    if np.linalg.det(cell) < 0:
-        cell = -1.0 * cell
-
-    volume = np.linalg.det(cell)
-    stress = -stress / volume * 1.e-3  # bar*A^3 -> kbar
-
-    return data_dict, cell, stress, units
 
 
 def read_lammps_positions_and_forces(file_name):

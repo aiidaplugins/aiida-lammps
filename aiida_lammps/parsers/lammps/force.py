@@ -26,7 +26,7 @@ class ForceParser(LAMMPSBaseParser):
         trajectory_filename, trajectory_filepath, info_filepath = resources
 
         # parse log file
-        output_data, units, exit_code = self.parse_log_file()
+        log_data, exit_code = self.parse_log_file()
         if exit_code is not None:
             return exit_code
 
@@ -35,7 +35,8 @@ class ForceParser(LAMMPSBaseParser):
         if not trajectory_txt:
             self.logger.error("trajectory file empty")
             return self.exit_codes.ERROR_TRAJ_PARSING
-        positions, forces, symbols, cell2 = read_lammps_positions_and_forces_txt(trajectory_txt)
+        positions, forces, symbols, cell2 = read_lammps_positions_and_forces_txt(
+            trajectory_txt)
 
         # save forces and stresses into node
         array_data = ArrayData()
@@ -43,8 +44,10 @@ class ForceParser(LAMMPSBaseParser):
         self.out('arrays', array_data)
 
         # save results into node
-        if units is not None:
-            output_data.update(get_units_dict(units, ["energy", "force", "distance"]))
+        output_data = log_data["data"]
+        if 'units_style' in output_data:
+            output_data.update(get_units_dict(output_data['units_style'],
+                                              ["energy", "force", "distance"]))
         else:
             self.logger.warning("units missing in log")
         self.add_warnings_and_errors(output_data)

@@ -24,7 +24,7 @@ class OptimizeParser(LAMMPSBaseParser):
             return exit_code
         trajectory_filename, trajectory_filepath, info_filepath = resources
 
-        output_data, cell, stress_tensor, units, exit_code = self.parse_log_file_long()
+        log_data, exit_code = self.parse_log_file(compute_stress=True)
         if exit_code is not None:
             return exit_code
 
@@ -32,10 +32,11 @@ class OptimizeParser(LAMMPSBaseParser):
         if not trajectory_txt:
             self.logger.error("trajectory file empty")
             return self.exit_codes.ERROR_TRAJ_PARSING
-        positions, forces, symbols, cell2 = read_lammps_positions_and_forces_txt(trajectory_txt)
+        positions, forces, symbols, cell2 = read_lammps_positions_and_forces_txt(
+            trajectory_txt)
 
         # save optimized structure into node
-        structure = StructureData(cell=cell)
+        structure = StructureData(cell=log_data["cell"])
         for i, position in enumerate(positions[-1]):
             structure.append_atom(position=position.tolist(),
                                   symbols=symbols[i])
@@ -44,13 +45,15 @@ class OptimizeParser(LAMMPSBaseParser):
         # save forces and stresses into node
         array_data = ArrayData()
         array_data.set_array('forces', forces)
-        array_data.set_array('stress', stress_tensor)
+        array_data.set_array('stress', log_data["stress"])
         array_data.set_array('positions', positions)
         self.out('arrays', array_data)
 
         # save results into node
-        if units is not None:
-            output_data.update(get_units_dict(units, ["energy", "force", "distance"]))
+        output_data = log_data["data"]
+        if 'units_style' in output_data:
+            output_data.update(get_units_dict(output_data['units_style'],
+                                              ["energy", "force", "distance"]))
         else:
             self.logger.warning("units missing in log")
         self.add_warnings_and_errors(output_data)

@@ -43,6 +43,12 @@ def generate_lammps_input(calc,
         #  xx,       yy,        zz,       xy,       xz,       yz
     lammps_input_file += 'compute         stgb all reduce sum c_stpa[1] c_stpa[2] c_stpa[3] c_stpa[4] c_stpa[5] c_stpa[6]\n'
     lammps_input_file += 'variable        pr equal -(c_stgb[1]+c_stgb[2]+c_stgb[3])/(3*vol)\n'
+    lammps_input_file += 'variable        stress_xx equal c_stgb[1]\n'
+    lammps_input_file += 'variable        stress_yy equal c_stgb[2]\n'
+    lammps_input_file += 'variable        stress_zz equal c_stgb[3]\n'
+    lammps_input_file += 'variable        stress_xy equal c_stgb[4]\n'
+    lammps_input_file += 'variable        stress_xz equal c_stgb[5]\n'
+    lammps_input_file += 'variable        stress_yz equal c_stgb[6]\n'
     lammps_input_file += 'thermo_style    custom step temp press v_pr etotal c_stgb[1] c_stgb[2] c_stgb[3] c_stgb[4] c_stgb[5] c_stgb[6]\n'
 
     lammps_input_file += 'dump            aiida all custom 1 {0} element x y z  fx fy fz\n'.format(trajectory_filename)
@@ -62,17 +68,17 @@ def generate_lammps_input(calc,
                                                                 parameters['minimize']['force_tolerance'],
                                                                 parameters['minimize']['max_iterations'],
                                                                 parameters['minimize']['max_evaluations'])
-    #  lammps_input_file += 'print           "$(xlo - xhi) $(xy) $(xz)"\n'
-    #  lammps_input_file += 'print           "0.000 $(yhi - ylo) $(yz)"\n'
-    #  lammps_input_file += 'print           "0.000 0.000   $(zhi-zlo)"\n'
-    lammps_input_file += 'print           "$(xlo) $(xhi) $(xy)"\n'
-    lammps_input_file += 'print           "$(ylo) $(yhi) $(xz)"\n'
-    lammps_input_file += 'print           "$(zlo) $(zhi) $(yz)"\n'
 
     variables = parameters.get("output_variables", [])
     for var in variables:
         lammps_input_file += 'variable {0} equal {0}\n'.format(var)
         lammps_input_file += 'print "final_variable: {0} = ${{{0}}}"\n'.format(var)
+
+    lammps_input_file += 'variable final_energy equal etotal\n'
+    lammps_input_file += 'print "final_energy: ${final_energy}"\n'
+
+    lammps_input_file += 'print "final_cell: $(xlo) $(xhi) $(xy) $(ylo) $(yhi) $(xz) $(zlo) $(zhi) $(yz)"\n'
+    lammps_input_file += 'print "final_stress: ${stress_xx} ${stress_yy} ${stress_zz} ${stress_xy} ${stress_xz} ${stress_yz}"\n'
 
     return lammps_input_file
 

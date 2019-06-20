@@ -22,27 +22,31 @@ class MdParser(LAMMPSBaseParser):
         Parses the datafolder, stores results.
         """
         # retrieve resources
-        resources, exit_code = self.get_parsing_resources(kwargs, traj_in_temp=True, sys_info=True)
+        resources, exit_code = self.get_parsing_resources(
+            kwargs, traj_in_temp=True, sys_info=True)
         if exit_code is not None:
             return exit_code
         trajectory_filename, trajectory_filepath, info_filepath = resources
 
         # parse log file
-        output_data, units, exit_code = self.parse_log_file()
+        log_data, exit_code = self.parse_log_file()
         if exit_code is not None:
             return exit_code
 
         # parse trajectory file
         try:
             timestep = self.node.inputs.parameters.dict.timestep
-            positions, step_ids, cells, symbols, time = read_lammps_trajectory(trajectory_filepath, timestep=timestep)
+            positions, step_ids, cells, symbols, time = read_lammps_trajectory(
+                trajectory_filepath, timestep=timestep)
         except Exception:
             traceback.print_exc()
             return self.exit_codes.ERROR_TRAJ_PARSING
 
         # save results into node
-        if units is not None:
-            output_data.update(get_units_dict(units, ["distance", "time"]))
+        output_data = log_data["data"]
+        if 'units_style' in output_data:
+            output_data.update(get_units_dict(output_data['units_style'],
+                                              ["distance", "time"]))
         else:
             self.logger.warning("units missing in log")
         self.add_warnings_and_errors(output_data)
@@ -52,7 +56,8 @@ class MdParser(LAMMPSBaseParser):
 
         # save trajectories into node
         trajectory_data = TrajectoryData()
-        trajectory_data.set_trajectory(symbols, positions, stepids=step_ids, cells=cells, times=time)
+        trajectory_data.set_trajectory(
+            symbols, positions, stepids=step_ids, cells=cells, times=time)
         self.out('trajectory_data', trajectory_data)
 
         # parse the system data file
@@ -66,7 +71,7 @@ class MdParser(LAMMPSBaseParser):
             except Exception:
                 traceback.print_exc()
                 return self.exit_codes.ERROR_INFO_PARSING
-            sys_data.set_attribute('units_style', units)
+            sys_data.set_attribute('units_style', output_data.get('units_style', None))
             self.out('system_data', sys_data)
 
         if output_data["errors"]:

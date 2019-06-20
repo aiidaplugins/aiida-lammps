@@ -25,6 +25,8 @@ def generate_lammps_input(calc,
 
     lammps_input_file += 'neighbor        0.3 bin\n'
     lammps_input_file += 'neigh_modify    every 1 delay 0 check no\n'
+
+    lammps_input_file += 'thermo_style custom step temp epair emol etotal press\n'
     lammps_input_file += 'dump            aiida all custom 1 {0} element fx fy fz\n'.format(trajectory_filename)
 
     # TODO find exact version when changes were made
@@ -42,6 +44,9 @@ def generate_lammps_input(calc,
     for var in variables:
         lammps_input_file += 'variable {0} equal {0}\n'.format(var)
         lammps_input_file += 'print "final_variable: {0} = ${{{0}}}"\n'.format(var)
+
+    lammps_input_file += 'variable final_energy equal etotal\n'
+    lammps_input_file += 'print "final_energy: ${final_energy}"\n'
 
     return lammps_input_file
 

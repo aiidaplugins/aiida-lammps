@@ -8,14 +8,9 @@ from aiida.cmdline.utils.common import get_calcjob_report
 def get_log():
     return six.ensure_text(dedent("""\
         units metal
-        0 0 0 0 1 1 1 1 0 0 0
-        Loop time
-        print           "$(xlo) $(xhi) $(xy)"
-        0 1 0
-        print           "$(ylo) $(yhi) $(xz)"
-        0 1 0
-        print           "$(zlo) $(zhi) $(yz)"
-        0 1 0
+        final_energy: 2.0
+        final_cell: 0 1 0 0 1 0 0 1 0
+        final_stress: 0 0 0 0 0 0
             """))
 
 

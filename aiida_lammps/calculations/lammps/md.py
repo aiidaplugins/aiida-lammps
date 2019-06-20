@@ -46,7 +46,7 @@ def generate_lammps_input(calc,
 
     lammps_input_file += 'timestep        {}\n'.format(pdict["timestep"])
 
-    lammps_input_file += 'thermo_style    custom step etotal temp vol press\n'
+    lammps_input_file += 'thermo_style    custom step temp epair emol etotal press\n'
     lammps_input_file += 'thermo          1000\n'
 
     restart = pdict.get("restart", False)
@@ -101,6 +101,9 @@ def generate_lammps_input(calc,
 
     lammps_input_file += 'run             {}\n'.format(
         parameters.dict.total_steps)
+
+    lammps_input_file += 'variable final_energy equal etotal\n'
+    lammps_input_file += 'print "final_energy: ${final_energy}"\n'
 
     return lammps_input_file
 
