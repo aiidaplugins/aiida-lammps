@@ -43,6 +43,8 @@ class MdParser(LAMMPSBaseParser):
         # save results into node
         if units is not None:
             output_data.update(get_units_dict(units, ["distance", "time"]))
+        else:
+            self.logger.warning("units missing in log")
         self.add_warnings_and_errors(output_data)
         self.add_standard_info(output_data)
         parameters_data = Dict(dict=output_data)

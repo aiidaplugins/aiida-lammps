@@ -30,6 +30,7 @@ class OptimizeParser(LAMMPSBaseParser):
 
         trajectory_txt = self.retrieved.get_object_content(trajectory_filename)
         if not trajectory_txt:
+            self.logger.error("trajectory file empty")
             return self.exit_codes.ERROR_TRAJ_PARSING
         positions, forces, symbols, cell2 = read_lammps_positions_and_forces_txt(trajectory_txt)
 
@@ -50,6 +51,8 @@ class OptimizeParser(LAMMPSBaseParser):
         # save results into node
         if units is not None:
             output_data.update(get_units_dict(units, ["energy", "force", "distance"]))
+        else:
+            self.logger.warning("units missing in log")
         self.add_warnings_and_errors(output_data)
         self.add_standard_info(output_data)
         parameters_data = Dict(dict=output_data)
