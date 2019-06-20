@@ -20,6 +20,7 @@ class LAMMPSBaseParser(Parser):
         super(LAMMPSBaseParser, self).__init__(node)
 
     def get_parsing_resources(self, kwargs, traj_in_temp=False, sys_info=False):
+        """ check that all resources, required for parsing, are present """
         # Check that the retrieved folder is there
         try:
             out_folder = self.retrieved
