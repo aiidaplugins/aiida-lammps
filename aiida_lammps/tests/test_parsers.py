@@ -1,11 +1,12 @@
 from textwrap import dedent
 import pytest
+import six
 from aiida.orm import FolderData
 from aiida.cmdline.utils.common import get_calcjob_report
 
 
 def get_log():
-    return dedent("""\
+    return six.ensure_text(dedent("""\
         units metal
         0 0 0 0 1 1 1 1 0 0 0
         Loop time
@@ -15,11 +16,11 @@ def get_log():
         0 1 0
         print           "$(zlo) $(zhi) $(yz)"
         0 1 0
-            """)
+            """))
 
 
 def get_traj_force():
-    return dedent("""\
+    return six.ensure_text(dedent("""\
         ITEM: TIMESTEP
         0
         ITEM: NUMBER OF ATOMS
@@ -35,7 +36,7 @@ def get_traj_force():
         S   -25.5468278966   -20.6615772179    -0.0000000000 
         S    25.5468278966    20.6615772179    -0.0000000000 
         S    25.5468278966   -20.6615772179     0.0000000000 
-        """)
+        """))
 
 
 @pytest.mark.parametrize('plugin_name', [
