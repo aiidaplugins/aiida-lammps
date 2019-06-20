@@ -88,4 +88,5 @@ class MdParser(Parser):
             sys_data = ArrayData()
             for i, col in enumerate(np.loadtxt(info_filepath, skiprows=1, unpack=True)):
                 sys_data.set_array(names[i], col)
+            sys_data.set_attribute('units', units)
             self.out('system_data', sys_data)
