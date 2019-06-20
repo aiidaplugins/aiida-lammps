@@ -13,6 +13,7 @@ def get_calc_parameters(plugin_name, units):
     if plugin_name == 'lammps.force':
         parameters_opt = {
             'lammps_version': tests.lammps_version(),
+            'output_variables': ["temp", "etotal"]
         }
     elif plugin_name == 'lammps.optimize':
         parameters_opt = {
@@ -28,7 +29,8 @@ def get_calc_parameters(plugin_name, units):
                 'energy_tolerance': 1.0e-25,
                 'force_tolerance': 1.0e-25,
                 'max_evaluations': 100000,
-                'max_iterations': 50000}
+                'max_iterations': 50000},
+            'output_variables': ["temp", "etotal"]
         }
 
     elif plugin_name == "lammps.md":
@@ -183,9 +185,12 @@ def test_force_process(db_test_app, get_potential_data, potential_type):
     assert set(link_labels).issuperset(
         ['results', 'arrays'])
 
+    # raise ValueError(calc_node.outputs.retrieved.get_object_content('log.lammps'))
+
     pdict = calc_node.outputs.results.get_dict()
     assert set(pdict.keys()).issuperset(
-        ['energy', 'warnings', 'energy_units', 'force_units', 'parser_class', 'parser_version'])
+        ['energy', 'warnings', 'final_variables', 'units_style',
+         'energy_units', 'force_units', 'parser_class', 'parser_version'])
     assert pdict['warnings'].strip() == pot_data.output["warnings"]
     assert pdict['energy'] == pytest.approx(pot_data.output['initial_energy'])
 
@@ -233,7 +238,8 @@ def test_optimize_process(db_test_app, get_potential_data, potential_type):
 
     pdict = calc_node.outputs.results.get_dict()
     assert set(pdict.keys()).issuperset(
-        ['energy', 'warnings', 'energy_units', 'force_units', 'parser_class', 'parser_version'])
+        ['energy', 'warnings', 'final_variables', 'units_style',
+         'energy_units', 'force_units', 'parser_class', 'parser_version'])
     assert pdict['warnings'].strip() == pot_data.output["warnings"]
     assert pdict['energy'] == pytest.approx(pot_data.output['energy'])
 

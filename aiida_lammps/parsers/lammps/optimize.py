@@ -1,3 +1,4 @@
+import traceback
 from aiida.parsers.parser import Parser
 from aiida.common import exceptions
 from aiida.orm import ArrayData, Dict, StructureData
@@ -42,7 +43,11 @@ class OptimizeParser(Parser):
 
         # Get files and do the parsing
         output_txt = out_folder.get_object_content(output_filename)
-        output_data, cell, stress_tensor, units = read_log_file(output_txt)
+        try:
+            output_data, cell, stress_tensor, units = read_log_file(output_txt)
+        except Exception:
+            traceback.print_exc()
+            return self.exit_codes.ERROR_LOG_PARSING
 
         trajectory_txt = out_folder.get_object_content(trajectory_filename)
         positions, forces, symbols, cell2 = read_lammps_positions_and_forces_txt(trajectory_txt)

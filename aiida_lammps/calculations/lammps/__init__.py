@@ -155,13 +155,17 @@ class BaseLammpsCalculation(CalcJob):
 
         # Unrecoverable errors: required retrieved files could not be read, parsed or are otherwise incomplete
         spec.exit_code(
-            300, 'ERROR_OUTPUT_PARSING',
+            300, 'ERROR_LOG_PARSING',
             message=('An error was flagged trying to parse the '
-                     'main lammps output file'))
+                     'main lammps output log file'))
         spec.exit_code(
             310, 'ERROR_TRAJ_PARSING',
             message=('An error was flagged trying to parse the '
                      'trajectory output file'))
+        spec.exit_code(
+            320, 'ERROR_INFO_PARSING',
+            message=('An error was flagged trying to parse the '
+                     'system info output file'))
 
         # Significant errors but calculation can be used to restart
         spec.exit_code(

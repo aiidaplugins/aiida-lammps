@@ -69,6 +69,13 @@ def generate_lammps_input(calc,
     lammps_input_file += 'print           "$(ylo) $(yhi) $(xz)"\n'
     lammps_input_file += 'print           "$(zlo) $(zhi) $(yz)"\n'
 
+    variables = parameters.get("output_variables", [])
+    for var in variables:
+        if var.startswith("reax_"):
+            continue  # these variables are set in the potential lines
+        lammps_input_file += 'variable {0} equal {0}\n'.format(var)
+        lammps_input_file += 'print "final_variable: {0} = ${{{0}}}"\n'.format(var)
+
     return lammps_input_file
 
 

@@ -67,7 +67,11 @@ class MdParser(Parser):
 
         output_txt = out_folder.get_object_content(output_filename)
 
-        output_data, units = read_log_file(output_txt)
+        try:
+            output_data, units = read_log_file(output_txt)
+        except Exception:
+            traceback.print_exc()
+            return self.exit_codes.ERROR_LOG_PARSING
         output_data.update(get_units_dict(units, ["distance", "time"]))
 
         # add the dictionary with warnings
@@ -83,10 +87,14 @@ class MdParser(Parser):
         info_filename = self.node.get_option('info_filename')
         if info_filename in list_of_temp_files:
             info_filepath = temporary_folder + '/' + self.node.get_option('info_filename')
-            with open(info_filepath) as handle:
-                names = handle.readline().strip().split()
-            sys_data = ArrayData()
-            for i, col in enumerate(np.loadtxt(info_filepath, skiprows=1, unpack=True)):
-                sys_data.set_array(names[i], col)
-            sys_data.set_attribute('units', units)
-            self.out('system_data', sys_data)
+            try:
+                with open(info_filepath) as handle:
+                    names = handle.readline().strip().split()
+                sys_data = ArrayData()
+                for i, col in enumerate(np.loadtxt(info_filepath, skiprows=1, unpack=True)):
+                    sys_data.set_array(names[i], col)
+                sys_data.set_attribute('units_style', units)
+                self.out('system_data', sys_data)
+            except Exception:
+                traceback.print_exc()
+                return self.exit_codes.ERROR_INFO_PARSING                

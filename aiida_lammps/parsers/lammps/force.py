@@ -1,3 +1,4 @@
+import traceback
 from aiida.parsers.parser import Parser
 from aiida.common import exceptions
 
@@ -41,7 +42,12 @@ class ForceParser(Parser):
             return self.exit_codes.ERROR_TRAJ_FILE_MISSING
 
         output_txt = out_folder.get_object_content(output_filename)
-        output_data, units = read_log_file(output_txt)
+
+        try:
+            output_data, units = read_log_file(output_txt)
+        except Exception:
+            traceback.print_exc()
+            return self.exit_codes.ERROR_LOG_PARSING
 
         # output_data, cell, stress_tensor, units = read_log_file(output_txt)
 

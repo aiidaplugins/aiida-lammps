@@ -118,7 +118,6 @@ class MdCalculation(BaseLammpsCalculation):
         spec.input('metadata.options.parser_name',
                    valid_type=six.string_types, default='lammps.md')
         spec.default_output_port = 'results'
-        # spec.input('settings', valid_type=six.string_types, default='lammps.optimize')
 
         spec.output('trajectory_data',
                     valid_type=DataFactory('array.trajectory'),

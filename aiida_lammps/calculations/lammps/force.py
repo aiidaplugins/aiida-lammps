@@ -1,5 +1,6 @@
 from aiida.plugins import DataFactory
 from aiida_lammps.calculations.lammps import BaseLammpsCalculation
+from aiida_lammps.validation import validate_with_json
 from aiida_lammps.common.utils import convert_date_string
 import six
 
@@ -35,7 +36,14 @@ def generate_lammps_input(calc,
     lammps_input_file += 'dump_modify     aiida sort id\n'
     lammps_input_file += 'dump_modify     aiida element {}\n'.format(names_str)
 
-    lammps_input_file += 'run             0'
+    lammps_input_file += 'run             0\n'
+
+    variables = parameters.get_attribute("output_variables", [])
+    for var in variables:
+        if var.startswith("reax_"):
+            continue  # these variables are set in the potential lines
+        lammps_input_file += 'variable {0} equal {0}\n'.format(var)
+        lammps_input_file += 'print "final_variable: {0} = ${{{0}}}"\n'.format(var)
 
     return lammps_input_file
 
@@ -55,9 +63,11 @@ class ForceCalculation(BaseLammpsCalculation):
         spec.output('arrays',
                     valid_type=DataFactory('array'),
                     required=True,
-                    help='force data per step')
+                    help='force data per atom')
 
     def validate_parameters(self, param_data, potential_object):
+        if param_data is not None:
+            validate_with_json(param_data.get_dict(), "force")
         if self.options.trajectory_name not in self._retrieve_list:
             self._retrieve_list += [self.options.trajectory_name]
         self._retrieve_temporary_list += []
