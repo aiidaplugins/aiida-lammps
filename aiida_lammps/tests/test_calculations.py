@@ -48,7 +48,7 @@ def get_calc_parameters(plugin_name, units):
             'total_steps': 1000,
             'dump_rate': 10,
             'restart': 100,
-            'output_variables': ["step", "temp", "etotal"]
+            'output_variables': ["temp", "etotal"]
         }
     else:
         raise ValueError(plugin_name)

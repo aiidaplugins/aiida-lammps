@@ -88,10 +88,13 @@ def generate_lammps_input(calc,
     lammps_input_file += 'dump_modify     aiida element {}\n'.format(names_str)
 
     variables = pdict.get("output_variables", [])
+    if variables and 'step' not in variables:
+        # always include 'step', so we can sync with the `dump` data
+        # NOTE `dump` includes step 0, whereas `print` starts from step 1
+        variables.append('step')
     for var in variables:
         lammps_input_file += 'variable {0} equal {0}\n'.format(var)
     if variables:
-        # TODO dump includes the initial configuration, whereas print does not
         lammps_input_file += 'fix sys_info all print {0} "{1}" title "{2}" file {3} screen no\n'.format(
             parameters.dict.dump_rate, " ".join(["${{{0}}}".format(v) for v in variables]),
             " ".join(variables), info_filename)
