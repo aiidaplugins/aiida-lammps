@@ -36,12 +36,10 @@ class LAMMPSBaseParser(Parser):
         # check what is inside the folder
         list_of_files = out_folder.list_object_names()
 
-        # check outout folder
-        output_filename = self.node.get_option('output_filename')
-        if output_filename not in list_of_files:
-            return None, self.exit_codes.ERROR_OUTPUT_FILE_MISSING
+        # check log file
+        if self.node.get_option('output_filename') not in list_of_files:
+            return None, self.exit_codes.ERROR_LOG_FILE_MISSING
 
-        # check temporal folder
         trajectory_filename = self.node.get_option('trajectory_name')
 
         if traj_in_temp:
@@ -54,6 +52,12 @@ class LAMMPSBaseParser(Parser):
             if trajectory_filename not in list_of_files:
                 return None, self.exit_codes.ERROR_TRAJ_FILE_MISSING
             trajectory_filepath = None
+
+        # check stdin and stdout
+        if self.node.get_option('scheduler_stdout') not in list_of_files:
+            return None, self.exit_codes.ERROR_STDOUT_FILE_MISSING
+        if self.node.get_option('scheduler_stderr') not in list_of_files:
+            return None, self.exit_codes.ERROR_STDERR_FILE_MISSING
 
         info_filepath = None
         if sys_info:

@@ -150,6 +150,9 @@ def read_log_file(logdata_txt):
 
     data = logdata_txt.splitlines()
 
+    if not data:
+        raise IOError('The logfile is empty')
+
     data_dict = {}
     units = None
     for i, line in enumerate(data):

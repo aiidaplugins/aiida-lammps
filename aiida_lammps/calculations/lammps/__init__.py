@@ -147,11 +147,17 @@ class BaseLammpsCalculation(CalcJob):
             201, 'ERROR_NO_RETRIEVED_TEMP_FOLDER',
             message='The retrieved temporary folder data node could not be accessed.')
         spec.exit_code(
-            210, 'ERROR_OUTPUT_FILE_MISSING',
-            message='the main output file was not found')
+            202, 'ERROR_LOG_FILE_MISSING',
+            message='the main log output file was not found')
         spec.exit_code(
-            220, 'ERROR_TRAJ_FILE_MISSING',
+            203, 'ERROR_TRAJ_FILE_MISSING',
             message='the trajectory output file was not found')
+        spec.exit_code(
+            204, 'ERROR_STDOUT_FILE_MISSING',
+            message='the stdout output file was not found')
+        spec.exit_code(
+            205, 'ERROR_STDERR_FILE_MISSING',
+            message='the stderr output file was not found')
 
         # Unrecoverable errors: required retrieved files could not be read, parsed or are otherwise incomplete
         spec.exit_code(

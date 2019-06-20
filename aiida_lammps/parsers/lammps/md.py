@@ -31,7 +31,6 @@ class MdParser(LAMMPSBaseParser):
         output_data, units, exit_code = self.parse_log_file()
         if exit_code is not None:
             return exit_code
-        output_data.update(get_units_dict(units, ["distance", "time"]))
 
         # parse trajectory file
         try:
@@ -42,6 +41,8 @@ class MdParser(LAMMPSBaseParser):
             return self.exit_codes.ERROR_TRAJ_PARSING
 
         # save results into node
+        if units is not None:
+            output_data.update(get_units_dict(units, ["distance", "time"]))
         self.add_warnings_and_errors(output_data)
         self.add_standard_info(output_data)
         parameters_data = Dict(dict=output_data)
