@@ -142,7 +142,7 @@ def test_run_error(db_test_app, plugin_name):
     with retrieved.open('trajectory.lammpstrj', 'w') as handle:
         handle.write(get_traj_force())
     with retrieved.open('_scheduler-stdout.txt', 'w') as handle:
-        handle.write('ERROR description')
+        handle.write(six.ensure_text('ERROR description'))
     with retrieved.open('_scheduler-stderr.txt', 'w'):
         pass
 
