@@ -196,7 +196,7 @@ def read_log_file(logdata_txt, compute_stress=False):
     stress = np.array([[xx, xy, xz],
                        [xy, yy, yz],
                        [xz, yz, zz]], dtype=float)
-    stress = -stress / volume * 1.e-3  # bar*A^3 -> kbar
+    stress = -stress / volume  # to get stress in units of pressure
 
     return {"data": data_dict, "cell": cell, "stress": stress}
 

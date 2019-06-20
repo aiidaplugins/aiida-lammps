@@ -53,7 +53,8 @@ class OptimizeParser(LAMMPSBaseParser):
         output_data = log_data["data"]
         if 'units_style' in output_data:
             output_data.update(get_units_dict(output_data['units_style'],
-                                              ["energy", "force", "distance"]))
+                                              ["energy", "force", "distance", "pressure"]))
+            output_data["stress_units"] = output_data.pop("pressure_units")
         else:
             self.logger.warning("units missing in log")
         self.add_warnings_and_errors(output_data)
