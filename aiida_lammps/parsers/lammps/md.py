@@ -1,14 +1,12 @@
-import os
 import traceback
 import numpy as np
-from aiida.parsers.parser import Parser
-from aiida.common import exceptions
 from aiida.orm import Dict, TrajectoryData, ArrayData
-from aiida_lammps import __version__ as aiida_lammps_version
-from aiida_lammps.common.raw_parsers import read_lammps_trajectory, get_units_dict, read_log_file
+
+from aiida_lammps.parsers.lammps.base import LAMMPSBaseParser
+from aiida_lammps.common.raw_parsers import read_lammps_trajectory, get_units_dict
 
 
-class MdParser(Parser):
+class MdParser(LAMMPSBaseParser):
     """
     Simple Parser for LAMMPS.
     """
@@ -23,86 +21,50 @@ class MdParser(Parser):
         """
         Parses the datafolder, stores results.
         """
+        # retrieve resources
+        resources, exit_code = self.get_parsing_resources(kwargs, traj_in_temp=True, sys_info=True)
+        if exit_code is not None:
+            return exit_code
+        trajectory_filename, trajectory_filepath, info_filepath = resources
 
-        # Check that the retrieved folder is there
+        # parse log file
+        output_data, units, exit_code = self.parse_log_file()
+        if exit_code is not None:
+            return exit_code
+        output_data.update(get_units_dict(units, ["distance", "time"]))
+
+        # parse trajectory file
         try:
-            out_folder = self.retrieved
-        except exceptions.NotExistent:
-            return self.exit_codes.ERROR_NO_RETRIEVED_FOLDER
-
-        if 'retrieved_temporary_folder' not in kwargs:
-            return self.exit_codes.ERROR_NO_RETRIEVED_TEMP_FOLDER
-        temporary_folder = kwargs['retrieved_temporary_folder']
-
-        # check what is inside the folder
-        list_of_files = out_folder.list_object_names()
-        list_of_temp_files = os.listdir(temporary_folder)
-
-        # check outout folder
-        output_filename = self.node.get_option('output_filename')
-        if output_filename not in list_of_files:
-            return self.exit_codes.ERROR_OUTPUT_FILE_MISSING
-
-        # check temporal folder
-        trajectory_filename = self.node.get_option('trajectory_name')
-        if trajectory_filename not in list_of_temp_files:
-            return self.exit_codes.ERROR_TRAJ_FILE_MISSING
-
-        # Read trajectory from temporal folder
-        trajectory_filepath = temporary_folder + '/' + self.node.get_option('trajectory_name')
-        timestep = self.node.inputs.parameters.dict.timestep
-
-        # save trajectory into node
-        try:
+            timestep = self.node.inputs.parameters.dict.timestep
             positions, step_ids, cells, symbols, time = read_lammps_trajectory(trajectory_filepath, timestep=timestep)
-            trajectory_data = TrajectoryData()
-            trajectory_data.set_trajectory(symbols, positions, stepids=step_ids, cells=cells, times=time)
-            self.out('trajectory_data', trajectory_data)
         except Exception:
             traceback.print_exc()
             return self.exit_codes.ERROR_TRAJ_PARSING
 
-        warnings = out_folder.get_object_content(self.node.get_option("scheduler_stderr"))
-        # for some reason, errors may be in the stdout, but not the log.lammps
-        stdout = out_folder.get_object_content(self.node.get_option("scheduler_stdout"))
-        errors = [line for line in stdout.splitlines() if line.startswith("ERROR")]
-
-        output_txt = out_folder.get_object_content(output_filename)
-
-        try:
-            output_data, units = read_log_file(output_txt)
-        except Exception:
-            traceback.print_exc()
-            return self.exit_codes.ERROR_LOG_PARSING
-        output_data.update(get_units_dict(units, ["distance", "time"]))
-
-        # add the dictionary with warnings and errors
-        output_data.update({'warnings': warnings})
-        output_data.update({'errors': errors})
-        output_data["parser_class"] = self.__class__.__name__
-        output_data["parser_version"] = aiida_lammps_version
-
+        # save results into node
+        self.add_warnings_and_errors(output_data)
+        self.add_standard_info(output_data)
         parameters_data = Dict(dict=output_data)
-
         self.out('results', parameters_data)
 
+        # save trajectories into node
+        trajectory_data = TrajectoryData()
+        trajectory_data.set_trajectory(symbols, positions, stepids=step_ids, cells=cells, times=time)
+        self.out('trajectory_data', trajectory_data)
+
         # parse the system data file
-        info_filename = self.node.get_option('info_filename')
-        if info_filename in list_of_temp_files:
-            info_filepath = temporary_folder + '/' + self.node.get_option('info_filename')
+        if info_filepath:
+            sys_data = ArrayData()
             try:
                 with open(info_filepath) as handle:
                     names = handle.readline().strip().split()
-                sys_data = ArrayData()
                 for i, col in enumerate(np.loadtxt(info_filepath, skiprows=1, unpack=True)):
                     sys_data.set_array(names[i], col)
-                sys_data.set_attribute('units_style', units)
-                self.out('system_data', sys_data)
             except Exception:
                 traceback.print_exc()
-                return self.exit_codes.ERROR_INFO_PARSING                
+                return self.exit_codes.ERROR_INFO_PARSING
+            sys_data.set_attribute('units_style', units)
+            self.out('system_data', sys_data)
 
         if output_data["errors"]:
-            for error in output_data["errors"]:
-                self.logger.error(error)
             return self.exit_codes.ERROR_LAMMPS_RUN
