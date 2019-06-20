@@ -11,6 +11,7 @@ def generate_lammps_input(calc,
                           potential_obj,
                           structure_filename,
                           trajectory_filename,
+                          add_thermo_keywords,
                           version_date, **kwargs):
 
     names_str = ' '.join(potential_obj.kind_names)
@@ -49,7 +50,12 @@ def generate_lammps_input(calc,
     lammps_input_file += 'variable        stress_xy equal c_stgb[4]\n'
     lammps_input_file += 'variable        stress_xz equal c_stgb[5]\n'
     lammps_input_file += 'variable        stress_yz equal c_stgb[6]\n'
-    lammps_input_file += 'thermo_style    custom step temp press v_pr etotal c_stgb[1] c_stgb[2] c_stgb[3] c_stgb[4] c_stgb[5] c_stgb[6]\n'
+
+    thermo_keywords = ["step", "temp", "press", "v_pr", "etotal", "c_stgb[1]", "c_stgb[2]", "c_stgb[3]", "c_stgb[4]", "c_stgb[5]", "c_stgb[6]"]
+    for kwd in add_thermo_keywords:
+        if kwd not in thermo_keywords:
+            thermo_keywords.append(kwd)
+    lammps_input_file += 'thermo_style custom {}\n'.format(" ".join(thermo_keywords))
 
     lammps_input_file += 'dump            aiida all custom 1 {0} element x y z  fx fy fz\n'.format(trajectory_filename)
 
@@ -71,8 +77,9 @@ def generate_lammps_input(calc,
 
     variables = parameters.get("output_variables", [])
     for var in variables:
-        lammps_input_file += 'variable {0} equal {0}\n'.format(var)
-        lammps_input_file += 'print "final_variable: {0} = ${{{0}}}"\n'.format(var)
+        var_alias = var.replace("[", "_").replace("]", "_")
+        lammps_input_file += 'variable {0} equal {1}\n'.format(var_alias, var)
+        lammps_input_file += 'print "final_variable: {0} = ${{{0}}}"\n'.format(var_alias)
 
     lammps_input_file += 'variable final_energy equal etotal\n'
     lammps_input_file += 'print "final_energy: ${final_energy}"\n'

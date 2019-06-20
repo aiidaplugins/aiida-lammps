@@ -202,10 +202,11 @@ class BaseLammpsCalculation(CalcJob):
             parameters = self.inputs.parameters
         else:
             parameters = Dict()
+        pdict = parameters.get_dict()
 
         # Check lammps version date in parameters
         lammps_date = convert_date_string(
-            parameters.get_dict().get("lammps_version", '11 Aug 2017'))
+            pdict.get("lammps_version", '11 Aug 2017'))
 
         # Setup input parameters
         input_txt = self._generate_input_function(
@@ -215,6 +216,7 @@ class BaseLammpsCalculation(CalcJob):
             trajectory_filename=self.options.trajectory_name,
             info_filename=self.options.info_filename,
             restart_filename=self.options.restart_filename,
+            add_thermo_keywords=pdict.get("thermo_keywords", []),
             version_date=lammps_date)
 
         input_filename = tempfolder.get_abs_path(self._INPUT_FILE_NAME)

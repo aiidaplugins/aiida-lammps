@@ -14,7 +14,8 @@ def generate_lammps_input(calc,
                           trajectory_filename,
                           restart_filename,
                           info_filename,
-                          version_date='11 Aug 2017'):
+                          add_thermo_keywords,
+                          version_date='11 Aug 2017', **kwargs):
 
     pdict = parameters.get_dict()
 
@@ -46,7 +47,11 @@ def generate_lammps_input(calc,
 
     lammps_input_file += 'timestep        {}\n'.format(pdict["timestep"])
 
-    lammps_input_file += 'thermo_style    custom step temp epair emol etotal press\n'
+    thermo_keywords = ["step", "temp", "epair", "emol", "etotal", "press"]
+    for kwd in add_thermo_keywords:
+        if kwd not in thermo_keywords:
+            thermo_keywords.append(kwd)
+    lammps_input_file += 'thermo_style custom {}\n'.format(" ".join(thermo_keywords))
     lammps_input_file += 'thermo          1000\n'
 
     restart = pdict.get("restart", False)
@@ -92,12 +97,16 @@ def generate_lammps_input(calc,
         # always include 'step', so we can sync with the `dump` data
         # NOTE `dump` includes step 0, whereas `print` starts from step 1
         variables.append('step')
+    var_aliases = []
     for var in variables:
-        lammps_input_file += 'variable {0} equal {0}\n'.format(var)
+        var_alias = var.replace("[", "_").replace("]", "_")
+        var_aliases.append(var_alias)
+        lammps_input_file += 'variable {0} equal {1}\n'.format(var_alias, var)
     if variables:
         lammps_input_file += 'fix sys_info all print {0} "{1}" title "{2}" file {3} screen no\n'.format(
-            parameters.dict.dump_rate, " ".join(["${{{0}}}".format(v) for v in variables]),
-            " ".join(variables), info_filename)
+            parameters.dict.dump_rate,
+            " ".join(["${{{0}}}".format(v) for v in var_aliases]),
+            " ".join(var_aliases), info_filename)
 
     lammps_input_file += 'run             {}\n'.format(
         parameters.dict.total_steps)
