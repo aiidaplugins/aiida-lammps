@@ -93,8 +93,6 @@ def generate_lammps_input(calc,
         # NOTE `dump` includes step 0, whereas `print` starts from step 1
         variables.append('step')
     for var in variables:
-        if var.startswith("reax_"):
-            continue  # these variables are set in the potential lines
         lammps_input_file += 'variable {0} equal {0}\n'.format(var)
     if variables:
         lammps_input_file += 'fix sys_info all print {0} "{1}" title "{2}" file {3} screen no\n'.format(

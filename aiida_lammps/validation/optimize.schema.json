@@ -172,21 +172,7 @@
           "cellc",
           "cellalpha",
           "cellbeta",
-          "cellgamma",
-          "reax_eb",
-          "reax_ea",
-          "reax_elp",
-          "reax_emol",
-          "reax_ev",
-          "reax_epen",
-          "reax_ecoa",
-          "reax_ehb",
-          "reax_et",
-          "reax_eco",
-          "reax_ew",
-          "reax_ep",
-          "reax_efi",
-          "reax_eqeq"
+          "cellgamma"
         ]
       }
     }

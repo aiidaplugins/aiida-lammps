@@ -185,6 +185,7 @@ def test_force_process(db_test_app, get_potential_data, potential_type):
     assert set(link_labels).issuperset(
         ['results', 'arrays'])
 
+    # raise ValueError(calc_node.outputs.retrieved.get_object_content('_scheduler-stdout.txt'))
     # raise ValueError(calc_node.outputs.retrieved.get_object_content('log.lammps'))
 
     pdict = calc_node.outputs.results.get_dict()

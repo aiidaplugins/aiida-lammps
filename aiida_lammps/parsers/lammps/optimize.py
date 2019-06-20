@@ -52,7 +52,10 @@ class OptimizeParser(Parser):
         trajectory_txt = out_folder.get_object_content(trajectory_filename)
         positions, forces, symbols, cell2 = read_lammps_positions_and_forces_txt(trajectory_txt)
 
-        warnings = out_folder.get_object_content('_scheduler-stderr.txt')
+        warnings = out_folder.get_object_content(self.node.get_option("scheduler_stderr"))
+        # for some reason, errors may be in the stdout, but not the log.lammps
+        stdout = out_folder.get_object_content(self.node.get_option("scheduler_stdout"))
+        errors = [line for line in stdout.splitlines() if line.startswith("ERROR")]
 
         # ====================== prepare the output node ======================
 
@@ -75,12 +78,17 @@ class OptimizeParser(Parser):
         array_data.set_array('positions', positions)
         self.out('arrays', array_data)
 
-        # add the dictionary with warnings
+        # add the dictionary with warnings and errors
         output_data.update({'warnings': warnings})
+        output_data.update({'errors': errors})
         output_data["parser_class"] = self.__class__.__name__
         output_data["parser_version"] = aiida_lammps_version
 
         parameters_data = Dict(dict=output_data)
 
-        # self.out(self.node.get_linkname_outparams(), parameters_data)
         self.out('results', parameters_data)
+
+        if output_data["errors"]:
+            for error in output_data["errors"]:
+                self.logger.error(error)
+            return self.exit_codes.ERROR_LAMMPS_RUN

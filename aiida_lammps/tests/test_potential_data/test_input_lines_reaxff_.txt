@@ -2,17 +2,3 @@ pair_style reax/c NULL safezone 1.6
 pair_coeff      * * potential.pot Fe S
 fix qeq all qeq/reax 1 0.0 10.0 1e-6 reax/c
 fix_modify qeq energy yes
-variable reax_eb           equal c_reax[1]
-variable reax_ea           equal c_reax[2]
-variable reax_elp          equal c_reax[3]
-variable reax_emol         equal c_reax[4]
-variable reax_ev           equal c_reax[5]
-variable reax_epen         equal c_reax[6]
-variable reax_ecoa         equal c_reax[7]
-variable reax_ehb          equal c_reax[8]
-variable reax_et           equal c_reax[9]
-variable reax_eco          equal c_reax[10]
-variable reax_ew           equal c_reax[11]
-variable reax_ep           equal c_reax[12]
-variable reax_efi          equal c_reax[13]
-variable reax_eqeq         equal c_reax[14]

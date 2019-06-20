@@ -62,8 +62,10 @@ class MdParser(Parser):
             traceback.print_exc()
             return self.exit_codes.ERROR_TRAJ_PARSING
 
-        # Read other data from output folder
-        warnings = out_folder.get_object_content('_scheduler-stderr.txt')
+        warnings = out_folder.get_object_content(self.node.get_option("scheduler_stderr"))
+        # for some reason, errors may be in the stdout, but not the log.lammps
+        stdout = out_folder.get_object_content(self.node.get_option("scheduler_stdout"))
+        errors = [line for line in stdout.splitlines() if line.startswith("ERROR")]
 
         output_txt = out_folder.get_object_content(output_filename)
 
@@ -74,8 +76,9 @@ class MdParser(Parser):
             return self.exit_codes.ERROR_LOG_PARSING
         output_data.update(get_units_dict(units, ["distance", "time"]))
 
-        # add the dictionary with warnings
+        # add the dictionary with warnings and errors
         output_data.update({'warnings': warnings})
+        output_data.update({'errors': errors})
         output_data["parser_class"] = self.__class__.__name__
         output_data["parser_version"] = aiida_lammps_version
 
@@ -98,3 +101,8 @@ class MdParser(Parser):
             except Exception:
                 traceback.print_exc()
                 return self.exit_codes.ERROR_INFO_PARSING                
+
+        if output_data["errors"]:
+            for error in output_data["errors"]:
+                self.logger.error(error)
+            return self.exit_codes.ERROR_LAMMPS_RUN
