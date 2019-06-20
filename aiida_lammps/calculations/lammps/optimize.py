@@ -6,17 +6,16 @@ from aiida.plugins import DataFactory
 import six
 
 
-def generate_LAMMPS_input(calc,
-                          parameters_data,
+def generate_lammps_input(calc,
+                          parameters,
                           potential_obj,
-                          structure_file='data.gan',
-                          trajectory_file='path.lammpstrj',
-                          restart_filename="lammps.restart",
-                          version_date='11 Aug 2017'):
+                          structure_filename,
+                          trajectory_filename,
+                          version_date, **kwargs):
 
     names_str = ' '.join(potential_obj.kind_names)
 
-    parameters = parameters_data.get_dict()
+    parameters = parameters.get_dict()
 
     # lammps_date = convert_date_string(parameters.get("lammps_version", None))
 
@@ -26,7 +25,7 @@ def generate_LAMMPS_input(calc,
     lammps_input_file += 'box tilt large\n'
     lammps_input_file += 'atom_style      {0}\n'.format(
         potential_obj.atom_style)
-    lammps_input_file += 'read_data       {}\n'.format(structure_file)
+    lammps_input_file += 'read_data       {}\n'.format(structure_filename)
 
     lammps_input_file += potential_obj.get_input_potential_lines()
 
@@ -46,7 +45,7 @@ def generate_LAMMPS_input(calc,
     lammps_input_file += 'variable        pr equal -(c_stgb[1]+c_stgb[2]+c_stgb[3])/(3*vol)\n'
     lammps_input_file += 'thermo_style    custom step temp press v_pr etotal c_stgb[1] c_stgb[2] c_stgb[3] c_stgb[4] c_stgb[5] c_stgb[6]\n'
 
-    lammps_input_file += 'dump            aiida all custom 1 {0} element x y z  fx fy fz\n'.format(trajectory_file)
+    lammps_input_file += 'dump            aiida all custom 1 {0} element x y z  fx fy fz\n'.format(trajectory_filename)
 
     # TODO find exact version when changes were made
     if version_date <= convert_date_string('10 Feb 2015'):
@@ -75,7 +74,7 @@ def generate_LAMMPS_input(calc,
 
 class OptimizeCalculation(BaseLammpsCalculation):
 
-    _generate_input_function = generate_LAMMPS_input
+    _generate_input_function = generate_lammps_input
 
     @classmethod
     def define(cls, spec):

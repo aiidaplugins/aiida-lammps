@@ -41,7 +41,15 @@
     "units": {
       "description": "the unit system used",
       "type": "string",
-      "enum": ["real", "nano", "metal", "electron", "micro", "si", "cgs"]
+      "enum": [
+        "real",
+        "nano",
+        "metal",
+        "electron",
+        "micro",
+        "si",
+        "cgs"
+      ]
     },
     "timestep": {
       "description": "the timestep (in time units of style used)",
@@ -92,7 +100,6 @@
           "description": "external constraints to set",
           "type": "object",
           "additionalProperties": false,
-
           "properties": {
             "temp": {
               "description": "the temperature to run at",
@@ -241,6 +248,81 @@
           "type": "number",
           "minimum": 0
         }
+      }
+    },
+    "output_variables": {
+      "description": "output variables, per dump_rate, to an array (see thermo_style)",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "step",
+          "elapsed",
+          "elaplong",
+          "dt",
+          "time",
+          "cpu",
+          "tpcpu",
+          "spcpu",
+          "cpuremain",
+          "part",
+          "timeremain",
+          "atoms",
+          "temp",
+          "press",
+          "pe",
+          "ke",
+          "etotal",
+          "enthalpy",
+          "evdwl",
+          "ecoul",
+          "epair",
+          "ebond",
+          "eangle",
+          "edihed",
+          "eimp",
+          "emol",
+          "elong",
+          "etail",
+          "vol",
+          "density",
+          "lx",
+          "ly",
+          "lz",
+          "xlo",
+          "xhi",
+          "ylo",
+          "yhi",
+          "zlo",
+          "zhi",
+          "xy",
+          "xz",
+          "yz",
+          "xlat",
+          "ylat",
+          "zlat",
+          "bonds",
+          "angles",
+          "dihedrals",
+          "impropers",
+          "pxx",
+          "pyy",
+          "pzz",
+          "pxy",
+          "pxz",
+          "pyz",
+          "fmax",
+          "fnorm",
+          "nbuild",
+          "ndanger",
+          "cella",
+          "cellb",
+          "cellc",
+          "cellalpha",
+          "cellbeta",
+          "cellgamma"
+        ]
       }
     }
   }

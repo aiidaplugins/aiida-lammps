@@ -1,8 +1,9 @@
 import os
 import traceback
+import numpy as np
 from aiida.parsers.parser import Parser
 from aiida.common import exceptions
-from aiida.orm import Dict, TrajectoryData
+from aiida.orm import Dict, TrajectoryData, ArrayData
 from aiida_lammps import __version__ as aiida_lammps_version
 from aiida_lammps.common.raw_parsers import read_lammps_trajectory, get_units_dict, read_log_file
 
@@ -77,3 +78,14 @@ class MdParser(Parser):
         parameters_data = Dict(dict=output_data)
 
         self.out('results', parameters_data)
+
+        # parse the system data file
+        info_filename = self.node.get_option('info_filename')
+        if info_filename in list_of_temp_files:
+            info_filepath = temporary_folder + '/' + self.node.get_option('info_filename')
+            with open(info_filepath) as handle:
+                names = handle.readline().strip().split()
+            sys_data = ArrayData()
+            for i, col in enumerate(np.loadtxt(info_filepath, skiprows=1, unpack=True)):
+                sys_data.set_array(names[i], col)
+            self.out('system_data', sys_data)

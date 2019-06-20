@@ -4,13 +4,12 @@ from aiida_lammps.common.utils import convert_date_string
 import six
 
 
-def generate_LAMMPS_input(calc,
-                          parameters_data,
+def generate_lammps_input(calc,
+                          parameters,
                           potential_obj,
-                          structure_file='data.gan',
-                          trajectory_file='trajectory.lammpstr',
-                          restart_filename="lammps.restart",
-                          version_date='11 Aug 2017'):
+                          structure_filename,
+                          trajectory_filename,
+                          version_date='11 Aug 2017', **kwargs):
 
     names_str = ' '.join(potential_obj.kind_names)
 
@@ -19,13 +18,13 @@ def generate_LAMMPS_input(calc,
     lammps_input_file += 'box tilt large\n'
     lammps_input_file += 'atom_style      {0}\n'.format(potential_obj.atom_style)
 
-    lammps_input_file += 'read_data       {}\n'.format(structure_file)
+    lammps_input_file += 'read_data       {}\n'.format(structure_filename)
 
     lammps_input_file += potential_obj.get_input_potential_lines()
 
     lammps_input_file += 'neighbor        0.3 bin\n'
     lammps_input_file += 'neigh_modify    every 1 delay 0 check no\n'
-    lammps_input_file += 'dump            aiida all custom 1 {0} element fx fy fz\n'.format(trajectory_file)
+    lammps_input_file += 'dump            aiida all custom 1 {0} element fx fy fz\n'.format(trajectory_filename)
 
     # TODO find exact version when changes were made
     if version_date <= convert_date_string('10 Feb 2015'):
@@ -43,7 +42,7 @@ def generate_LAMMPS_input(calc,
 
 class ForceCalculation(BaseLammpsCalculation):
 
-    _generate_input_function = generate_LAMMPS_input
+    _generate_input_function = generate_lammps_input
 
     @classmethod
     def define(cls, spec):

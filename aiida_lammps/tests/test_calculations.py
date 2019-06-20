@@ -46,7 +46,10 @@ def get_calc_parameters(plugin_name, units):
             "neigh_modify": {"every": 1, "delay": 0, "check": False},
             'equilibrium_steps': 100,
             'total_steps': 1000,
-            'dump_rate': 1}
+            'dump_rate': 10,
+            'restart': 100,
+            'output_variables': ["step", "temp", "etotal"]
+        }
     else:
         raise ValueError(plugin_name)
 
@@ -274,7 +277,7 @@ def test_md_process(db_test_app, get_potential_data, potential_type):
 
     link_labels = calc_node.get_outgoing().all_link_labels()
     assert set(link_labels).issuperset(
-        ['results', 'trajectory_data'])
+        ['results', 'trajectory_data', 'system_data'])
 
     pdict = calc_node.outputs.results.get_dict()
     assert set(pdict.keys()).issuperset(
@@ -284,3 +287,9 @@ def test_md_process(db_test_app, get_potential_data, potential_type):
     assert set(calc_node.outputs.trajectory_data.get_arraynames()).issuperset(
         ['cells', 'positions', 'steps', 'times']
     )
+    assert calc_node.outputs.trajectory_data.numsteps == 101
+
+    assert set(calc_node.outputs.system_data.get_arraynames()) == set(
+        ['step', 'temp', 'etotal']
+    )
+    assert calc_node.outputs.system_data.get_shape('temp') == (100,)

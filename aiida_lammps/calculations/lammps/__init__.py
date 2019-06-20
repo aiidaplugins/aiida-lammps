@@ -106,6 +106,7 @@ class BaseLammpsCalculation(CalcJob):
 
     _DEFAULT_OUTPUT_FILE_NAME = 'log.lammps'
     _DEFAULT_TRAJECTORY_FILE_NAME = 'trajectory.lammpstrj'
+    _DEFAULT_OUTPUT_INFO_FILE_NAME = "system_info.dump"
     _DEFAULT_OUTPUT_RESTART_FILE_NAME = 'lammps.restart'
 
     _retrieve_list = ['log.lammps']
@@ -125,6 +126,8 @@ class BaseLammpsCalculation(CalcJob):
                    valid_type=six.string_types, default=cls._DEFAULT_OUTPUT_FILE_NAME)
         spec.input('metadata.options.trajectory_name',
                    valid_type=six.string_types, default=cls._DEFAULT_TRAJECTORY_FILE_NAME)
+        spec.input('metadata.options.info_filename',
+                   valid_type=six.string_types, default=cls._DEFAULT_OUTPUT_INFO_FILE_NAME)
         spec.input('metadata.options.restart_filename',
                    valid_type=six.string_types, default=cls._DEFAULT_OUTPUT_RESTART_FILE_NAME)
 
@@ -195,12 +198,14 @@ class BaseLammpsCalculation(CalcJob):
             parameters.get_dict().get("lammps_version", '11 Aug 2017'))
 
         # Setup input parameters
-        input_txt = self._generate_input_function(parameters,
-                                                  self.inputs.potential,
-                                                  self._INPUT_STRUCTURE,
-                                                  self.options.trajectory_name,
-                                                  self.options.restart_filename,
-                                                  version_date=lammps_date)
+        input_txt = self._generate_input_function(
+            parameters=parameters,
+            potential_obj=self.inputs.potential,
+            structure_filename=self._INPUT_STRUCTURE,
+            trajectory_filename=self.options.trajectory_name,
+            info_filename=self.options.info_filename,
+            restart_filename=self.options.restart_filename,
+            version_date=lammps_date)
 
         input_filename = tempfolder.get_abs_path(self._INPUT_FILE_NAME)
 

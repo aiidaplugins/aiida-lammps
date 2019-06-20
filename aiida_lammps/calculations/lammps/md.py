@@ -10,9 +10,10 @@ import six
 def generate_lammps_input(calc,
                           parameters,
                           potential_obj,
-                          structure_file='potential.pot',
-                          trajectory_file='trajectory.lammpstr',
-                          restart_filename="lammps.restart",
+                          structure_filename,
+                          trajectory_filename,
+                          restart_filename,
+                          info_filename,
                           version_date='11 Aug 2017'):
 
     pdict = parameters.get_dict()
@@ -29,7 +30,7 @@ def generate_lammps_input(calc,
     lammps_input_file += 'box tilt large\n'
     lammps_input_file += 'atom_style      {0}\n'.format(
         potential_obj.atom_style)
-    lammps_input_file += 'read_data       {}\n'.format(structure_file)
+    lammps_input_file += 'read_data       {}\n'.format(structure_filename)
 
     lammps_input_file += potential_obj.get_input_potential_lines()
 
@@ -75,7 +76,7 @@ def generate_lammps_input(calc,
     lammps_input_file += 'reset_timestep  0\n'
 
     lammps_input_file += 'dump            aiida all custom {0} {1} element x y z\n'.format(parameters.dict.dump_rate,
-                                                                                           trajectory_file)
+                                                                                           trajectory_filename)
 
     # TODO find exact version when changes were made
     if version_date <= convert_date_string('10 Feb 2015'):
@@ -85,6 +86,15 @@ def generate_lammps_input(calc,
 
     lammps_input_file += 'dump_modify     aiida sort id\n'
     lammps_input_file += 'dump_modify     aiida element {}\n'.format(names_str)
+
+    variables = pdict.get("output_variables", [])
+    for var in variables:
+        lammps_input_file += 'variable {0} equal {0}\n'.format(var)
+    if variables:
+        # TODO dump includes the initial configuration, whereas print does not
+        lammps_input_file += 'fix sys_info all print {0} "{1}" title "{2}" file {3} screen no\n'.format(
+            parameters.dict.dump_rate, " ".join(["${{{0}}}".format(v) for v in variables]),
+            " ".join(variables), info_filename)
 
     lammps_input_file += 'run             {}\n'.format(
         parameters.dict.total_steps)
@@ -108,7 +118,11 @@ class MdCalculation(BaseLammpsCalculation):
         spec.output('trajectory_data',
                     valid_type=DataFactory('array.trajectory'),
                     required=True,
-                    help='forces, stresses and positions data per step')
+                    help='atomic configuration data per dump step')
+        spec.output('system_data',
+                    valid_type=DataFactory('array'),
+                    required=False,
+                    help='selected system data per dump step')
 
     def validate_parameters(self, param_data, potential_object):
         if param_data is None:
@@ -126,5 +140,7 @@ class MdCalculation(BaseLammpsCalculation):
         self._retrieve_list += []
         if self.options.trajectory_name not in self._retrieve_temporary_list:
             self._retrieve_temporary_list += [self.options.trajectory_name]
+        if self.options.info_filename not in self._retrieve_temporary_list:
+            self._retrieve_temporary_list += [self.options.info_filename]
 
         return True
