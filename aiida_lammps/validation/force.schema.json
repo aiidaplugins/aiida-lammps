@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "LAMMPS MD Run Parameters",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "lammps_version": {
+      "description": "the version of lammps in date format, e.g 10 Nov 2015",
+      "type": "string"
+    },
+    "thermo_keywords": {
+      "description": "additional keywords to append to 'thermo_style custom'",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9\\_\\[\\]]+$"
+      }
+    },
+    "output_variables": {
+      "description": "output variables to record as attributes (see `thermo_style` for valid keywords)",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9\\_\\[\\]]+$"
+      }
+    }
+  }
+}

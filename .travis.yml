@@ -72,7 +72,7 @@ script:
   fi
 - |
   if [[ "$TEST_TYPE" == "code-style" ]]; then
-    flake8 .
+    flake8 aiida_lammps
   fi
 - |
   if [[ "$TEST_TYPE" == "version" ]]; then

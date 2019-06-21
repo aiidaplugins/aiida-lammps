@@ -5,7 +5,7 @@ def generate_LAMMPS_potential(data):
     return None
 
 
-def get_input_potential_lines(data, names=None, potential_filename='potential.pot'):
+def get_input_potential_lines(data, kind_elements=None, potential_filename='potential.pot'):
 
     cut = np.max([float(i.split()[2]) for i in data.values()])
 

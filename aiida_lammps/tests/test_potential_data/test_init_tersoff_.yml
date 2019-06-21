@@ -1,7 +1,7 @@
 atom_style: atomic
 default_units: metal
 input_lines_md5: 3145644a408a6d464e80866b833115a2
-kind_names:
+kind_elements:
 - Ga
 - N
 potential_md5: b3b7d45ae7b92eba05ed99ffe69810d0

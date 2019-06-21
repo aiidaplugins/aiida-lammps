@@ -100,6 +100,24 @@
           ]
         }
       }
+    },
+    "thermo_keywords": {
+      "description": "additional keywords to append to 'thermo_style custom'",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9\\_\\[\\]]+$"
+      }
+    },
+    "output_variables": {
+      "description": "optimized output variables to record as attributes (see `thermo_style` for valid keywords)",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9\\_\\[\\]]+$"
+      }
     }
   }
 }

@@ -1,4 +1,5 @@
 from aiida.engine import CalcJob
+from aiida.common.exceptions import ValidationError
 from aiida.common import CalcInfo, CodeInfo
 from aiida.orm import StructureData, Dict
 from aiida.plugins import DataFactory
@@ -47,7 +48,8 @@ def get_FORCE_CONSTANTS_txt(force_constants):
 
 def structure_to_poscar(structure):
 
-    atom_type_unique = np.unique([site.kind_name for site in structure.sites], return_index=True)[1]
+    atom_type_unique = np.unique(
+        [site.kind_name for site in structure.sites], return_index=True)[1]
     labels = np.diff(np.append(atom_type_unique, [len(structure.sites)]))
 
     poscar = ' '.join(np.unique([site.kind_name for site in structure.sites]))
@@ -59,7 +61,8 @@ def structure_to_poscar(structure):
     poscar += ' '.join(np.array(labels, dtype=str)) + '\n'
     poscar += 'Cartesian\n'
     for site in structure.sites:
-        poscar += '{0: 22.16f} {1: 22.16f} {2: 22.16f}\n'.format(*site.position)
+        poscar += '{0: 22.16f} {1: 22.16f} {2: 22.16f}\n'.format(
+            *site.position)
 
     return poscar
 
@@ -102,7 +105,10 @@ class BaseLammpsCalculation(CalcJob):
     _INPUT_FILE_NAME = 'input.in'
     _INPUT_STRUCTURE = 'input.data'
 
-    _OUTPUT_FILE_NAME = 'log.lammps'
+    _DEFAULT_OUTPUT_FILE_NAME = 'log.lammps'
+    _DEFAULT_TRAJECTORY_FILE_NAME = 'trajectory.lammpstrj'
+    _DEFAULT_OUTPUT_INFO_FILE_NAME = "system_info.dump"
+    _DEFAULT_OUTPUT_RESTART_FILE_NAME = 'lammps.restart'
 
     _retrieve_list = ['log.lammps']
     _retrieve_temporary_list = []
@@ -118,7 +124,13 @@ class BaseLammpsCalculation(CalcJob):
         spec.input('parameters', valid_type=Dict,
                    help='the parameters', required=False)
         spec.input('metadata.options.output_filename',
-                   valid_type=six.string_types, default=cls._OUTPUT_FILE_NAME)
+                   valid_type=six.string_types, default=cls._DEFAULT_OUTPUT_FILE_NAME)
+        spec.input('metadata.options.trajectory_name',
+                   valid_type=six.string_types, default=cls._DEFAULT_TRAJECTORY_FILE_NAME)
+        spec.input('metadata.options.info_filename',
+                   valid_type=six.string_types, default=cls._DEFAULT_OUTPUT_INFO_FILE_NAME)
+        spec.input('metadata.options.restart_filename',
+                   valid_type=six.string_types, default=cls._DEFAULT_OUTPUT_RESTART_FILE_NAME)
 
         spec.output('results',
                     valid_type=DataFactory('dict'),
@@ -136,21 +148,31 @@ class BaseLammpsCalculation(CalcJob):
             201, 'ERROR_NO_RETRIEVED_TEMP_FOLDER',
             message='The retrieved temporary folder data node could not be accessed.')
         spec.exit_code(
-            210, 'ERROR_OUTPUT_FILE_MISSING',
-            message='the main output file was not found')
+            202, 'ERROR_LOG_FILE_MISSING',
+            message='the main log output file was not found')
         spec.exit_code(
-            220, 'ERROR_TRAJ_FILE_MISSING',
+            203, 'ERROR_TRAJ_FILE_MISSING',
             message='the trajectory output file was not found')
+        spec.exit_code(
+            204, 'ERROR_STDOUT_FILE_MISSING',
+            message='the stdout output file was not found')
+        spec.exit_code(
+            205, 'ERROR_STDERR_FILE_MISSING',
+            message='the stderr output file was not found')
 
         # Unrecoverable errors: required retrieved files could not be read, parsed or are otherwise incomplete
         spec.exit_code(
-            300, 'ERROR_OUTPUT_PARSING',
+            300, 'ERROR_LOG_PARSING',
             message=('An error was flagged trying to parse the '
-                     'main lammps output file'))
+                     'main lammps output log file'))
         spec.exit_code(
             310, 'ERROR_TRAJ_PARSING',
             message=('An error was flagged trying to parse the '
                      'trajectory output file'))
+        spec.exit_code(
+            320, 'ERROR_INFO_PARSING',
+            message=('An error was flagged trying to parse the '
+                     'system info output file'))
 
         # Significant errors but calculation can be used to restart
         spec.exit_code(
@@ -169,6 +191,9 @@ class BaseLammpsCalculation(CalcJob):
         :param tempfolder: an `aiida.common.folders.Folder` to temporarily write files on disk
         :return: `aiida.common.CalcInfo` instance
         """
+        # assert that the potential and structure have the same kind elements
+        if [k.symbol for k in self.inputs.structure.kinds] != self.inputs.potential.kind_elements:
+            raise ValidationError("the structure and potential are not compatible (different kind elements)")
 
         # Setup potential
         potential_txt = self.inputs.potential.get_potential_file()
@@ -181,17 +206,22 @@ class BaseLammpsCalculation(CalcJob):
             parameters = self.inputs.parameters
         else:
             parameters = Dict()
+        pdict = parameters.get_dict()
 
         # Check lammps version date in parameters
         lammps_date = convert_date_string(
-            parameters.get_dict().get("lammps_version", '11 Aug 2017'))
+            pdict.get("lammps_version", '11 Aug 2017'))
 
         # Setup input parameters
-        input_txt = self._generate_input_function(parameters,
-                                                  self.inputs.potential,
-                                                  self._INPUT_STRUCTURE,
-                                                  self._OUTPUT_TRAJECTORY_FILE_NAME,
-                                                  version_date=lammps_date)
+        input_txt = self._generate_input_function(
+            parameters=parameters,
+            potential_obj=self.inputs.potential,
+            structure_filename=self._INPUT_STRUCTURE,
+            trajectory_filename=self.options.trajectory_name,
+            info_filename=self.options.info_filename,
+            restart_filename=self.options.restart_filename,
+            add_thermo_keywords=pdict.get("thermo_keywords", []),
+            version_date=lammps_date)
 
         input_filename = tempfolder.get_abs_path(self._INPUT_FILE_NAME)
 

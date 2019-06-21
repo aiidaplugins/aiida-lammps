@@ -1,2 +1,2 @@
 pair_style      eam/fs
-pair_coeff      * * potential.pot Fe
+pair_coeff      * * potential.pot Fe Fe

@@ -9,10 +9,10 @@ def generate_LAMMPS_potential(data):
     return potential_file
 
 
-def get_input_potential_lines(data, names=None, potential_filename='potential.pot'):
+def get_input_potential_lines(data, kind_elements=None, potential_filename='potential.pot'):
 
     lammps_input_text = 'pair_style      eam/{}\n'.format(data['type'])
-    lammps_input_text += 'pair_coeff      * * {} {}\n'.format(potential_filename, ' '.join(names))
+    lammps_input_text += 'pair_coeff      * * {} {}\n'.format(potential_filename, ' '.join(kind_elements))
 
     return lammps_input_text
 
