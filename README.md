@@ -13,6 +13,16 @@ This plugin contains 4 code types:
 Note: `lammps.combinate` requires `aiida-phonopy` (https://github.com/abelcarreras/aiida-phonopy)
 plugin to work, DynaPhoPy can be found in: https://github.com/abelcarreras/aiida-phonopy
 
+- [AiiDA LAMMPS plugin](#AiiDA-LAMMPS-plugin)
+  - [Built-in Potential Support](#Built-in-Potential-Support)
+  - [Examples](#Examples)
+    - [Code Setup](#Code-Setup)
+    - [Structure Setup](#Structure-Setup)
+    - [Potential Setup](#Potential-Setup)
+    - [Force Calculation](#Force-Calculation)
+  - [Optimisation Calculation](#Optimisation-Calculation)
+  - [MD Calculation](#MD-Calculation)
+
 ## Built-in Potential Support
 
 - EAM
