@@ -1,3 +1,4 @@
+import mmap
 import re
 import numpy as np
 import six
@@ -72,7 +73,6 @@ def parse_dynaphopy_output(file):
 
 def read_lammps_forces(file_name):
 
-    import mmap
     # Time in picoseconds
     # Coordinates in Angstroms
 
@@ -281,11 +281,12 @@ def read_lammps_trajectory_txt(data_txt,
 def read_lammps_trajectory(file_name,
                            limit_number_steps=100000000,
                            initial_cut=1, end_cut=None,
-                           timestep=1, log_warning_func=six.print_):
+                           timestep=1, log_warning_func=None):
     """ should be used with:
     `dump name all custom n element x y z q`, where q is optional
     """
-    import mmap
+    if log_warning_func is None:
+        log_warning_func = six.print_
     # Time in picoseconds
     # Coordinates in Angstroms
 
@@ -409,7 +410,6 @@ def read_lammps_trajectory(file_name,
 
 def read_lammps_positions_and_forces(file_name):
 
-    import mmap
     # Time in picoseconds
     # Coordinates in Angstroms
 
