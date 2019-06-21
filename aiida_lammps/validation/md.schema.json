@@ -256,7 +256,7 @@
       "uniqueItems": true,
       "items": {
         "type": "string",
-        "pattern": "^[a-zA-Z1-9\\_\\[\\]]+$"
+        "pattern": "^[a-zA-Z0-9\\_\\[\\]]+$"
       }
     },
     "output_variables": {
@@ -265,7 +265,7 @@
       "uniqueItems": true,
       "items": {
         "type": "string",
-        "pattern": "^[a-zA-Z1-9\\_\\[\\]]+$"
+        "pattern": "^[a-zA-Z0-9\\_\\[\\]]+$"
       }
     }
   }
