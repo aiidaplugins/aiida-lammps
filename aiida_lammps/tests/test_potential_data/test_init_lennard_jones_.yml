@@ -1,6 +1,6 @@
 atom_style: atomic
 default_units: metal
 input_lines_md5: ba2f62709eddc687159644c4e0325bd9
-kind_names:
+kind_elements:
 - Ar
 potential_type: lennard_jones

@@ -59,6 +59,7 @@ def get_structure_data():
             fractional = True
 
             symbols = ['Fe', 'Fe']
+            names = ['Fe1', 'Fe2']
 
         elif pkey == "Ar":
 
@@ -66,7 +67,8 @@ def get_structure_data():
                     [-1.993797, 3.453358, 0.000000],
                     [0.000000, 0.000000, 6.538394]]
 
-            symbols = ['Ar'] * 2
+            symbols = names = ['Ar'] * 2
+
             positions = [(0.33333, 0.66666, 0.25000),
                          (0.66667, 0.33333, 0.75000)]
             fractional = True
@@ -83,7 +85,7 @@ def get_structure_data():
                          (0.3333331, 0.6666663, 0.8750000)]
             fractional = True
 
-            symbols = ['Ga', 'Ga', 'N', 'N']
+            symbols = names = ['Ga', 'Ga', 'N', 'N']
 
         elif pkey == "pyrite":
 
@@ -106,13 +108,13 @@ def get_structure_data():
                 [0.162, 0.838, 0.338]]
             fractional = True
 
-            symbols = ['Fe'] * 4 + ['S'] * 8
+            symbols = names = ['Fe'] * 4 + ['S'] * 8
 
         elif pkey == "fes_cubic-zincblende":
             cell = [[2.71, -2.71, 0.0],
                     [2.71, 0.0, 2.71],
                     [0.0, -2.71, 2.71]]
-            symbols = ['Fe', 'S']
+            symbols = names = ['Fe', 'S']
             positions = [
                 [0, 0, 0],
                 [4.065, -4.065, 4.065]
@@ -137,20 +139,19 @@ def get_structure_data():
                          (4.942938, 4.942938, 7.402062),
                          (4.933062, 4.933062, 2.473938)]
             fractional = False
-            symbols = ['Fe', 'Fe', 'Fe', 'Fe', 'Fe', 'Fe',
-                       'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S']
+            symbols = names = ['Fe', 'Fe', 'Fe', 'Fe', 'Fe', 'Fe',
+                               'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S']
 
         else:
             raise ValueError('Unknown structure key: {}'.format(pkey))
 
         # create structure
         structure = DataFactory('structure')(cell=cell)
-        for position, symbols in zip(positions, symbols):
+        for position, symbol, name in zip(positions, symbols, names):
             if fractional:
                 position = np.dot(position, cell).tolist()
             structure.append_atom(
-                position=position,
-                symbols=symbols)
+                position=position, symbols=symbol, name=name)
 
         return structure
 

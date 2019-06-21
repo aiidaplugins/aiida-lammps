@@ -14,8 +14,6 @@ def generate_lammps_input(calc,
                           add_thermo_keywords,
                           version_date, **kwargs):
 
-    names_str = ' '.join(potential_obj.kind_names)
-
     parameters = parameters.get_dict()
 
     # lammps_date = convert_date_string(parameters.get("lammps_version", None))
@@ -66,7 +64,7 @@ def generate_lammps_input(calc,
         lammps_input_file += 'dump_modify     aiida format line "%4s  %16.10f %16.10f %16.10f  %16.10f %16.10f %16.10f"\n'
 
     lammps_input_file += 'dump_modify     aiida sort id\n'
-    lammps_input_file += 'dump_modify     aiida element {}\n'.format(names_str)
+    lammps_input_file += 'dump_modify     aiida element {}\n'.format(' '.join(potential_obj.kind_elements))
     lammps_input_file += 'min_style       {}\n'.format(
         parameters['minimize']['style'])
     # lammps_input_file += 'min_style       cg\n'

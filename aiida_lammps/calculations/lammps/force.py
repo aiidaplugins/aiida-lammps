@@ -13,8 +13,6 @@ def generate_lammps_input(calc,
                           add_thermo_keywords,
                           version_date='11 Aug 2017', **kwargs):
 
-    names_str = ' '.join(potential_obj.kind_names)
-
     lammps_input_file = 'units          {0}\n'.format(potential_obj.default_units)
     lammps_input_file += 'boundary        p p p\n'
     lammps_input_file += 'box tilt large\n'
@@ -41,7 +39,7 @@ def generate_lammps_input(calc,
         lammps_input_file += 'dump_modify     aiida format line "%4s  %16.10f %16.10f %16.10f"\n'
 
     lammps_input_file += 'dump_modify     aiida sort id\n'
-    lammps_input_file += 'dump_modify     aiida element {}\n'.format(names_str)
+    lammps_input_file += 'dump_modify     aiida element {}\n'.format(' '.join(potential_obj.kind_elements))
 
     lammps_input_file += 'run             0\n'
 

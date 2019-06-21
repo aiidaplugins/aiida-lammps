@@ -21,8 +21,6 @@ def generate_lammps_input(calc,
 
     random_number = np.random.randint(10000000)
 
-    names_str = ' '.join(potential_obj.kind_names)
-
     # lammps_date = convert_date_string(pdict.get("lammps_version", None))
 
     lammps_input_file = 'units           {0}\n'.format(
@@ -90,7 +88,7 @@ def generate_lammps_input(calc,
         lammps_input_file += 'dump_modify     aiida format line "%4s  %16.10f %16.10f %16.10f"\n'
 
     lammps_input_file += 'dump_modify     aiida sort id\n'
-    lammps_input_file += 'dump_modify     aiida element {}\n'.format(names_str)
+    lammps_input_file += 'dump_modify     aiida element {}\n'.format(' '.join(potential_obj.kind_elements))
 
     variables = pdict.get("output_variables", [])
     if variables and 'step' not in variables:

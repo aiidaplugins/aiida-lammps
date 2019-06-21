@@ -1,4 +1,5 @@
 from aiida.engine import CalcJob
+from aiida.common.exceptions import ValidationError
 from aiida.common import CalcInfo, CodeInfo
 from aiida.orm import StructureData, Dict
 from aiida.plugins import DataFactory
@@ -190,6 +191,9 @@ class BaseLammpsCalculation(CalcJob):
         :param tempfolder: an `aiida.common.folders.Folder` to temporarily write files on disk
         :return: `aiida.common.CalcInfo` instance
         """
+        # assert that the potential and structure have the same kind elements
+        if [k.symbol for k in self.inputs.structure.kinds] != self.inputs.potential.kind_elements:
+            raise ValidationError("the structure and potential are not compatible (different kind elements)")
 
         # Setup potential
         potential_txt = self.inputs.potential.get_potential_file()
