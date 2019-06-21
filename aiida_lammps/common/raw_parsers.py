@@ -281,7 +281,7 @@ def read_lammps_trajectory_txt(data_txt,
 def read_lammps_trajectory(file_name,
                            limit_number_steps=100000000,
                            initial_cut=1, end_cut=None,
-                           timestep=1, log_warning_func=print):
+                           timestep=1, log_warning_func=six.print_):
     """ should be used with:
     `dump name all custom n element x y z q`, where q is optional
     """
