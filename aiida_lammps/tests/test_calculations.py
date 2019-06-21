@@ -194,7 +194,7 @@ def test_force_process(db_test_app, get_potential_data, potential_type):
 
     # raise ValueError(calc_node.get_object_content('input.in'))
     # raise ValueError(calc_node.outputs.retrieved.get_object_content('_scheduler-stdout.txt'))
-    # raise ValueError(calc_node.outputs.retrieved.get_object_content('log.lammps'))
+    # raise ValueError(calc_node.outputs.retrieved.get_object_content('trajectory.lammpstrj'))
 
     if not calc_node.is_finished_ok:
         print(calc_node.attributes)
@@ -213,9 +213,14 @@ def test_force_process(db_test_app, get_potential_data, potential_type):
     assert pdict['warnings'].strip() == pot_data.output["warnings"]
     assert pdict['energy'] == pytest.approx(pot_data.output['initial_energy'])
 
-    assert set(calc_node.outputs.arrays.get_arraynames()).issuperset(
-        ['forces']
-    )
+    if potential_type == "reaxff":
+        assert set(calc_node.outputs.arrays.get_arraynames()
+                   ) == set(['forces', 'charges'])
+    else:
+        assert set(calc_node.outputs.arrays.get_arraynames()
+                   ) == set(['forces'])
+    assert calc_node.outputs.arrays.get_shape(
+        'forces') == (1, len(pot_data.structure.sites), 3)
 
 
 @pytest.mark.lammps_call
@@ -263,9 +268,13 @@ def test_optimize_process(db_test_app, get_potential_data, potential_type):
     assert pdict['warnings'].strip() == pot_data.output["warnings"]
     assert pdict['energy'] == pytest.approx(pot_data.output['energy'])
 
-    assert set(calc_node.outputs.arrays.get_arraynames()).issuperset(
-        ['stress', 'forces']
-    )
+    if potential_type == "reaxff":
+        assert set(calc_node.outputs.arrays.get_arraynames()) == set(
+            ['positions', 'forces', 'stress', 'charges'])
+    else:
+        assert set(calc_node.outputs.arrays.get_arraynames()) == set(
+            ['positions', 'forces', 'stress'])
+    assert len(calc_node.outputs.arrays.get_shape('forces')) == 3
 
 
 @pytest.mark.lammps_call
@@ -311,17 +320,19 @@ def test_md_process(db_test_app, get_potential_data, potential_type):
         ['warnings', 'parser_class', 'parser_version'])
     assert pdict['warnings'].strip() == pot_data.output["warnings"]
 
-    assert set(calc_node.outputs.trajectory_data.get_arraynames()).issuperset(
-        ['cells', 'positions', 'steps', 'times']
-    )
-    assert calc_node.outputs.trajectory_data.numsteps == 101
-
     if potential_type == "reaxff":
+        assert set(calc_node.outputs.trajectory_data.get_arraynames()) == set(
+            ['cells', 'positions', 'steps', 'times', 'charges']
+        )
         assert set(calc_node.outputs.system_data.get_arraynames()) == set(
             ['step', 'temp', 'etotal', 'c_reax_1_']
         )
     else:
+        assert set(calc_node.outputs.trajectory_data.get_arraynames()) == set(
+            ['cells', 'positions', 'steps', 'times']
+        )
         assert set(calc_node.outputs.system_data.get_arraynames()) == set(
             ['step', 'temp', 'etotal']
         )
+    assert calc_node.outputs.trajectory_data.numsteps == 101
     assert calc_node.outputs.system_data.get_shape('temp') == (100,)

@@ -32,7 +32,7 @@ class OptimizeParser(LAMMPSBaseParser):
         if not trajectory_txt:
             self.logger.error("trajectory file empty")
             return self.exit_codes.ERROR_TRAJ_PARSING
-        positions, forces, symbols, cell2 = read_lammps_positions_and_forces_txt(
+        positions, forces, charges, symbols, cell2 = read_lammps_positions_and_forces_txt(
             trajectory_txt)
 
         # save optimized structure into node
@@ -47,6 +47,8 @@ class OptimizeParser(LAMMPSBaseParser):
         array_data.set_array('forces', forces)
         array_data.set_array('stress', log_data["stress"])
         array_data.set_array('positions', positions)
+        if charges is not None:
+            array_data.set_array('charges', charges)
         self.out('arrays', array_data)
 
         # save results into node

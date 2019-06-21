@@ -193,7 +193,7 @@ calc_node.outputs.arrays.attributes
 ```
 
 ```python
-{'array|forces': [0]}
+{'array|forces': [1, 4, 3]}
 ```
 
 ### Optimisation Calculation

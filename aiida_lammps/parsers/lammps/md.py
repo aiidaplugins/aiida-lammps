@@ -36,8 +36,9 @@ class MdParser(LAMMPSBaseParser):
         # parse trajectory file
         try:
             timestep = self.node.inputs.parameters.dict.timestep
-            positions, step_ids, cells, symbols, time = read_lammps_trajectory(
-                trajectory_filepath, timestep=timestep)
+            positions, charges, step_ids, cells, symbols, time = read_lammps_trajectory(
+                trajectory_filepath, timestep=timestep,
+                log_warning_func=self.logger.warning)
         except Exception:
             traceback.print_exc()
             return self.exit_codes.ERROR_TRAJ_PARSING
@@ -58,6 +59,8 @@ class MdParser(LAMMPSBaseParser):
         trajectory_data = TrajectoryData()
         trajectory_data.set_trajectory(
             symbols, positions, stepids=step_ids, cells=cells, times=time)
+        if charges is not None:
+            trajectory_data.set_array('charges', charges)       
         self.out('trajectory_data', trajectory_data)
 
         # parse the system data file

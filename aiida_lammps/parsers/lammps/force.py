@@ -35,12 +35,14 @@ class ForceParser(LAMMPSBaseParser):
         if not trajectory_txt:
             self.logger.error("trajectory file empty")
             return self.exit_codes.ERROR_TRAJ_PARSING
-        positions, forces, symbols, cell2 = read_lammps_positions_and_forces_txt(
+        positions, forces, charges, symbols, cell2 = read_lammps_positions_and_forces_txt(
             trajectory_txt)
 
         # save forces and stresses into node
         array_data = ArrayData()
         array_data.set_array('forces', forces)
+        if charges is not None:
+            array_data.set_array('charges', charges)
         self.out('arrays', array_data)
 
         # save results into node

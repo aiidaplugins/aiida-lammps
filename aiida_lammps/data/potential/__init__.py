@@ -25,7 +25,7 @@ class EmpiricalPotential(Data):
         """ empirical potential data, used to create LAMMPS input files
 
         NB: one of structure or kind_elements is required input
-        
+
         Parameters
         ----------
         type: str

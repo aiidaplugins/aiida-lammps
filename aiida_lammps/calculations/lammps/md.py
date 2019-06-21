@@ -78,15 +78,23 @@ def generate_lammps_input(calc,
         parameters.dict.equilibrium_steps)
     lammps_input_file += 'reset_timestep  0\n'
 
-    lammps_input_file += 'dump            aiida all custom {0} {1} element x y z\n'.format(parameters.dict.dump_rate,
-                                                                                           trajectory_filename)
+    if potential_obj.atom_style == 'charge':
+        dump_variables = "element x y z q"
+        dump_format = "%4s  %16.10f %16.10f %16.10f %16.10f"
+    else:
+        dump_variables = "element x y z"
+        dump_format = "%4s  %16.10f %16.10f %16.10f"
+
+    lammps_input_file += 'dump            aiida all custom {0} {1} {2}\n'.format(
+        parameters.dict.dump_rate, trajectory_filename, dump_variables)
 
     # TODO find exact version when changes were made
     if version_date <= convert_date_string('10 Feb 2015'):
-        lammps_input_file += 'dump_modify     aiida format "%4s  %16.10f %16.10f %16.10f"\n'
+        dump_mod_cmnd = "format"
     else:
-        lammps_input_file += 'dump_modify     aiida format line "%4s  %16.10f %16.10f %16.10f"\n'
+        dump_mod_cmnd = "format line"
 
+    lammps_input_file += 'dump_modify     aiida {0} "{1}"\n'.format(dump_mod_cmnd, dump_format)
     lammps_input_file += 'dump_modify     aiida sort id\n'
     lammps_input_file += 'dump_modify     aiida element {}\n'.format(' '.join(potential_obj.kind_elements))
 
