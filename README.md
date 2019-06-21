@@ -20,8 +20,8 @@ plugin to work, DynaPhoPy can be found in: https://github.com/abelcarreras/aiida
     - [Structure Setup](#Structure-Setup)
     - [Potential Setup](#Potential-Setup)
     - [Force Calculation](#Force-Calculation)
-  - [Optimisation Calculation](#Optimisation-Calculation)
-  - [MD Calculation](#MD-Calculation)
+    - [Optimisation Calculation](#Optimisation-Calculation)
+    - [MD Calculation](#MD-Calculation)
 
 ## Built-in Potential Support
 
@@ -196,7 +196,7 @@ calc_node.outputs.arrays.attributes
 {'array|forces': [0]}
 ```
 
-## Optimisation Calculation
+### Optimisation Calculation
 
 ```python
 from aiida.engine import run_get_node
@@ -296,7 +296,7 @@ calc_node.outputs.arrays.attributes
  'array|forces': [56, 4, 3]}
 ```
 
-## MD Calculation
+### MD Calculation
 
 ```python
 from aiida.engine import submit
