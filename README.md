@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/abelcarreras/aiida-lammps.svg?branch=master)](https://travis-ci.org/abelcarreras/aiida-lammps)
+[![PyPI](https://img.shields.io/pypi/v/aiida-lammps.svg)](https://pypi.python.org/pypi/aiida-lammps/)
 
 # AiiDA LAMMPS plugin
 
@@ -14,6 +15,7 @@ Note: `lammps.combinate` requires `aiida-phonopy` (https://github.com/abelcarrer
 plugin to work, DynaPhoPy can be found in: https://github.com/abelcarreras/aiida-phonopy
 
 - [AiiDA LAMMPS plugin](#AiiDA-LAMMPS-plugin)
+  - [Installation](#Installation)
   - [Built-in Potential Support](#Built-in-Potential-Support)
   - [Examples](#Examples)
     - [Code Setup](#Code-Setup)
@@ -22,6 +24,14 @@ plugin to work, DynaPhoPy can be found in: https://github.com/abelcarreras/aiida
     - [Force Calculation](#Force-Calculation)
     - [Optimisation Calculation](#Optimisation-Calculation)
     - [MD Calculation](#MD-Calculation)
+
+## Installation
+
+To install from pypi:
+
+```shell
+pip install aiida-lammps
+```
 
 ## Built-in Potential Support
 
