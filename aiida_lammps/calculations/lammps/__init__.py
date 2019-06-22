@@ -110,7 +110,7 @@ class BaseLammpsCalculation(CalcJob):
     _DEFAULT_OUTPUT_INFO_FILE_NAME = "system_info.dump"
     _DEFAULT_OUTPUT_RESTART_FILE_NAME = 'lammps.restart'
 
-    _retrieve_list = ['log.lammps']
+    _retrieve_list = []
     _retrieve_temporary_list = []
     _cmdline_params = ['-in', _INPUT_FILE_NAME]
     _stdout_name = None
@@ -123,6 +123,8 @@ class BaseLammpsCalculation(CalcJob):
                    help='lammps potential')
         spec.input('parameters', valid_type=Dict,
                    help='the parameters', required=False)
+        spec.input('metadata.options.cell_transform_filename',
+                   valid_type=six.string_types, default="cell_transform.npy")
         spec.input('metadata.options.output_filename',
                    valid_type=six.string_types, default=cls._DEFAULT_OUTPUT_FILE_NAME)
         spec.input('metadata.options.trajectory_name',
@@ -199,8 +201,11 @@ class BaseLammpsCalculation(CalcJob):
         potential_txt = self.inputs.potential.get_potential_file()
 
         # Setup structure
-        structure_txt = generate_lammps_structure(self.inputs.structure,
-                                                  self.inputs.potential.atom_style)
+        structure_txt, struct_transform = generate_lammps_structure(
+            self.inputs.structure, self.inputs.potential.atom_style)
+
+        with open(tempfolder.get_abs_path(self.options.cell_transform_filename), 'w+b') as handle:
+            np.save(handle, struct_transform)
 
         if "parameters" in self.inputs:
             parameters = self.inputs.parameters
@@ -255,7 +260,9 @@ class BaseLammpsCalculation(CalcJob):
 
         calcinfo = CalcInfo()
         calcinfo.uuid = self.uuid
-        calcinfo.retrieve_list = self._retrieve_list
+        calcinfo.retrieve_list = self._retrieve_list + [
+            self.options.output_filename,
+            self.options.cell_transform_filename]
         calcinfo.retrieve_temporary_list = self._retrieve_temporary_list
         calcinfo.codes_info = [codeinfo]
 
