@@ -10,7 +10,7 @@
     "aiida-core==1.0.0b3",
     "numpy",
     "packaging",
-    "dateutils",
+    "python-dateutil",
     "jsonschema",
     "six",
     "ase>=3.12.0,<4.0.0"
