@@ -3,6 +3,8 @@
 *.swp
 ~*
 *~
+build/
+dist/
 .project
 *.egg*
 .DS_Store

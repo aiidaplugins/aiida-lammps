@@ -11,5 +11,5 @@ from aiida_lammps.common.generate_structure import generate_lammps_structure
 ])
 def test_generate(db_test_app, get_structure_data, structure, file_regression):
     structure = get_structure_data(structure)
-    file_regression.check(six.ensure_text(
-        generate_lammps_structure(structure, round_dp=8)))
+    text, transform = generate_lammps_structure(structure, round_dp=8)
+    file_regression.check(six.ensure_text(text))

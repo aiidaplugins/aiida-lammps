@@ -16,7 +16,7 @@ matrix:
     - python: 3.6
       env: TEST_TYPE="version"
     - python: 3.6
-      env: TEST_TYPE="pytest" TEST_AIIDA_BACKEND="django"
+      env: TEST_TYPE="pytest" TEST_AIIDA_BACKEND="django" PYPI_DEPLOY=true
     - python: 2.7
       env: TEST_TYPE="pytest" TEST_AIIDA_BACKEND="django"
     - python: 3.6 
@@ -81,3 +81,14 @@ script:
 
 # after_success:
 # - coveralls
+
+deploy:
+  - provider: pypi
+    distributions: "sdist bdist_wheel"
+    user: cjsewell
+    password:
+      secure: Jrqfy5jCez0BKUi5dBi+pXxRBlmF24T53ZL6FumhKOTXgsjk8hp723GGJ4iJwdmnDBPQX029cJ0ebwZrNjTCI538TNDQaT+f2B7pUp0HG5qreWhbYQaMEU20wPvvyIbiI3Wei87PvouV2OHLelWj9/Q8Gy7GHQr1+66g/H83E27WgG56Qer3HcGCcUHZ03iByq640eF1ipqMs276pI9/tzeiCPqnOo5tlB2Nb+5McKtMoBnB8zn8930FxkYY3BijZWTN2fiEMx9ezDQDutGiZ6HU9c8ZJhw4A0pAETVIbdZAWcHyqnAknruX3q4eb8JKzKCEMBSiH4YS/0Sl5In4jTkrhTCiWLr5ViNDor9P+XNW6pgNS1BSdePj+gQ+E1v/+DMgnHJ4pcch2aILYAvF7R8txxEc+5xVtalGK0KjNXs+2eK/57Fqpozy2SnqfqlV1DeS+fo+/LAvyl0p7Gxt/mJCQgpHZOrcEsfW0PC2WsVmn0E5n7HAivTd3tqeY8z97KtQHiKGNa0SMzUvO7Gt9AxXtXG1sdQBJgdCO9iYpsk37WIlCsmzJM+w9cxbU69/QkKLPvr+PSxy6A3FeWKKonJ6uSlALl6rljOqutDlAKjIrsfSlykm9UPBS6yy2Ist2YJF6YRmeiaEA+3MGArZONaEmxOiau06BmtzFSMf7CM=
+    on:
+      branch: master
+      tags: true
+      condition: $PYPI_DEPLOY = true
