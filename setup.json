@@ -7,7 +7,7 @@
   "author_email": "abelcarreras83@gmail.com",
   "license": "MIT license",
   "install_requires": [
-    "aiida-core==1.0.0b3",
+    "aiida-core==1.0.0b4",
     "numpy",
     "packaging",
     "python-dateutil",
