@@ -45,13 +45,13 @@
           "type": "number",
           "minimum": 0,
           "maximum": 1,
-          "exclusiveMinimum": "true"
+          "exclusiveMinimum": true
         },
         "nreset": {
           "description": "reset reference cell every this many minimizer iterations",
           "type": "integer",
           "minimum": 0,
-          "exclusiveMinimum": "true"
+          "exclusiveMinimum": true
         }
       }
     },
@@ -71,25 +71,25 @@
           "description": "stopping tolerance for energy (unitless)",
           "type": "number",
           "minimum": 0,
-          "exclusiveMinimum": "true"
+          "exclusiveMinimum": true
         },
         "force_tolerance": {
           "description": "stopping tolerance for force (force units)",
           "type": "number",
           "minimum": 0,
-          "exclusiveMinimum": "true"
+          "exclusiveMinimum": true
         },
         "max_iterations": {
           "description": "max iterations of minimizer",
           "type": "integer",
           "minimum": 0,
-          "exclusiveMinimum": "true"
+          "exclusiveMinimum": true
         },
         "max_evaluations": {
           "description": "max number of force/energy evaluations",
           "type": "integer",
           "minimum": 0,
-          "exclusiveMinimum": "true"
+          "exclusiveMinimum": true
         },
         "style": {
           "description": "minimization algorithm",

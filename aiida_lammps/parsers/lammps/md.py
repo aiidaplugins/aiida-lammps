@@ -18,12 +18,11 @@ class MdParser(LAMMPSBaseParser):
         super(MdParser, self).__init__(node)
 
     def parse(self, **kwargs):
-        """
-        Parses the datafolder, stores results.
-        """
+        """Parse the retrieved folder and store results."""
         # retrieve resources
         resources, exit_code = self.get_parsing_resources(
-            kwargs, traj_in_temp=True, sys_info=True)
+            kwargs, traj_in_temp=True, sys_info=True
+        )
         if exit_code is not None:
             return exit_code
         trajectory_filename, trajectory_filepath, info_filepath = resources
@@ -36,32 +35,41 @@ class MdParser(LAMMPSBaseParser):
         # parse trajectory file
         try:
             timestep = self.node.inputs.parameters.dict.timestep
+            # with open(trajectory_filepath, "rb") as f:
+            #     with open("/Users/cjs14/GitHub/aiida-lammps/aiida_lammps/tests/input_files/lammps.traj", "wb") as handle:
+            #         handle.write(f.read())
             positions, charges, step_ids, cells, symbols, time = read_lammps_trajectory(
-                trajectory_filepath, timestep=timestep,
-                log_warning_func=self.logger.warning)
+                trajectory_filepath,
+                timestep=timestep,
+                log_warning_func=self.logger.warning,
+            )
         except Exception:
             traceback.print_exc()
             return self.exit_codes.ERROR_TRAJ_PARSING
 
         # save results into node
         output_data = log_data["data"]
-        if 'units_style' in output_data:
-            output_data.update(get_units_dict(output_data['units_style'],
-                                              ["distance", "time", "energy"]))
+        if "units_style" in output_data:
+            output_data.update(
+                get_units_dict(
+                    output_data["units_style"], ["distance", "time", "energy"]
+                )
+            )
         else:
             self.logger.warning("units missing in log")
         self.add_warnings_and_errors(output_data)
         self.add_standard_info(output_data)
         parameters_data = Dict(dict=output_data)
-        self.out('results', parameters_data)
+        self.out("results", parameters_data)
 
         # save trajectories into node
         trajectory_data = TrajectoryData()
         trajectory_data.set_trajectory(
-            symbols, positions, stepids=step_ids, cells=cells, times=time)
+            symbols, positions, stepids=step_ids, cells=cells, times=time
+        )
         if charges is not None:
-            trajectory_data.set_array('charges', charges)       
-        self.out('trajectory_data', trajectory_data)
+            trajectory_data.set_array("charges", charges)
+        self.out("trajectory_data", trajectory_data)
 
         # parse the system data file
         if info_filepath:
@@ -69,13 +77,15 @@ class MdParser(LAMMPSBaseParser):
             try:
                 with open(info_filepath) as handle:
                     names = handle.readline().strip().split()
-                for i, col in enumerate(np.loadtxt(info_filepath, skiprows=1, unpack=True)):
+                for i, col in enumerate(
+                    np.loadtxt(info_filepath, skiprows=1, unpack=True)
+                ):
                     sys_data.set_array(names[i], col)
             except Exception:
                 traceback.print_exc()
                 return self.exit_codes.ERROR_INFO_PARSING
-            sys_data.set_attribute('units_style', output_data.get('units_style', None))
-            self.out('system_data', sys_data)
+            sys_data.set_attribute("units_style", output_data.get("units_style", None))
+            self.out("system_data", sys_data)
 
         if output_data["errors"]:
             return self.exit_codes.ERROR_LAMMPS_RUN

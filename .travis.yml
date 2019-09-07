@@ -1,3 +1,4 @@
+dist: trusty  # note rabbitmq is currently not available on xenial
 language: python
 sudo: required
 cache: pip
@@ -12,14 +13,12 @@ addons:
 matrix:
   include:
     - python: 3.6
-      env: TEST_TYPE="code-style"
-    - python: 3.6
-      env: TEST_TYPE="version"
+      env: TEST_TYPE="pre-commit"
     - python: 3.6
       env: TEST_TYPE="pytest" TEST_AIIDA_BACKEND="django" PYPI_DEPLOY=true
     - python: 2.7
       env: TEST_TYPE="pytest" TEST_AIIDA_BACKEND="django"
-    - python: 3.6 
+    - python: 3.6
       env: TEST_TYPE="pytest" TEST_AIIDA_BACKEND="sqlalchemy"
 
   allow_failures:
@@ -48,15 +47,19 @@ before_install:
 
 install:
 - pip install -U pip wheel setuptools "reentry>=1.3"
+- pip install numpy==1.16.4 # otherwise numpy 1.17 is installed, which is incompatible with aiida-core==1.0.0b5
+- |
+    if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+      pip install typing==3.6.6 # otherwise importlib_resources installs incompatible version for aiida-core==1.0.0b5
+    fi
 - |
     if [[ "$TEST_TYPE" == "pytest" ]]; then
-      pip uninstall -y numpy
       pip install -e .[testing]
       pip install coveralls
     fi
 - |
-    if [[ "$TEST_TYPE" == "code-style" ]]; then
-      pip install "flake8<3.8.0,>=3.7.0"
+    if [[ "$TEST_TYPE" == "pre-commit" ]]; then
+      pip install -e .[code_style]
     fi
 
 before_script:
@@ -71,12 +74,8 @@ script:
       pytest -v --cov=aiida_lammps --cov-report= aiida_lammps
   fi
 - |
-  if [[ "$TEST_TYPE" == "code-style" ]]; then
-    flake8 aiida_lammps
-  fi
-- |
-  if [[ "$TEST_TYPE" == "version" ]]; then
-    python ./.travis-data/check_version.py
+  if [[ "$TEST_TYPE" == "pre-commit" ]]; then
+    pre-commit run --all-files || ( git status --short ; git diff ; exit 1 )
   fi
 
 # after_success:
@@ -87,7 +86,7 @@ deploy:
     distributions: "sdist bdist_wheel"
     user: cjsewell
     password:
-      secure: Jrqfy5jCez0BKUi5dBi+pXxRBlmF24T53ZL6FumhKOTXgsjk8hp723GGJ4iJwdmnDBPQX029cJ0ebwZrNjTCI538TNDQaT+f2B7pUp0HG5qreWhbYQaMEU20wPvvyIbiI3Wei87PvouV2OHLelWj9/Q8Gy7GHQr1+66g/H83E27WgG56Qer3HcGCcUHZ03iByq640eF1ipqMs276pI9/tzeiCPqnOo5tlB2Nb+5McKtMoBnB8zn8930FxkYY3BijZWTN2fiEMx9ezDQDutGiZ6HU9c8ZJhw4A0pAETVIbdZAWcHyqnAknruX3q4eb8JKzKCEMBSiH4YS/0Sl5In4jTkrhTCiWLr5ViNDor9P+XNW6pgNS1BSdePj+gQ+E1v/+DMgnHJ4pcch2aILYAvF7R8txxEc+5xVtalGK0KjNXs+2eK/57Fqpozy2SnqfqlV1DeS+fo+/LAvyl0p7Gxt/mJCQgpHZOrcEsfW0PC2WsVmn0E5n7HAivTd3tqeY8z97KtQHiKGNa0SMzUvO7Gt9AxXtXG1sdQBJgdCO9iYpsk37WIlCsmzJM+w9cxbU69/QkKLPvr+PSxy6A3FeWKKonJ6uSlALl6rljOqutDlAKjIrsfSlykm9UPBS6yy2Ist2YJF6YRmeiaEA+3MGArZONaEmxOiau06BmtzFSMf7CM=
+      secure: NkYuJbR79czDGc//QknIQeCwi7IJUA9VHQ4WfZz1gaMk3lQljO7b8a6HPIcqNv6jSwuLc2uz3P0frIUTkxvNTmWFUwbYz/eTyCsuHb0znjqGslTmWv97+8DCtJIQ9fDFSd1ym1FDkvOwrNBUncIaApta8bmzsP6tOQOuiz+BcLhzMH8J91d8RRzw/MnUtKS20vP58cjVuz3Q9tondfVBC+i5F2MeXNU4tXL7p31dVvBPFwhfmJ1dJ/QJgnACmNz0BPHdrIq1iXH1B7oj4EtAdEil4BKGKBY8Ipg6nBpJvOlPXE6iKvltaih2EsWx9CZvT/oT1Rz8V1osZi1hc4aQ26SCIlAUo6ak5onCCayDMWLLPV7QuNf5E4edK+d3GBtkXCu9jWEVHEJW5XIhg/E45WN/FSvap6q4qyhWr3sCkwxTe1/OO3i09KuiQGD5w+a/9WSJ1gW31Iu5Sy77qWPdvdKhsuazGdx8sl1Wj99dLtrfJH88q+emXPRKNYFY6n8JecJC4CAyqxLih7Zc/WTFgG9gTEuC8OfriuHoWdNZIkcLdQMdrGZsoPYhD0dYz333so4eq56YTYYM1qSA2wh6BdJ1eXR/Fn/+mpRJyqIj7xYx/8FYwLr5qnWVh6HE5TstpRYqgJ1iL64Y1BTv6HWfcrK473SZuoah/21XOYXyQ+A=
     on:
       branch: master
       tags: true

@@ -1,100 +1,98 @@
-from aiida import load_dbenv
-load_dbenv()
+from aiida import load_profile
 from aiida.plugins import CalculationFactory
 from aiida.orm import Code, Dict, StructureData
-from aiida.engine import submit, run_get_node
+from aiida.engine import run_get_node
 from aiida.common.extendeddicts import AttributeDict
 from aiida_lammps.data.potential import EmpiricalPotential
 import numpy as np
 
+if __name__ == "__main__":
 
-codename = 'lammps_md@stern'
+    load_profile()
 
-############################
-#  Define input parameters #
-############################
+    codename = "lammps_md@stern"
 
-a = 5.404
-cell = [[a, 0, 0],
-        [0, a, 0],
-        [0, 0, a]]
+    ############################
+    #  Define input parameters #
+    ############################
 
-symbols = ['Si'] * 8
-scaled_positions = [(0.875, 0.875, 0.875),
-                    (0.875, 0.375, 0.375),
-                    (0.375, 0.875, 0.375),
-                    (0.375, 0.375, 0.875),
-                    (0.125, 0.125, 0.125),
-                    (0.125, 0.625, 0.625),
-                    (0.625, 0.125, 0.625),
-                    (0.625, 0.625, 0.125)]
+    a = 5.404
+    cell = [[a, 0, 0], [0, a, 0], [0, 0, a]]
 
-structure = StructureData(cell=cell)
-positions = np.dot(scaled_positions, cell)
+    symbols = ["Si"] * 8
+    scaled_positions = [
+        (0.875, 0.875, 0.875),
+        (0.875, 0.375, 0.375),
+        (0.375, 0.875, 0.375),
+        (0.375, 0.375, 0.875),
+        (0.125, 0.125, 0.125),
+        (0.125, 0.625, 0.625),
+        (0.625, 0.125, 0.625),
+        (0.625, 0.625, 0.125),
+    ]
 
-for i, scaled_position in enumerate(scaled_positions):
-    structure.append_atom(position=np.dot(scaled_position, cell).tolist(),
-                          symbols=symbols[i])
+    structure = StructureData(cell=cell)
+    positions = np.dot(scaled_positions, cell)
 
-structure.store()
+    for i, scaled_position in enumerate(scaled_positions):
+        structure.append_atom(
+            position=np.dot(scaled_position, cell).tolist(), symbols=symbols[i]
+        )
 
-# Silicon(C) Tersoff
-tersoff_si = {
-    'Si  Si  Si ': '3.0 1.0 1.7322 1.0039e5 16.218 -0.59826 0.78734 1.0999e-6  1.7322  471.18  2.85  0.15  2.4799  1830.8'}
+    structure.store()
 
-potential = {'pair_style': 'tersoff',
-             'data': tersoff_si}
+    # Silicon(C) Tersoff
+    tersoff_si = {
+        "Si  Si  Si ": "3.0 1.0 1.7322 1.0039e5 16.218 -0.59826 0.78734 1.0999e-6  1.7322  471.18  2.85  0.15  2.4799  1830.8"
+    }
 
-lammps_machine = {
-    'num_machines': 1,
-    'parallel_env': 'mpi*',
-    'tot_num_mpiprocs': 16}
+    potential = {"pair_style": "tersoff", "data": tersoff_si}
 
-parameters_md = {
-    'units': 'metal',
-    'timestep': 0.001,
-    'integration': {
-        'style': 'nvt',
-        'constraints': {
-            'temp': [300, 300, 0.5]
-        }
-    },
-    "neighbor": [0.3, "bin"],
-    "neigh_modify": {"every": 1, "delay": 0, "check": False},
-    'equilibrium_steps': 100,
-    'total_steps': 2000,
-    'dump_rate': 1}
+    lammps_machine = {"num_machines": 1, "parallel_env": "mpi*", "tot_num_mpiprocs": 16}
 
+    parameters_md = {
+        "units": "metal",
+        "timestep": 0.001,
+        "integration": {"style": "nvt", "constraints": {"temp": [300, 300, 0.5]}},
+        "neighbor": [0.3, "bin"],
+        "neigh_modify": {"every": 1, "delay": 0, "check": False},
+        "equilibrium_steps": 100,
+        "total_steps": 2000,
+        "dump_rate": 1,
+    }
 
-LammpsMDCalculation = CalculationFactory('lammps.md')
-inputs = LammpsMDCalculation.get_builder()
+    LammpsMDCalculation = CalculationFactory("lammps.md")
+    inputs = LammpsMDCalculation.get_builder()
 
-# Computer options
-options = AttributeDict()
-options.account = ''
-options.qos = ''
-options.resources = {'num_machines': 1, 'num_mpiprocs_per_machine': 1,
-                     'parallel_env': 'localmpi', 'tot_num_mpiprocs': 1}
-#options.queue_name = 'iqtc04.q'
-options.max_wallclock_seconds = 3600
-inputs.metadata.options = options
+    # Computer options
+    options = AttributeDict()
+    options.account = ""
+    options.qos = ""
+    options.resources = {
+        "num_machines": 1,
+        "num_mpiprocs_per_machine": 1,
+        "parallel_env": "localmpi",
+        "tot_num_mpiprocs": 1,
+    }
+    # options.queue_name = 'iqtc04.q'
+    options.max_wallclock_seconds = 3600
+    inputs.metadata.options = options
 
-# Setup code
-inputs.code = Code.get_from_string(codename)
+    # Setup code
+    inputs.code = Code.get_from_string(codename)
 
-# setup nodes
-inputs.structure = structure
-inputs.potential = EmpiricalPotential(structure=structure,
-                                      type='tersoff',
-                                      data=tersoff_si)
+    # setup nodes
+    inputs.structure = structure
+    inputs.potential = EmpiricalPotential(
+        structure=structure, type="tersoff", data=tersoff_si
+    )
 
-inputs.parameters = Dict(dict=parameters_md)
+    inputs.parameters = Dict(dict=parameters_md)
 
-# run calculation
-result, node = run_get_node(LammpsMDCalculation, **inputs)
-print('results:', result)
-print('node:', node)
+    # run calculation
+    result, node = run_get_node(LammpsMDCalculation, **inputs)
+    print("results:", result)
+    print("node:", node)
 
-# submit to deamon
-#submit(LammpsOptimizeCalculation, **inputs)
-
+    # submit to deamon
+    # submit(LammpsOptimizeCalculation, **inputs)

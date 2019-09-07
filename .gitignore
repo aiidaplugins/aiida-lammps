@@ -14,3 +14,5 @@ dist/
 postgres*.log
 .aiida_envs.yaml
 .vscode/
+
+pip-wheel-metadata/

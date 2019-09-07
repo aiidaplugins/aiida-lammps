@@ -1,0 +1,58 @@
+# Install pre-commit hooks via
+# pre-commit install
+
+exclude: >
+    (?x)^(
+      aiida_lammps/tests/input_files/.*|
+      aiida_lammps/tests/.*txt
+    )$
+
+repos:
+
+  - repo: git://github.com/pre-commit/pre-commit-hooks
+    rev: v2.2.3
+    hooks:
+    - id: check-json
+    - id: check-yaml
+    - id: end-of-file-fixer
+    - id: trailing-whitespace
+    - id: flake8
+      exclude: >
+        (?x)^(
+          aiida_lammps/calculations/dynaphopy.py
+        )$
+
+  - repo: https://github.com/psf/black
+    rev: stable
+    hooks:
+    - id: black
+
+  - repo: local
+    hooks:
+
+    - id: version-number
+      name: Check version numbers
+      entry: python ./.travis-data/check_version.py
+      language: system
+      files: >-
+        (?x)^(
+          setup.json|
+          .travis-data/check_version.py|
+          aiida_lammps/__init__.py
+        )$
+      pass_filenames: false
+
+    # - id: travis-linter
+    #   name: Travis Lint
+    #   entry: travis lint
+    #   files: .travis.yml
+    #   language: ruby
+    #   additional_dependencies: ['travis']
+
+    # - id: doc8
+    #   entry: doc8
+    #   language: system
+    #   types: [rst]
+    #   name: doc8 - Lint the documentation.
+
+    # TODO could also add check-manifest

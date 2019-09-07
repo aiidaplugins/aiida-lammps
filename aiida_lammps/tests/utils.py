@@ -43,13 +43,12 @@ def get_path_to_executable(executable):
     if path is None:
         path = distutils.spawn.find_executable(executable)
     if path is None:
-        raise ValueError(
-            "{} executable not found in PATH.".format(executable))
+        raise ValueError("{} executable not found in PATH.".format(executable))
 
     return os.path.abspath(path)
 
 
-def get_or_create_local_computer(work_directory, name='localhost'):
+def get_or_create_local_computer(work_directory, name="localhost"):
     """Retrieve or setup a local computer
 
     Parameters
@@ -72,12 +71,12 @@ def get_or_create_local_computer(work_directory, name='localhost'):
     except NotExistent:
         computer = Computer(
             name=name,
-            hostname='localhost',
-            description=('localhost computer, '
-                         'set up by aiida_lammps tests'),
-            transport_type='local',
-            scheduler_type='direct',
-            workdir=os.path.abspath(work_directory))
+            hostname="localhost",
+            description=("localhost computer, " "set up by aiida_lammps tests"),
+            transport_type="local",
+            scheduler_type="direct",
+            workdir=os.path.abspath(work_directory),
+        )
         computer.store()
         computer.configure()
 
@@ -94,23 +93,26 @@ def get_or_create_code(entry_point, computer, executable, exec_path=None):
 
     try:
         code = Code.objects.get(
-            label='{}-{}@{}'.format(entry_point, executable, computer.name))
+            label="{}-{}@{}".format(entry_point, executable, computer.name)
+        )
     except NotExistent:
         if exec_path is None:
             exec_path = get_path_to_executable(executable)
         code = Code(
-            input_plugin_name=entry_point,
-            remote_computer_exec=[computer, exec_path],
+            input_plugin_name=entry_point, remote_computer_exec=[computer, exec_path]
         )
-        code.label = '{}-{}@{}'.format(
-            entry_point, executable, computer.name)
+        code.label = "{}-{}@{}".format(entry_point, executable, computer.name)
         code.store()
 
     return code
 
 
-def get_default_metadata(max_num_machines=1, max_wallclock_seconds=1800, with_mpi=False,
-                         num_mpiprocs_per_machine=1):
+def get_default_metadata(
+    max_num_machines=1,
+    max_wallclock_seconds=1800,
+    with_mpi=False,
+    num_mpiprocs_per_machine=1,
+):
     """
     Return an instance of the metadata dictionary with the minimally required parameters
     for a CalcJob and set to default values unless overridden
@@ -123,14 +125,15 @@ def get_default_metadata(max_num_machines=1, max_wallclock_seconds=1800, with_mp
     :rtype: dict
     """
     return {
-        'options': {
-            'resources': {
-                'num_machines': int(max_num_machines),
-                'num_mpiprocs_per_machine': int(num_mpiprocs_per_machine)
+        "options": {
+            "resources": {
+                "num_machines": int(max_num_machines),
+                "num_mpiprocs_per_machine": int(num_mpiprocs_per_machine),
             },
-            'max_wallclock_seconds': int(max_wallclock_seconds),
-            'withmpi': with_mpi,
-        }}
+            "max_wallclock_seconds": int(max_wallclock_seconds),
+            "withmpi": with_mpi,
+        }
+    }
 
 
 class AiidaTestApp(object):
@@ -161,11 +164,11 @@ class AiidaTestApp(object):
         """return manager of a temporary AiiDA environment"""
         return self._environment
 
-    def get_or_create_computer(self, name='localhost'):
+    def get_or_create_computer(self, name="localhost"):
         """Setup localhost computer"""
         return get_or_create_local_computer(self.work_directory, name)
 
-    def get_or_create_code(self, entry_point, computer_name='localhost'):
+    def get_or_create_code(self, entry_point, computer_name="localhost"):
         """Setup code on localhost computer"""
 
         computer = self.get_or_create_computer(computer_name)
@@ -175,12 +178,16 @@ class AiidaTestApp(object):
         except KeyError:
             raise KeyError(
                 "Entry point {} not recognized. Allowed values: {}".format(
-                    entry_point, self._executables.keys()))
+                    entry_point, self._executables.keys()
+                )
+            )
 
         return get_or_create_code(entry_point, computer, executable)
 
     @staticmethod
-    def get_default_metadata(max_num_machines=1, max_wallclock_seconds=1800, with_mpi=False):
+    def get_default_metadata(
+        max_num_machines=1, max_wallclock_seconds=1800, with_mpi=False
+    ):
         return get_default_metadata(max_num_machines, max_wallclock_seconds, with_mpi)
 
     @staticmethod
@@ -198,6 +205,7 @@ class AiidaTestApp(object):
 
         """
         from aiida.plugins import ParserFactory
+
         return ParserFactory(entry_point_name)
 
     @staticmethod
@@ -215,6 +223,7 @@ class AiidaTestApp(object):
 
         """
         from aiida.plugins import DataFactory
+
         return DataFactory(entry_point_name)(**kwargs)
 
     @staticmethod
@@ -228,10 +237,12 @@ class AiidaTestApp(object):
 
         """
         from aiida.plugins import CalculationFactory
+
         return CalculationFactory(entry_point_name)
 
-    def generate_calcjob_node(self, entry_point_name, retrieved,
-                              computer_name='localhost', attributes=None):
+    def generate_calcjob_node(
+        self, entry_point_name, retrieved, computer_name="localhost", attributes=None
+    ):
         """Fixture to generate a mock `CalcJobNode` for testing parsers.
 
         Parameters
@@ -257,25 +268,23 @@ class AiidaTestApp(object):
 
         process = self.get_calc_cls(entry_point_name)
         computer = self.get_or_create_computer(computer_name)
-        entry_point = format_entry_point_string(
-            'aiida.calculations', entry_point_name)
+        entry_point = format_entry_point_string("aiida.calculations", entry_point_name)
 
         node = CalcJobNode(computer=computer, process_type=entry_point)
-        spec_options = process.spec().inputs['metadata']['options']
+        spec_options = process.spec().inputs["metadata"]["options"]
         # TODO post v1.0.0b2, this can be replaced with process.spec_options
-        node.set_options({
-            k: v.default for k, v in spec_options.items() if v.has_default()})
-        node.set_option('resources', {'num_machines': 1,
-                                      'num_mpiprocs_per_machine': 1})
-        node.set_option('max_wallclock_seconds', 1800)
+        node.set_options(
+            {k: v.default for k, v in spec_options.items() if v.has_default()}
+        )
+        node.set_option("resources", {"num_machines": 1, "num_mpiprocs_per_machine": 1})
+        node.set_option("max_wallclock_seconds", 1800)
 
         if attributes:
             node.set_attributes(attributes)
 
         node.store()
 
-        retrieved.add_incoming(
-            node, link_type=LinkType.CREATE, link_label='retrieved')
+        retrieved.add_incoming(node, link_type=LinkType.CREATE, link_label="retrieved")
         retrieved.store()
 
         return node
@@ -290,6 +299,7 @@ class AiidaTestApp(object):
 
         """
         from aiida.common.folders import SandboxFolder
+
         with SandboxFolder() as folder:
             yield folder
 
