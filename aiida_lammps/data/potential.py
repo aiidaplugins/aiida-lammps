@@ -20,7 +20,7 @@ class EmpiricalPotential(Data):
 
     @classmethod
     def load_type(cls, entry_name):
-        return load_entry_point(cls.entry_name, entry_name)
+        return load_entry_point(cls.entry_name, entry_name)()
 
     def __init__(self, type, data=None, structure=None, kind_elements=None, **kwargs):
         """ empirical potential data, used to create LAMMPS input files
@@ -57,23 +57,21 @@ class EmpiricalPotential(Data):
             raise ValueError("one of 'structure' or 'kind_elements' must be provided")
 
     def set_data(self, potential_type, data=None):
-        """
-        Store the potential type (ex. Tersoff, EAM, LJ, ..)
-        """
+        """Store the potential type (e.g. Tersoff, EAM, LJ, ..)."""
         if potential_type is None:
             raise ValueError("'potential_type' must be provided")
         if potential_type not in self.list_types():
             raise ValueError(
                 "'potential_type' must be in: {}".format(self.list_types())
             )
-        module = self.load_type(potential_type)
+        pot_class = self.load_type(potential_type)
 
-        atom_style = module.ATOM_STYLE
-        default_units = module.DEFAULT_UNITS
+        atom_style = pot_class.atom_style
+        default_units = pot_class.default_units
 
         data = {} if data is None else data
-        pot_contents = module.generate_LAMMPS_potential(data)
-        pot_lines = module.get_input_potential_lines(
+        pot_contents = pot_class.get_potential_file_content(data)
+        pot_lines = pot_class.get_input_potential_lines(
             data,
             kind_elements=self.kind_elements,
             potential_filename=self.potential_filename,

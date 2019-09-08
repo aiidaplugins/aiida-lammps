@@ -63,7 +63,9 @@ def generate_lammps_structure(
 
     """
     if atom_style not in ["atomic", "charge"]:
-        raise ValueError("atom_style must be in ['atomic', 'charge']")
+        raise ValueError(
+            "atom_style must be in ['atomic', 'charge'], not '{}'".format(atom_style)
+        )
     if charge_dict is None:
         charge_dict = {}
 

@@ -1,6 +1,6 @@
 {
   "name": "aiida-lammps",
-  "version": "0.5.0b5",
+  "version": "0.6.0b5",
   "description": "AiiDA plugin for LAMMPS",
   "url": "https://github.com/abelcarreras/aiida-lammps",
   "author": "Abel Carreras",
@@ -37,10 +37,10 @@
       "lammps.potential = aiida_lammps.data.potential:EmpiricalPotential"
     ],
     "lammps.potentials": [
-      "eam =  aiida_lammps.data.potential.eam",
-      "lennard_jones =  aiida_lammps.data.potential.lennard_jones",
-      "reaxff =  aiida_lammps.data.potential.reaxff",
-      "tersoff =  aiida_lammps.data.potential.tersoff"
+      "eam =  aiida_lammps.data.pot_plugins.eam:EAM",
+      "lennard_jones =  aiida_lammps.data.pot_plugins.lennard_jones:LennardJones",
+      "reaxff =  aiida_lammps.data.pot_plugins.reaxff:Reaxff",
+      "tersoff =  aiida_lammps.data.pot_plugins.tersoff:Tersoff"
     ]
   },
   "extras_require": {
