@@ -42,39 +42,6 @@ def generate_dynaphopy_input(
     return input_file
 
 
-def generate_LAMMPS_input(
-    parameters, potential_obj, structure_file="potential.pot", trajectory_file=None
-):
-
-    random_number = np.random.randint(10000000)
-
-    # names_str = " ".join(potential_obj._names)
-
-    lammps_input_file = "units           {0}\n".format(potential_obj.default_units)
-    lammps_input_file += "boundary        p p p\n"
-    lammps_input_file += "box tilt large\n"
-    lammps_input_file += "atom_style      {0}\n".format(potential_obj.atom_style)
-    lammps_input_file += "read_data       {}\n".format(structure_file)
-
-    lammps_input_file += potential_obj.get_input_potential_lines()
-
-    lammps_input_file += "neighbor        0.3 bin\n"
-    lammps_input_file += "neigh_modify    every 1 delay 0 check no\n"
-
-    lammps_input_file += "velocity        all create {0} {1} dist gaussian mom yes\n".format(
-        parameters.dict.temperature, random_number
-    )
-    lammps_input_file += "velocity        all scale {}\n".format(
-        parameters.dict.temperature
-    )
-
-    lammps_input_file += "fix             int all nvt temp {0} {0} {1}\n".format(
-        parameters.dict.temperature, parameters.dict.thermostat_variable
-    )
-
-    return lammps_input_file
-
-
 class CombinateCalculation(BaseLammpsCalculation):
 
     _POSCAR_NAME = "POSCAR"
@@ -84,7 +51,6 @@ class CombinateCalculation(BaseLammpsCalculation):
     _OUTPUT_FORCE_CONSTANTS = "FORCE_CONSTANTS_OUT"
     _OUTPUT_QUASIPARTICLES = "quasiparticles_data.yaml"
     _OUTPUT_FILE_NAME = "OUTPUT"
-    _generate_input_function = generate_LAMMPS_input
 
     # self._retrieve_list = [self._OUTPUT_QUASIPARTICLES, self._OUTPUT_FORCE_CONSTANTS, self._OUTPUT_FILE_NAME]
 
@@ -103,6 +69,45 @@ class CombinateCalculation(BaseLammpsCalculation):
         spec.input("force_sets", valid_type=ArrayData, help="phonopy force sets")
 
         # spec.input('settings', valid_type=six.string_types, default='lammps.optimize')
+
+    def create_main_input_content(
+        self,
+        parameter_data,
+        potential_data,
+        structure_data,
+        structure_filename,
+        trajectory_filename,
+        info_filename,
+        restart_filename,
+        add_thermo_keywords,
+        version_date,
+    ):
+
+        random_number = np.random.randint(10000000)
+
+        lammps_input_file = "units           {0}\n".format(potential_data.default_units)
+        lammps_input_file += "boundary        p p p\n"
+        lammps_input_file += "box tilt large\n"
+        lammps_input_file += "atom_style      {0}\n".format(potential_data.atom_style)
+        lammps_input_file += "read_data       {}\n".format(structure_filename)
+
+        lammps_input_file += potential_data.get_input_lines(structure_data)
+
+        lammps_input_file += "neighbor        0.3 bin\n"
+        lammps_input_file += "neigh_modify    every 1 delay 0 check no\n"
+
+        lammps_input_file += "velocity        all create {0} {1} dist gaussian mom yes\n".format(
+            parameter_data.dict.temperature, random_number
+        )
+        lammps_input_file += "velocity        all scale {}\n".format(
+            parameter_data.dict.temperature
+        )
+
+        lammps_input_file += "fix             int all nvt temp {0} {0} {1}\n".format(
+            parameter_data.dict.temperature, parameter_data.dict.thermostat_variable
+        )
+
+        return lammps_input_file
 
     def prepare_extra_files(self, tempfolder, potential_object):
 

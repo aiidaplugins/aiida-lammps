@@ -431,7 +431,10 @@ def write_lammps_format(data):
             "ov/un;val1;n.u.;val3,vval4",
         ]
     )
-    for i, species in enumerate(data["species"]):
+    idx_map = {}
+    i = 1
+    x_species_line = None
+    for idx, species in enumerate(data["species"]):
         if species.endswith("shell"):
             raise ValueError(
                 "only core species can be used for reaxff, not shell: {}".format(
@@ -439,36 +442,49 @@ def write_lammps_format(data):
                 )
             )
         species = species[:-5]
-        output.extend(
-            [
+        # X is not always present in 1body, even if it is used in nbody terms
+        # see e.g. https://github.com/lammps/lammps/blob/master/potentials/ffield.reax.cho
+        if species == "X" and str(idx) not in data["1body"]:
+            species_lines = []
+        else:
+            species_lines = [
                 species
                 + " "
                 + " ".join(
                     [
-                        format_lammps_value(data["1body"][str(i)][k])
+                        format_lammps_value(data["1body"][str(idx)][k])
                         for k in KEYS_1BODY[:8]
                     ]
                 ),
                 " ".join(
                     [
-                        format_lammps_value(data["1body"][str(i)][k])
+                        format_lammps_value(data["1body"][str(idx)][k])
                         for k in KEYS_1BODY[8:16]
                     ]
                 ),
                 " ".join(
                     [
-                        format_lammps_value(data["1body"][str(i)][k])
+                        format_lammps_value(data["1body"][str(idx)][k])
                         for k in KEYS_1BODY[16:24]
                     ]
                 ),
                 " ".join(
                     [
-                        format_lammps_value(data["1body"][str(i)][k])
+                        format_lammps_value(data["1body"][str(idx)][k])
                         for k in KEYS_1BODY[24:32]
                     ]
                 ),
             ]
-        )
+        if species == "X":
+            # X is always index 0, but must be last in the species list
+            idx_map[str(idx)] = "0"
+            x_species_line = species_lines
+        else:
+            idx_map[str(idx)] = str(i)
+            i += 1
+            output.extend(species_lines)
+    if x_species_line:
+        output.extend(x_species_line)
 
     # two-body angle parameters
     suboutout = []
@@ -478,7 +494,7 @@ def write_lammps_format(data):
             continue
         suboutout.extend(
             [
-                " ".join(key.split(INDEX_SEP))
+                " ".join([idx_map[k] for k in key.split(INDEX_SEP)])
                 + " "
                 + " ".join(
                     [format_lammps_value(subdata[k]) for k in KEYS_2BODY_BONDS[:8]]
@@ -507,7 +523,7 @@ def write_lammps_format(data):
             continue
         suboutout.extend(
             [
-                " ".join(key.split(INDEX_SEP))
+                " ".join([idx_map[k] for k in key.split(INDEX_SEP)])
                 + " "
                 + " ".join(
                     [format_lammps_value(subdata[k]) for k in KEYS_2BODY_OFFDIAG]
@@ -532,7 +548,7 @@ def write_lammps_format(data):
             continue
         suboutout.extend(
             [
-                " ".join(key.split(INDEX_SEP))
+                " ".join([idx_map[k] for k in key.split(INDEX_SEP)])
                 + " "
                 + " ".join([format_lammps_value(subdata[k]) for k in KEYS_3BODY_ANGLES])
             ]
@@ -551,7 +567,7 @@ def write_lammps_format(data):
             continue
         suboutout.extend(
             [
-                " ".join(key.split(INDEX_SEP))
+                " ".join([idx_map[k] for k in key.split(INDEX_SEP)])
                 + " "
                 + " ".join(
                     [format_lammps_value(subdata[k]) for k in KEYS_4BODY_TORSION]
@@ -576,7 +592,7 @@ def write_lammps_format(data):
             continue
         suboutout.extend(
             [
-                " ".join(key.split(INDEX_SEP))
+                " ".join([idx_map[k] for k in key.split(INDEX_SEP)])
                 + " "
                 + " ".join([format_lammps_value(subdata[k]) for k in KEYS_3BODY_HBOND])
             ]

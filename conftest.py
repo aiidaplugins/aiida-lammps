@@ -239,7 +239,11 @@ def get_potential_data(get_structure_data):
             with io.open(
                 os.path.join(TEST_DIR, "input_files", "Fe_mm.eam.fs")
             ) as handle:
-                potential_dict = {"type": "fs", "file_contents": handle.readlines()}
+                potential_dict = {
+                    "type": "fs",
+                    "file_contents": handle.readlines(),
+                    "element_names": ["Fe"],
+                }
             structure = get_structure_data("Fe")
             output_dict = {"initial_energy": -8.2441284, "energy": -8.2448702}
 
@@ -281,16 +285,29 @@ def get_potential_data(get_structure_data):
 
         elif pkey == "reaxff":
 
+            from aiida_lammps.common.reaxff_convert import (
+                read_lammps_format,
+                filter_by_species,
+            )
+
             pair_style = "reaxff"
             with io.open(
                 os.path.join(TEST_DIR, "input_files", "FeCrOSCH.reaxff")
             ) as handle:
-                potential_dict = {
-                    "file_contents": handle.readlines(),
-                    "control": {"safezone": 1.6},
-                    "global": {"hbonddist": 7.0},
-                }
-                # potential_dict.update(read_lammps_format(handle.read().splitlines()))
+                potential_dict = read_lammps_format(
+                    handle.read().splitlines(), tolerances={"hbonddist": 7.0}
+                )
+                potential_dict = filter_by_species(
+                    potential_dict, ["Fe core", "S core"]
+                )
+                for n in ["anglemin", "angleprod", "hbondmin", "torsionprod"]:
+                    potential_dict["global"].pop(n)
+                potential_dict["control"] = {"safezone": 1.6}
+                # potential_dict = {
+                #     "file_contents": handle.readlines(),
+                #     "control": {"safezone": 1.6},
+                #     "global": {"hbonddist": 7.0},
+                # }
 
             structure = get_structure_data("pyrite")
 

@@ -69,9 +69,7 @@ def test_force_submission(db_test_app, get_potential_data, potential_type):
     calc_plugin = "lammps.force"
     code = db_test_app.get_or_create_code(calc_plugin)
     pot_data = get_potential_data(potential_type)
-    potential = DataFactory("lammps.potential")(
-        structure=pot_data.structure, type=pot_data.type, data=pot_data.data
-    )
+    potential = DataFactory("lammps.potential")(type=pot_data.type, data=pot_data.data)
     parameters = get_calc_parameters(
         code, calc_plugin, potential.default_units, potential_type
     )
@@ -100,9 +98,7 @@ def test_optimize_submission(db_test_app, get_potential_data, potential_type):
     calc_plugin = "lammps.optimize"
     code = db_test_app.get_or_create_code(calc_plugin)
     pot_data = get_potential_data(potential_type)
-    potential = DataFactory("lammps.potential")(
-        structure=pot_data.structure, type=pot_data.type, data=pot_data.data
-    )
+    potential = DataFactory("lammps.potential")(type=pot_data.type, data=pot_data.data)
     parameters = get_calc_parameters(
         code, calc_plugin, potential.default_units, potential_type
     )
@@ -132,9 +128,7 @@ def test_md_submission(db_test_app, get_potential_data, potential_type):
     calc_plugin = "lammps.md"
     code = db_test_app.get_or_create_code(calc_plugin)
     pot_data = get_potential_data(potential_type)
-    potential = DataFactory("lammps.potential")(
-        structure=pot_data.structure, type=pot_data.type, data=pot_data.data
-    )
+    potential = DataFactory("lammps.potential")(type=pot_data.type, data=pot_data.data)
     parameters = get_calc_parameters(
         code, calc_plugin, potential.default_units, potential_type
     )
@@ -166,9 +160,7 @@ def test_force_process(
     calc_plugin = "lammps.force"
     code = db_test_app.get_or_create_code(calc_plugin)
     pot_data = get_potential_data(potential_type)
-    potential = DataFactory("lammps.potential")(
-        structure=pot_data.structure, type=pot_data.type, data=pot_data.data
-    )
+    potential = DataFactory("lammps.potential")(type=pot_data.type, data=pot_data.data)
     parameters = get_calc_parameters(
         code, calc_plugin, potential.default_units, potential_type
     )
@@ -232,9 +224,7 @@ def test_optimize_process(
     calc_plugin = "lammps.optimize"
     code = db_test_app.get_or_create_code(calc_plugin)
     pot_data = get_potential_data(potential_type)
-    potential = DataFactory("lammps.potential")(
-        structure=pot_data.structure, type=pot_data.type, data=pot_data.data
-    )
+    potential = DataFactory("lammps.potential")(type=pot_data.type, data=pot_data.data)
     parameters = get_calc_parameters(
         code, calc_plugin, potential.default_units, potential_type
     )
@@ -291,9 +281,7 @@ def test_md_process(db_test_app, get_potential_data, potential_type, data_regres
     calc_plugin = "lammps.md"
     code = db_test_app.get_or_create_code(calc_plugin)
     pot_data = get_potential_data(potential_type)
-    potential = DataFactory("lammps.potential")(
-        structure=pot_data.structure, type=pot_data.type, data=pot_data.data
-    )
+    potential = DataFactory("lammps.potential")(type=pot_data.type, data=pot_data.data)
     parameters = get_calc_parameters(
         code, calc_plugin, potential.default_units, potential_type
     )

@@ -8,6 +8,7 @@ class EAM(PotentialAbstract):
 
     def validate_data(self, data):
         """Validate the input data."""
+        # TODO use schema
         assert "file_contents" in data, data
         assert "type" in data, data
 
@@ -22,14 +23,18 @@ class EAM(PotentialAbstract):
 
         return {self.potential_fname: potential_file}
 
-    def get_input_potential_lines(self, kind_elements=None):
+    def get_input_potential_lines(self):
 
         lammps_input_text = "pair_style      eam/{}\n".format(self.data["type"])
-        lammps_input_text += "pair_coeff      * * {} {}\n".format(
-            self.potential_fname, " ".join(kind_elements)
+        lammps_input_text += "pair_coeff      * * {0} {{kind_symbols}}\n".format(
+            self.potential_fname
         )
 
         return lammps_input_text
+
+    @property
+    def allowed_element_names(self):
+        return self.data.get("element_names", None)
 
     @property
     def atom_style(self):

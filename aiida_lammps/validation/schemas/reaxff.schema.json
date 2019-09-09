@@ -76,9 +76,14 @@
                     "default": 0.3
                 },
                 "safezone": {
-                    "description": "fsctor used for allocating reax/c arrays. Increasing these values can avoid memory problems, such as segmentation faults and bondchk failed errors, that could occur under certain conditions.",
+                    "description": "factor used for allocating reax/c arrays. Increasing these values can avoid memory problems, such as segmentation faults and bondchk failed errors, that could occur under certain conditions.",
                     "type": "number",
                     "minimum": 0
+                },
+                "fix_modify_qeq": {
+                    "description": "Apply command `fix_modify qeq energy yes`",
+                    "type": "boolean",
+                    "default": true
                 }
             }
         },

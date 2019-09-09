@@ -18,9 +18,7 @@ def test_load_type():
 )
 def test_init(db_test_app, get_potential_data, potential_type, data_regression):
     potential = get_potential_data(potential_type)
-    node = EmpiricalPotential(
-        type=potential.type, structure=potential.structure, data=potential.data
-    )
+    node = EmpiricalPotential(type=potential.type, data=potential.data)
     data_regression.check(node.attributes)
 
 
@@ -29,9 +27,7 @@ def test_potential_files(
     db_test_app, get_potential_data, potential_type, file_regression
 ):
     potential = get_potential_data(potential_type)
-    node = EmpiricalPotential(
-        type=potential.type, structure=potential.structure, data=potential.data
-    )
+    node = EmpiricalPotential(type=potential.type, data=potential.data)
     file_regression.check(
         six.ensure_text(node.get_object_content("potential.pot", "r"))
     )
@@ -42,7 +38,5 @@ def test_potential_files(
 )
 def test_input_lines(db_test_app, get_potential_data, potential_type, file_regression):
     potential = get_potential_data(potential_type)
-    node = EmpiricalPotential(
-        type=potential.type, structure=potential.structure, data=potential.data
-    )
-    file_regression.check(six.ensure_text(node.get_input_potential_lines()))
+    node = EmpiricalPotential(type=potential.type, data=potential.data)
+    file_regression.check(six.ensure_text(node.get_input_lines()))

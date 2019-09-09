@@ -217,6 +217,20 @@ class BaseLammpsCalculation(CalcJob):
     def prepare_extra_files(self, tempfolder, potential_object):
         return True
 
+    def create_main_input_content(
+        self,
+        parameter_data,
+        potential_data,
+        kind_symbols,
+        structure_filename,
+        trajectory_filename,
+        info_filename,
+        restart_filename,
+        add_thermo_keywords,
+        version_date,
+    ):
+        raise NotImplementedError
+
     def prepare_for_submission(self, tempfolder):
         """Create the input files from the input nodes passed to this instance of the `CalcJob`.
 
@@ -224,9 +238,9 @@ class BaseLammpsCalculation(CalcJob):
         :return: `aiida.common.CalcInfo` instance
         """
         # assert that the potential and structure have the same kind elements
-        if [
+        if self.inputs.potential.allowed_element_names is not None and not set(
             k.symbol for k in self.inputs.structure.kinds
-        ] != self.inputs.potential.kind_elements:
+        ).issubset(self.inputs.potential.allowed_element_names):
             raise ValidationError(
                 "the structure and potential are not compatible (different kind elements)"
             )
@@ -251,9 +265,10 @@ class BaseLammpsCalculation(CalcJob):
         lammps_date = convert_date_string(pdict.get("lammps_version", "11 Aug 2017"))
 
         # Setup input parameters
-        input_txt = self._generate_input_function(
-            parameters=parameters,
-            potential_obj=self.inputs.potential,
+        input_txt = self.create_main_input_content(
+            parameter_data=parameters,
+            potential_data=self.inputs.potential,
+            kind_symbols=[kind.symbol for kind in self.inputs.structure.kinds],
             structure_filename=self._INPUT_STRUCTURE,
             trajectory_filename=self.options.trajectory_name,
             info_filename=self.options.info_filename,

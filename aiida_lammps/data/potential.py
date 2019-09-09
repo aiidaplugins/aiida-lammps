@@ -21,10 +21,8 @@ class EmpiricalPotential(Data):
     def load_type(cls, entry_name):
         return load_entry_point(cls.entry_name, entry_name)
 
-    def __init__(self, type, data=None, structure=None, kind_elements=None, **kwargs):
-        """ empirical potential data, used to create LAMMPS input files
-
-        NB: one of structure or kind_elements is required input
+    def __init__(self, type, data=None, **kwargs):
+        """Empirical potential data, used to create LAMMPS input files.
 
         Parameters
         ----------
@@ -32,28 +30,10 @@ class EmpiricalPotential(Data):
             the type of potential (should map to a `lammps.potential` entry point)
         data: dict
             data required to create the potential file and input lines
-        structure: StructureData
-        kind_elements: list[str]
-            a list of elements for each Kind of the structure
 
         """
         super(EmpiricalPotential, self).__init__(**kwargs)
-
-        self._set_kind_elements(structure, kind_elements)
         self.set_data(type, data)
-
-    def _set_kind_elements(self, structure=None, kind_elements=None):
-        if structure is not None and kind_elements is not None:
-            raise ValueError(
-                "only one of 'structure' or 'kind_elements' must be provided"
-            )
-        elif structure is not None:
-            names = [kind.symbol for kind in structure.kinds]
-            self.set_attribute("kind_elements", names)
-        elif kind_elements is not None:
-            self.set_attribute("kind_elements", kind_elements)
-        else:
-            raise ValueError("one of 'structure' or 'kind_elements' must be provided")
 
     def set_data(self, potential_type, data=None):
         """Store the potential type (e.g. Tersoff, EAM, LJ, ..)."""
@@ -67,15 +47,20 @@ class EmpiricalPotential(Data):
 
         atom_style = pot_class.atom_style
         default_units = pot_class.default_units
+        allowed_element_names = pot_class.allowed_element_names
 
         external_contents = pot_class.get_external_content() or {}
-        pot_lines = pot_class.get_input_potential_lines(
-            kind_elements=self.kind_elements
-        )
+        pot_lines = pot_class.get_input_potential_lines()
 
         self.set_attribute("potential_type", potential_type)
         self.set_attribute("atom_style", atom_style)
         self.set_attribute("default_units", default_units)
+        self.set_attribute(
+            "allowed_element_names",
+            sorted(allowed_element_names)
+            if allowed_element_names
+            else allowed_element_names,
+        )
 
         # store potential section of main input file
         self.set_attribute(
@@ -102,11 +87,6 @@ class EmpiricalPotential(Data):
                 self.delete_object(fname)
 
     @property
-    def kind_elements(self):
-        """Return the kind elements available in the potential."""
-        return self.get_attribute("kind_elements")
-
-    @property
     def potential_type(self):
         """Return lammps atom style."""
         return self.get_attribute("potential_type")
@@ -121,15 +101,32 @@ class EmpiricalPotential(Data):
         """Return lammps default units."""
         return self.get_attribute("default_units")
 
-    def get_input_potential_lines(self):
+    @property
+    def allowed_element_names(self):
+        """Return available atomic symbols."""
+        return self.get_attribute("allowed_element_names")
+
+    def get_input_lines(self, kind_symbols=None):
         """Return the command(s) required to setup the potential.
+
+        The placeholder ``{kind_symbols}`` will be replaced,
+        with a list of symbols for each kind in the structure.
 
         e.g.::
 
              pair_style      eam
-             pair_coeff      * *  Si
+             pair_coeff      * *  {kind_symbols}
+
+        get_input_lines(["S", "Cr"])::
+
+             pair_style      eam
+             pair_coeff      * *  S Cr
+
         """
-        return self.get_object_content(self.pot_lines_fname, "r")
+        content = self.get_object_content(self.pot_lines_fname, "r")
+        if kind_symbols:
+            content = content.replace("{kind_symbols}", " ".join(kind_symbols))
+        return content
 
     def get_external_files(self):
         """Return the mapping of external filenames to content."""

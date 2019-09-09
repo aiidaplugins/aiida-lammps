@@ -57,3 +57,11 @@ class PotentialAbstract:
     def atom_style(self):
         """Return the atomic style to use."""
         pass
+
+    @abc.abstractproperty
+    def allowed_element_names(self):
+        """Return the allowed element names.
+
+        (used in ``pair_coeff`` to map atom types to elements).
+        """
+        pass

@@ -1,12 +1,12 @@
+allowed_element_names:
+- Fe
+- S
 atom_style: charge
 default_units: real
 external_files:
 - potential.control
 - potential.pot
-kind_elements:
-- Fe
-- S
-md5|input_lines: d2ae00e005fa21ed4bdbc2825b28333f
+md5|input_lines: 9a3f3e85cf7086b0d0b262b87c2d3019
 md5|potential_control: ae19ae9eb3dd37edf8aecbd147e48aa0
-md5|potential_pot: a1b65c767e1ddc8f23c1e4901e780f19
+md5|potential_pot: eec691f028ac0fc05aa17501b7cca734
 potential_type: reaxff

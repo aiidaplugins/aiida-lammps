@@ -97,27 +97,37 @@ class Reaxff(PotentialAbstract):
             fmap[self.control_fname] = content
         return fmap
 
-    def get_input_potential_lines(self, kind_elements=None):
+    def get_input_potential_lines(self):
+
+        control = self.data.get("control", {})
+
         lammps_input_text = "pair_style reax/c {} ".format(
             self.control_fname if self.get_control_file_content() else "NULL"
         )
-        if "safezone" in self.data.get("control", {}):
-            lammps_input_text += "safezone {0} ".format(
-                self.data["control"]["safezone"]
-            )
+        if "safezone" in control:
+            lammps_input_text += "safezone {0} ".format(control["safezone"])
         lammps_input_text += "\n"
-        lammps_input_text += "pair_coeff      * * {} {}\n".format(
-            self.potential_fname, " ".join(kind_elements)
+        lammps_input_text += "pair_coeff      * * {} {{kind_symbols}}\n".format(
+            self.potential_fname
         )
         lammps_input_text += "fix qeq all qeq/reax 1 0.0 10.0 1e-6 reax/c\n"
-        # TODO in conda-forge/osx-64::lammps-2019.06.05-py36_openmpi_5,
-        # an error is raised: ERROR: Illegal fix_modify command (src/fix.cpp:147)
-        # posted question to lammps-users@lists.sourceforge.net
-        # 'Using qeq/reax fix_modify energy in recent versions of LAMMPS'
-        lammps_input_text += "fix_modify qeq energy yes\n"
+        if control.get("fix_modify_qeq", True):
+            # TODO in conda-forge/osx-64::lammps-2019.06.05-py36_openmpi_5,
+            # an error is raised: ERROR: Illegal fix_modify command (src/fix.cpp:147)
+            # posted question to lammps-users@lists.sourceforge.net
+            # 'Using qeq/reax fix_modify energy in recent versions of LAMMPS'
+            lammps_input_text += "fix_modify qeq energy yes\n"
         lammps_input_text += "compute reax all pair reax/c\n"
 
         return lammps_input_text
+
+    @property
+    def allowed_element_names(self):
+        elements = self.data.get("species", None)
+        if elements:
+            # strip core/shell
+            elements = [e.split()[0] for e in elements]
+        return elements
 
     @property
     def atom_style(self):

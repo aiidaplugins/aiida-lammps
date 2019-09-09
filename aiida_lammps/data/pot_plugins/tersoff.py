@@ -20,14 +20,21 @@ class Tersoff(PotentialAbstract):
 
         return {self.potential_fname: potential_file}
 
-    def get_input_potential_lines(self, kind_elements=None):
+    def get_input_potential_lines(self):
 
         lammps_input_text = "pair_style      tersoff\n"
-        lammps_input_text += "pair_coeff      * * {} {}\n".format(
-            self.potential_fname, " ".join(kind_elements)
+        lammps_input_text += "pair_coeff      * * {} {{kind_symbols}}\n".format(
+            self.potential_fname
         )
 
         return lammps_input_text
+
+    @property
+    def allowed_element_names(self):
+        allowed = []
+        for key in self.data:
+            allowed.extend(key.split())
+        return list(set(allowed))
 
     @property
     def atom_style(self):

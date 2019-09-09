@@ -1,10 +1,10 @@
+allowed_element_names:
+- Ga
+- N
 atom_style: atomic
 default_units: metal
 external_files:
 - potential.pot
-kind_elements:
-- Ga
-- N
-md5|input_lines: 3145644a408a6d464e80866b833115a2
+md5|input_lines: 175c64eb9b54b8238b4b32673833f366
 md5|potential_pot: b3b7d45ae7b92eba05ed99ffe69810d0
 potential_type: tersoff
