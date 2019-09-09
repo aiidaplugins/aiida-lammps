@@ -1,0 +1,8 @@
+distance_units: Angstroms
+energy: -1018.0
+energy_units: Kcal/mole
+errors: []
+parser_class: MdParser
+time_units: femtoseconds
+units_style: real
+warnings: ''

@@ -3,14 +3,84 @@
     "$id": "potential.reaxff.schema",
     "description": "a schema for storing an ReaxFF empirical potential",
     "type": "object",
-    "required": [
-        "species",
-        "description",
-        "global"
-    ],
     "properties": {
         "description": {
             "type": "string"
+        },
+        "filecontent": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "control": {
+            "type": "object",
+            "description": "properties that control the output of data (LAMMPS only)",
+            "properties": {
+                "simulation_name": {
+                    "type": "string",
+                    "pattern": "[\\_a-zA-Z0-9]+"
+                },
+                "traj_title": {
+                    "description": "Title of the trajectory - not the name of the trajectory file.",
+                    "type": "string",
+                    "pattern": "[\\_a-zA-Z0-9]+"
+                },
+                "tabulate_long_range": {
+                    "description": "To improve performance, long range interactions can optionally be tabulated.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 0
+                },
+                "energy_update_freq": {
+                    "description": "Denotes the frequency (in number of steps) of writes into the partial energies file.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 0
+                },
+                "write_freq": {
+                    "description": "Frequency of writes into the trajectory file",
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 0
+                },
+                "print_atom_info": {
+                    "description": "print only atomic positions + charge",
+                    "type": "boolean",
+                    "default": false
+                },
+                "print_atom_forces": {
+                    "description": "add net forces to atom lines in the trajectory file",
+                    "type": "boolean",
+                    "default": false
+                },
+                "print_atom_velocities": {
+                    "description": "add atomic velocities to atoms line",
+                    "type": "boolean",
+                    "default": false
+                },
+                "print_bond_info": {
+                    "description": "print bonds in the trajectory file",
+                    "type": "boolean",
+                    "default": false
+                },
+                "print_angle_info": {
+                    "description": "print angles in the trajectory file",
+                    "type": "boolean",
+                    "default": false
+                },
+                "bond_graph_cutoff": {
+                    "description": "threshold used in determining what is a physical bond, what is not. Bonds and angles reported in the trajectory file rely on this cutoff.",
+                    "type": "number",
+                    "minimum": 0,
+                    "default": 0.3
+                },
+                "safezone": {
+                    "description": "fsctor used for allocating reax/c arrays. Increasing these values can avoid memory problems, such as segmentation faults and bondchk failed errors, that could occur under certain conditions.",
+                    "type": "number",
+                    "minimum": 0
+                }
+            }
         },
         "species": {
             "description": "the list of species",
@@ -34,47 +104,44 @@
                     ]
                 }
             },
-            "required": [
-                "reaxff0_boc1",
-                "reaxff0_boc2",
-                "reaxff3_coa2",
-                "Triple bond stabilisation 1",
-                "Triple bond stabilisation 2",
-                "C2-correction",
-                "reaxff0_ovun6",
-                "Triple bond stabilisation",
-                "reaxff0_ovun7",
-                "reaxff0_ovun8",
-                "Triple bond stabilization energy",
-                "Lower Taper-radius",
-                "Upper Taper-radius",
-                "reaxff2_pen2",
-                "reaxff0_val7",
-                "reaxff0_lp1",
-                "reaxff0_val9",
-                "reaxff0_val10",
-                "Not used 2",
-                "reaxff0_pen2",
-                "reaxff0_pen3",
-                "reaxff0_pen4",
-                "Not used 3",
-                "reaxff0_tor2",
-                "reaxff0_tor3",
-                "reaxff0_tor4",
-                "Not used 4",
-                "reaxff0_cot2",
-                "reaxff0_vdw1",
-                "bond order cutoff",
-                "reaxff3_coa4",
-                "reaxff0_ovun4",
-                "reaxff0_ovun3",
-                "reaxff0_val8",
-                "Not used 5",
-                "Not used 6",
-                "Not used 7",
-                "Not used 8",
-                "reaxff3_coa3"
-            ]
+            "properties": {
+                "nbrhood_cutoff": {
+                    "description": "The near neighbors cutoff (in Angstroms) regarding the bonded interactions (LAMMPS only).",
+                    "type": "number",
+                    "minimum": 0,
+                    "default": 5.0
+                },
+                "anglemin": {
+                    "description": "cutoff value for the strength of bonds to be considered in three body interactions.",
+                    "type": "number",
+                    "minimum": 0,
+                    "default": 0.001
+                },
+                "angleprod": {
+                    "description": "cutoff value for the strength of bond order products to be considered in three body interactions.",
+                    "type": "number",
+                    "minimum": 0,
+                    "default": 0.00001
+                },
+                "torsionprod": {
+                    "description": "cutoff value for the strength of bond order products to be considered in four body interactions (GULP only).",
+                    "type": "number",
+                    "minimum": 0,
+                    "default": 0.00001
+                },
+                "hbondmin": {
+                    "description": "cutoff value for the strength of bonds to be considered in hydrogen bond interactions (GULP only).",
+                    "type": "number",
+                    "minimum": 0,
+                    "default": 0.01
+                },
+                "hbonddist": {
+                    "description": "cutoff distance (in Angstroms) for hydrogen bond interactions.",
+                    "type": "number",
+                    "minimum": 0,
+                    "default": 7.5
+                }
+            }
         },
         "1body": {
             "description": "parameters that depend on one species, mapping species index to properties",

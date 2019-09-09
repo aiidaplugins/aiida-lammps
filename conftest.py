@@ -29,6 +29,12 @@ def pytest_addoption(parser):
             "a temporary directory is used and deleted after tests execution."
         ),
     )
+    group.addoption(
+        "--lammps-exec",
+        dest="lammps_exec",
+        default=None,
+        help=("Specify a the lammps executable to run (default: lammps)."),
+    )
 
 
 def get_work_directory(config):
@@ -40,8 +46,12 @@ def get_work_directory(config):
 
 def pytest_report_header(config):
     """Add header information for pytest execution."""
-    workdir = get_work_directory(config)
-    return ["LAMMPS Work Directory: {}".format(workdir or "<TEMP>")]
+    return [
+        "LAMMPS Executable: {}".format(config.getoption("lammps_exec") or "lammps"),
+        "LAMMPS Work Directory: {}".format(
+            config.getoption("lammps_workdir") or "<TEMP>"
+        ),
+    ]
 
 
 @pytest.fixture(scope="session")
@@ -57,12 +67,12 @@ def aiida_environment():
 @pytest.fixture(scope="function")
 def db_test_app(aiida_environment, pytestconfig):
     """Clear the database after each test."""
-
+    exec_name = pytestconfig.getoption("lammps_exec") or "lammps"
     executables = {
-        "lammps.md": "lammps",
-        "lammps.optimize": "lammps",
-        "lammps.force": "lammps",
-        "lammps.combinate": "lammps",
+        "lammps.md": exec_name,
+        "lammps.optimize": exec_name,
+        "lammps.force": exec_name,
+        "lammps.combinate": exec_name,
     }
 
     test_workdir = get_work_directory(pytestconfig)
@@ -231,11 +241,7 @@ def get_potential_data(get_structure_data):
             ) as handle:
                 potential_dict = {"type": "fs", "file_contents": handle.readlines()}
             structure = get_structure_data("Fe")
-            output_dict = {
-                "initial_energy": -8.2441284,
-                "energy": -8.2448702,
-                "warnings": "",
-            }
+            output_dict = {"initial_energy": -8.2441284, "energy": -8.2448702}
 
         elif pkey == "lennard-jones":
 
@@ -252,7 +258,6 @@ def get_potential_data(get_structure_data):
             output_dict = {
                 "initial_energy": 0.0,
                 "energy": 0.0,  # TODO should LJ energy be 0?
-                "warnings": "",
             }
 
         elif pkey == "tersoff":
@@ -272,11 +277,7 @@ def get_potential_data(get_structure_data):
 
             pair_style = "tersoff"
 
-            output_dict = {
-                "initial_energy": -18.109886,
-                "energy": -18.110852,
-                "warnings": "",
-            }
+            output_dict = {"initial_energy": -18.109886, "energy": -18.110852}
 
         elif pkey == "reaxff":
 
@@ -286,9 +287,10 @@ def get_potential_data(get_structure_data):
             ) as handle:
                 potential_dict = {
                     "file_contents": handle.readlines(),
-                    # 'data': read_lammps_format(handle.read().splitlines())
-                    "safezone": 1.6,
+                    "control": {"safezone": 1.6},
+                    "global": {"hbonddist": 7.0},
                 }
+                # potential_dict.update(read_lammps_format(handle.read().splitlines()))
 
             structure = get_structure_data("pyrite")
 
@@ -296,7 +298,6 @@ def get_potential_data(get_structure_data):
                 "initial_energy": -1027.9739,
                 "energy": -1030.3543,
                 "units": "real",
-                "warnings": "Warning: changed valency_val to valency_boc for X",
             }
 
         else:

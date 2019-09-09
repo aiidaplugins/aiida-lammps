@@ -32,7 +32,9 @@ def test_potential_files(
     node = EmpiricalPotential(
         type=potential.type, structure=potential.structure, data=potential.data
     )
-    file_regression.check(six.ensure_text(node.get_potential_file()))
+    file_regression.check(
+        six.ensure_text(node.get_object_content("potential.pot", "r"))
+    )
 
 
 @pytest.mark.parametrize(

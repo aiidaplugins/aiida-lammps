@@ -1937,7 +1937,7 @@ global:
   Triple bond stabilization energy: -70.5044
   Upper Taper-radius: 10.0
   anglemin: 0.001
-  angleprod: 0.001
+  angleprod: 1.0e-05
   bond order cutoff: 0.1
   hbonddist: 7.5
   hbondmin: 0.01

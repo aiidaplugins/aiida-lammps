@@ -11,7 +11,6 @@ class EmpiricalPotential(Data):
     """
 
     entry_name = "lammps.potentials"
-    potential_filename = "potential.pot"
     pot_lines_fname = "potential_lines.txt"
 
     @classmethod
@@ -20,7 +19,7 @@ class EmpiricalPotential(Data):
 
     @classmethod
     def load_type(cls, entry_name):
-        return load_entry_point(cls.entry_name, entry_name)()
+        return load_entry_point(cls.entry_name, entry_name)
 
     def __init__(self, type, data=None, structure=None, kind_elements=None, **kwargs):
         """ empirical potential data, used to create LAMMPS input files
@@ -64,66 +63,77 @@ class EmpiricalPotential(Data):
             raise ValueError(
                 "'potential_type' must be in: {}".format(self.list_types())
             )
-        pot_class = self.load_type(potential_type)
+        pot_class = self.load_type(potential_type)(data or {})
 
         atom_style = pot_class.atom_style
         default_units = pot_class.default_units
 
-        data = {} if data is None else data
-        pot_contents = pot_class.get_potential_file_content(data)
+        external_contents = pot_class.get_external_content() or {}
         pot_lines = pot_class.get_input_potential_lines(
-            data,
-            kind_elements=self.kind_elements,
-            potential_filename=self.potential_filename,
+            kind_elements=self.kind_elements
         )
 
         self.set_attribute("potential_type", potential_type)
         self.set_attribute("atom_style", atom_style)
         self.set_attribute("default_units", default_units)
 
-        if pot_contents is not None:
-            self.set_attribute(
-                "potential_md5", md5(pot_contents.encode("utf-8")).hexdigest()
-            )
-            with self.open(self.potential_filename, mode="w") as handle:
-                handle.write(six.ensure_text(pot_contents))
-        elif self.potential_filename in self.list_object_names():
-            self.delete_object(self.potential_filename)
-
+        # store potential section of main input file
         self.set_attribute(
-            "input_lines_md5", md5(pot_lines.encode("utf-8")).hexdigest()
+            "md5|input_lines", md5(pot_lines.encode("utf-8")).hexdigest()
         )
         with self.open(self.pot_lines_fname, mode="w") as handle:
             handle.write(six.ensure_text(pot_lines))
 
+        # store external files required by the potential
+        external_files = []
+        for fname, content in external_contents.items():
+            self.set_attribute(
+                "md5|{}".format(fname.replace(".", "_")),
+                md5(content.encode("utf-8")).hexdigest(),
+            )
+            with self.open(fname, mode="w") as handle:
+                handle.write(six.ensure_text(content))
+            external_files.append(fname)
+        self.set_attribute("external_files", sorted(external_files))
+
+        # delete any previously stored files that are no longer required
+        for fname in self.list_object_names():
+            if fname not in external_files + [self.pot_lines_fname]:
+                self.delete_object(fname)
+
     @property
     def kind_elements(self):
+        """Return the kind elements available in the potential."""
         return self.get_attribute("kind_elements")
 
     @property
     def potential_type(self):
+        """Return lammps atom style."""
         return self.get_attribute("potential_type")
 
     @property
     def atom_style(self):
-        """get lammps atom style
-        """
+        """Return lammps atom style."""
         return self.get_attribute("atom_style")
 
     @property
     def default_units(self):
+        """Return lammps default units."""
         return self.get_attribute("default_units")
 
-    def get_potential_file(self):
-        if self.potential_filename in self.list_object_names():
-            return self.get_object_content(self.potential_filename, "r")
-        return None
-
     def get_input_potential_lines(self):
-        """
-        get the string command to put in lammps input to setup the potential
-        Ex:
+        """Return the command(s) required to setup the potential.
+
+        e.g.::
+
              pair_style      eam
              pair_coeff      * *  Si
         """
         return self.get_object_content(self.pot_lines_fname, "r")
+
+    def get_external_files(self):
+        """Return the mapping of external filenames to content."""
+        fmap = {}
+        for fname in self.get_attribute("external_files"):
+            fmap[fname] = self.get_object_content(fname, "r")
+        return fmap

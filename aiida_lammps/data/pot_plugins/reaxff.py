@@ -28,29 +28,92 @@ class Reaxff(PotentialAbstract):
 
     """
 
-    def get_potential_file_content(self, data):
-        if "file_contents" in data:
-            potential_file = ""
-            for line in data["file_contents"]:
-                potential_file += "{}".format(line)
+    potential_fname = "potential.pot"
+    control_fname = "potential.control"
+
+    def validate_data(self, data):
+        """Validate the input data."""
+        validate_against_schema(data, "reaxff.schema.json")
+
+    def get_potential_file_content(self):
+        if "file_contents" in self.data:
+            content = ""
+            for line in self.data["file_contents"]:
+                content += "{}".format(line)
         else:
-            validate_against_schema(data, "reaxff.schema.json")
-            potential_file = write_lammps_format(data)
+            content = write_lammps_format(self.data)
+        return content
 
-        return potential_file
+    def get_control_file_content(self):
+        control = self.data.get("control", {})
+        global_dict = self.data.get("global", {})
+        content = []
 
-    def get_input_potential_lines(
-        self, data, kind_elements=None, potential_filename="potential.pot"
-    ):
+        tolerances = {
+            "hbonddist": "hbond_cutoff",
+            "nbrhood_cutoff": "nbrhood_cutoff",
+            "anglemin": "thb_cutoff",
+            "angleprod": "thb_cutoff_sq",
+        }
 
-        lammps_input_text = "pair_style reax/c NULL "
-        if "safezone" in data:
-            lammps_input_text += "safezone {0} ".format(data["safezone"])
+        for key, name in tolerances.items():
+            if key in global_dict:
+                content.append("{} {}".format(name, global_dict[key]))
+
+        control_variables = [
+            "simulation_name",
+            "traj_title",
+            "tabulate_long_range",
+            "energy_update_freq",
+            "write_freq",
+            "bond_graph_cutoff",
+        ]
+
+        for name in control_variables:
+            if name in control:
+                content.append("{} {}".format(name, control[name]))
+
+        bool_to_int = {
+            "print_atom_info": "atom_info",
+            "print_atom_forces": "atom_forces",
+            "print_atom_velocities": "atom_velocities",
+            "print_bond_info": "bond_info",
+            "print_angle_info": "angle_info",
+        }
+
+        for key, name in bool_to_int.items():
+            if key in control:
+                content.append("{} {}".format(name, 1 if control[key] else 0))
+
+        if content:
+            return "\n".join(content)
+        return None
+
+    def get_external_content(self):
+
+        fmap = {self.potential_fname: self.get_potential_file_content()}
+        content = self.get_control_file_content()
+        if content:
+            fmap[self.control_fname] = content
+        return fmap
+
+    def get_input_potential_lines(self, kind_elements=None):
+        lammps_input_text = "pair_style reax/c {} ".format(
+            self.control_fname if self.get_control_file_content() else "NULL"
+        )
+        if "safezone" in self.data.get("control", {}):
+            lammps_input_text += "safezone {0} ".format(
+                self.data["control"]["safezone"]
+            )
         lammps_input_text += "\n"
         lammps_input_text += "pair_coeff      * * {} {}\n".format(
-            potential_filename, " ".join(kind_elements)
+            self.potential_fname, " ".join(kind_elements)
         )
         lammps_input_text += "fix qeq all qeq/reax 1 0.0 10.0 1e-6 reax/c\n"
+        # TODO in conda-forge/osx-64::lammps-2019.06.05-py36_openmpi_5,
+        # an error is raised: ERROR: Illegal fix_modify command (src/fix.cpp:147)
+        # posted question to lammps-users@lists.sourceforge.net
+        # 'Using qeq/reax fix_modify energy in recent versions of LAMMPS'
         lammps_input_text += "fix_modify qeq energy yes\n"
         lammps_input_text += "compute reax all pair reax/c\n"
 

@@ -8,7 +8,9 @@ from aiida.plugins import DataFactory
 import aiida_lammps.tests.utils as tests
 
 
-def get_calc_parameters(plugin_name, units, potential_type):
+def get_calc_parameters(code, plugin_name, units, potential_type):
+
+    exec_path = code.get_remote_exec_path()
 
     if potential_type == "reaxff":
         output_variables = ["temp", "etotal", "c_reax[1]"]
@@ -19,13 +21,13 @@ def get_calc_parameters(plugin_name, units, potential_type):
 
     if plugin_name == "lammps.force":
         parameters_opt = {
-            "lammps_version": tests.lammps_version(),
+            "lammps_version": tests.lammps_version(exec_path),
             "output_variables": output_variables,
             "thermo_keywords": thermo_keywords,
         }
     elif plugin_name == "lammps.optimize":
         parameters_opt = {
-            "lammps_version": tests.lammps_version(),
+            "lammps_version": tests.lammps_version(exec_path),
             "units": units,
             "relax": {"type": "iso", "pressure": 0.0, "vmax": 0.001},
             "minimize": {
@@ -41,7 +43,7 @@ def get_calc_parameters(plugin_name, units, potential_type):
 
     elif plugin_name == "lammps.md":
         parameters_opt = {
-            "lammps_version": tests.lammps_version(),
+            "lammps_version": tests.lammps_version(exec_path),
             "units": units,
             "timestep": 0.001,
             "integration": {"style": "nvt", "constraints": {"temp": [300, 300, 0.5]}},
@@ -71,7 +73,7 @@ def test_force_submission(db_test_app, get_potential_data, potential_type):
         structure=pot_data.structure, type=pot_data.type, data=pot_data.data
     )
     parameters = get_calc_parameters(
-        calc_plugin, potential.default_units, potential_type
+        code, calc_plugin, potential.default_units, potential_type
     )
     builder = code.get_builder()
     builder._update(
@@ -102,7 +104,7 @@ def test_optimize_submission(db_test_app, get_potential_data, potential_type):
         structure=pot_data.structure, type=pot_data.type, data=pot_data.data
     )
     parameters = get_calc_parameters(
-        calc_plugin, potential.default_units, potential_type
+        code, calc_plugin, potential.default_units, potential_type
     )
     print(parameters.attributes)
     builder = code.get_builder()
@@ -134,7 +136,7 @@ def test_md_submission(db_test_app, get_potential_data, potential_type):
         structure=pot_data.structure, type=pot_data.type, data=pot_data.data
     )
     parameters = get_calc_parameters(
-        calc_plugin, potential.default_units, potential_type
+        code, calc_plugin, potential.default_units, potential_type
     )
     builder = code.get_builder()
     builder._update(
@@ -158,7 +160,9 @@ def test_md_submission(db_test_app, get_potential_data, potential_type):
 @pytest.mark.parametrize(
     "potential_type", ["lennard-jones", "tersoff", "eam", "reaxff"]
 )
-def test_force_process(db_test_app, get_potential_data, potential_type):
+def test_force_process(
+    db_test_app, get_potential_data, potential_type, data_regression
+):
     calc_plugin = "lammps.force"
     code = db_test_app.get_or_create_code(calc_plugin)
     pot_data = get_potential_data(potential_type)
@@ -166,7 +170,7 @@ def test_force_process(db_test_app, get_potential_data, potential_type):
         structure=pot_data.structure, type=pot_data.type, data=pot_data.data
     )
     parameters = get_calc_parameters(
-        calc_plugin, potential.default_units, potential_type
+        code, calc_plugin, potential.default_units, potential_type
     )
     builder = code.get_builder()
     builder._update(
@@ -195,20 +199,15 @@ def test_force_process(db_test_app, get_potential_data, potential_type):
     assert set(link_labels).issuperset(["results", "arrays"])
 
     pdict = calc_node.outputs.results.get_dict()
-    assert set(pdict.keys()).issuperset(
-        [
-            "energy",
-            "warnings",
-            "final_variables",
-            "units_style",
-            "energy_units",
-            "force_units",
-            "parser_class",
-            "parser_version",
-        ]
+    # assert pdict["warnings"].strip() == pot_data.output["warnings"]
+    # assert pdict["energy"] == pytest.approx(pot_data.output["initial_energy"])
+    pdict.pop("parser_version")
+    pdict["warnings"] = (
+        pdict["warnings"]
+        .strip()
+        .replace("Warning: changed valency_val to valency_boc for X", "")
     )
-    assert pdict["warnings"].strip() == pot_data.output["warnings"]
-    assert pdict["energy"] == pytest.approx(pot_data.output["initial_energy"])
+    data_regression.check(tests.recursive_round(pdict, 1))
 
     if potential_type == "reaxff":
         assert set(calc_node.outputs.arrays.get_arraynames()) == set(
@@ -227,7 +226,9 @@ def test_force_process(db_test_app, get_potential_data, potential_type):
 @pytest.mark.parametrize(
     "potential_type", ["lennard-jones", "tersoff", "eam", "reaxff"]
 )
-def test_optimize_process(db_test_app, get_potential_data, potential_type):
+def test_optimize_process(
+    db_test_app, get_potential_data, potential_type, data_regression
+):
     calc_plugin = "lammps.optimize"
     code = db_test_app.get_or_create_code(calc_plugin)
     pot_data = get_potential_data(potential_type)
@@ -235,7 +236,7 @@ def test_optimize_process(db_test_app, get_potential_data, potential_type):
         structure=pot_data.structure, type=pot_data.type, data=pot_data.data
     )
     parameters = get_calc_parameters(
-        calc_plugin, potential.default_units, potential_type
+        code, calc_plugin, potential.default_units, potential_type
     )
     builder = code.get_builder()
     builder._update(
@@ -260,20 +261,16 @@ def test_optimize_process(db_test_app, get_potential_data, potential_type):
     assert set(link_labels).issuperset(["results", "arrays", "structure"])
 
     pdict = calc_node.outputs.results.get_dict()
-    assert set(pdict.keys()).issuperset(
-        [
-            "energy",
-            "warnings",
-            "final_variables",
-            "units_style",
-            "energy_units",
-            "force_units",
-            "parser_class",
-            "parser_version",
-        ]
+    # assert pdict["warnings"].strip() == pot_data.output["warnings"]
+    # assert pdict["energy"] == pytest.approx(pot_data.output["energy"])
+
+    pdict.pop("parser_version")
+    pdict["warnings"] = (
+        pdict["warnings"]
+        .strip()
+        .replace("Warning: changed valency_val to valency_boc for X", "")
     )
-    assert pdict["warnings"].strip() == pot_data.output["warnings"]
-    assert pdict["energy"] == pytest.approx(pot_data.output["energy"])
+    data_regression.check(tests.recursive_round(pdict, 1))
 
     if potential_type == "reaxff":
         assert set(calc_node.outputs.arrays.get_arraynames()) == set(
@@ -290,7 +287,7 @@ def test_optimize_process(db_test_app, get_potential_data, potential_type):
 @pytest.mark.parametrize(
     "potential_type", ["lennard-jones", "tersoff", "eam", "reaxff"]
 )
-def test_md_process(db_test_app, get_potential_data, potential_type):
+def test_md_process(db_test_app, get_potential_data, potential_type, data_regression):
     calc_plugin = "lammps.md"
     code = db_test_app.get_or_create_code(calc_plugin)
     pot_data = get_potential_data(potential_type)
@@ -298,7 +295,7 @@ def test_md_process(db_test_app, get_potential_data, potential_type):
         structure=pot_data.structure, type=pot_data.type, data=pot_data.data
     )
     parameters = get_calc_parameters(
-        calc_plugin, potential.default_units, potential_type
+        code, calc_plugin, potential.default_units, potential_type
     )
     builder = code.get_builder()
     builder._update(
@@ -323,8 +320,16 @@ def test_md_process(db_test_app, get_potential_data, potential_type):
     assert set(link_labels).issuperset(["results", "trajectory_data", "system_data"])
 
     pdict = calc_node.outputs.results.get_dict()
-    assert set(pdict.keys()).issuperset(["warnings", "parser_class", "parser_version"])
-    assert pdict["warnings"].strip() == pot_data.output["warnings"]
+    # assert set(pdict.keys()).issuperset(["warnings", "parser_class", "parser_version"])
+    # assert pdict["warnings"].strip() == pot_data.output["warnings"]
+
+    pdict.pop("parser_version")
+    pdict["warnings"] = (
+        pdict["warnings"]
+        .strip()
+        .replace("Warning: changed valency_val to valency_boc for X", "")
+    )
+    data_regression.check(tests.recursive_round(pdict, 0))
 
     if potential_type == "reaxff":
         assert set(calc_node.outputs.trajectory_data.get_arraynames()) == set(

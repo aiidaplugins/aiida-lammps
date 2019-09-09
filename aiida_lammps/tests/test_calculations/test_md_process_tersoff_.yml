@@ -1,0 +1,8 @@
+distance_units: Angstroms
+energy: -18.0
+energy_units: eV
+errors: []
+parser_class: MdParser
+time_units: picoseconds
+units_style: metal
+warnings: ''

@@ -7,9 +7,18 @@ import six
 class PotentialAbstract:
     """Abstract class for potential plugins."""
 
+    def __init__(self, data):
+        self.validate_data(data)
+        self.data = data
+
     @abc.abstractmethod
-    def get_potential_file_content(self, data):
-        """Return the content of the input potential file.
+    def validate_data(self, data):
+        """Validate the input data."""
+        pass
+
+    @abc.abstractmethod
+    def get_external_content(self):
+        """Return the mapping of external filenames to content.
 
         Parameters
         ----------
@@ -17,15 +26,13 @@ class PotentialAbstract:
 
         Returns
         -------
-        None or str
+        None or dict
 
         """
         pass
 
     @abc.abstractmethod
-    def get_input_potential_lines(
-        self, data, kind_elements=None, potential_filename="potential.pot"
-    ):
+    def get_input_potential_lines(self, kind_elements=None):
         """Return the potential section of the main input file.
 
         Parameters

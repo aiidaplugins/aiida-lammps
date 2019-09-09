@@ -145,13 +145,15 @@ KEYS_4BODY_TORSION = (
 )
 
 DEFAULT_TOLERANCES = (
-    # ReaxFF angle/torsion bond order threshold
+    # ReaxFF angle/torsion bond order threshold,
+    # for bond orders in valence, penalty and 3-body conjugation
     # GULP default: 0.001
     ("anglemin", 0.001),
-    # ReaxFF bond order double product threshold
-    # Hard coded to 0.001 in original code.
+    # ReaxFF bond order double product threshold,
+    # for the product of bond orders (1-2 x 2-3, where 2 = pivot)
+    # Hard coded to 0.001 in original code, but this leads to discontinuities
     # GULP default: 0.000001
-    ("angleprod", 0.001),
+    ("angleprod", 0.00001),
     # ReaxFF hydrogen-bond bond order threshold
     # Hard coded to 0.01 in original code.
     # GULP default: 0.01
@@ -160,13 +162,11 @@ DEFAULT_TOLERANCES = (
     # Hard coded to 7.5 Ang in original code.
     # GULP default: 7.5
     ("hbonddist", 7.5),
-    # ReaxFF bond order triple product threshold
+    # ReaxFF bond order triple product threshold,
+    # for the product of bond orders (1-2 x 2-3 x 3-4)
     # GULP default: 0.000000001
     ("torsionprod", 0.00001),
 )
-
-# NOTE: torsionprod needs to be lower (0.001), to get comparable energy to lammps,
-# but then won't optimize (reaches maximum steps)
 
 
 def split_numbers(string):

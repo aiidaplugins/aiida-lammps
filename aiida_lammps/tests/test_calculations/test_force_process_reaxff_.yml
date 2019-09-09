@@ -1,0 +1,12 @@
+distance_units: Angstroms
+energy: -1028.0
+energy_units: Kcal/mole
+errors: []
+final_variables:
+  c_reax_1_: -1804.2
+  etotal: -1028.0
+  temp: 0.0
+force_units: Kcal/mole-Angstrom
+parser_class: ForceParser
+units_style: real
+warnings: ''

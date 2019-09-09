@@ -1,3 +1,4 @@
+from collections import Mapping
 from contextlib import contextmanager
 import distutils.spawn
 import os
@@ -11,16 +12,26 @@ TEST_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
 def lammps_version(executable="lammps"):
-    """get the version of lammps
+    """Get the version of lammps.
 
-    we assume `lammps -h` returns e.g. 'LAMMPS (10 Feb 2015)' as first line
+    we assume `lammps -h` returns e.g. 'LAMMPS (10 Feb 2015)' or
+    'Large-scale Atomic/Molecular Massively Parallel Simulator - 5 Jun 2019'
     """
     p = subprocess.Popen([executable, "-h"], stdout=subprocess.PIPE)
     stdout, stderr = p.communicate()
     out_text = six.ensure_str(stdout)
-    line = out_text.splitlines()[0]
-    version = re.search(r"LAMMPS \((.*)\)", line).group(1)
-    return version
+    match = re.search(r"LAMMPS \((.*)\)", out_text)
+    if match:
+        return match.group(1)
+    regex = re.compile(
+        r"^Large-scale Atomic/Molecular Massively Parallel Simulator - (.*)$",
+        re.MULTILINE,
+    )
+    match = re.search(regex, out_text)
+    if match:
+        return match.group(1).strip()
+
+    raise IOError("Could not find version from `{} -h`".format(executable))
 
 
 def get_path_to_executable(executable):
@@ -134,6 +145,18 @@ def get_default_metadata(
             "withmpi": with_mpi,
         }
     }
+
+
+def recursive_round(ob, dp, apply_lists=False):
+    """ map a function on to all values of a nested dictionary """
+    if isinstance(ob, Mapping):
+        return {k: recursive_round(v, dp, apply_lists) for k, v in ob.items()}
+    elif apply_lists and isinstance(ob, (list, tuple)):
+        return [recursive_round(v, dp, apply_lists) for v in ob]
+    elif isinstance(ob, float):
+        return round(ob, dp)
+    else:
+        return ob
 
 
 class AiidaTestApp(object):
