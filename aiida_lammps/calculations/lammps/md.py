@@ -32,8 +32,8 @@ class MdCalculation(BaseLammpsCalculation):
             help="selected system data per dump step",
         )
 
+    @staticmethod
     def create_main_input_content(
-        self,
         parameter_data,
         potential_data,
         kind_symbols,
@@ -41,40 +41,39 @@ class MdCalculation(BaseLammpsCalculation):
         trajectory_filename,
         info_filename,
         restart_filename,
-        add_thermo_keywords,
-        version_date,
     ):
 
         pdict = parameter_data.get_dict()
+        version_date = convert_date_string(pdict.get("lammps_version", "11 Aug 2017"))
 
-        random_number = np.random.randint(10000000)
-
-        # lammps_date = convert_date_string(pdict.get("lammps_version", None))
-
+        # Geometry Setup
         lammps_input_file = "units           {0}\n".format(potential_data.default_units)
         lammps_input_file += "boundary        p p p\n"
         lammps_input_file += "box tilt large\n"
         lammps_input_file += "atom_style      {0}\n".format(potential_data.atom_style)
         lammps_input_file += "read_data       {}\n".format(structure_filename)
 
+        # Potential Specification
         lammps_input_file += potential_data.get_input_lines(kind_symbols)
 
+        # Pairwise neighbour list creation
         if "neighbor" in pdict:
+            # neighbor skin_dist bin/nsq/multi
             lammps_input_file += "neighbor {0} {1}\n".format(
                 pdict["neighbor"][0], pdict["neighbor"][1]
             )
         if "neigh_modify" in pdict:
+            # e.g. 'neigh_modify every 1 delay 0 check no\n'
             lammps_input_file += "neigh_modify {}\n".format(
                 join_keywords(pdict["neigh_modify"])
             )
 
-        # lammps_input_file += 'neighbor        0.3 bin\n'
-        # lammps_input_file += 'neigh_modify    every 1 delay 0 check no\n'
-
+        # Define Timestep
         lammps_input_file += "timestep        {}\n".format(pdict["timestep"])
 
+        # Define computation/printing of thermodynamic info
         thermo_keywords = ["step", "temp", "epair", "emol", "etotal", "press"]
-        for kwd in add_thermo_keywords:
+        for kwd in pdict.get("thermo_keywords", []):
             if kwd not in thermo_keywords:
                 thermo_keywords.append(kwd)
         lammps_input_file += "thermo_style custom {}\n".format(
@@ -82,25 +81,27 @@ class MdCalculation(BaseLammpsCalculation):
         )
         lammps_input_file += "thermo          1000\n"
 
+        # Define output of restart file
         restart = pdict.get("restart", False)
         if restart:
             lammps_input_file += "restart        {0} {1}\n".format(
                 restart, restart_filename
             )
 
+        # Set the initial velocities of atoms, if a temperature is set
         initial_temp, _, _ = get_path(
             pdict,
             ["integration", "constraints", "temp"],
             default=[None, None, None],
             raise_error=False,
         )
-
         if initial_temp is not None:
             lammps_input_file += "velocity        all create {0} {1} dist gaussian mom yes\n".format(
-                initial_temp, random_number
+                initial_temp, np.random.randint(10000000)
             )
             lammps_input_file += "velocity        all scale {}\n".format(initial_temp)
 
+        # Define Equilibration Stage
         lammps_input_file += "fix             int all {0} {1} {2}\n".format(
             get_path(pdict, ["integration", "style"]),
             join_keywords(
@@ -110,9 +111,6 @@ class MdCalculation(BaseLammpsCalculation):
                 get_path(pdict, ["integration", "keywords"], {}, raise_error=False)
             ),
         )
-
-        # lammps_input_file += 'fix             int all nvt temp {0} {0} {1}\n'.format(parameters.dict.temperature,
-        #                                                                              parameters.dict.thermostat_variable)
 
         lammps_input_file += "run             {}\n".format(
             parameter_data.dict.equilibrium_steps

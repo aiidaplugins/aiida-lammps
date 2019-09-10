@@ -25,8 +25,8 @@ class ForceCalculation(BaseLammpsCalculation):
             help="force data per atom",
         )
 
+    @staticmethod
     def create_main_input_content(
-        self,
         parameter_data,
         potential_data,
         kind_symbols,
@@ -34,9 +34,11 @@ class ForceCalculation(BaseLammpsCalculation):
         trajectory_filename,
         info_filename,
         restart_filename,
-        add_thermo_keywords,
-        version_date,
     ):
+
+        version_date = convert_date_string(
+            parameter_data.get_attribute("lammps_version", "11 Aug 2017")
+        )
 
         lammps_input_file = "units          {0}\n".format(potential_data.default_units)
         lammps_input_file += "boundary        p p p\n"
@@ -51,7 +53,7 @@ class ForceCalculation(BaseLammpsCalculation):
         lammps_input_file += "neigh_modify    every 1 delay 0 check no\n"
 
         thermo_keywords = ["step", "temp", "epair", "emol", "etotal", "press"]
-        for kwd in add_thermo_keywords:
+        for kwd in parameter_data.get_attribute("thermo_keywords", []):
             if kwd not in thermo_keywords:
                 thermo_keywords.append(kwd)
         lammps_input_file += "thermo_style custom {}\n".format(

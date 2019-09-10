@@ -30,8 +30,8 @@ class OptimizeCalculation(BaseLammpsCalculation):
             help="forces, stresses and positions data per step",
         )
 
+    @staticmethod
     def create_main_input_content(
-        self,
         parameter_data,
         potential_data,
         kind_symbols,
@@ -39,13 +39,12 @@ class OptimizeCalculation(BaseLammpsCalculation):
         trajectory_filename,
         info_filename,
         restart_filename,
-        add_thermo_keywords,
-        version_date,
     ):
 
         parameter_data = parameter_data.get_dict()
-
-        # lammps_date = convert_date_string(parameters.get("lammps_version", None))
+        version_date = convert_date_string(
+            parameter_data.get("lammps_version", "11 Aug 2017")
+        )
 
         lammps_input_file = "units          {0}\n".format(potential_data.default_units)
         lammps_input_file += "boundary        p p p\n"
@@ -92,7 +91,7 @@ class OptimizeCalculation(BaseLammpsCalculation):
             "c_stgb[5]",
             "c_stgb[6]",
         ]
-        for kwd in add_thermo_keywords:
+        for kwd in parameter_data.get("thermo_keywords", []):
             if kwd not in thermo_keywords:
                 thermo_keywords.append(kwd)
         lammps_input_file += "thermo_style custom {}\n".format(

@@ -3,7 +3,6 @@ from aiida.common.exceptions import ValidationError
 from aiida.common import CalcInfo, CodeInfo
 from aiida.orm import StructureData, Dict
 from aiida.plugins import DataFactory
-from aiida_lammps.common.utils import convert_date_string
 from aiida_lammps.common.generate_structure import generate_lammps_structure
 from aiida_lammps.data.potential import EmpiricalPotential
 import six
@@ -217,8 +216,8 @@ class BaseLammpsCalculation(CalcJob):
     def prepare_extra_files(self, tempfolder, potential_object):
         return True
 
+    @staticmethod
     def create_main_input_content(
-        self,
         parameter_data,
         potential_data,
         kind_symbols,
@@ -226,8 +225,6 @@ class BaseLammpsCalculation(CalcJob):
         trajectory_filename,
         info_filename,
         restart_filename,
-        add_thermo_keywords,
-        version_date,
     ):
         raise NotImplementedError
 
@@ -259,10 +256,6 @@ class BaseLammpsCalculation(CalcJob):
             parameters = self.inputs.parameters
         else:
             parameters = Dict()
-        pdict = parameters.get_dict()
-
-        # Check lammps version date in parameters
-        lammps_date = convert_date_string(pdict.get("lammps_version", "11 Aug 2017"))
 
         # Setup input parameters
         input_txt = self.create_main_input_content(
@@ -273,8 +266,6 @@ class BaseLammpsCalculation(CalcJob):
             trajectory_filename=self.options.trajectory_name,
             info_filename=self.options.info_filename,
             restart_filename=self.options.restart_filename,
-            add_thermo_keywords=pdict.get("thermo_keywords", []),
-            version_date=lammps_date,
         )
 
         input_filename = tempfolder.get_abs_path(self._INPUT_FILE_NAME)

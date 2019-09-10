@@ -70,8 +70,8 @@ class CombinateCalculation(BaseLammpsCalculation):
 
         # spec.input('settings', valid_type=six.string_types, default='lammps.optimize')
 
+    @staticmethod
     def create_main_input_content(
-        self,
         parameter_data,
         potential_data,
         structure_data,
@@ -79,8 +79,6 @@ class CombinateCalculation(BaseLammpsCalculation):
         trajectory_filename,
         info_filename,
         restart_filename,
-        add_thermo_keywords,
-        version_date,
     ):
 
         random_number = np.random.randint(10000000)
