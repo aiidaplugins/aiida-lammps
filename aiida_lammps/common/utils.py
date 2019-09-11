@@ -37,8 +37,8 @@ def join_keywords(dct, ignore=None):
     ignore = [] if not ignore else ignore
     return " ".join(
         [
-            "{0} {1}".format(k, _convert_values(v))
-            for k, v in dct.items()
+            "{0} {1}".format(k, _convert_values(dct[k]))
+            for k in sorted(dct.keys())
             if k not in ignore
         ]
     )

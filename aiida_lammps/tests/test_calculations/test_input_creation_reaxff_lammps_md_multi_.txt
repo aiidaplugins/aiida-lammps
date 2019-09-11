@@ -16,7 +16,7 @@ compute reax all pair reax/c
 
 # General Setup
 neighbor 0.3 bin
-neigh_modify every 1 delay 0 check no
+neigh_modify check no delay 0 every 1
 timestep        0.001
 
 # Thermodynamic Information Output
