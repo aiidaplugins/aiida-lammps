@@ -1,11 +1,17 @@
-distance_units: Angstroms
-energy: -18.1
-energy_units: eV
-errors: []
-final_variables:
-  etotal: -18.1
-  temp: 0.0
-force_units: eV/Angstrom
-parser_class: ForceParser
-units_style: metal
-warnings: ''
+arrays:
+  array|forces:
+  - 1
+  - 4
+  - 3
+results:
+  distance_units: Angstroms
+  energy: -18.1
+  energy_units: eV
+  errors: []
+  final_variables:
+    etotal: -18.1
+    temp: 0.0
+  force_units: eV/Angstrom
+  parser_class: ForceParser
+  units_style: metal
+  warnings: ''

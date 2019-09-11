@@ -275,18 +275,11 @@ def test_force_process(
         .strip()
         .replace("Warning: changed valency_val to valency_boc for X", "")
     )
-    data_regression.check(tests.recursive_round(pdict, 1))
-
-    if potential_type == "reaxff":
-        assert set(calc_node.outputs.arrays.get_arraynames()) == set(
-            ["forces", "charges"]
-        )
-    else:
-        assert set(calc_node.outputs.arrays.get_arraynames()) == set(["forces"])
-    assert calc_node.outputs.arrays.get_shape("forces") == (
-        1,
-        len(pot_data.structure.sites),
-        3,
+    data_regression.check(
+        {
+            "results": tests.recursive_round(pdict, 1),
+            "arrays": calc_node.outputs.arrays.attributes,
+        }
     )
 
 
@@ -336,17 +329,12 @@ def test_optimize_process(
         .strip()
         .replace("Warning: changed valency_val to valency_boc for X", "")
     )
-    data_regression.check(tests.recursive_round(pdict, 1))
-
-    if potential_type == "reaxff":
-        assert set(calc_node.outputs.arrays.get_arraynames()) == set(
-            ["positions", "forces", "stress", "charges"]
-        )
-    else:
-        assert set(calc_node.outputs.arrays.get_arraynames()) == set(
-            ["positions", "forces", "stress"]
-        )
-    assert len(calc_node.outputs.arrays.get_shape("forces")) == 3
+    data_regression.check(
+        {
+            "results": tests.recursive_round(pdict, 1),
+            "arrays": calc_node.outputs.arrays.attributes,
+        }
+    )
 
 
 @pytest.mark.lammps_call

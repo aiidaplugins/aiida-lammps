@@ -1,12 +1,25 @@
-distance_units: Angstroms
-energy: -8.2
-energy_units: eV
-errors: []
-final_variables:
-  etotal: -8.2
-  temp: 0.0
-force_units: eV/Angstrom
-parser_class: OptimizeParser
-stress_units: bars
-units_style: metal
-warnings: ''
+arrays:
+  array|forces:
+  - 8
+  - 2
+  - 3
+  array|positions:
+  - 8
+  - 2
+  - 3
+  array|stress:
+  - 3
+  - 3
+results:
+  distance_units: Angstroms
+  energy: -8.2
+  energy_units: eV
+  errors: []
+  final_variables:
+    etotal: -8.2
+    temp: 0.0
+  force_units: eV/Angstrom
+  parser_class: OptimizeParser
+  stress_units: bars
+  units_style: metal
+  warnings: ''
