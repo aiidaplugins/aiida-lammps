@@ -1,0 +1,67 @@
+# Input written to comply with LAMMPS 2017-08-17 00:00:00
+
+# Atomic Configuration
+units           real
+boundary        p p p
+box tilt large
+atom_style      charge
+read_data       input.data
+
+# Potential Setup
+pair_style reax/c potential.control safezone 1.6 
+pair_coeff      * * potential.pot A B
+fix qeq all qeq/reax 1 0.0 10.0 1e-6 reax/c
+fix_modify qeq energy yes
+compute reax all pair reax/c
+
+# General Setup
+neighbor 0.3 bin
+neigh_modify every 1 delay 0 check no
+timestep        0.001
+
+# Thermodynamic Information Output
+thermo_style custom step temp epair emol etotal press c_reax[1]
+thermo          1000
+
+# Intial Atom Velocity
+velocity all create 300 12345 dist gaussian mom yes
+
+# Intial Atom Velocity
+velocity all scale 300 
+
+# Stage 0: thermalise
+dump            atom_info all custom 10 output.traj element x y z q
+dump_modify     atom_info append yes
+dump_modify     atom_info format line "%4s  %16.10f %16.10f %16.10f %16.10f"
+dump_modify     atom_info sort id
+dump_modify     atom_info element A B
+variable step equal step
+variable temp equal temp
+variable etotal equal etotal
+variable c_reax_1_ equal c_reax[1]
+fix sys_info all print 10 "0 ${step} ${temp} ${etotal} ${c_reax_1_}" title "stage_id step temp etotal c_reax_1_" append sys_info.txt screen no
+restart         0
+fix             int all nvt temp 300 300 0.5 
+run             100
+
+# Stage 1: equilibrate
+unfix sys_info
+unfix int
+undump atom_info
+dump            atom_info all custom 100 output.traj element x y z q
+dump_modify     atom_info append yes
+dump_modify     atom_info format line "%4s  %16.10f %16.10f %16.10f %16.10f"
+dump_modify     atom_info sort id
+dump_modify     atom_info element A B
+variable step equal step
+variable temp equal temp
+variable etotal equal etotal
+variable c_reax_1_ equal c_reax[1]
+fix sys_info all print 100 "1 ${step} ${temp} ${etotal} ${c_reax_1_}"  append sys_info.txt screen no
+restart         100 equilibrate-calc.restart
+fix             int all nvt temp 300 300 0.5 
+run             900
+
+# Final Commands
+variable final_energy equal etotal
+print "final_energy: ${final_energy}"

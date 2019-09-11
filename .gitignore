@@ -16,3 +16,4 @@ postgres*.log
 .vscode/
 
 pip-wheel-metadata/
+example_inputs/

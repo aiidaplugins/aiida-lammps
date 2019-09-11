@@ -97,7 +97,7 @@ class MdCalculation(BaseLammpsCalculation):
         )
         if initial_temp is not None:
             lammps_input_file += "velocity        all create {0} {1} dist gaussian mom yes\n".format(
-                initial_temp, np.random.randint(10000000)
+                initial_temp, pdict.get("rand_seed", np.random.randint(10000000))
             )
             lammps_input_file += "velocity        all scale {}\n".format(initial_temp)
 

@@ -3,7 +3,7 @@
   "version": "0.6.0b5",
   "description": "AiiDA plugin for LAMMPS",
   "url": "https://github.com/abelcarreras/aiida-lammps",
-  "author": "Abel Carreras",
+  "author": "Abel Carreras, Chris Sewell",
   "author_email": "abelcarreras83@gmail.com",
   "license": "MIT license",
   "install_requires": [
@@ -24,6 +24,7 @@
       "lammps.combinate = aiida_lammps.calculations.lammps.combinate:CombinateCalculation",
       "lammps.force = aiida_lammps.calculations.lammps.force:ForceCalculation",
       "lammps.md = aiida_lammps.calculations.lammps.md:MdCalculation",
+      "lammps.md.multi = aiida_lammps.calculations.lammps.md_multi:MdMultiCalculation",
       "lammps.optimize = aiida_lammps.calculations.lammps.optimize:OptimizeCalculation",
       "dynaphopy = aiida_lammps.calculations.dynaphopy: DynaphopyCalculation"
     ],

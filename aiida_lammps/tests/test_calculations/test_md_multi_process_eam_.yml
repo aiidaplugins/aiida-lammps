@@ -9,25 +9,27 @@ results:
   warnings: ''
 system_data:
   array|etotal:
-  - 100
+  - 19
+  array|stage_id:
+  - 19
   array|step:
-  - 100
+  - 19
   array|temp:
-  - 100
+  - 19
   units_style: metal
 trajectory_data:
   array|cells:
-  - 101
+  - 21
   - 3
   - 3
   array|positions:
-  - 101
+  - 21
   - 2
   - 3
   array|steps:
-  - 101
+  - 21
   array|times:
-  - 101
+  - 21
   symbols:
   - Fe
   - Fe

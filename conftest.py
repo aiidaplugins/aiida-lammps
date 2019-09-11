@@ -70,6 +70,7 @@ def db_test_app(aiida_environment, pytestconfig):
     exec_name = pytestconfig.getoption("lammps_exec") or "lammps"
     executables = {
         "lammps.md": exec_name,
+        "lammps.md.multi": exec_name,
         "lammps.optimize": exec_name,
         "lammps.force": exec_name,
         "lammps.combinate": exec_name,

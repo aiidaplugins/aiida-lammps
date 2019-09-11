@@ -1,0 +1,21 @@
+units          metal
+boundary        p p p
+box tilt large
+atom_style      atomic
+read_data       input.data
+pair_style  lj/cut 2.5
+pair_coeff 1  1    0.01029   3.4    2.5
+neighbor        0.3 bin
+neigh_modify    every 1 delay 0 check no
+thermo_style custom step temp epair emol etotal press
+dump            aiida all custom 1 output.traj element x y z fx fy fz
+dump_modify     aiida format line "%4s  %16.10f %16.10f %16.10f  %16.10f %16.10f %16.10f"
+dump_modify     aiida sort id
+dump_modify     aiida element A B
+run             0
+variable temp equal temp
+print "final_variable: temp = ${temp}"
+variable etotal equal etotal
+print "final_variable: etotal = ${etotal}"
+variable final_energy equal etotal
+print "final_energy: ${final_energy}"
