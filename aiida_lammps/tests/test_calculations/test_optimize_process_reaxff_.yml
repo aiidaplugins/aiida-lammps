@@ -1,17 +1,17 @@
 arrays:
   array|charges:
-  - 25
+  - null
   - 12
   array|forces:
-  - 25
+  - null
   - 12
   - 3
   array|positions:
-  - 25
+  - null
   - 12
   - 3
   array|stress:
-  - 3
+  - null
   - 3
 results:
   distance_units: Angstroms

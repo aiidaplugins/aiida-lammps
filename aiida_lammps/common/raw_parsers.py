@@ -1,14 +1,10 @@
-import mmap
+from collections import namedtuple
 import re
 import numpy as np
-import six
 
 
 def read_log_file(logdata_txt, compute_stress=False):
-    """ read the log.lammps file """
-    # Dimensionality of LAMMP calculation
-    # number_of_dimensions = 3
-
+    """Read the log.lammps file."""
     data = logdata_txt.splitlines()
 
     if not data:
@@ -54,182 +50,36 @@ def read_log_file(logdata_txt, compute_stress=False):
     return {"data": data_dict, "cell": cell, "stress": stress}
 
 
-def read_lammps_trajectory(
-    file_name,
-    limit_number_steps=100000000,
-    initial_cut=1,
-    end_cut=None,
-    timestep=1,
-    log_warning_func=None,
-):
-    """Read a LAMMPS Trajectory file.
-
-    Format must be: ``dump name all custom n element x y z q``, where q is optional
-
-    """
-    if log_warning_func is None:
-        log_warning_func = six.print_
-    # Time in picoseconds
-    # Coordinates in Angstroms
-
-    # Dimensionality of LAMMPS calculation
-    number_of_dimensions = 3
-
-    step_ids = []
-    positions = []
-    charges = []
-    cells = []
-    read_elements = []
-    counter = 0
-    bounds = None
-    number_of_atoms = None
-
-    field_names = False
-
-    with open(file_name, "r+") as f:
-
-        file_map = mmap.mmap(f.fileno(), 0)
-
-        while True:
-
-            counter += 1
-
-            # Read time steps
-            position_number = file_map.find(b"TIMESTEP")
-            if position_number < 0:
-                break
-
-            file_map.seek(position_number)
-            file_map.readline()
-            step_ids.append(float(file_map.readline()))
-
-            if number_of_atoms is None:
-                # Read number of atoms
-                position_number = file_map.find(b"NUMBER OF ATOMS")
-                file_map.seek(position_number)
-                file_map.readline()
-                number_of_atoms = int(file_map.readline())
-
-            if True:
-                # Read cell
-                position_number = file_map.find(b"ITEM: BOX")
-                file_map.seek(position_number)
-                file_map.readline()
-
-                bounds = []
-                for i in range(3):
-                    bounds.append(file_map.readline().split())
-
-                bounds = np.array(bounds, dtype=float)
-                if bounds.shape[1] == 2:
-                    bounds = np.append(bounds, np.array([0, 0, 0])[None].T, axis=1)
-
-                xy = bounds[0, 2]
-                xz = bounds[1, 2]
-                yz = bounds[2, 2]
-
-                xlo = bounds[0, 0] - np.min([0.0, xy, xz, xy + xz])
-                xhi = bounds[0, 1] - np.max([0.0, xy, xz, xy + xz])
-                ylo = bounds[1, 0] - np.min([0.0, yz])
-                yhi = bounds[1, 1] - np.max([0.0, yz])
-                zlo = bounds[2, 0]
-                zhi = bounds[2, 1]
-
-                super_cell = np.array(
-                    [[xhi - xlo, xy, xz], [0, yhi - ylo, yz], [0, 0, zhi - zlo]]
-                )
-                cells.append(super_cell.T)
-
-            position_number = file_map.find(b"ITEM: ATOMS")
-            file_map.seek(position_number)
-            field_names = six.ensure_str(file_map.readline()).split()[2:]
-            has_charge = field_names[-1] == "q"
-
-            # Initial cut control
-            if initial_cut > counter:
-                continue
-
-            # Reading coordinates
-            read_coordinates = []
-            read_elements = []
-            read_charges = []
-            for i in range(number_of_atoms):
-                fields = file_map.readline().split()
-                read_coordinates.append(fields[1 : number_of_dimensions + 1])
-                read_elements.append(fields[0])
-                read_charges.append(fields[-1])
-            try:
-                positions.append(np.array(read_coordinates, dtype=float))
-            except ValueError:
-                log_warning_func("Error reading step {0}".format(counter))
-                break
-            if has_charge:
-                charges.append(read_charges)
-            # security routine to limit maximum of steps to read and put in memory
-            if limit_number_steps + initial_cut < counter:
-                log_warning_func(
-                    "Warning! maximum number of steps reached! No more steps will be read"
-                )
-                break
-
-            if end_cut is not None and end_cut <= counter:
-                break
-
-    file_map.close()
-
-    positions = np.array(positions)
-    if charges:
-        charges = np.array(charges, dtype=float)
-    else:
-        charges = None
-    step_ids = np.array(step_ids, dtype=int)
-    cells = np.array(cells)
-    elements = np.array(read_elements, dtype="str")
-
-    time = np.array(step_ids) * timestep
-    return positions, charges, step_ids, cells, elements, time
+TRAJ_BLOCK = namedtuple(
+    "TRAJ_BLOCK", ["timestep", "natoms", "cell", "field_names", "fields"]
+)
 
 
-def get_index(string, lines):
+def get_line(string, lines):
     for i, item in enumerate(lines):
         if string in item:
             return i
 
 
-def read_lammps_positions_and_forces_txt(data_txt):
-    """ should be used with:
-    `dump name all custom n element x y z fx fy fz q`,
-    where q is optional
-    """
+def iter_lammps_trajectories(file_obj):
+    """Parse a LAMMPS Trajectory file, yielding data for each time step."""
+    # TODO allow parsing of file chunks
+    content = file_obj.read()
 
-    # Dimensionality of LAMMPS calculation
-    number_of_dimensions = 3
-
-    block_start = [m.start() for m in re.finditer("TIMESTEP", data_txt)]
+    # find all timestep blocks
+    block_start = [m.start() for m in re.finditer("TIMESTEP", content)]
     blocks = [(block_start[i], block_start[i + 1]) for i in range(len(block_start) - 1)]
-    # add last block
-    blocks.append((block_start[-1], len(data_txt)))
+    if block_start:
+        blocks.append((block_start[-1], len(content)))
 
-    position_list = []
-    forces_list = []
-    charge_list = []
+    for row_start, row_end in blocks:
+        block_lines = content[row_start:row_end].split("\n")
 
-    read_elements = None
-    cell = None
+        time_step = int(block_lines[get_line("TIMESTEP", block_lines) + 1])
+        number_of_atoms = int(block_lines[get_line("NUMBER OF ATOMS", block_lines) + 1])
 
-    time_steps = []
-    for ini, end in blocks:
-
-        # Read number of atoms
-        block_lines = data_txt[ini:end].split("\n")
-
-        idx = block_lines.index("TIMESTEP")
-        time_steps.append(block_lines[idx + 1])
-
-        idx = get_index("NUMBER OF ATOMS", block_lines)
-        number_of_atoms = int(block_lines[idx + 1])
-
-        idx = get_index("ITEM: BOX", block_lines)
+        idx = get_line("ITEM: BOX", block_lines)
+        # TODO check periodic dimensions
         bounds = [line.split() for line in block_lines[idx + 1 : idx + 4]]
         bounds = np.array(bounds, dtype=float)
         if bounds.shape[1] == 2:
@@ -251,51 +101,26 @@ def read_lammps_positions_and_forces_txt(data_txt):
         )
         cell = super_cell.T
 
-        # id = [i for i, s in enumerate(block_lines) if 'ITEM: BOX BOUNDS' in s][0]
+        atom_line = get_line("ITEM: ATOMS", block_lines)
+        field_names = block_lines[atom_line].split()[2:]
 
-        # Reading positions
-        idx = get_index("ITEM: ATOMS", block_lines)
-        field_names = block_lines[idx].split()[2:]  # noqa: F841
-
-        positions = []
-        forces = []
-        charges = []
-        read_elements = []
+        atom_fields = []
         for i in range(number_of_atoms):
-            fields = block_lines[idx + i + 1].split()
-            positions.append(fields[1 : number_of_dimensions + 1])
-            forces.append(
-                fields[1 + number_of_dimensions : number_of_dimensions * 2 + 1]
-            )
-            if field_names[-1] == "q":
-                charges.append(fields[-1])
-            read_elements.append(fields[0])
+            atom_fields.append(block_lines[atom_line + i + 1].split())
 
-        position_list.append(positions)
-        forces_list.append(forces)
-        if field_names[-1] == "q":
-            charge_list.append(charges)
-
-    positions = np.array(position_list, dtype=float)
-    forces = np.array(forces_list, dtype=float)
-    if charge_list:
-        charges = np.array(charge_list, dtype=float)
-    else:
-        charges = None
-
-    return positions, forces, charges, read_elements, cell
+        yield TRAJ_BLOCK(time_step, number_of_atoms, cell, field_names, atom_fields)
 
 
-def get_units_dict(style, quantities):
-    """
+def get_units_dict(style, quantities, suffix="_units"):
+    """Return a mapping of the unit name to the units, for a particular style.
 
     :param style: the unit style set in the lammps input
     :type style: str
     :param quantities: the quantities to get units for
     :type quantities: list of str
-    :return:
-    """
+    :rtype: dict
 
+    """
     units_dict = {
         "real": {
             "mass": "grams/mole",
@@ -409,8 +234,24 @@ def get_units_dict(style, quantities):
     }
     out_dict = {}
     for quantity in quantities:
-        out_dict[quantity + "_units"] = units_dict[style][quantity]
+        out_dict[quantity + suffix] = units_dict[style][quantity]
     return out_dict
+
+
+def convert_units(value, style, unit_type, out_units):
+    conversion = {
+        "seconds": 1,
+        "milliseconds": 1e-3,
+        "microseconds": 1e-6,
+        "nanoseconds": 1e-9,
+        "picoseconds": 1e-12,
+        "femtoseconds": 1e-15,
+    }
+    if unit_type != "time" or out_units not in conversion:
+        # TODO use https://pint.readthedocs.io
+        raise NotImplementedError
+    in_units = get_units_dict(style, [unit_type], "")[unit_type]
+    return value * conversion[in_units] * (1.0 / conversion[out_units])
 
 
 def parse_quasiparticle_data(qp_file):

@@ -1,14 +1,14 @@
 arrays:
   array|forces:
-  - 8
+  - null
   - 2
   - 3
   array|positions:
-  - 8
+  - null
   - 2
   - 3
   array|stress:
-  - 3
+  - null
   - 3
 results:
   distance_units: Angstroms

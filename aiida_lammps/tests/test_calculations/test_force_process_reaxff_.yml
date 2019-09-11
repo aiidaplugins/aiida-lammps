@@ -1,9 +1,7 @@
 arrays:
   array|charges:
-  - 1
   - 12
   array|forces:
-  - 1
   - 12
   - 3
 results:

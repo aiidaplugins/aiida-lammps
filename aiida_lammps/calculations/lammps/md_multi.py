@@ -23,7 +23,6 @@ def sys_info_commands(
 
     if "step" not in variables:
         # always include 'step', so we can sync with the `dump` data
-        # NOTE `dump` includes step 0, whereas `print` starts from step 1
         variables.insert(0, "step")
 
     var_aliases = []
@@ -55,8 +54,31 @@ def atom_info_commands(
     version_date,
     dump_name="atom_info",
     append=True,
+    pbc=True,
 ):
-    """Create commands to output required atom variables to a file."""
+    """Create commands to output required atom variables to a file.
+
+    Parameters
+    ----------
+    kind_symbols : list[str]
+        atom symbols per type
+    atom_style : str
+        style of atoms e.g. charge
+    dump_rate : int
+    filename : str
+    version_date : timedate
+    dump_name : str
+    append : bool
+        Dump snapshots to the end of the dump file (if it exists).
+    pbc : bool
+         Ensure all atoms are remapped to the periodic box,
+         before the snapshot is written.
+
+    Returns
+    -------
+    list[str]
+
+    """
     commands = []
 
     if atom_style == "charge":
@@ -73,6 +95,9 @@ def atom_info_commands(
     )
     if append:
         commands.append("dump_modify     {0} append yes".format(dump_name))
+    # if pbc:
+    # this is not available in older versions of lammps
+    #     commands.append("dump_modify     {0} pbc yes".format(dump_name))
 
     if version_date <= convert_date_string("10 Feb 2015"):
         # TODO find exact version when changes were made

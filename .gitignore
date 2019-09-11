@@ -17,3 +17,4 @@ postgres*.log
 
 pip-wheel-metadata/
 example_inputs/
+pytest_workdir/

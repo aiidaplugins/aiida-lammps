@@ -5,6 +5,7 @@ results:
   errors: []
   parser_class: MdParser
   time_units: femtoseconds
+  timestep_picoseconds: 1.0e-06
   units_style: real
   warnings: ''
 system_data:
@@ -21,20 +22,18 @@ system_data:
   units_style: real
 trajectory_data:
   array|cells:
-  - 21
+  - 19
   - 3
   - 3
   array|charges:
-  - 21
+  - 19
   - 12
   array|positions:
-  - 21
+  - 19
   - 12
   - 3
   array|steps:
-  - 21
-  array|times:
-  - 21
+  - 19
   symbols:
   - Fe
   - Fe

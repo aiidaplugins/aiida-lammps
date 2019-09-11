@@ -5,6 +5,7 @@ results:
   errors: []
   parser_class: MdParser
   time_units: picoseconds
+  timestep_picoseconds: 0.001
   units_style: metal
   warnings: ''
 system_data:
@@ -19,17 +20,15 @@ system_data:
   units_style: metal
 trajectory_data:
   array|cells:
-  - 21
+  - 19
   - 3
   - 3
   array|positions:
-  - 21
+  - 19
   - 4
   - 3
   array|steps:
-  - 21
-  array|times:
-  - 21
+  - 19
   symbols:
   - Ga
   - Ga

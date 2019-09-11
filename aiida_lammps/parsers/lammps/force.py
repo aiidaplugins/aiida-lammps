@@ -1,27 +1,24 @@
+import numpy as np
+
 from aiida.orm import Dict, ArrayData
 
 from aiida_lammps.parsers.lammps.base import LAMMPSBaseParser
 from aiida_lammps.common.raw_parsers import (
-    read_lammps_positions_and_forces_txt,
+    iter_lammps_trajectories,
     get_units_dict,
+    TRAJ_BLOCK,  # noqa: F401
 )
 
 
 class ForceParser(LAMMPSBaseParser):
-    """
-    Simple Parser for LAMMPS.
-    """
+    """Parser for LAMMPS single point energy calculation."""
 
     def __init__(self, node):
-        """
-        Initialize the instance of Force LammpsParser
-        """
+        """Initialize the instance of Force Lammps Parser."""
         super(ForceParser, self).__init__(node)
 
     def parse(self, **kwargs):
-        """
-        Parses the datafolder, stores results.
-        """
+        """Parses the datafolder, stores results."""
         # retrieve resources
         resources, exit_code = self.get_parsing_resources(kwargs)
         if exit_code is not None:
@@ -33,21 +30,13 @@ class ForceParser(LAMMPSBaseParser):
         if exit_code is not None:
             return exit_code
 
-        # parse trajectory file
-        trajectory_txt = self.retrieved.get_object_content(trajectory_filename)
-        if not trajectory_txt:
-            self.logger.error("trajectory file empty")
-            return self.exit_codes.ERROR_TRAJ_PARSING
-        positions, forces, charges, symbols, cell2 = read_lammps_positions_and_forces_txt(
-            trajectory_txt
-        )
-
-        # save forces and stresses into node
-        array_data = ArrayData()
-        array_data.set_array("forces", forces)
-        if charges is not None:
-            array_data.set_array("charges", charges)
-        self.out("arrays", array_data)
+        traj_error = None
+        try:
+            array_data = self.parse_traj_file(trajectory_filename)
+            self.out("arrays", array_data)
+        except IOError as err:
+            self.logger.error(str(err))
+            traj_error = self.exit_codes.ERROR_TRAJ_PARSING
 
         # save results into node
         output_data = log_data["data"]
@@ -66,3 +55,36 @@ class ForceParser(LAMMPSBaseParser):
 
         if output_data["errors"]:
             return self.exit_codes.ERROR_LAMMPS_RUN
+
+        if traj_error:
+            return traj_error
+
+    def parse_traj_file(self, trajectory_filename):
+        with self.retrieved.open(trajectory_filename, "r") as handle:
+            traj_steps = list(iter_lammps_trajectories(handle))
+        if not traj_steps:
+            raise IOError("trajectory file empty")
+        if len(traj_steps) > 1:
+            raise IOError("trajectory file has multiple steps (expecting only one)")
+
+        traj_step = traj_steps[0]  # type: TRAJ_BLOCK
+
+        array_data = ArrayData()
+
+        try:
+            fx_idx = traj_step.field_names.index("fx")
+            fy_idx = traj_step.field_names.index("fy")
+            fz_idx = traj_step.field_names.index("fz")
+        except ValueError:
+            raise IOError("trajectory file does not contain fields fx fy fz")
+
+        forces = [[f[fx_idx], f[fy_idx], f[fz_idx]] for f in traj_step.fields]
+
+        array_data.set_array("forces", np.array(forces, dtype=float))
+
+        if "q" in traj_step.field_names:
+            q_idx = traj_step.field_names.index("q")
+            charges = [f[q_idx] for f in traj_step.fields]
+            array_data.set_array("charges", np.array(charges, dtype=float))
+
+        return array_data

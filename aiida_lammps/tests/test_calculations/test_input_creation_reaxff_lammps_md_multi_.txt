@@ -58,7 +58,7 @@ variable temp equal temp
 variable etotal equal etotal
 variable c_reax_1_ equal c_reax[1]
 fix sys_info all print 100 "1 ${step} ${temp} ${etotal} ${c_reax_1_}"  append sys_info.txt screen no
-restart         100 equilibrate-calc.restart
+restart         200 equilibrate-calc.restart
 fix             int all nvt temp 300 300 0.5 
 run             900
 

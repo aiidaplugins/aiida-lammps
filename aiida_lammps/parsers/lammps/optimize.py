@@ -1,27 +1,24 @@
+import numpy as np
+
 from aiida.orm import ArrayData, Dict, StructureData
 
 from aiida_lammps.parsers.lammps.base import LAMMPSBaseParser
 from aiida_lammps.common.raw_parsers import (
-    read_lammps_positions_and_forces_txt,
+    iter_lammps_trajectories,
     get_units_dict,
+    TRAJ_BLOCK,  # noqa: F401
 )
 
 
 class OptimizeParser(LAMMPSBaseParser):
-    """
-    Simple Optimize Parser for LAMMPS.
-    """
+    """Parser for LAMMPS optimization calculation."""
 
     def __init__(self, node):
-        """
-        Initialize the instance of Optimize LammpsParser
-        """
+        """Initialize the instance of Optimize Lammps Parser."""
         super(OptimizeParser, self).__init__(node)
 
     def parse(self, **kwargs):
-        """
-        Parses the datafolder, stores results.
-        """
+        """Parses the datafolder, stores results."""
         resources, exit_code = self.get_parsing_resources(kwargs)
         if exit_code is not None:
             return exit_code
@@ -31,28 +28,16 @@ class OptimizeParser(LAMMPSBaseParser):
         if exit_code is not None:
             return exit_code
 
-        trajectory_txt = self.retrieved.get_object_content(trajectory_filename)
-        if not trajectory_txt:
-            self.logger.error("trajectory file empty")
-            return self.exit_codes.ERROR_TRAJ_PARSING
-        positions, forces, charges, symbols, cell2 = read_lammps_positions_and_forces_txt(
-            trajectory_txt
-        )
-
-        # save optimized structure into node
-        structure = StructureData(cell=log_data["cell"])
-        for i, position in enumerate(positions[-1]):
-            structure.append_atom(position=position.tolist(), symbols=symbols[i])
-        self.out("structure", structure)
-
-        # save forces and stresses into node
-        array_data = ArrayData()
-        array_data.set_array("forces", forces)
-        array_data.set_array("stress", log_data["stress"])
-        array_data.set_array("positions", positions)
-        if charges is not None:
-            array_data.set_array("charges", charges)
-        self.out("arrays", array_data)
+        traj_error = None
+        try:
+            array_data, structure = self.parse_traj_file(
+                trajectory_filename, log_data["cell"], log_data["stress"]
+            )
+            self.out("structure", structure)
+            self.out("arrays", array_data)
+        except Exception as err:
+            self.logger.error(str(err))
+            traj_error = self.exit_codes.ERROR_TRAJ_PARSING
 
         # save results into node
         output_data = log_data["data"]
@@ -73,3 +58,60 @@ class OptimizeParser(LAMMPSBaseParser):
 
         if output_data["errors"]:
             return self.exit_codes.ERROR_LAMMPS_RUN
+
+        if traj_error:
+            return traj_error
+
+    def parse_traj_file(self, trajectory_filename, cell, stress):
+        with self.retrieved.open(trajectory_filename, "r") as handle:
+            traj_steps = list(iter_lammps_trajectories(handle))
+        if not traj_steps:
+            raise IOError("trajectory file empty")
+
+        forces = []
+        positions = []
+        elements = []
+        charges = []
+        for traj_step in traj_steps:  # type: TRAJ_BLOCK
+            if not set(traj_step.field_names).issuperset(
+                ["element", "x", "y", "z", "fx", "fy", "fz"]
+            ):
+                raise IOError(
+                    "trajectory step {} does not contain required fields".format(
+                        traj_step.timestep
+                    )
+                )
+
+            fmap = {n: i for i, n in enumerate(traj_step.field_names)}
+
+            positions.append(
+                [[f[fmap["x"]], f[fmap["y"]], f[fmap["z"]]] for f in traj_step.fields]
+            )
+            forces.append(
+                [
+                    [f[fmap["fx"]], f[fmap["fy"]], f[fmap["fz"]]]
+                    for f in traj_step.fields
+                ]
+            )
+            elements.append([f[fmap["element"]] for f in traj_step.fields])
+            if "q" in fmap:
+                charges.append([f[fmap["q"]] for f in traj_step.fields])
+
+        forces = np.array(forces, dtype=float)
+        positions = np.array(positions, dtype=float)
+
+        # save forces and stresses into node
+        array_data = ArrayData()
+        array_data.set_array("forces", forces)
+        array_data.set_array("stress", stress)
+        array_data.set_array("positions", positions)
+        if charges:
+            array_data.set_array("charges", np.array(charges, dtype=float))
+
+        # save optimized structure into node
+        # TODO clone input structure, then change cell and positions
+        structure = StructureData(cell=cell)
+        for element, position in zip(elements[-1], positions[-1]):
+            structure.append_atom(position=position.tolist(), symbols=element)
+
+        return array_data, structure

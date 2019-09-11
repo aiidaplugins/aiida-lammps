@@ -95,7 +95,7 @@ def get_calc_parameters(lammps_version, plugin_name, units, potential_type):
                         "constraints": {"temp": [300, 300, 0.5]},
                     },
                     "dump_rate": 100,
-                    "restart": 100,
+                    "restart": 200,
                 },
             ],
         }
@@ -329,11 +329,13 @@ def test_optimize_process(
         .strip()
         .replace("Warning: changed valency_val to valency_boc for X", "")
     )
+    arrays = calc_node.outputs.arrays.attributes
+    # optimization steps may differ between lammps versions
+    arrays = {
+        k: [None] + v[1:] if k.startswith("array|") else v for k, v in arrays.items()
+    }
     data_regression.check(
-        {
-            "results": tests.recursive_round(pdict, 1),
-            "arrays": calc_node.outputs.arrays.attributes,
-        }
+        {"results": tests.recursive_round(pdict, 1), "arrays": arrays}
     )
 
 
@@ -379,9 +381,10 @@ def test_md_process(db_test_app, get_potential_data, potential_type, data_regres
         .strip()
         .replace("Warning: changed valency_val to valency_boc for X", "")
     )
+    pdict["energy"] = round(pdict["energy"], 1)
     data_regression.check(
         {
-            "results": tests.recursive_round(pdict, 1),
+            "results": pdict,
             "system_data": calc_node.outputs.system_data.attributes,
             "trajectory_data": calc_node.outputs.trajectory_data.attributes,
         }
@@ -434,9 +437,10 @@ def test_md_multi_process(
         .strip()
         .replace("Warning: changed valency_val to valency_boc for X", "")
     )
+    pdict["energy"] = round(pdict["energy"], 1)
     data_regression.check(
         {
-            "results": tests.recursive_round(pdict, 1),
+            "results": pdict,
             "system_data": calc_node.outputs.system_data.attributes,
             "trajectory_data": calc_node.outputs.trajectory_data.attributes,
         }
