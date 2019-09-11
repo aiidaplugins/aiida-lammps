@@ -4,157 +4,6 @@ import numpy as np
 import six
 
 
-def parse_quasiparticle_data(qp_file):
-    import yaml
-
-    with open(qp_file, "r") as handle:
-        quasiparticle_data = yaml.load(handle)
-
-    data_dict = {}
-    for i, data in enumerate(quasiparticle_data):
-        data_dict["q_point_{}".format(i)] = data
-
-    return data_dict
-
-
-def parse_dynaphopy_output(file):
-
-    thermal_properties = None
-
-    with open(file, "r") as handle:
-        data_lines = handle.readlines()
-
-    indices = []
-    q_points = []
-    for i, line in enumerate(data_lines):
-        if "Q-point" in line:
-            #        print i, np.array(line.replace(']', '').replace('[', '').split()[4:8], dtype=float)
-            indices.append(i)
-            q_points.append(
-                np.array(
-                    line.replace("]", "").replace("[", "").split()[4:8], dtype=float
-                )
-            )
-
-    indices.append(len(data_lines))
-
-    phonons = {}
-    for i, index in enumerate(indices[:-1]):
-
-        fragment = data_lines[indices[i] : indices[i + 1]]
-        if "kipped" in fragment:
-            continue
-        phonon_modes = {}
-        for j, line in enumerate(fragment):
-            if "Peak" in line:
-                number = line.split()[2]
-                phonon_mode = {
-                    "width": float(fragment[j + 2].split()[1]),
-                    "positions": float(fragment[j + 3].split()[1]),
-                    "shift": float(fragment[j + 12].split()[2]),
-                }
-                phonon_modes.update({number: phonon_mode})
-
-            if "Thermal" in line:
-                free_energy = float(fragment[j + 4].split()[4])
-                entropy = float(fragment[j + 5].split()[3])
-                cv = float(fragment[j + 6].split()[3])
-                total_energy = float(fragment[j + 7].split()[4])
-
-                temperature = float(fragment[j].split()[5].replace("(", ""))
-
-                thermal_properties = {
-                    "temperature": temperature,
-                    "free_energy": free_energy,
-                    "entropy": entropy,
-                    "cv": cv,
-                    "total_energy": total_energy,
-                }
-
-        phonon_modes.update({"q_point": q_points[i].tolist()})
-
-        phonons.update({"wave_vector_" + str(i): phonon_modes})
-
-    return thermal_properties
-
-
-def read_lammps_forces(file_name):
-
-    # Time in picoseconds
-    # Coordinates in Angstroms
-
-    # Starting reading
-
-    # Dimensionality of LAMMP calculation
-    number_of_dimensions = 3
-
-    cells = []
-
-    with open(file_name, "r+") as f:
-
-        file_map = mmap.mmap(f.fileno(), 0)
-
-        # Read time steps
-        position_number = file_map.find("TIMESTEP")
-
-        file_map.seek(position_number)
-        file_map.readline()
-
-        # Read number of atoms
-        position_number = file_map.find("NUMBER OF ATOMS")
-        file_map.seek(position_number)
-        file_map.readline()
-        number_of_atoms = int(file_map.readline())
-
-        # Read cell
-        position_number = file_map.find("ITEM: BOX")
-        file_map.seek(position_number)
-        file_map.readline()
-
-        bounds = []
-        for i in range(3):
-            bounds.append(file_map.readline().split())
-
-        bounds = np.array(bounds, dtype=float)
-        if bounds.shape[1] == 2:
-            bounds = np.append(bounds, np.array([0, 0, 0])[None].T, axis=1)
-
-        xy = bounds[0, 2]
-        xz = bounds[1, 2]
-        yz = bounds[2, 2]
-
-        xlo = bounds[0, 0] - np.min([0.0, xy, xz, xy + xz])
-        xhi = bounds[0, 1] - np.max([0.0, xy, xz, xy + xz])
-        ylo = bounds[1, 0] - np.min([0.0, yz])
-        yhi = bounds[1, 1] - np.max([0.0, yz])
-        zlo = bounds[2, 0]
-        zhi = bounds[2, 1]
-
-        super_cell = np.array(
-            [[xhi - xlo, xy, xz], [0, yhi - ylo, yz], [0, 0, zhi - zlo]]
-        )
-
-        cells.append(super_cell.T)
-
-        position_number = file_map.find("ITEM: ATOMS")
-        file_map.seek(position_number)
-        file_map.readline()
-
-        # Reading forces
-        forces = []
-        read_elements = []
-        for i in range(number_of_atoms):
-            line = file_map.readline().split()[0 : number_of_dimensions + 1]
-            forces.append(line[1 : number_of_dimensions + 1])
-            read_elements.append(line[0])
-
-    file_map.close()
-
-    forces = np.array([forces], dtype=float)
-
-    return forces
-
-
 def read_log_file(logdata_txt, compute_stress=False):
     """ read the log.lammps file """
     # Dimensionality of LAMMP calculation
@@ -205,80 +54,6 @@ def read_log_file(logdata_txt, compute_stress=False):
     return {"data": data_dict, "cell": cell, "stress": stress}
 
 
-def read_lammps_trajectory_txt(
-    data_txt, limit_number_steps=100000000, initial_cut=1, timestep=1
-):
-
-    # Dimensionality of LAMMP calculation
-    number_of_dimensions = 3
-
-    blocks = [m.start() for m in re.finditer("TIMESTEP", data_txt)]
-    blocks = [(blocks[i], blocks[i + 1]) for i in range(len(blocks) - 1)]
-
-    blocks = blocks[initial_cut : initial_cut + limit_number_steps]
-
-    step_ids = []
-    position_list = []
-
-    read_elements = None
-    cells = []
-
-    time_steps = []
-    for ini, end in blocks:
-        # Read number of atoms
-        block_lines = data_txt[ini:end].split("\n")
-        id = block_lines.index("TIMESTEP")
-        time_steps.append(block_lines[id + 1])
-
-        id = get_index("NUMBER OF ATOMS", block_lines)
-        number_of_atoms = int(block_lines[id + 1])
-
-        id = get_index("ITEM: BOX", block_lines)
-        bounds = [line.split() for line in block_lines[id + 1 : id + 4]]
-        bounds = np.array(bounds, dtype=float)
-        if bounds.shape[1] == 2:
-            bounds = np.append(bounds, np.array([0, 0, 0])[None].T, axis=1)
-
-        xy = bounds[0, 2]
-        xz = bounds[1, 2]
-        yz = bounds[2, 2]
-
-        xlo = bounds[0, 0] - np.min([0.0, xy, xz, xy + xz])
-        xhi = bounds[0, 1] - np.max([0.0, xy, xz, xy + xz])
-        ylo = bounds[1, 0] - np.min([0.0, yz])
-        yhi = bounds[1, 1] - np.max([0.0, yz])
-        zlo = bounds[2, 0]
-        zhi = bounds[2, 1]
-
-        super_cell = np.array(
-            [[xhi - xlo, xy, xz], [0, yhi - ylo, yz], [0, 0, zhi - zlo]]
-        )
-        cell = super_cell.T
-
-        # id = [i for i, s in enumerate(block_lines) if 'ITEM: BOX BOUNDS' in s][0]
-
-        # Reading positions
-        id = get_index("ITEM: ATOMS", block_lines)
-
-        positions = []
-        read_elements = []
-        for i in range(number_of_atoms):
-            line = block_lines[id + i + 1].split()
-            positions.append(line[1 : number_of_dimensions + 1])
-            read_elements.append(line[0])
-
-        position_list.append(positions)
-        cells.append(cell)
-
-    positions = np.array(position_list, dtype=float)
-    step_ids = np.array(time_steps, dtype=int)
-    cells = np.array(cells)
-    elements = np.array(read_elements)
-    time = np.array(step_ids) * float(timestep)
-
-    return positions, step_ids, cells, elements, time
-
-
 def read_lammps_trajectory(
     file_name,
     limit_number_steps=100000000,
@@ -297,7 +72,7 @@ def read_lammps_trajectory(
     # Time in picoseconds
     # Coordinates in Angstroms
 
-    # Dimensionality of LAMMP calculation
+    # Dimensionality of LAMMPS calculation
     number_of_dimensions = 3
 
     step_ids = []
@@ -415,87 +190,6 @@ def read_lammps_trajectory(
     return positions, charges, step_ids, cells, elements, time
 
 
-def read_lammps_positions_and_forces(file_name):
-
-    # Time in picoseconds
-    # Coordinates in Angstroms
-
-    # Starting reading
-
-    # Dimensionality of LAMMP calculation
-    number_of_dimensions = 3
-
-    with open(file_name, "r+") as f:
-
-        file_map = mmap.mmap(f.fileno(), 0)
-
-        # Read time steps
-        while True:
-            position_number = file_map.find("TIMESTEP")
-            try:
-                file_map.seek(position_number)
-                file_map.readline()
-            except ValueError:
-                break
-
-        # Read number of atoms
-        position_number = file_map.find("NUMBER OF ATOMS")
-        file_map.seek(position_number)
-        file_map.readline()
-        number_of_atoms = int(file_map.readline())
-
-        # Read cell
-        position_number = file_map.find("ITEM: BOX")
-        file_map.seek(position_number)
-        file_map.readline()
-
-        bounds = []
-        for i in range(3):
-            bounds.append(file_map.readline().split())
-
-        bounds = np.array(bounds, dtype=float)
-        if bounds.shape[1] == 2:
-            bounds = np.append(bounds, np.array([0, 0, 0])[None].T, axis=1)
-
-        xy = bounds[0, 2]
-        xz = bounds[1, 2]
-        yz = bounds[2, 2]
-
-        xlo = bounds[0, 0] - np.min([0.0, xy, xz, xy + xz])
-        xhi = bounds[0, 1] - np.max([0.0, xy, xz, xy + xz])
-        ylo = bounds[1, 0] - np.min([0.0, yz])
-        yhi = bounds[1, 1] - np.max([0.0, yz])
-        zlo = bounds[2, 0]
-        zhi = bounds[2, 1]
-
-        super_cell = np.array(
-            [[xhi - xlo, xy, xz], [0, yhi - ylo, yz], [0, 0, zhi - zlo]]
-        )
-
-        cell = super_cell.T
-
-        position_number = file_map.find("ITEM: ATOMS")
-        file_map.seek(position_number)
-        file_map.readline()
-
-        # Reading positions
-        positions = []
-        forces = []
-        read_elements = []
-        for i in range(number_of_atoms):
-            line = file_map.readline().split()[0 : number_of_dimensions * 2 + 1]
-            positions.append(line[1 : number_of_dimensions + 1])
-            forces.append(line[1 + number_of_dimensions : number_of_dimensions * 2 + 1])
-            read_elements.append(line[0])
-
-    file_map.close()
-
-    positions = np.array([positions])
-    forces = np.array([forces], dtype=float)
-
-    return positions, forces, read_elements, cell
-
-
 def get_index(string, lines):
     for i, item in enumerate(lines):
         if string in item:
@@ -508,7 +202,7 @@ def read_lammps_positions_and_forces_txt(data_txt):
     where q is optional
     """
 
-    # Dimensionality of LAMMP calculation
+    # Dimensionality of LAMMPS calculation
     number_of_dimensions = 3
 
     block_start = [m.start() for m in re.finditer("TIMESTEP", data_txt)]
@@ -529,14 +223,14 @@ def read_lammps_positions_and_forces_txt(data_txt):
         # Read number of atoms
         block_lines = data_txt[ini:end].split("\n")
 
-        id = block_lines.index("TIMESTEP")
-        time_steps.append(block_lines[id + 1])
+        idx = block_lines.index("TIMESTEP")
+        time_steps.append(block_lines[idx + 1])
 
-        id = get_index("NUMBER OF ATOMS", block_lines)
-        number_of_atoms = int(block_lines[id + 1])
+        idx = get_index("NUMBER OF ATOMS", block_lines)
+        number_of_atoms = int(block_lines[idx + 1])
 
-        id = get_index("ITEM: BOX", block_lines)
-        bounds = [line.split() for line in block_lines[id + 1 : id + 4]]
+        idx = get_index("ITEM: BOX", block_lines)
+        bounds = [line.split() for line in block_lines[idx + 1 : idx + 4]]
         bounds = np.array(bounds, dtype=float)
         if bounds.shape[1] == 2:
             bounds = np.append(bounds, np.array([0, 0, 0])[None].T, axis=1)
@@ -560,15 +254,15 @@ def read_lammps_positions_and_forces_txt(data_txt):
         # id = [i for i, s in enumerate(block_lines) if 'ITEM: BOX BOUNDS' in s][0]
 
         # Reading positions
-        id = get_index("ITEM: ATOMS", block_lines)
-        field_names = block_lines[id].split()[2:]  # noqa: F841
+        idx = get_index("ITEM: ATOMS", block_lines)
+        field_names = block_lines[idx].split()[2:]  # noqa: F841
 
         positions = []
         forces = []
         charges = []
         read_elements = []
         for i in range(number_of_atoms):
-            fields = block_lines[id + i + 1].split()
+            fields = block_lines[idx + i + 1].split()
             positions.append(fields[1 : number_of_dimensions + 1])
             forces.append(
                 fields[1 + number_of_dimensions : number_of_dimensions * 2 + 1]
@@ -717,3 +411,77 @@ def get_units_dict(style, quantities):
     for quantity in quantities:
         out_dict[quantity + "_units"] = units_dict[style][quantity]
     return out_dict
+
+
+def parse_quasiparticle_data(qp_file):
+    import yaml
+
+    with open(qp_file, "r") as handle:
+        quasiparticle_data = yaml.load(handle)
+
+    data_dict = {}
+    for i, data in enumerate(quasiparticle_data):
+        data_dict["q_point_{}".format(i)] = data
+
+    return data_dict
+
+
+def parse_dynaphopy_output(file):
+
+    thermal_properties = None
+
+    with open(file, "r") as handle:
+        data_lines = handle.readlines()
+
+    indices = []
+    q_points = []
+    for i, line in enumerate(data_lines):
+        if "Q-point" in line:
+            #        print i, np.array(line.replace(']', '').replace('[', '').split()[4:8], dtype=float)
+            indices.append(i)
+            q_points.append(
+                np.array(
+                    line.replace("]", "").replace("[", "").split()[4:8], dtype=float
+                )
+            )
+
+    indices.append(len(data_lines))
+
+    phonons = {}
+    for i, index in enumerate(indices[:-1]):
+
+        fragment = data_lines[indices[i] : indices[i + 1]]
+        if "kipped" in fragment:
+            continue
+        phonon_modes = {}
+        for j, line in enumerate(fragment):
+            if "Peak" in line:
+                number = line.split()[2]
+                phonon_mode = {
+                    "width": float(fragment[j + 2].split()[1]),
+                    "positions": float(fragment[j + 3].split()[1]),
+                    "shift": float(fragment[j + 12].split()[2]),
+                }
+                phonon_modes.update({number: phonon_mode})
+
+            if "Thermal" in line:
+                free_energy = float(fragment[j + 4].split()[4])
+                entropy = float(fragment[j + 5].split()[3])
+                cv = float(fragment[j + 6].split()[3])
+                total_energy = float(fragment[j + 7].split()[4])
+
+                temperature = float(fragment[j].split()[5].replace("(", ""))
+
+                thermal_properties = {
+                    "temperature": temperature,
+                    "free_energy": free_energy,
+                    "entropy": entropy,
+                    "cv": cv,
+                    "total_energy": total_energy,
+                }
+
+        phonon_modes.update({"q_point": q_points[i].tolist()})
+
+        phonons.update({"wave_vector_" + str(i): phonon_modes})
+
+    return thermal_properties
