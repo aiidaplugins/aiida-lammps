@@ -30,7 +30,7 @@ def get_supercell(structure, supercell_shape):
     return supercell
 
 
-def get_FORCE_CONSTANTS_txt(force_constants):
+def get_force_constants(force_constants):
 
     force_constants = force_constants.get_array("force_constants")
 
@@ -100,9 +100,7 @@ class BaseLammpsCalculation(CalcJob):
     _DEFAULT_OUTPUT_INFO_FILE_NAME = "system_info.dump"
     _DEFAULT_OUTPUT_RESTART_FILE_NAME = "lammps.restart"
 
-    _retrieve_list = []
-    _retrieve_temporary_list = []
-    _cmdline_params = ["-in", _INPUT_FILE_NAME]
+    _cmdline_params = ("-in", _INPUT_FILE_NAME)
     _stdout_name = None
 
     @classmethod
@@ -122,7 +120,7 @@ class BaseLammpsCalculation(CalcJob):
             default=cls._DEFAULT_OUTPUT_FILE_NAME,
         )
         spec.input(
-            "metadata.options.trajectory_name",
+            "metadata.options.trajectory_suffix",
             valid_type=six.string_types,
             default=cls._DEFAULT_TRAJECTORY_FILE_NAME,
         )
@@ -144,8 +142,6 @@ class BaseLammpsCalculation(CalcJob):
             help="the data extracted from the main output file",
         )
         spec.default_output_node = "results"
-
-        # TODO review aiidateam/aiida_core#2997, when closed, for exit code formalization
 
         # Unrecoverable errors: resources like the retrieved folder or its expected contents are missing
         spec.exit_code(
@@ -216,6 +212,9 @@ class BaseLammpsCalculation(CalcJob):
     def prepare_extra_files(self, tempfolder, potential_object):
         return True
 
+    def get_retrieve_lists(self):
+        return [], []
+
     @staticmethod
     def create_main_input_content(
         parameter_data,
@@ -263,7 +262,7 @@ class BaseLammpsCalculation(CalcJob):
             potential_data=self.inputs.potential,
             kind_symbols=[kind.symbol for kind in self.inputs.structure.kinds],
             structure_filename=self._INPUT_STRUCTURE,
-            trajectory_filename=self.options.trajectory_name,
+            trajectory_filename=self.options.trajectory_suffix,
             info_filename=self.options.info_filename,
             restart_filename=self.options.restart_filename,
         )
@@ -274,6 +273,10 @@ class BaseLammpsCalculation(CalcJob):
             infile.write(input_txt)
 
         self.validate_parameters(parameters, self.inputs.potential)
+        retrieve_list, retrieve_temporary_list = self.get_retrieve_lists()
+        retrieve_list.extend(
+            [self.options.output_filename, self.options.cell_transform_filename]
+        )
 
         # prepare extra files if needed
         self.prepare_extra_files(tempfolder, self.inputs.potential)
@@ -292,18 +295,15 @@ class BaseLammpsCalculation(CalcJob):
         # ============================ calcinfo ================================
 
         codeinfo = CodeInfo()
-        codeinfo.cmdline_params = self._cmdline_params
+        codeinfo.cmdline_params = list(self._cmdline_params)
         codeinfo.code_uuid = self.inputs.code.uuid
         codeinfo.withmpi = False  # Set lammps openmpi environment properly
         codeinfo.stdout_name = self._stdout_name
 
         calcinfo = CalcInfo()
         calcinfo.uuid = self.uuid
-        calcinfo.retrieve_list = self._retrieve_list + [
-            self.options.output_filename,
-            self.options.cell_transform_filename,
-        ]
-        calcinfo.retrieve_temporary_list = self._retrieve_temporary_list
+        calcinfo.retrieve_list = retrieve_list
+        calcinfo.retrieve_temporary_list = retrieve_temporary_list
         calcinfo.codes_info = [codeinfo]
 
         return calcinfo

@@ -6,117 +6,6 @@ from aiida_lammps.validation import validate_against_schema
 import six
 
 
-def sys_info_commands(
-    stage_id,
-    variables,
-    dump_rate,
-    filename,
-    fix_name="sys_info",
-    append=True,
-    print_header=True,
-):
-    """Create commands to output required system variables to a file."""
-    commands = []
-
-    if not variables:
-        return commands
-
-    if "step" not in variables:
-        # always include 'step', so we can sync with the `dump` data
-        variables.insert(0, "step")
-
-    var_aliases = []
-    for var in variables:
-        var_alias = var.replace("[", "_").replace("]", "_")
-        var_aliases.append(var_alias)
-        commands.append("variable {0} equal {1}".format(var_alias, var))
-
-    commands.append(
-        'fix {0} all print {1} "{2} {3}" {4} {5} {6} screen no'.format(
-            fix_name,
-            dump_rate,
-            stage_id,
-            " ".join(["${{{0}}}".format(v) for v in var_aliases]),
-            'title "stage_id {}"'.format(" ".join(var_aliases)) if print_header else "",
-            "append" if append else "file",
-            filename,
-        )
-    )
-
-    return commands
-
-
-def atom_info_commands(
-    kind_symbols,
-    atom_style,
-    dump_rate,
-    filename,
-    version_date,
-    dump_name="atom_info",
-    append=True,
-    pbc=True,
-):
-    """Create commands to output required atom variables to a file.
-
-    Parameters
-    ----------
-    kind_symbols : list[str]
-        atom symbols per type
-    atom_style : str
-        style of atoms e.g. charge
-    dump_rate : int
-    filename : str
-    version_date : timedate
-    dump_name : str
-    append : bool
-        Dump snapshots to the end of the dump file (if it exists).
-    pbc : bool
-         Ensure all atoms are remapped to the periodic box,
-         before the snapshot is written.
-
-    Returns
-    -------
-    list[str]
-
-    """
-    commands = []
-
-    if atom_style == "charge":
-        dump_variables = "element x y z q"
-        dump_format = "%4s  %16.10f %16.10f %16.10f %16.10f"
-    else:
-        dump_variables = "element x y z"
-        dump_format = "%4s  %16.10f %16.10f %16.10f"
-
-    commands.append(
-        "dump            {0} all custom {1} {2} {3}".format(
-            dump_name, dump_rate, filename, dump_variables
-        )
-    )
-    if append:
-        commands.append("dump_modify     {0} append yes".format(dump_name))
-    # if pbc:
-    # this is not available in older versions of lammps
-    #     commands.append("dump_modify     {0} pbc yes".format(dump_name))
-
-    if version_date <= convert_date_string("10 Feb 2015"):
-        # TODO find exact version when changes were made
-        dump_mod_cmnd = "format"
-    else:
-        dump_mod_cmnd = "format line"
-
-    commands.extend(
-        [
-            'dump_modify     {0} {1} "{2}"'.format(
-                dump_name, dump_mod_cmnd, dump_format
-            ),
-            "dump_modify     {0} sort id".format(dump_name),
-            "dump_modify     {0} element {1}".format(dump_name, " ".join(kind_symbols)),
-        ]
-    )
-    return commands
-
-
 class MdMultiCalculation(BaseLammpsCalculation):
     """Run a multi-stage molecular dynamic simulation."""
 
@@ -127,21 +16,22 @@ class MdMultiCalculation(BaseLammpsCalculation):
         spec.input(
             "metadata.options.parser_name",
             valid_type=six.string_types,
-            default="lammps.md",
+            default="lammps.md.multi",
         )
         spec.default_output_port = "results"
 
-        spec.output(
-            "trajectory_data",
-            valid_type=DataFactory("array.trajectory"),
-            required=True,
-            help="atomic configuration data per dump step",
-        )
         spec.output(
             "system_data",
             valid_type=DataFactory("array"),
             required=False,
             help="selected system data per dump step",
+        )
+
+        spec.output_namespace(
+            "trajectory",
+            dynamic=True,
+            valid_type=DataFactory("array.trajectory"),
+            help="atomic configuration data per dump step of a stage",
         )
 
     @staticmethod
@@ -214,35 +104,54 @@ class MdMultiCalculation(BaseLammpsCalculation):
                 ),
             )
 
+        stage_names = []
         current_fixes = []
         current_dumps = []
+        current_computes = []
         print_sys_header = True
 
         for stage_id, stage_dict in enumerate(pdict.get("stages")):
 
-            lammps_input_file += "\n# Stage {}: {}\n".format(
-                stage_id, stage_dict.get("name")
-            )
+            stage_name = stage_dict.get("name")
+            if stage_name in stage_names:
+                raise ValueError("non-unique stage name: {}".format(stage_name))
+            stage_names.append(stage_name)
+
+            lammps_input_file += "\n# Stage {}: {}\n".format(stage_id, stage_name)
 
             # clear timestep
             # lammps_input_file += "reset_timestep  0\n"
 
-            # Clear fixes and dumps
+            # Clear fixes, dumps and computes
             for fix in current_fixes:
                 lammps_input_file += "unfix {}\n".format(fix)
             current_fixes = []
             for dump in current_dumps:
                 lammps_input_file += "undump {}\n".format(dump)
             current_dumps = []
+            for compute in current_computes:
+                lammps_input_file += "uncompute {}\n".format(compute)
+            current_computes = []
+
+            # Define Computes
+            for compute in stage_dict.get("computes", []):
+                c_id = compute["id"]
+                c_style = compute["style"]
+                c_args = " ".join([str(a) for a in compute.get("args", [])])
+                lammps_input_file += "compute         {0} all {1} {2}\n".format(
+                    c_id, c_style, c_args
+                )
+                current_computes.append(c_id)
 
             # Define File Outputs
             dump_rate = stage_dict.get("dump_rate", 0)
             if dump_rate:
                 atom_dump_cmnds = atom_info_commands(
+                    stage_dict.get("atom_variables", []),
                     kind_symbols,
                     potential_data.atom_style,
                     dump_rate,
-                    trajectory_filename,
+                    "{}-{}".format(stage_name, trajectory_filename),
                     version_date,
                     "atom_info",
                 )
@@ -252,7 +161,7 @@ class MdMultiCalculation(BaseLammpsCalculation):
 
                 sys_info_cmnds = sys_info_commands(
                     stage_id,
-                    pdict.get("output_variables", []),
+                    pdict.get("system_variables", []),
                     dump_rate,
                     info_filename,
                     "sys_info",
@@ -267,7 +176,7 @@ class MdMultiCalculation(BaseLammpsCalculation):
             if stage_dict.get("restart", 0):
                 lammps_input_file += "restart         {0} {1}\n".format(
                     stage_dict.get("restart", 0),
-                    "{}-{}".format(stage_dict.get("name", ""), restart_filename),
+                    "{}-{}".format(stage_name, restart_filename),
                 )
             else:
                 lammps_input_file += "restart         0\n"
@@ -318,10 +227,113 @@ class MdMultiCalculation(BaseLammpsCalculation):
                 )
             )
 
-        self._retrieve_list += []
-        if self.options.trajectory_name not in self._retrieve_temporary_list:
-            self._retrieve_temporary_list += [self.options.trajectory_name]
-        if self.options.info_filename not in self._retrieve_temporary_list:
-            self._retrieve_temporary_list += [self.options.info_filename]
-
         return True
+
+    def get_retrieve_lists(self):
+        return [], ["*-" + self.options.trajectory_suffix, self.options.info_filename]
+
+
+def sys_info_commands(
+    stage_id,
+    variables,
+    dump_rate,
+    filename,
+    fix_name="sys_info",
+    append=True,
+    print_header=True,
+):
+    """Create commands to output required system variables to a file."""
+    commands = []
+
+    if not variables:
+        return commands
+
+    if "step" not in variables:
+        # always include 'step', so we can sync with the `dump` data
+        variables.insert(0, "step")
+
+    var_aliases = []
+    for var in variables:
+        var_alias = var.replace("[", "_").replace("]", "_")
+        var_aliases.append(var_alias)
+        commands.append("variable {0} equal {1}".format(var_alias, var))
+
+    commands.append(
+        'fix {0} all print {1} "{2} {3}" {4} {5} {6} screen no'.format(
+            fix_name,
+            dump_rate,
+            stage_id,
+            " ".join(["${{{0}}}".format(v) for v in var_aliases]),
+            'title "stage_id {}"'.format(" ".join(var_aliases)) if print_header else "",
+            "append" if append else "file",
+            filename,
+        )
+    )
+
+    return commands
+
+
+def atom_info_commands(
+    variables,
+    kind_symbols,
+    atom_style,
+    dump_rate,
+    filename,
+    version_date,
+    dump_name="atom_info",
+    append=True,
+    pbc=True,
+):
+    """Create commands to output required atom variables to a file.
+
+    Parameters
+    ----------
+    variables : list[str]
+    kind_symbols : list[str]
+        atom symbols per type
+    atom_style : str
+        style of atoms e.g. charge
+    dump_rate : int
+    filename : str
+    version_date : timedate
+    dump_name : str
+    append : bool
+        Dump snapshots to the end of the dump file (if it exists).
+    pbc : bool
+         Ensure all atoms are remapped to the periodic box,
+         before the snapshot is written.
+
+    Returns
+    -------
+    list[str]
+
+    """
+    commands = []
+
+    if atom_style == "charge":
+        dump_variables = "element x y z q".split()
+    else:
+        dump_variables = "element x y z".split()
+
+    for variable in variables:
+        if variable not in dump_variables:
+            dump_variables.append(variable)
+
+    commands.append(
+        "dump            {0} all custom {1} {2} {3}".format(
+            dump_name, dump_rate, filename, " ".join(dump_variables)
+        )
+    )
+    if append:
+        commands.append("dump_modify     {0} append yes".format(dump_name))
+    # if pbc:
+    # this is not available in older versions of lammps
+    #     commands.append("dump_modify     {0} pbc yes".format(dump_name))
+
+    commands.extend(
+        [
+            "dump_modify     {0} sort id".format(dump_name),
+            "dump_modify     {0} element {1}".format(dump_name, " ".join(kind_symbols)),
+        ]
+    )
+    return commands

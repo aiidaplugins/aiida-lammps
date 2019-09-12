@@ -2,7 +2,7 @@
 
 from aiida.common.exceptions import InputValidationError
 from aiida_phonopy.common.raw_parsers import (
-    get_FORCE_CONSTANTS_txt,
+    get_force_constants,
     get_poscar_txt,
     get_FORCE_SETS_txt,
 )
@@ -126,7 +126,7 @@ class CombinateCalculation(BaseLammpsCalculation):
             infile.write(cell_txt)
 
         if force_constants is not None:
-            force_constants_txt = get_FORCE_CONSTANTS_txt(force_constants)
+            force_constants_txt = get_force_constants(force_constants)
             force_constants_filename = tempfolder.get_abs_path(
                 self._INPUT_FORCE_CONSTANTS
             )

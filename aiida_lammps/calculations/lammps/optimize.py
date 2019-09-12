@@ -170,9 +170,7 @@ class OptimizeCalculation(BaseLammpsCalculation):
         else:
             self.logger.log("No units defined, using:", potential_object.default_units)
 
-        # Update retrieve list
-        if self.options.trajectory_name not in self._retrieve_list:
-            self._retrieve_list += [self.options.trajectory_name]
-        self._retrieve_temporary_list += []
-
         return True
+
+    def get_retrieve_lists(self):
+        return [self.options.trajectory_suffix], []

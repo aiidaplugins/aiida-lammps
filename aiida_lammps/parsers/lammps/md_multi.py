@@ -1,3 +1,4 @@
+import os
 import traceback
 
 import numpy as np
@@ -8,12 +9,12 @@ from aiida_lammps.parsers.lammps.base import LAMMPSBaseParser
 from aiida_lammps.common.raw_parsers import convert_units, get_units_dict
 
 
-class MdParser(LAMMPSBaseParser):
-    """Parser for LAMMPS MD calculations."""
+class MdMultiParser(LAMMPSBaseParser):
+    """Parser for LAMMPS MDMulti calculations."""
 
     def __init__(self, node):
         """Initialize the instance of Lammps MD Parser."""
-        super(MdParser, self).__init__(node)
+        super(MdMultiParser, self).__init__(node)
 
     def parse(self, **kwargs):
         """Parse the retrieved folder and store results."""
@@ -32,8 +33,13 @@ class MdParser(LAMMPSBaseParser):
             traj_error = self.exit_codes.ERROR_TRAJ_FILE_MISSING
         else:
             try:
-                trajectory_data = self.parse_trajectory_file(resources.traj_paths[0])
-                self.out("trajectory_data", trajectory_data)
+                trajectories = {
+                    os.path.basename(traj_path).split("-")[
+                        0
+                    ]: self.parse_trajectory_file(traj_path)
+                    for traj_path in resources.traj_paths
+                }
+                self.out("trajectory", trajectories)
             except Exception as err:
                 traceback.print_exc()
                 self.logger.error(str(err))
@@ -57,6 +63,9 @@ class MdParser(LAMMPSBaseParser):
             "time",
             "picoseconds",
         )
+        output_data["stage_names"] = [
+            s["name"] for s in self.node.inputs.parameters.dict.stages
+        ]
         parameters_data = Dict(dict=output_data)
         self.out("results", parameters_data)
 

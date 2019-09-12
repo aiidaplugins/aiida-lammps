@@ -19,25 +19,27 @@ class OptimizeParser(LAMMPSBaseParser):
 
     def parse(self, **kwargs):
         """Parses the datafolder, stores results."""
-        resources, exit_code = self.get_parsing_resources(kwargs)
-        if exit_code is not None:
-            return exit_code
-        trajectory_filename, trajectory_filepath, info_filepath = resources
+        resources = self.get_parsing_resources(kwargs)
+        if resources.exit_code is not None:
+            return resources.exit_code
 
         log_data, exit_code = self.parse_log_file(compute_stress=True)
         if exit_code is not None:
             return exit_code
 
         traj_error = None
-        try:
-            array_data, structure = self.parse_traj_file(
-                trajectory_filename, log_data["cell"], log_data["stress"]
-            )
-            self.out("structure", structure)
-            self.out("arrays", array_data)
-        except Exception as err:
-            self.logger.error(str(err))
-            traj_error = self.exit_codes.ERROR_TRAJ_PARSING
+        if not resources.traj_paths:
+            traj_error = self.exit_codes.ERROR_TRAJ_FILE_MISSING
+        else:
+            try:
+                array_data, structure = self.parse_traj_file(
+                    resources.traj_paths[0], log_data["cell"], log_data["stress"]
+                )
+                self.out("structure", structure)
+                self.out("arrays", array_data)
+            except Exception as err:
+                self.logger.error(str(err))
+                traj_error = self.exit_codes.ERROR_TRAJ_PARSING
 
         # save results into node
         output_data = log_data["data"]

@@ -3,8 +3,8 @@ boundary        p p p
 box tilt large
 atom_style      atomic
 read_data       input.data
-pair_style  lj/cut 2.5
-pair_coeff 1  1    0.01029   3.4    2.5
+pair_style  lj/cut 3.5
+pair_coeff 1  1    0.01029   3.4    3.5
 neighbor        0.3 bin
 neigh_modify    every 1 delay 0 check no
 thermo_style custom step temp epair emol etotal press

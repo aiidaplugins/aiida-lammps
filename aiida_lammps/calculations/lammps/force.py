@@ -106,6 +106,6 @@ class ForceCalculation(BaseLammpsCalculation):
     def validate_parameters(self, param_data, potential_object):
         if param_data is not None:
             validate_against_schema(param_data.get_dict(), "force.schema.json")
-        if self.options.trajectory_name not in self._retrieve_list:
-            self._retrieve_list += [self.options.trajectory_name]
-        self._retrieve_temporary_list += []
+
+    def get_retrieve_lists(self):
+        return [self.options.trajectory_suffix], []

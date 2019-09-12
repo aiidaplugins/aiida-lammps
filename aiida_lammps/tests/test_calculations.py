@@ -67,7 +67,7 @@ def get_calc_parameters(lammps_version, plugin_name, units, potential_type):
             "timestep": 0.001,
             "neighbor": [0.3, "bin"],
             "neigh_modify": {"every": 1, "delay": 0, "check": False},
-            "output_variables": output_variables,
+            "system_variables": output_variables,
             "thermo_keywords": thermo_keywords,
             "velocity": [
                 {
@@ -96,6 +96,8 @@ def get_calc_parameters(lammps_version, plugin_name, units, potential_type):
                     },
                     "dump_rate": 100,
                     "restart": 200,
+                    "computes": [{"id": "cna", "style": "cna/atom", "args": [3.0]}],
+                    "atom_variables": ["c_cna"],
                 },
             ],
         }
@@ -425,7 +427,9 @@ def test_md_multi_process(
         raise Exception("finished with exit message: {}".format(calc_node.exit_message))
 
     link_labels = calc_node.get_outgoing().all_link_labels()
-    assert set(link_labels).issuperset(["results", "trajectory_data", "system_data"])
+    assert set(link_labels).issuperset(
+        ["results", "trajectory__thermalise", "trajectory__equilibrate", "system_data"]
+    )
 
     pdict = calc_node.outputs.results.get_dict()
     # assert set(pdict.keys()).issuperset(["warnings", "parser_class", "parser_version"])
@@ -442,6 +446,7 @@ def test_md_multi_process(
         {
             "results": pdict,
             "system_data": calc_node.outputs.system_data.attributes,
-            "trajectory_data": calc_node.outputs.trajectory_data.attributes,
+            "trajectory__thermalise": calc_node.outputs.trajectory__thermalise.attributes,
+            "trajectory__equilibrate": calc_node.outputs.trajectory__equilibrate.attributes,
         }
     )

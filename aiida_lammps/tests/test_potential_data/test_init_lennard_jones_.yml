@@ -2,5 +2,5 @@ allowed_element_names: null
 atom_style: atomic
 default_units: metal
 external_files: []
-md5|input_lines: ba2f62709eddc687159644c4e0325bd9
+md5|input_lines: 27889ffbbba1bd4b7a3d809d20e0040c
 potential_type: lennard_jones

@@ -255,7 +255,7 @@ def get_potential_data(get_structure_data):
             # Example LJ parameters for Argon. These may not be accurate at all
             pair_style = "lennard_jones"
             potential_dict = {
-                "1  1": "0.01029   3.4    2.5",
+                "1  1": "0.01029   3.4    3.5",
                 # '2  2':   '1.0      1.0    2.5',
                 # '1  2':   '1.0      1.0    2.5'
             }

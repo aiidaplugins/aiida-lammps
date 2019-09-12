@@ -18,15 +18,15 @@ system_data:
   units_style: metal
 trajectory_data:
   array|cells:
-  - 100
+  - 101
   - 3
   - 3
   array|positions:
-  - 100
+  - 101
   - 4
   - 3
   array|steps:
-  - 100
+  - 101
   symbols:
   - Ga
   - Ga

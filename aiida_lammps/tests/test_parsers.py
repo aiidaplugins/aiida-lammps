@@ -77,7 +77,11 @@ def test_missing_log(db_test_app, plugin_name):
 def test_missing_traj(db_test_app, plugin_name):
 
     retrieved = FolderData()
-    with retrieved.open("log.lammps", "w"):
+    with retrieved.open("log.lammps", "w") as handle:
+        handle.write(get_log())
+    with retrieved.open("_scheduler-stdout.txt", "w"):
+        pass
+    with retrieved.open("_scheduler-stderr.txt", "w"):
         pass
 
     calc_node = db_test_app.generate_calcjob_node(plugin_name, retrieved)

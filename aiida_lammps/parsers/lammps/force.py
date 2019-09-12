@@ -18,12 +18,11 @@ class ForceParser(LAMMPSBaseParser):
         super(ForceParser, self).__init__(node)
 
     def parse(self, **kwargs):
-        """Parses the datafolder, stores results."""
+        """Parse the retrieved files and store results."""
         # retrieve resources
-        resources, exit_code = self.get_parsing_resources(kwargs)
-        if exit_code is not None:
-            return exit_code
-        trajectory_filename, trajectory_filepath, info_filepath = resources
+        resources = self.get_parsing_resources(kwargs)
+        if resources.exit_code is not None:
+            return resources.exit_code
 
         # parse log file
         log_data, exit_code = self.parse_log_file()
@@ -31,12 +30,15 @@ class ForceParser(LAMMPSBaseParser):
             return exit_code
 
         traj_error = None
-        try:
-            array_data = self.parse_traj_file(trajectory_filename)
-            self.out("arrays", array_data)
-        except IOError as err:
-            self.logger.error(str(err))
-            traj_error = self.exit_codes.ERROR_TRAJ_PARSING
+        if not resources.traj_paths:
+            traj_error = self.exit_codes.ERROR_TRAJ_FILE_MISSING
+        else:
+            try:
+                array_data = self.parse_traj_file(resources.traj_paths[0])
+                self.out("arrays", array_data)
+            except IOError as err:
+                self.logger.error(str(err))
+                traj_error = self.exit_codes.ERROR_TRAJ_PARSING
 
         # save results into node
         output_data = log_data["data"]

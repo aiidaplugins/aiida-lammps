@@ -4,7 +4,7 @@ from aiida.common.exceptions import InputValidationError
 from aiida.common.datastructures import CalcInfo, CodeInfo
 from aiida.common.utils import classproperty
 
-from aiida_phonopy.common.raw_parsers import get_FORCE_CONSTANTS_txt, get_poscar_txt
+from aiida_phonopy.common.raw_parsers import get_force_constants, get_poscar_txt
 from aiida_lammps.common.generate_input_files import (
     get_trajectory_txt,
     parameters_to_input_file,
@@ -129,7 +129,7 @@ class DynaphopyCalculation(CalcJob):
 
         cell_txt = get_poscar_txt(structure)
         input_txt = parameters_to_input_file(parameters_data)
-        force_constants_txt = get_FORCE_CONSTANTS_txt(force_constants)
+        force_constants_txt = get_force_constants(force_constants)
         trajectory_txt = get_trajectory_txt(trajectory)
 
         # =========================== dump to file =============================

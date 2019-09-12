@@ -184,10 +184,7 @@ class MdCalculation(BaseLammpsCalculation):
                 )
             )
 
-        self._retrieve_list += []
-        if self.options.trajectory_name not in self._retrieve_temporary_list:
-            self._retrieve_temporary_list += [self.options.trajectory_name]
-        if self.options.info_filename not in self._retrieve_temporary_list:
-            self._retrieve_temporary_list += [self.options.info_filename]
-
         return True
+
+    def get_retrieve_lists(self):
+        return [], [self.options.trajectory_suffix, self.options.info_filename]

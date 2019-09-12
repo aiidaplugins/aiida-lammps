@@ -3,7 +3,10 @@ results:
   energy: -17.9
   energy_units: eV
   errors: []
-  parser_class: MdParser
+  parser_class: MdMultiParser
+  stage_names:
+  - thermalise
+  - equilibrate
   time_units: picoseconds
   timestep_picoseconds: 0.001
   units_style: metal
@@ -18,17 +21,36 @@ system_data:
   array|temp:
   - 19
   units_style: metal
-trajectory_data:
+trajectory__equilibrate:
+  array|c_cna:
+  - 10
+  - 4
   array|cells:
-  - 19
+  - 10
   - 3
   - 3
   array|positions:
-  - 19
+  - 10
   - 4
   - 3
   array|steps:
-  - 19
+  - 10
+  symbols:
+  - Ga
+  - Ga
+  - N
+  - N
+trajectory__thermalise:
+  array|cells:
+  - 11
+  - 3
+  - 3
+  array|positions:
+  - 11
+  - 4
+  - 3
+  array|steps:
+  - 11
   symbols:
   - Ga
   - Ga

@@ -30,9 +30,8 @@ velocity all create 300 12345 dist gaussian mom yes
 velocity all scale 300 
 
 # Stage 0: thermalise
-dump            atom_info all custom 10 output.traj element x y z q
+dump            atom_info all custom 10 thermalise-output.traj element x y z q
 dump_modify     atom_info append yes
-dump_modify     atom_info format line "%4s  %16.10f %16.10f %16.10f %16.10f"
 dump_modify     atom_info sort id
 dump_modify     atom_info element A B
 variable step equal step
@@ -48,9 +47,9 @@ run             100
 unfix sys_info
 unfix int
 undump atom_info
-dump            atom_info all custom 100 output.traj element x y z q
+compute         cna all cna/atom 3.0
+dump            atom_info all custom 100 equilibrate-output.traj element x y z q c_cna
 dump_modify     atom_info append yes
-dump_modify     atom_info format line "%4s  %16.10f %16.10f %16.10f %16.10f"
 dump_modify     atom_info sort id
 dump_modify     atom_info element A B
 variable step equal step
