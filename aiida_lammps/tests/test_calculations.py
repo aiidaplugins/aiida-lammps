@@ -73,7 +73,7 @@ def get_calc_parameters(lammps_version, plugin_name, units, potential_type):
                 {
                     "style": "create",
                     "args": [300, 12345],
-                    "keywords": {"dist": "gaussian", "mom": "yes"},
+                    "keywords": {"dist": "gaussian", "mom": True},
                 },
                 {"style": "scale", "args": [300]},
             ],

@@ -99,9 +99,7 @@ class MdMultiCalculation(BaseLammpsCalculation):
             lammps_input_file += "velocity all {0} {1} {2}\n".format(
                 vdict["style"],
                 " ".join([str(a) for a in vdict["args"]]),
-                " ".join(
-                    ["{} {}".format(k, v) for k, v in vdict.get("keywords", {}).items()]
-                ),
+                join_keywords(vdict.get("keywords", {})),
             )
 
         stage_names = []

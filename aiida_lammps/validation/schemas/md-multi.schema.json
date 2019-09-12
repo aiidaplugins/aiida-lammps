@@ -20,35 +20,19 @@
           ]
         },
         "sum": {
-          "type": "string",
-          "enum": [
-            "no",
-            "yes"
-          ]
+          "type": "boolean"
         },
         "mom": {
-          "type": "string",
-          "enum": [
-            "no",
-            "yes"
-          ]
+          "type": "boolean"
         },
         "rot": {
-          "type": "string",
-          "enum": [
-            "no",
-            "yes"
-          ]
+          "type": "boolean"
         },
         "temp": {
           "type": "string"
         },
         "bias": {
-          "type": "string",
-          "enum": [
-            "no",
-            "yes"
-          ]
+          "type": "boolean"
         },
         "loop": {
           "type": "string",
@@ -200,7 +184,7 @@
                   ]
                 },
                 "mtk": {
-                  "description": "",
+                  "description": "add in MTK adjustment term or not",
                   "type": "boolean"
                 },
                 "scalexy": {
@@ -218,6 +202,16 @@
                 "flip": {
                   "description": "allow or disallow box flips when it becomes highly skewed",
                   "type": "boolean"
+                },
+                "drag": {
+                  "description": "drag factor added to barostat/thermostat",
+                  "type": "number",
+                  "minimum": 0
+                },
+                "nreset": {
+                  "description": "reset reference cell every this many timesteps",
+                  "type": "integer",
+                  "minimum": 1
                 }
               }
             }

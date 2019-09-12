@@ -15,7 +15,7 @@ def convert_date_string(string):
 
 
 def convert_to_str(value):
-    """convert True/False to yes/no and all values to strongs"""
+    """convert True/False to yes/no and all values to strings"""
     if isinstance(value, bool):
         if value:
             return "yes"
