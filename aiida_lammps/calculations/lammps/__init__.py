@@ -297,7 +297,7 @@ class BaseLammpsCalculation(CalcJob):
         codeinfo = CodeInfo()
         codeinfo.cmdline_params = list(self._cmdline_params)
         codeinfo.code_uuid = self.inputs.code.uuid
-        codeinfo.withmpi = False  # Set lammps openmpi environment properly
+        codeinfo.withmpi = self.metadata.options.withmpi
         codeinfo.stdout_name = self._stdout_name
 
         calcinfo = CalcInfo()
