@@ -1,6 +1,6 @@
 results:
   distance_units: Angstroms
-  energy: -1018.2
+  energy: -1018.1
   energy_units: Kcal/mole
   errors: []
   parser_class: MdMultiParser
@@ -13,33 +13,33 @@ results:
   warnings: ''
 system_data:
   array|c_reax_1_:
-  - 19
+  - 41
   array|etotal:
-  - 19
+  - 41
   array|stage_id:
-  - 19
+  - 41
   array|step:
-  - 19
+  - 41
   array|temp:
-  - 19
+  - 41
   units_style: real
 trajectory__equilibrate:
   array|c_cna:
-  - 10
+  - 5
   - 12
   array|cells:
-  - 10
+  - 5
   - 3
   - 3
   array|positions:
-  - 10
+  - 5
   - 12
   - 3
   array|q:
-  - 10
+  - 5
   - 12
   array|steps:
-  - 10
+  - 5
   symbols:
   - Fe
   - Fe

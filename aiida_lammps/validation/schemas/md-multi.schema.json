@@ -99,7 +99,12 @@
           "type": "number",
           "minimum": 0
         },
-        "restart": {
+        "print_rate": {
+          "description": "record system information every x time steps",
+          "type": "number",
+          "minimum": 0
+        },
+        "restart_rate": {
           "description": "Write out a binary restart file with the current state of the simulation every x steps",
           "type": "integer",
           "minimum": 0
@@ -206,6 +211,28 @@
                 "drag": {
                   "description": "drag factor added to barostat/thermostat",
                   "type": "number",
+                  "minimum": 0,
+                  "default": 0
+                },
+                "tchain": {
+                  "description": "length of thermostat chain (1 = single thermostat)",
+                  "type": "integer",
+                  "minimum": 0,
+                  "default": 1
+                },
+                "pchain": {
+                  "description": "length of thermostat chain on barostat (0 = no thermostat)",
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "tloop": {
+                  "description": "number of sub-cycles to perform on thermostat",
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ploop": {
+                  "description": "number of sub-cycles to perform on barostat thermostat",
+                  "type": "integer",
                   "minimum": 0
                 },
                 "nreset": {

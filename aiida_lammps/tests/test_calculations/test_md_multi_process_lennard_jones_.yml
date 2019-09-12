@@ -1,6 +1,6 @@
 results:
   distance_units: Angstroms
-  energy: 0.1
+  energy: 0.0
   energy_units: eV
   errors: []
   parser_class: MdMultiParser
@@ -13,28 +13,28 @@ results:
   warnings: ''
 system_data:
   array|etotal:
-  - 19
+  - 41
   array|stage_id:
-  - 19
+  - 41
   array|step:
-  - 19
+  - 41
   array|temp:
-  - 19
+  - 41
   units_style: metal
 trajectory__equilibrate:
   array|c_cna:
-  - 10
+  - 5
   - 2
   array|cells:
-  - 10
+  - 5
   - 3
   - 3
   array|positions:
-  - 10
+  - 5
   - 2
   - 3
   array|steps:
-  - 10
+  - 5
   symbols:
   - Ar
   - Ar

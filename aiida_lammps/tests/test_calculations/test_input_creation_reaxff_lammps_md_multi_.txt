@@ -25,8 +25,6 @@ thermo          1000
 
 # Intial Atom Velocity
 velocity all create 300 12345 dist gaussian mom yes
-
-# Intial Atom Velocity
 velocity all scale 300 
 
 # Stage 0: thermalise
@@ -38,7 +36,7 @@ variable step equal step
 variable temp equal temp
 variable etotal equal etotal
 variable c_reax_1_ equal c_reax[1]
-fix sys_info all print 10 "0 ${step} ${temp} ${etotal} ${c_reax_1_}" title "stage_id step temp etotal c_reax_1_" append sys_info.txt screen no
+fix sys_info all print 100 "0 ${step} ${temp} ${etotal} ${c_reax_1_}" title "stage_id step temp etotal c_reax_1_" append sys_info.txt screen no
 restart         0
 fix             int all nvt temp 300 300 0.5 
 run             100
@@ -56,10 +54,10 @@ variable step equal step
 variable temp equal temp
 variable etotal equal etotal
 variable c_reax_1_ equal c_reax[1]
-fix sys_info all print 100 "1 ${step} ${temp} ${etotal} ${c_reax_1_}"  append sys_info.txt screen no
+fix sys_info all print 10 "1 ${step} ${temp} ${etotal} ${c_reax_1_}"  append sys_info.txt screen no
 restart         200 equilibrate-calc.restart
 fix             int all nvt temp 300 300 0.5 
-run             900
+run             400
 
 # Final Commands
 variable final_energy equal etotal

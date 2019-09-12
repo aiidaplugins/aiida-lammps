@@ -94,8 +94,9 @@ class MdMultiCalculation(BaseLammpsCalculation):
         lammps_input_file += "thermo          1000\n"  # TODO make variable?
 
         # Setup initial velocities of atoms
-        for vdict in pdict.get("velocity", []):
+        if "velocity" in pdict:
             lammps_input_file += "\n# Intial Atom Velocity\n"
+        for vdict in pdict.get("velocity", []):
             lammps_input_file += "velocity all {0} {1} {2}\n".format(
                 vdict["style"],
                 " ".join([str(a) for a in vdict["args"]]),
@@ -142,13 +143,12 @@ class MdMultiCalculation(BaseLammpsCalculation):
                 current_computes.append(c_id)
 
             # Define File Outputs
-            dump_rate = stage_dict.get("dump_rate", 0)
-            if dump_rate:
+            if stage_dict.get("dump_rate", 0):
                 atom_dump_cmnds = atom_info_commands(
                     stage_dict.get("atom_variables", []),
                     kind_symbols,
                     potential_data.atom_style,
-                    dump_rate,
+                    stage_dict.get("dump_rate", 0),
                     "{}-{}".format(stage_name, trajectory_filename),
                     version_date,
                     "atom_info",
@@ -157,10 +157,11 @@ class MdMultiCalculation(BaseLammpsCalculation):
                     lammps_input_file += "\n".join(atom_dump_cmnds) + "\n"
                     current_dumps.append("atom_info")
 
+            if stage_dict.get("print_rate", 0):
                 sys_info_cmnds = sys_info_commands(
                     stage_id,
                     pdict.get("system_variables", []),
-                    dump_rate,
+                    stage_dict.get("print_rate", 0),
                     info_filename,
                     "sys_info",
                     print_header=print_sys_header,
@@ -171,9 +172,9 @@ class MdMultiCalculation(BaseLammpsCalculation):
                     print_sys_header = False  # only print the header once
 
             # Define restart
-            if stage_dict.get("restart", 0):
+            if stage_dict.get("restart_rate", 0):
                 lammps_input_file += "restart         {0} {1}\n".format(
-                    stage_dict.get("restart", 0),
+                    stage_dict.get("restart_rate", 0),
                     "{}-{}".format(stage_name, restart_filename),
                 )
             else:
