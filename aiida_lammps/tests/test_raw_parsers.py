@@ -1,10 +1,15 @@
 import os
 
+import numpy as np
+
 from aiida_lammps.tests.utils import TEST_DIR
-from aiida_lammps.common.raw_parsers import iter_lammps_trajectories
+from aiida_lammps.common.raw_parsers import (
+    iter_lammps_trajectories,
+    parse_trajectory_file,
+)
 
 
-def test_read_lammps_trajectory():
+def test_iter_lammps_trajectories():
     path = os.path.join(TEST_DIR, "input_files", "trajectory.lammpstrj")
     with open(path) as handle:
         time_steps = [t.timestep for t in iter_lammps_trajectories(handle)]
@@ -31,3 +36,9 @@ def test_read_lammps_trajectory():
         900,
         1000,
     ]
+
+
+def test_parse_trajectory_file(data_regression):
+    path = os.path.join(TEST_DIR, "input_files", "trajectory.lammpstrj")
+    variables = parse_trajectory_file(path)
+    data_regression.check({k: np.array(v).shape for k, v in variables.items()})

@@ -1,4 +1,5 @@
 from collections import namedtuple
+import io
 import re
 import numpy as np
 
@@ -109,6 +110,79 @@ def iter_lammps_trajectories(file_obj):
             atom_fields.append(block_lines[atom_line + i + 1].split())
 
         yield TRAJ_BLOCK(time_step, number_of_atoms, cell, field_names, atom_fields)
+
+
+DEFAULT_TRAJ_SET_MAP = (
+    ("positions", ("x", "y", "z")),
+    ("positions_scaled", ("xs", "ys", "zs")),
+    ("positions_unwrapped", ("xu", "yu", "zu")),
+    ("positions_scaled_unwrapped", ("xsu", "ysu", "zsu")),
+    ("forces", ("fx", "fy", "fz")),
+    ("velocities", ("vx", "vy", "vz")),
+    ("velocities_angular", ("omegax", "omegay", "omegaz")),
+    ("momentums_angular", ("angmomx", "angmomy", "angmomz")),
+    ("torques", ("tqx", "tqy", "tqz")),
+    ("dipoles", ("mux", "muy", "muz")),
+)
+
+
+def parse_trajectory_file(trajectory_filepath, maximum_steps=1e6, sets_map=None):
+    """Parse a trajectory file."""
+
+    with io.open(trajectory_filepath, "r") as handle:
+        traj_steps = list(iter_lammps_trajectories(handle))
+    if not traj_steps:
+        raise IOError("trajectory file empty")
+
+    timesteps = []
+    cells = []
+    field_names = None
+    variables = {}
+    for i, traj_step in enumerate(traj_steps):
+
+        if i > maximum_steps:
+            raise IOError("reached maximum step limit: {}".format(maximum_steps))
+
+        # check for field name consistency
+        if field_names is None:
+            field_names = traj_step.field_names
+        elif traj_step.field_names != field_names:
+            raise IOError(
+                "trajectory step {} contains different field names: {}".format(
+                    traj_step.timestep, traj_step.field_names
+                )
+            )
+
+        cells.append(traj_step.cell)
+        timesteps.append(traj_step.timestep)
+
+        field_map = {n: i for i, n in enumerate(traj_step.field_names)}
+        for key in field_map:
+            variables.setdefault(key, []).append(
+                [f[field_map[key]] for f in traj_step.fields]
+            )
+
+    # group variables
+    sets_map = dict(DEFAULT_TRAJ_SET_MAP) if sets_map is None else sets_map
+    sets = {}
+    for set_name, set_vars in sets_map.items():
+        if set(set_vars).issubset(list(variables.keys())):
+            variables[set_name] = np.transpose(
+                [variables.pop(s_var) for s_var in set_vars], [1, 2, 0]
+            ).tolist()
+
+    variables["cells"] = cells
+    variables["timesteps"] = timesteps
+    intersection = set(list(variables.keys())).intersection(list(sets.keys()))
+    if intersection:
+        raise IOError(
+            "the created sets include keys that clash with the variables: {}".format(
+                intersection
+            )
+        )
+    variables.update(sets)
+
+    return variables
 
 
 def get_units_dict(style, quantities, suffix="_units"):

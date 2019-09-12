@@ -1,6 +1,5 @@
 from collections import namedtuple
 from fnmatch import fnmatch
-import io
 import os
 import traceback
 
@@ -11,7 +10,7 @@ from aiida.orm import TrajectoryData
 from aiida.common import exceptions
 
 from aiida_lammps import __version__ as aiida_lammps_version
-from aiida_lammps.common.raw_parsers import read_log_file, iter_lammps_trajectories
+from aiida_lammps.common.raw_parsers import read_log_file, parse_trajectory_file
 
 ParsingResources = namedtuple(
     "ParsingResources", ["exit_code", "sys_data_path", "traj_paths"]
@@ -121,65 +120,51 @@ class LAMMPSBaseParser(Parser):
         output_data["parser_version"] = aiida_lammps_version
 
     @staticmethod
-    def parse_trajectory_file(trajectory_filepath):
+    def parse_trajectory(
+        trajectory_filepath, input_structure, sets_map=None, dtype_map=None
+    ):
         """Parse a trajectory file."""
-        with io.open(trajectory_filepath, "r") as handle:
-            traj_steps = list(iter_lammps_trajectories(handle))
-        if not traj_steps:
-            raise IOError("trajectory file empty")
 
-        timesteps = []
-        cells = []
-        field_names = None
-        elements = None
-        positions = []
-        other = {}
-        for traj_step in traj_steps:
+        variables = parse_trajectory_file(trajectory_filepath, sets_map=sets_map)
 
-            if not set(traj_step.field_names).issuperset(["element", "x", "y", "z"]):
-                raise IOError(
-                    "trajectory step {} does not contain required fields".format(
-                        traj_step.timestep
-                    )
-                )
-            if field_names is None:
-                field_names = traj_step.field_names
-            elif traj_step.field_names != field_names:
-                raise IOError(
-                    "trajectory step {} contains different field names".format(
-                        traj_step.timestep
-                    )
-                )
-            fmap = {n: i for i, n in enumerate(traj_step.field_names)}
-            if elements is None:
-                elements = [f[fmap["element"]] for f in traj_step.fields]
-            elif elements != [f[fmap["element"]] for f in traj_step.fields]:
-                raise IOError(
-                    "trajectory step {} contains different elements".format(
-                        traj_step.timestep
-                    )
-                )
-            positions.append(
-                [[f[fmap["x"]], f[fmap["y"]], f[fmap["z"]]] for f in traj_step.fields]
+        if "element" not in variables:
+            raise IOError("trajectory does not contain element field")
+        if "positions" not in variables:
+            raise IOError(
+                "trajectory does not contain one or more of x, y and z fields"
             )
-            for key in fmap:
-                if key not in ["element", "x", "y", "z"]:
-                    other.setdefault(key, []).append(
-                        [f[fmap[key]] for f in traj_step.fields]
-                    )
+        elements = np.unique(variables.pop("element"), axis=0)
+        if len(elements) != 1:
+            raise IOError(
+                "trajectory element field is not equal for all steps: {}".format(
+                    elements.tolist()
+                )
+            )
 
-            cells.append(traj_step.cell)
-            timesteps.append(traj_step.timestep)
+        kind_names = input_structure.get_site_kindnames()
+        kind_elements = [input_structure.get_kind(n).symbol for n in kind_names]
+        if elements[0].tolist() != kind_elements:
+            raise IOError(
+                "trajectory elements are not equal to input structure symbols: {} != {}".format(
+                    elements[0].tolist(), kind_elements
+                )
+            )
 
         # save trajectories into node
         trajectory_data = TrajectoryData()
         trajectory_data.set_trajectory(
-            elements,
-            np.array(positions, dtype=float),
-            stepids=np.array(timesteps, dtype=int),
-            cells=np.array(cells),
+            kind_names,
+            np.array(variables.pop("positions"), dtype=float),
+            stepids=np.array(variables.pop("timesteps"), dtype=int),
+            cells=np.array(variables.pop("cells")),
         )
-        for key, val in other.items():
-            trajectory_data.set_array(key, np.array(val, dtype=float))
+        dtype_map = dtype_map or {}
+        for key, val in variables.items():
+            sanitized_key = key.replace("[", "_").replace("]", "_")
+            if key in dtype_map:
+                value = np.array(val, dtype=dtype_map[key])
+            else:
+                value = np.array(val)
+            trajectory_data.set_array(sanitized_key, value)
 
         return trajectory_data

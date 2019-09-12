@@ -24,8 +24,8 @@ class OptimizeCalculation(BaseLammpsCalculation):
             help="the structure output from the calculation",
         )
         spec.output(
-            "arrays",
-            valid_type=DataFactory("array"),
+            "trajectory_data",
+            valid_type=DataFactory("array.trajectory"),
             required=True,
             help="forces, stresses and positions data per step",
         )
@@ -66,30 +66,29 @@ class OptimizeCalculation(BaseLammpsCalculation):
         else:
             lammps_input_file += "compute         stpa all stress/atom NULL\n"
 
-            #  xx,       yy,        zz,       xy,       xz,       yz
         lammps_input_file += "compute         stgb all reduce sum c_stpa[1] c_stpa[2] c_stpa[3] c_stpa[4] c_stpa[5] c_stpa[6]\n"
         lammps_input_file += (
-            "variable        pr equal -(c_stgb[1]+c_stgb[2]+c_stgb[3])/(3*vol)\n"
+            "variable        stress_pr equal -(c_stgb[1]+c_stgb[2]+c_stgb[3])/(3*vol)\n"
         )
-        lammps_input_file += "variable        stress_xx equal c_stgb[1]\n"
-        lammps_input_file += "variable        stress_yy equal c_stgb[2]\n"
-        lammps_input_file += "variable        stress_zz equal c_stgb[3]\n"
-        lammps_input_file += "variable        stress_xy equal c_stgb[4]\n"
-        lammps_input_file += "variable        stress_xz equal c_stgb[5]\n"
-        lammps_input_file += "variable        stress_yz equal c_stgb[6]\n"
+        # lammps_input_file += "variable        stress_xx equal c_stgb[1]\n"
+        # lammps_input_file += "variable        stress_yy equal c_stgb[2]\n"
+        # lammps_input_file += "variable        stress_zz equal c_stgb[3]\n"
+        # lammps_input_file += "variable        stress_xy equal c_stgb[4]\n"
+        # lammps_input_file += "variable        stress_xz equal c_stgb[5]\n"
+        # lammps_input_file += "variable        stress_yz equal c_stgb[6]\n"
 
         thermo_keywords = [
             "step",
             "temp",
             "press",
-            "v_pr",
             "etotal",
-            "c_stgb[1]",
-            "c_stgb[2]",
-            "c_stgb[3]",
-            "c_stgb[4]",
-            "c_stgb[5]",
-            "c_stgb[6]",
+            "v_stress_pr",
+            # "c_stgb[1]",
+            # "c_stgb[2]",
+            # "c_stgb[3]",
+            # "c_stgb[4]",
+            # "c_stgb[5]",
+            # "c_stgb[6]",
         ]
         for kwd in parameter_data.get("thermo_keywords", []):
             if kwd not in thermo_keywords:
@@ -99,13 +98,11 @@ class OptimizeCalculation(BaseLammpsCalculation):
         )
 
         if potential_data.atom_style == "charge":
-            dump_variables = "element x y z  fx fy fz q"
-            dump_format = (
-                "%4s  %16.10f %16.10f %16.10f  %16.10f %16.10f %16.10f %16.10f"
-            )
+            dump_variables = "element x y z  fx fy fz q c_stpa[1] c_stpa[2] c_stpa[3] c_stpa[4] c_stpa[5] c_stpa[6]"
+            dump_format = "%4s " + " ".join(["%16.10f"] * 13)
         else:
-            dump_variables = "element x y z  fx fy fz"
-            dump_format = "%4s  %16.10f %16.10f %16.10f  %16.10f %16.10f %16.10f"
+            dump_variables = "element x y z  fx fy fz c_stpa[1] c_stpa[2] c_stpa[3] c_stpa[4] c_stpa[5] c_stpa[6]"
+            dump_format = "%4s " + " ".join(["%16.10f"] * 12)
 
         lammps_input_file += "dump            aiida all custom 1 {0} {1}\n".format(
             trajectory_filename, dump_variables
@@ -147,8 +144,9 @@ class OptimizeCalculation(BaseLammpsCalculation):
         lammps_input_file += "variable final_energy equal etotal\n"
         lammps_input_file += 'print "final_energy: ${final_energy}"\n'
 
-        lammps_input_file += 'print "final_cell: $(xlo) $(xhi) $(xy) $(ylo) $(yhi) $(xz) $(zlo) $(zhi) $(yz)"\n'
-        lammps_input_file += 'print "final_stress: ${stress_xx} ${stress_yy} ${stress_zz} ${stress_xy} ${stress_xz} ${stress_yz}"\n'
+        # lammps_input_file += 'print "final_variable: stress_pr = ${stress_pr}"\n'
+        # lammps_input_file += 'print "final_cell: $(xlo) $(xhi) $(xy) $(ylo) $(yhi) $(xz) $(zlo) $(zhi) $(yz)"\n'
+        # lammps_input_file += 'print "final_stress: ${stress_xx} ${stress_yy} ${stress_zz} ${stress_xy} ${stress_xz} ${stress_yz}"\n'
 
         return lammps_input_file
 
@@ -173,4 +171,4 @@ class OptimizeCalculation(BaseLammpsCalculation):
         return True
 
     def get_retrieve_lists(self):
-        return [self.options.trajectory_suffix], []
+        return [], [self.options.trajectory_suffix]

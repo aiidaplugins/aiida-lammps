@@ -36,8 +36,8 @@ trajectory__equilibrate:
   array|steps:
   - 10
   symbols:
-  - Fe
-  - Fe
+  - Fe1
+  - Fe2
 trajectory__thermalise:
   array|cells:
   - 11
@@ -50,5 +50,5 @@ trajectory__thermalise:
   array|steps:
   - 11
   symbols:
-  - Fe
-  - Fe
+  - Fe1
+  - Fe2

@@ -34,9 +34,11 @@ class MdMultiParser(LAMMPSBaseParser):
         else:
             try:
                 trajectories = {
-                    os.path.basename(traj_path).split("-")[
-                        0
-                    ]: self.parse_trajectory_file(traj_path)
+                    os.path.basename(traj_path).split("-")[0]: self.parse_trajectory(
+                        traj_path,
+                        self.node.inputs.structure,
+                        dtype_map={"forces": float, "q": float},
+                    )
                     for traj_path in resources.traj_paths
                 }
                 self.out("trajectory", trajectories)
@@ -57,15 +59,16 @@ class MdMultiParser(LAMMPSBaseParser):
             self.logger.warning("units missing in log")
         self.add_warnings_and_errors(output_data)
         self.add_standard_info(output_data)
-        output_data["timestep_picoseconds"] = convert_units(
-            self.node.inputs.parameters.dict.timestep,
-            output_data["units_style"],
-            "time",
-            "picoseconds",
-        )
-        output_data["stage_names"] = [
-            s["name"] for s in self.node.inputs.parameters.dict.stages
-        ]
+        if "parameters" in self.node.get_incoming().all_link_labels():
+            output_data["timestep_picoseconds"] = convert_units(
+                self.node.inputs.parameters.dict.timestep,
+                output_data["units_style"],
+                "time",
+                "picoseconds",
+            )
+            output_data["stage_names"] = [
+                s["name"] for s in self.node.inputs.parameters.dict.stages
+            ]
         parameters_data = Dict(dict=output_data)
         self.out("results", parameters_data)
 

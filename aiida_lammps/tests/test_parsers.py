@@ -43,20 +43,17 @@ def get_traj_force():
 
 
 @pytest.mark.parametrize(
-    "plugin_name",
-    [
-        "lammps.force",
-        "lammps.optimize",
-        # "lammps.md", # requires retrieved_temporary_folder (awaiting aiidateam/aiida_core#3061)
-    ],
+    "plugin_name", ["lammps.force", "lammps.optimize", "lammps.md", "lammps.md.multi"]
 )
 def test_missing_log(db_test_app, plugin_name):
 
     retrieved = FolderData()
 
     calc_node = db_test_app.generate_calcjob_node(plugin_name, retrieved)
-    parser = db_test_app.get_parser_cls(plugin_name)
-    results, calcfunction = parser.parse_from_node(calc_node)
+    with db_test_app.sandbox_folder() as temp_path:
+        results, calcfunction = db_test_app.parse_from_node(
+            plugin_name, calc_node, temp_path.abspath
+        )
 
     assert calcfunction.is_finished, calcfunction.exception
     assert calcfunction.is_failed, calcfunction.exit_status
@@ -67,12 +64,7 @@ def test_missing_log(db_test_app, plugin_name):
 
 
 @pytest.mark.parametrize(
-    "plugin_name",
-    [
-        "lammps.force",
-        "lammps.optimize",
-        # "lammps.md", # requires retrieved_temporary_folder (awaiting aiidateam/aiida_core#3061)
-    ],
+    "plugin_name", ["lammps.force", "lammps.optimize", "lammps.md", "lammps.md.multi"]
 )
 def test_missing_traj(db_test_app, plugin_name):
 
@@ -85,8 +77,10 @@ def test_missing_traj(db_test_app, plugin_name):
         pass
 
     calc_node = db_test_app.generate_calcjob_node(plugin_name, retrieved)
-    parser = db_test_app.get_parser_cls(plugin_name)
-    results, calcfunction = parser.parse_from_node(calc_node)
+    with db_test_app.sandbox_folder() as temp_path:
+        results, calcfunction = db_test_app.parse_from_node(
+            plugin_name, calc_node, temp_path.abspath
+        )
 
     assert calcfunction.is_finished, calcfunction.exception
     assert calcfunction.is_failed, calcfunction.exit_status
@@ -97,12 +91,7 @@ def test_missing_traj(db_test_app, plugin_name):
 
 
 @pytest.mark.parametrize(
-    "plugin_name",
-    [
-        "lammps.force",
-        "lammps.optimize",
-        # "lammps.md", # requires retrieved_temporary_folder (awaiting aiidateam/aiida_core#3061)
-    ],
+    "plugin_name", ["lammps.force", "lammps.optimize", "lammps.md", "lammps.md.multi"]
 )
 def test_empty_log(db_test_app, plugin_name):
 
@@ -117,8 +106,12 @@ def test_empty_log(db_test_app, plugin_name):
         pass
 
     calc_node = db_test_app.generate_calcjob_node(plugin_name, retrieved)
-    parser = db_test_app.get_parser_cls(plugin_name)
-    results, calcfunction = parser.parse_from_node(calc_node)
+    with db_test_app.sandbox_folder() as temp_path:
+        with temp_path.open("trajectory.lammpstrj", "w"):
+            pass
+        results, calcfunction = db_test_app.parse_from_node(
+            plugin_name, calc_node, temp_path.abspath
+        )
 
     assert calcfunction.is_finished, calcfunction.exception
     assert calcfunction.is_failed, calcfunction.exit_status
@@ -129,12 +122,7 @@ def test_empty_log(db_test_app, plugin_name):
 
 
 @pytest.mark.parametrize(
-    "plugin_name",
-    [
-        "lammps.force",
-        "lammps.optimize",
-        # "lammps.md", # requires retrieved_temporary_folder (awaiting aiidateam/aiida_core#3061)
-    ],
+    "plugin_name", ["lammps.force", "lammps.optimize", "lammps.md", "lammps.md.multi"]
 )
 def test_empty_traj(db_test_app, plugin_name):
 
@@ -149,8 +137,12 @@ def test_empty_traj(db_test_app, plugin_name):
         pass
 
     calc_node = db_test_app.generate_calcjob_node(plugin_name, retrieved)
-    parser = db_test_app.get_parser_cls(plugin_name)
-    results, calcfunction = parser.parse_from_node(calc_node)
+    with db_test_app.sandbox_folder() as temp_path:
+        with temp_path.open("trajectory.lammpstrj", "w") as handle:
+            pass
+        results, calcfunction = db_test_app.parse_from_node(
+            plugin_name, calc_node, temp_path.abspath
+        )
 
     assert calcfunction.is_finished, calcfunction.exception
     assert calcfunction.is_failed, calcfunction.exit_status
@@ -161,12 +153,7 @@ def test_empty_traj(db_test_app, plugin_name):
 
 
 @pytest.mark.parametrize(
-    "plugin_name",
-    [
-        "lammps.force",
-        # "lammps.optimize",
-        # "lammps.md", # requires retrieved_temporary_folder (awaiting aiidateam/aiida_core#3061)
-    ],
+    "plugin_name", ["lammps.force", "lammps.optimize", "lammps.md", "lammps.md.multi"]
 )
 def test_run_error(db_test_app, plugin_name):
 
@@ -181,8 +168,13 @@ def test_run_error(db_test_app, plugin_name):
         pass
 
     calc_node = db_test_app.generate_calcjob_node(plugin_name, retrieved)
-    parser = db_test_app.get_parser_cls(plugin_name)
-    results, calcfunction = parser.parse_from_node(calc_node)
+
+    with db_test_app.sandbox_folder() as temp_path:
+        with temp_path.open("trajectory.lammpstrj", "w") as handle:
+            handle.write(get_traj_force())
+        results, calcfunction = db_test_app.parse_from_node(
+            plugin_name, calc_node, temp_path.abspath
+        )
 
     print(get_calcjob_report(calc_node))
 

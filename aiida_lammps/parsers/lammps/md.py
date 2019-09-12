@@ -32,7 +32,11 @@ class MdParser(LAMMPSBaseParser):
             traj_error = self.exit_codes.ERROR_TRAJ_FILE_MISSING
         else:
             try:
-                trajectory_data = self.parse_trajectory_file(resources.traj_paths[0])
+                trajectory_data = self.parse_trajectory(
+                    resources.traj_paths[0],
+                    self.node.inputs.structure,
+                    dtype_map={"forces": float, "q": float},
+                )
                 self.out("trajectory_data", trajectory_data)
             except Exception as err:
                 traceback.print_exc()
@@ -51,12 +55,13 @@ class MdParser(LAMMPSBaseParser):
             self.logger.warning("units missing in log")
         self.add_warnings_and_errors(output_data)
         self.add_standard_info(output_data)
-        output_data["timestep_picoseconds"] = convert_units(
-            self.node.inputs.parameters.dict.timestep,
-            output_data["units_style"],
-            "time",
-            "picoseconds",
-        )
+        if "parameters" in self.node.get_incoming().all_link_labels():
+            output_data["timestep_picoseconds"] = convert_units(
+                self.node.inputs.parameters.dict.timestep,
+                output_data["units_style"],
+                "time",
+                "picoseconds",
+            )
         parameters_data = Dict(dict=output_data)
         self.out("results", parameters_data)
 

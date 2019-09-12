@@ -28,5 +28,5 @@ trajectory_data:
   array|steps:
   - 101
   symbols:
-  - Fe
-  - Fe
+  - Fe1
+  - Fe2

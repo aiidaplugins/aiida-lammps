@@ -319,7 +319,7 @@ def test_optimize_process(
         raise Exception("finished with exit message: {}".format(calc_node.exit_message))
 
     link_labels = calc_node.get_outgoing().all_link_labels()
-    assert set(link_labels).issuperset(["results", "arrays", "structure"])
+    assert set(link_labels).issuperset(["results", "trajectory_data", "structure"])
 
     pdict = calc_node.outputs.results.get_dict()
     # assert pdict["warnings"].strip() == pot_data.output["warnings"]
@@ -331,13 +331,21 @@ def test_optimize_process(
         .strip()
         .replace("Warning: changed valency_val to valency_boc for X", "")
     )
-    arrays = calc_node.outputs.arrays.attributes
+    trajectory_data = calc_node.outputs.trajectory_data.attributes
     # optimization steps may differ between lammps versions
-    arrays = {
-        k: [None] + v[1:] if k.startswith("array|") else v for k, v in arrays.items()
+    trajectory_data = {
+        k: [None] + v[1:] if k.startswith("array|") else v
+        for k, v in trajectory_data.items()
     }
     data_regression.check(
-        {"results": tests.recursive_round(pdict, 1), "arrays": arrays}
+        {
+            "results": tests.recursive_round(pdict, 1),
+            "trajectory_data": trajectory_data,
+            "structure": {"kind_names": calc_node.outputs.structure.get_kind_names()}
+            # "structure": tests.recursive_round(
+            #     calc_node.outputs.structure.attributes, 1, apply_lists=True
+            # ),
+        }
     )
 
 

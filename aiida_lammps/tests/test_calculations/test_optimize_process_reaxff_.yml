@@ -1,18 +1,3 @@
-arrays:
-  array|charges:
-  - null
-  - 12
-  array|forces:
-  - null
-  - 12
-  - 3
-  array|positions:
-  - null
-  - 12
-  - 3
-  array|stress:
-  - null
-  - 3
 results:
   distance_units: Angstroms
   energy: -1030.4
@@ -27,3 +12,42 @@ results:
   stress_units: atmospheres
   units_style: real
   warnings: ''
+structure:
+  kind_names:
+  - Fe
+  - S
+trajectory_data:
+  array|cells:
+  - null
+  - 3
+  - 3
+  array|forces:
+  - null
+  - 12
+  - 3
+  array|positions:
+  - null
+  - 12
+  - 3
+  array|q:
+  - null
+  - 12
+  array|steps:
+  - null
+  array|stresses:
+  - null
+  - 12
+  - 6
+  symbols:
+  - Fe
+  - Fe
+  - Fe
+  - Fe
+  - S
+  - S
+  - S
+  - S
+  - S
+  - S
+  - S
+  - S
