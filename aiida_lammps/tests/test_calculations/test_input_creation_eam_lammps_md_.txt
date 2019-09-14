@@ -27,3 +27,4 @@ fix sys_info all print 10 "${temp} ${etotal} ${step}" title "temp etotal step" f
 run             1000
 variable final_energy equal etotal
 print "final_energy: ${final_energy}"
+print "END_OF_COMP"

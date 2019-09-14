@@ -205,6 +205,11 @@ class BaseLammpsCalculation(CalcJob):
             "ERROR_LAMMPS_RUN",
             message="The main lammps output file flagged an error",
         )
+        spec.exit_code(
+            401,
+            "ERROR_RUN_INCOMPLETE",
+            message="The main lammps output file did not flag that the computation finished",
+        )
 
     def validate_parameters(self, param_data, potential_object):
         return True

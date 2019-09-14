@@ -70,3 +70,6 @@ class OptimizeParser(LAMMPSBaseParser):
 
         if traj_error:
             return traj_error
+
+        if not log_data.get("found_end", False):
+            return self.exit_codes.ERROR_RUN_INCOMPLETE

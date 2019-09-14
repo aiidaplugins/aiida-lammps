@@ -61,6 +61,9 @@ class ForceParser(LAMMPSBaseParser):
         if traj_error:
             return traj_error
 
+        if not log_data.get("found_end", False):
+            return self.exit_codes.ERROR_RUN_INCOMPLETE
+
     def parse_traj_file(self, trajectory_filename):
         with self.retrieved.open(trajectory_filename, "r") as handle:
             traj_steps = list(iter_lammps_trajectories(handle))

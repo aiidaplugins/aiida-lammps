@@ -148,6 +148,8 @@ class OptimizeCalculation(BaseLammpsCalculation):
         # lammps_input_file += 'print "final_cell: $(xlo) $(xhi) $(xy) $(ylo) $(yhi) $(xz) $(zlo) $(zhi) $(yz)"\n'
         # lammps_input_file += 'print "final_stress: ${stress_xx} ${stress_yy} ${stress_zz} ${stress_xy} ${stress_xz} ${stress_yz}"\n'
 
+        lammps_input_file += 'print "END_OF_COMP"\n'
+
         return lammps_input_file
 
     def validate_parameters(self, param_data, potential_object):

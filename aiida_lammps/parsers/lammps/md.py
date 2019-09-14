@@ -90,3 +90,6 @@ class MdParser(LAMMPSBaseParser):
 
         if sys_data_error:
             return sys_data_error
+
+        if not log_data.get("found_end", False):
+            return self.exit_codes.ERROR_RUN_INCOMPLETE

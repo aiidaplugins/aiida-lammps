@@ -209,6 +209,8 @@ class MdMultiCalculation(BaseLammpsCalculation):
         lammps_input_file += "variable final_energy equal etotal\n"
         lammps_input_file += 'print "final_energy: ${final_energy}"\n'
 
+        lammps_input_file += 'print "END_OF_COMP"\n'
+
         return lammps_input_file
 
     def validate_parameters(self, param_data, potential_object):

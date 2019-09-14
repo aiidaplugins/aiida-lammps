@@ -19,3 +19,4 @@ variable etotal equal etotal
 print "final_variable: etotal = ${etotal}"
 variable final_energy equal etotal
 print "final_energy: ${final_energy}"
+print "END_OF_COMP"

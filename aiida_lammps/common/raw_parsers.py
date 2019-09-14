@@ -14,7 +14,10 @@ def read_log_file(logdata_txt, compute_stress=False):
     data_dict = {}
     cell_params = None
     stress_params = None
+    found_end = False
     for i, line in enumerate(data):
+        if "END_OF_COMP" in line:
+            found_end = True
         if "units" in line:
             data_dict["units_style"] = line.split()[1]
         if line.startswith("final_energy:"):
@@ -30,7 +33,7 @@ def read_log_file(logdata_txt, compute_stress=False):
             stress_params = [float(v) for v in line.split()[1:7]]
 
     if not compute_stress:
-        return {"data": data_dict}
+        return {"data": data_dict, "found_end": found_end}
 
     if cell_params is None:
         raise IOError("'final_cell' could not be found")
@@ -48,7 +51,7 @@ def read_log_file(logdata_txt, compute_stress=False):
     stress = np.array([[xx, xy, xz], [xy, yy, yz], [xz, yz, zz]], dtype=float)
     stress = -stress / volume  # to get stress in units of pressure
 
-    return {"data": data_dict, "cell": cell, "stress": stress}
+    return {"data": data_dict, "cell": cell, "stress": stress, "found_end": found_end}
 
 
 TRAJ_BLOCK = namedtuple(
