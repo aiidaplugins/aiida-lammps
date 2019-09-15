@@ -22,13 +22,13 @@ system__equilibrate:
   units_style: real
 system__thermalise:
   array|c_reax_1_:
-  - 1
+  - 2
   array|etotal:
-  - 1
+  - 2
   array|step:
-  - 1
+  - 2
   array|temp:
-  - 1
+  - 2
   units_style: real
 trajectory__equilibrate:
   array|c_cna:

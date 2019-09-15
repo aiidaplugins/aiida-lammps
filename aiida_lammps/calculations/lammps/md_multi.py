@@ -160,11 +160,12 @@ class MdMultiCalculation(BaseLammpsCalculation):
             # Define System Level Outputs
             output_sys_dict = stage_dict.get("output_system", {})
             if output_sys_dict.get("dump_rate", 0):
-                sys_info_cmnds = sys_info_commands(
-                    output_sys_dict.get("variables", []),
-                    output_sys_dict.get("dump_rate", 0),
-                    "{}-{}".format(stage_name, system_filename),
-                    "sys_info",
+                sys_info_cmnds = sys_ave_commands(
+                    variables=output_sys_dict.get("variables", []),
+                    dump_rate=output_sys_dict.get("dump_rate", 0),
+                    filename="{}-{}".format(stage_name, system_filename),
+                    fix_name="sys_info",
+                    average_rate=output_sys_dict.get("average_rate", None),
                 )
                 if sys_info_cmnds:
                     lammps_input_file += "\n".join(sys_info_cmnds) + "\n"
@@ -236,7 +237,7 @@ class MdMultiCalculation(BaseLammpsCalculation):
         )
 
 
-def sys_info_commands(
+def sys_print_commands(
     variables, dump_rate, filename, fix_name="sys_info", append=True, print_header=True
 ):
     """Create commands to output required system variables to a file."""
@@ -263,6 +264,53 @@ def sys_info_commands(
             'title "{}"'.format(" ".join(var_aliases)) if print_header else "",
             "append" if append else "file",
             filename,
+        )
+    )
+
+    return commands
+
+
+def sys_ave_commands(
+    variables, dump_rate, filename, fix_name="sys_info", average_rate=None
+):
+    """Create commands to output required system variables to a file."""
+    commands = []
+
+    if not variables:
+        return commands
+
+    # Note step is included, by default, as the first arg
+    var_aliases = []
+    for var in variables:
+        var_alias = var.replace("[", "_").replace("]", "_")
+        var_aliases.append(var_alias)
+        commands.append("variable {0} equal {1}".format(var_alias, var))
+
+    if average_rate is None:
+        nevery = dump_rate
+        nrep = 1
+    else:
+        if dump_rate % average_rate != 0:
+            raise ValueError(
+                "The dump rate ({}) must be a multiple of the average_rate ({})".format(
+                    dump_rate, average_rate
+                )
+            )
+        nevery = average_rate
+        nrep = int(dump_rate / average_rate)
+
+    commands.append(
+        """fix {fid} all ave/time {nevery} {nrepeat} {nfreq} &
+    {variables} &
+    title1 "step {header}" &
+    file {filename}""".format(
+            fid=fix_name,
+            nevery=nevery,  # compute variables every n steps
+            nfreq=dump_rate,  # nfreq is the dump rate and must be a multiple of nevery
+            nrepeat=nrep,  # average is over nrepeat quantities, nrepeat*nevery <= nfreq
+            variables=" ".join(["v_{0}".format(v) for v in var_aliases]),
+            header=" ".join(var_aliases),
+            filename=filename,
         )
     )
 

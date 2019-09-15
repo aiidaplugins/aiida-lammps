@@ -20,11 +20,11 @@ system__equilibrate:
   units_style: metal
 system__thermalise:
   array|etotal:
-  - 1
+  - 2
   array|step:
-  - 1
+  - 2
   array|temp:
-  - 1
+  - 2
   units_style: metal
 trajectory__equilibrate:
   array|c_cna:

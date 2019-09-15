@@ -401,8 +401,8 @@
           "type": "object",
           "properties": {
             "dump_rate": {
-              "description": "record trajectory every x time steps",
-              "type": "number",
+              "description": "record trajectory every nth time step",
+              "type": "integer",
               "minimum": 0
             },
             "variables": {
@@ -421,9 +421,14 @@
           "type": "object",
           "properties": {
             "dump_rate": {
-              "description": "record system information every x time steps",
-              "type": "number",
+              "description": "record system information every nth time step",
+              "type": "integer",
               "minimum": 0
+            },
+            "average_rate": {
+              "description": "if set the values output will be an average of every nth step since the last dumped value. NB: dump_rate mod average_rate == 0",
+              "type": ["null", "integer"],
+              "minimum": 1
             },
             "variables": {
               "description": "system level variables to output, per dump_rate, to system array (see `thermo_style` for valid keywords)",
