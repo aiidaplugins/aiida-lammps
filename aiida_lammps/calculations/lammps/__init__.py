@@ -211,7 +211,8 @@ class BaseLammpsCalculation(CalcJob):
             message="The main lammps output file did not flag that the computation finished",
         )
 
-    def validate_parameters(self, param_data, potential_object):
+    @staticmethod
+    def validate_parameters(param_data, potential_object):
         return True
 
     def prepare_extra_files(self, tempfolder, potential_object):

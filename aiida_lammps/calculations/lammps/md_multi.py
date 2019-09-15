@@ -236,7 +236,8 @@ class MdMultiCalculation(BaseLammpsCalculation):
 
         return lammps_input_file
 
-    def validate_parameters(self, param_data, potential_object):
+    @staticmethod
+    def validate_parameters(param_data, potential_object):
         if param_data is None:
             raise InputValidationError("parameter data not set")
         validate_against_schema(param_data.get_dict(), "md-multi.schema.json")

@@ -152,7 +152,8 @@ class OptimizeCalculation(BaseLammpsCalculation):
 
         return lammps_input_file
 
-    def validate_parameters(self, param_data, potential_object):
+    @staticmethod
+    def validate_parameters(param_data, potential_object):
         if param_data is None:
             raise InputValidationError("parameter data not set")
         validate_against_schema(param_data.get_dict(), "optimize.schema.json")
@@ -167,8 +168,6 @@ class OptimizeCalculation(BaseLammpsCalculation):
                         punits, potential_object.default_units
                     )
                 )
-        else:
-            self.logger.log("No units defined, using:", potential_object.default_units)
 
         return True
 
