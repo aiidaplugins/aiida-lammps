@@ -94,16 +94,6 @@
           "type": "integer",
           "minimum": 1
         },
-        "dump_rate": {
-          "description": "record trajectory every x time steps",
-          "type": "number",
-          "minimum": 0
-        },
-        "print_rate": {
-          "description": "record system information every x time steps",
-          "type": "number",
-          "minimum": 0
-        },
         "restart_rate": {
           "description": "Write out a binary restart file with the current state of the simulation every x steps",
           "type": "integer",
@@ -406,13 +396,44 @@
             }
           }
         },
-        "atom_variables": {
-          "description": "atom level variables to output, per dump_rate, to trajectory data (see `dump` for valid keywords, `x`, `y`, `z`, and `element` will always be output)",
-          "type": "array",
-          "uniqueItems": true,
-          "items": {
-            "type": "string",
-            "pattern": "^[a-zA-Z0-9\\_\\[\\]]+$"
+        "output_atom": {
+          "description": "control output of atom level variables",
+          "type": "object",
+          "properties": {
+            "dump_rate": {
+              "description": "record trajectory every x time steps",
+              "type": "number",
+              "minimum": 0
+            },
+            "variables": {
+              "description": "atom level variables to output, per dump_rate, to trajectory data (see `dump` for valid keywords, `x`, `y`, `z`, and `element` will always be output)",
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "pattern": "^[a-zA-Z0-9\\_\\[\\]]+$"
+              }
+            }
+          }
+        },
+        "output_system": {
+          "description": "control output of system level variables",
+          "type": "object",
+          "properties": {
+            "dump_rate": {
+              "description": "record system information every x time steps",
+              "type": "number",
+              "minimum": 0
+            },
+            "variables": {
+              "description": "system level variables to output, per dump_rate, to system array (see `thermo_style` for valid keywords)",
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "pattern": "^[a-zA-Z0-9\\_\\[\\]]+$"
+              }
+            }
           }
         }
       }
@@ -511,15 +532,6 @@
     },
     "thermo_keywords": {
       "description": "additional keywords to append to 'thermo_style custom'",
-      "type": "array",
-      "uniqueItems": true,
-      "items": {
-        "type": "string",
-        "pattern": "^[a-zA-Z0-9\\_\\[\\]]+$"
-      }
-    },
-    "system_variables": {
-      "description": "system level variables to output, per dump_rate, to system array (see `thermo_style` for valid keywords)",
       "type": "array",
       "uniqueItems": true,
       "items": {

@@ -36,7 +36,7 @@ variable step equal step
 variable temp equal temp
 variable etotal equal etotal
 variable c_reax_1_ equal c_reax[1]
-fix sys_info all print 100 "0 ${step} ${temp} ${etotal} ${c_reax_1_}" title "stage_id step temp etotal c_reax_1_" append sys_info.txt screen no
+fix sys_info all print 100 "${step} ${temp} ${etotal} ${c_reax_1_}" title "step temp etotal c_reax_1_" append thermalise-sys_info.txt screen no
 restart         0
 fix             int all nvt temp 300 300 0.5 
 run             100
@@ -54,7 +54,7 @@ variable step equal step
 variable temp equal temp
 variable etotal equal etotal
 variable c_reax_1_ equal c_reax[1]
-fix sys_info all print 10 "1 ${step} ${temp} ${etotal} ${c_reax_1_}"  append sys_info.txt screen no
+fix sys_info all print 10 "${step} ${temp} ${etotal} ${c_reax_1_}" title "step temp etotal c_reax_1_" append equilibrate-sys_info.txt screen no
 restart         200 equilibrate-calc.restart
 fix             int all nvt temp 300 300 0.5 
 run             400

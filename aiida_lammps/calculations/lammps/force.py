@@ -32,7 +32,7 @@ class ForceCalculation(BaseLammpsCalculation):
         kind_symbols,
         structure_filename,
         trajectory_filename,
-        info_filename,
+        system_filename,
         restart_filename,
     ):
 

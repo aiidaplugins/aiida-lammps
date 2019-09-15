@@ -20,11 +20,11 @@ class MdMultiCalculation(BaseLammpsCalculation):
         )
         spec.default_output_port = "results"
 
-        spec.output(
-            "system_data",
+        spec.output_namespace(
+            "system",
+            dynamic=True,
             valid_type=DataFactory("array"),
-            required=False,
-            help="selected system data per dump step",
+            help="selected system data per dump step of a stage",
         )
 
         spec.output_namespace(
@@ -41,7 +41,7 @@ class MdMultiCalculation(BaseLammpsCalculation):
         kind_symbols,
         structure_filename,
         trajectory_filename,
-        info_filename,
+        system_filename,
         restart_filename,
     ):
 
@@ -58,7 +58,7 @@ class MdMultiCalculation(BaseLammpsCalculation):
         lammps_input_file += "units           {0}\n".format(
             potential_data.default_units
         )
-        lammps_input_file += "boundary        p p p\n"
+        lammps_input_file += "boundary        p p p\n"  # TODO allow non-periodic
         lammps_input_file += "box tilt large\n"
         lammps_input_file += "atom_style      {0}\n".format(potential_data.atom_style)
         lammps_input_file += "read_data       {}\n".format(structure_filename)
@@ -107,7 +107,6 @@ class MdMultiCalculation(BaseLammpsCalculation):
         current_fixes = []
         current_dumps = []
         current_computes = []
-        print_sys_header = True
 
         for stage_id, stage_dict in enumerate(pdict.get("stages")):
 
@@ -142,13 +141,14 @@ class MdMultiCalculation(BaseLammpsCalculation):
                 )
                 current_computes.append(c_id)
 
-            # Define File Outputs
-            if stage_dict.get("dump_rate", 0):
+            # Define Atom Level Outputs
+            output_atom_dict = stage_dict.get("output_atom", {})
+            if output_atom_dict.get("dump_rate", 0):
                 atom_dump_cmnds = atom_info_commands(
-                    stage_dict.get("atom_variables", []),
+                    output_atom_dict.get("variables", []),
                     kind_symbols,
                     potential_data.atom_style,
-                    stage_dict.get("dump_rate", 0),
+                    output_atom_dict.get("dump_rate", 0),
                     "{}-{}".format(stage_name, trajectory_filename),
                     version_date,
                     "atom_info",
@@ -157,19 +157,18 @@ class MdMultiCalculation(BaseLammpsCalculation):
                     lammps_input_file += "\n".join(atom_dump_cmnds) + "\n"
                     current_dumps.append("atom_info")
 
-            if stage_dict.get("print_rate", 0):
+            # Define System Level Outputs
+            output_sys_dict = stage_dict.get("output_system", {})
+            if output_sys_dict.get("dump_rate", 0):
                 sys_info_cmnds = sys_info_commands(
-                    stage_id,
-                    pdict.get("system_variables", []),
-                    stage_dict.get("print_rate", 0),
-                    info_filename,
+                    output_sys_dict.get("variables", []),
+                    output_sys_dict.get("dump_rate", 0),
+                    "{}-{}".format(stage_name, system_filename),
                     "sys_info",
-                    print_header=print_sys_header,
                 )
                 if sys_info_cmnds:
                     lammps_input_file += "\n".join(sys_info_cmnds) + "\n"
                     current_fixes.append("sys_info")
-                    print_sys_header = False  # only print the header once
 
             # Define restart
             if stage_dict.get("restart_rate", 0):
@@ -231,17 +230,14 @@ class MdMultiCalculation(BaseLammpsCalculation):
         return True
 
     def get_retrieve_lists(self):
-        return [], ["*-" + self.options.trajectory_suffix, self.options.info_filename]
+        return (
+            [],
+            ["*-" + self.options.trajectory_suffix, "*-" + self.options.system_suffix],
+        )
 
 
 def sys_info_commands(
-    stage_id,
-    variables,
-    dump_rate,
-    filename,
-    fix_name="sys_info",
-    append=True,
-    print_header=True,
+    variables, dump_rate, filename, fix_name="sys_info", append=True, print_header=True
 ):
     """Create commands to output required system variables to a file."""
     commands = []
@@ -260,12 +256,11 @@ def sys_info_commands(
         commands.append("variable {0} equal {1}".format(var_alias, var))
 
     commands.append(
-        'fix {0} all print {1} "{2} {3}" {4} {5} {6} screen no'.format(
+        'fix {0} all print {1} "{2}" {3} {4} {5} screen no'.format(
             fix_name,
             dump_rate,
-            stage_id,
             " ".join(["${{{0}}}".format(v) for v in var_aliases]),
-            'title "stage_id {}"'.format(" ".join(var_aliases)) if print_header else "",
+            'title "{}"'.format(" ".join(var_aliases)) if print_header else "",
             "append" if append else "file",
             filename,
         )

@@ -18,6 +18,11 @@ def read_log_file(logdata_txt, compute_stress=False):
     for i, line in enumerate(data):
         if "END_OF_COMP" in line:
             found_end = True
+        # These are handled in LAMMPSBaseParser.add_warnings_and_errors
+        # if line.strip().startswith("WARNING"):
+        #     data_dict.setdefault("warnings", []).append(line.strip())
+        # if line.strip().startswith("ERROR"):
+        #     data_dict.setdefault("errors", []).append(line.strip())
         if "units" in line:
             data_dict["units_style"] = line.split()[1]
         if line.startswith("final_energy:"):

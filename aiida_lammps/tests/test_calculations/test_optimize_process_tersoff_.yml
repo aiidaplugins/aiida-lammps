@@ -10,7 +10,6 @@ results:
   parser_class: OptimizeParser
   stress_units: bars
   units_style: metal
-  warnings: ''
 structure:
   kind_names:
   - Ga

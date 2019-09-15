@@ -10,16 +10,21 @@ results:
   time_units: picoseconds
   timestep_picoseconds: 0.001
   units_style: metal
-  warnings: ''
-system_data:
+system__equilibrate:
   array|etotal:
-  - 41
-  array|stage_id:
-  - 41
+  - 40
   array|step:
-  - 41
+  - 40
   array|temp:
-  - 41
+  - 40
+  units_style: metal
+system__thermalise:
+  array|etotal:
+  - 1
+  array|step:
+  - 1
+  array|temp:
+  - 1
   units_style: metal
 trajectory__equilibrate:
   array|c_cna:

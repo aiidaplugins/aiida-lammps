@@ -97,8 +97,8 @@ class BaseLammpsCalculation(CalcJob):
 
     _DEFAULT_OUTPUT_FILE_NAME = "log.lammps"
     _DEFAULT_TRAJECTORY_FILE_NAME = "trajectory.lammpstrj"
-    _DEFAULT_OUTPUT_INFO_FILE_NAME = "system_info.dump"
-    _DEFAULT_OUTPUT_RESTART_FILE_NAME = "lammps.restart"
+    _DEFAULT_SYSTEM_FILE_NAME = "system_info.dump"
+    _DEFAULT_RESTART_FILE_NAME = "lammps.restart"
 
     _cmdline_params = ("-in", _INPUT_FILE_NAME)
     _stdout_name = None
@@ -125,14 +125,14 @@ class BaseLammpsCalculation(CalcJob):
             default=cls._DEFAULT_TRAJECTORY_FILE_NAME,
         )
         spec.input(
-            "metadata.options.info_filename",
+            "metadata.options.system_suffix",
             valid_type=six.string_types,
-            default=cls._DEFAULT_OUTPUT_INFO_FILE_NAME,
+            default=cls._DEFAULT_SYSTEM_FILE_NAME,
         )
         spec.input(
             "metadata.options.restart_filename",
             valid_type=six.string_types,
-            default=cls._DEFAULT_OUTPUT_RESTART_FILE_NAME,
+            default=cls._DEFAULT_RESTART_FILE_NAME,
         )
 
         spec.output(
@@ -227,7 +227,7 @@ class BaseLammpsCalculation(CalcJob):
         kind_symbols,
         structure_filename,
         trajectory_filename,
-        info_filename,
+        system_filename,
         restart_filename,
     ):
         raise NotImplementedError
@@ -268,7 +268,7 @@ class BaseLammpsCalculation(CalcJob):
             kind_symbols=[kind.symbol for kind in self.inputs.structure.kinds],
             structure_filename=self._INPUT_STRUCTURE,
             trajectory_filename=self.options.trajectory_suffix,
-            info_filename=self.options.info_filename,
+            system_filename=self.options.system_suffix,
             restart_filename=self.options.restart_filename,
         )
 

@@ -77,7 +77,7 @@ class CombinateCalculation(BaseLammpsCalculation):
         structure_data,
         structure_filename,
         trajectory_filename,
-        info_filename,
+        system_filename,
         restart_filename,
     ):
 

@@ -67,7 +67,6 @@ def get_calc_parameters(lammps_version, plugin_name, units, potential_type):
             "timestep": 0.001,
             "neighbor": [0.3, "bin"],
             "neigh_modify": {"every": 1, "delay": 0, "check": False},
-            "system_variables": output_variables,
             "thermo_keywords": thermo_keywords,
             "velocity": [
                 {
@@ -85,8 +84,8 @@ def get_calc_parameters(lammps_version, plugin_name, units, potential_type):
                         "style": "nvt",
                         "constraints": {"temp": [300, 300, 0.5]},
                     },
-                    "dump_rate": 10,
-                    "print_rate": 100,
+                    "output_atom": {"dump_rate": 10},
+                    "output_system": {"dump_rate": 100, "variables": output_variables},
                 },
                 {
                     "name": "equilibrate",
@@ -95,11 +94,10 @@ def get_calc_parameters(lammps_version, plugin_name, units, potential_type):
                         "style": "nvt",
                         "constraints": {"temp": [300, 300, 0.5]},
                     },
-                    "dump_rate": 100,
-                    "print_rate": 10,
-                    "restart_rate": 200,
                     "computes": [{"id": "cna", "style": "cna/atom", "args": [3.0]}],
-                    "atom_variables": ["c_cna"],
+                    "output_atom": {"dump_rate": 100, "variables": ["c_cna"]},
+                    "output_system": {"dump_rate": 10, "variables": output_variables},
+                    "restart_rate": 200,
                 },
             ],
         }
@@ -136,7 +134,7 @@ def test_input_creation(
         kind_symbols=["A", "B"],
         structure_filename="input.data",
         trajectory_filename="output.traj",
-        info_filename="sys_info.txt",
+        system_filename="sys_info.txt",
         restart_filename="calc.restart",
     )
     file_regression.check(content)
@@ -274,11 +272,7 @@ def test_force_process(
     # assert pdict["warnings"].strip() == pot_data.output["warnings"]
     # assert pdict["energy"] == pytest.approx(pot_data.output["initial_energy"])
     pdict.pop("parser_version")
-    pdict["warnings"] = (
-        pdict["warnings"]
-        .strip()
-        .replace("Warning: changed valency_val to valency_boc for X", "")
-    )
+    pdict.pop("warnings")
     data_regression.check(
         {
             "results": tests.recursive_round(pdict, 1),
@@ -328,11 +322,7 @@ def test_optimize_process(
     # assert pdict["energy"] == pytest.approx(pot_data.output["energy"])
 
     pdict.pop("parser_version")
-    pdict["warnings"] = (
-        pdict["warnings"]
-        .strip()
-        .replace("Warning: changed valency_val to valency_boc for X", "")
-    )
+    pdict.pop("warnings")
     trajectory_data = calc_node.outputs.trajectory_data.attributes
     # optimization steps may differ between lammps versions
     trajectory_data = {
@@ -388,11 +378,7 @@ def test_md_process(db_test_app, get_potential_data, potential_type, data_regres
     # assert pdict["warnings"].strip() == pot_data.output["warnings"]
 
     pdict.pop("parser_version")
-    pdict["warnings"] = (
-        pdict["warnings"]
-        .strip()
-        .replace("Warning: changed valency_val to valency_boc for X", "")
-    )
+    pdict.pop("warnings")
     pdict["energy"] = round(pdict["energy"], 1)
     data_regression.check(
         {
@@ -438,24 +424,24 @@ def test_md_multi_process(
 
     link_labels = calc_node.get_outgoing().all_link_labels()
     assert set(link_labels).issuperset(
-        ["results", "trajectory__thermalise", "trajectory__equilibrate", "system_data"]
+        [
+            "results",
+            "trajectory__thermalise",
+            "trajectory__equilibrate",
+            "system__thermalise",
+            "system__equilibrate",
+        ]
     )
 
     pdict = calc_node.outputs.results.get_dict()
-    # assert set(pdict.keys()).issuperset(["warnings", "parser_class", "parser_version"])
-    # assert pdict["warnings"].strip() == pot_data.output["warnings"]
-
     pdict.pop("parser_version")
-    pdict["warnings"] = (
-        pdict["warnings"]
-        .strip()
-        .replace("Warning: changed valency_val to valency_boc for X", "")
-    )
+    pdict.pop("warnings")
     pdict["energy"] = round(pdict["energy"], 1)
     data_regression.check(
         {
             "results": pdict,
-            "system_data": calc_node.outputs.system_data.attributes,
+            "system__thermalise": calc_node.outputs.system__thermalise.attributes,
+            "system__equilibrate": calc_node.outputs.system__equilibrate.attributes,
             "trajectory__thermalise": calc_node.outputs.trajectory__thermalise.attributes,
             "trajectory__equilibrate": calc_node.outputs.trajectory__equilibrate.attributes,
         }

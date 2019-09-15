@@ -10,18 +10,25 @@ results:
   time_units: femtoseconds
   timestep_picoseconds: 1.0e-06
   units_style: real
-  warnings: ''
-system_data:
+system__equilibrate:
   array|c_reax_1_:
-  - 41
+  - 40
   array|etotal:
-  - 41
-  array|stage_id:
-  - 41
+  - 40
   array|step:
-  - 41
+  - 40
   array|temp:
-  - 41
+  - 40
+  units_style: real
+system__thermalise:
+  array|c_reax_1_:
+  - 1
+  array|etotal:
+  - 1
+  array|step:
+  - 1
+  array|temp:
+  - 1
   units_style: real
 trajectory__equilibrate:
   array|c_cna:

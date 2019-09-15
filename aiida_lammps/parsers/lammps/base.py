@@ -13,7 +13,7 @@ from aiida_lammps import __version__ as aiida_lammps_version
 from aiida_lammps.common.raw_parsers import read_log_file, parse_trajectory_file
 
 ParsingResources = namedtuple(
-    "ParsingResources", ["exit_code", "sys_data_path", "traj_paths"]
+    "ParsingResources", ["exit_code", "sys_paths", "traj_paths"]
 )
 
 
@@ -24,7 +24,7 @@ class LAMMPSBaseParser(Parser):
         """Initialize the parser."""
         super(LAMMPSBaseParser, self).__init__(node)
 
-    def get_parsing_resources(self, kwargs, traj_in_temp=False, sys_info=False):
+    def get_parsing_resources(self, kwargs, traj_in_temp=False, sys_in_temp=True):
         """Check that all resources, required for parsing, are present."""
         # Check for retrieved folder
         try:
@@ -35,7 +35,7 @@ class LAMMPSBaseParser(Parser):
             )
 
         # Check for temporary folder
-        if traj_in_temp or sys_info:
+        if traj_in_temp or sys_in_temp:
             if "retrieved_temporary_folder" not in kwargs:
                 return ParsingResources(
                     self.exit_codes.ERROR_NO_RETRIEVED_TEMP_FOLDER, None, None
@@ -60,14 +60,17 @@ class LAMMPSBaseParser(Parser):
                 self.exit_codes.ERROR_STDERR_FILE_MISSING, None, None
             )
 
-        # check for system info file
-        info_filepath = None
-        if sys_info:
-            info_filename = self.node.get_option("info_filename")
-            if info_filename in list_of_temp_files:
-                info_filepath = os.path.join(
-                    temporary_folder, self.node.get_option("info_filename")
-                )
+        # check for system info file(s)
+        system_suffix = self.node.get_option("system_suffix")
+        system_filepaths = []
+        if sys_in_temp:
+            for filename in list_of_temp_files:
+                if fnmatch(filename, "*" + system_suffix):
+                    system_filepaths.append(os.path.join(temporary_folder, filename))
+        else:
+            for filename in list_of_files:
+                if fnmatch(filename, "*" + system_suffix):
+                    system_filepaths.append(filename)
 
         # check for trajectory file(s)
         trajectory_suffix = self.node.get_option("trajectory_suffix")
@@ -83,7 +86,7 @@ class LAMMPSBaseParser(Parser):
                 if fnmatch(filename, "*" + trajectory_suffix):
                     trajectory_filepaths.append(filename)
 
-        return ParsingResources(None, info_filepath, trajectory_filepaths)
+        return ParsingResources(None, system_filepaths, trajectory_filepaths)
 
     def parse_log_file(self, compute_stress=False):
         """Parse the log file."""
@@ -99,20 +102,25 @@ class LAMMPSBaseParser(Parser):
     def add_warnings_and_errors(self, output_data):
         """Add warning and errors to the output data."""
         # add the dictionary with warnings and errors
-        warnings = self.retrieved.get_object_content(
-            self.node.get_option("scheduler_stderr")
+        warnings = (
+            self.retrieved.get_object_content(self.node.get_option("scheduler_stderr"))
+            .strip()
+            .splitlines()
         )
         # for some reason, errors may be in the stdout, but not the log.lammps
         stdout = self.retrieved.get_object_content(
             self.node.get_option("scheduler_stdout")
         )
         errors = [line for line in stdout.splitlines() if line.startswith("ERROR")]
+        warnings.extend(
+            [line for line in stdout.splitlines() if line.startswith("WARNING")]
+        )
 
         for error in errors:
             self.logger.error(error)
 
-        output_data.update({"warnings": warnings})
-        output_data.update({"errors": errors})
+        output_data.setdefault("warnings", []).extend(warnings)
+        output_data.setdefault("errors", []).extend(errors)
 
     def add_standard_info(self, output_data):
         """Add standard information to output data."""

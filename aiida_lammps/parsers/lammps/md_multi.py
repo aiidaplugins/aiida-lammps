@@ -19,7 +19,7 @@ class MdMultiParser(LAMMPSBaseParser):
     def parse(self, **kwargs):
         """Parse the retrieved folder and store results."""
         # retrieve resources
-        resources = self.get_parsing_resources(kwargs, traj_in_temp=True, sys_info=True)
+        resources = self.get_parsing_resources(kwargs, traj_in_temp=True)
         if resources.exit_code is not None:
             return resources.exit_code
 
@@ -74,20 +74,24 @@ class MdMultiParser(LAMMPSBaseParser):
 
         # parse the system data file
         sys_data_error = None
-        if resources.sys_data_path:
+        arrays = {}
+        for sys_path in resources.sys_paths:
+            stage_name = os.path.basename(sys_path).split("-")[0]
             sys_data = ArrayData()
+            sys_data.set_attribute("units_style", output_data.get("units_style", None))
             try:
-                with open(resources.sys_data_path) as handle:
+                with open(sys_path) as handle:
                     names = handle.readline().strip().split()
                 for i, col in enumerate(
-                    np.loadtxt(resources.sys_data_path, skiprows=1, unpack=True)
+                    np.loadtxt(sys_path, skiprows=1, unpack=True, ndmin=2)
                 ):
                     sys_data.set_array(names[i], col)
+                arrays[stage_name] = sys_data
             except Exception:
                 traceback.print_exc()
                 sys_data_error = self.exit_codes.ERROR_INFO_PARSING
-            sys_data.set_attribute("units_style", output_data.get("units_style", None))
-            self.out("system_data", sys_data)
+        if arrays:
+            self.out("system", arrays)
 
         if output_data["errors"]:
             return self.exit_codes.ERROR_LAMMPS_RUN

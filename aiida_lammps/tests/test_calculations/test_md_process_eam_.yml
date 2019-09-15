@@ -7,7 +7,6 @@ results:
   time_units: picoseconds
   timestep_picoseconds: 0.001
   units_style: metal
-  warnings: ''
 system_data:
   array|etotal:
   - 100

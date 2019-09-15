@@ -39,7 +39,7 @@ class MdCalculation(BaseLammpsCalculation):
         kind_symbols,
         structure_filename,
         trajectory_filename,
-        info_filename,
+        system_filename,
         restart_filename,
     ):
 
@@ -157,7 +157,7 @@ class MdCalculation(BaseLammpsCalculation):
                 parameter_data.dict.dump_rate,
                 " ".join(["${{{0}}}".format(v) for v in var_aliases]),
                 " ".join(var_aliases),
-                info_filename,
+                system_filename,
             )
 
         lammps_input_file += "run             {}\n".format(
@@ -189,4 +189,4 @@ class MdCalculation(BaseLammpsCalculation):
         return True
 
     def get_retrieve_lists(self):
-        return [], [self.options.trajectory_suffix, self.options.info_filename]
+        return [], [self.options.trajectory_suffix, self.options.system_suffix]

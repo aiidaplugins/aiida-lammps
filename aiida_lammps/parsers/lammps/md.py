@@ -18,7 +18,7 @@ class MdParser(LAMMPSBaseParser):
     def parse(self, **kwargs):
         """Parse the retrieved folder and store results."""
         # retrieve resources
-        resources = self.get_parsing_resources(kwargs, traj_in_temp=True, sys_info=True)
+        resources = self.get_parsing_resources(kwargs, traj_in_temp=True)
         if resources.exit_code is not None:
             return resources.exit_code
 
@@ -67,13 +67,13 @@ class MdParser(LAMMPSBaseParser):
 
         # parse the system data file
         sys_data_error = None
-        if resources.sys_data_path:
+        if resources.sys_paths:
             sys_data = ArrayData()
             try:
-                with open(resources.sys_data_path) as handle:
+                with open(resources.sys_paths[0]) as handle:
                     names = handle.readline().strip().split()
                 for i, col in enumerate(
-                    np.loadtxt(resources.sys_data_path, skiprows=1, unpack=True)
+                    np.loadtxt(resources.sys_paths[0], skiprows=1, unpack=True, ndmin=2)
                 ):
                     sys_data.set_array(names[i], col)
             except Exception:

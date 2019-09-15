@@ -16,4 +16,3 @@ results:
   force_units: Kcal/mole-Angstrom
   parser_class: ForceParser
   units_style: real
-  warnings: ''

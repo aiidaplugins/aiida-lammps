@@ -13,4 +13,3 @@ results:
   force_units: eV/Angstrom
   parser_class: ForceParser
   units_style: metal
-  warnings: ''
