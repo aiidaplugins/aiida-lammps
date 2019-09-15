@@ -40,6 +40,15 @@ trajectory__equilibrate:
   - 3
   array|steps:
   - 5
+  array|v_ave_xu:
+  - 5
+  - 4
+  array|v_ave_yu:
+  - 5
+  - 4
+  array|v_ave_zu:
+  - 5
+  - 4
   symbols:
   - Ga
   - Ga

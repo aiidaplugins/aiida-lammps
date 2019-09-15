@@ -47,6 +47,15 @@ trajectory__equilibrate:
   - 12
   array|steps:
   - 5
+  array|v_ave_xu:
+  - 5
+  - 12
+  array|v_ave_yu:
+  - 5
+  - 12
+  array|v_ave_zu:
+  - 5
+  - 12
   symbols:
   - Fe
   - Fe

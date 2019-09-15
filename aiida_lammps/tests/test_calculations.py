@@ -95,11 +95,16 @@ def get_calc_parameters(lammps_version, plugin_name, units, potential_type):
                         "constraints": {"temp": [300, 300, 0.5]},
                     },
                     "computes": [{"id": "cna", "style": "cna/atom", "args": [3.0]}],
-                    "output_atom": {"dump_rate": 100, "variables": ["c_cna"]},
+                    "output_atom": {
+                        "dump_rate": 100,
+                        "average_rate": 10,
+                        "ave_variables": ["xu", "yu", "zu"],
+                        "variables": ["c_cna"],
+                    },
                     "output_system": {
                         "dump_rate": 10,
                         "average_rate": 2,
-                        "variables": output_variables,
+                        "ave_variables": output_variables,
                     },
                     "restart_rate": 200,
                 },

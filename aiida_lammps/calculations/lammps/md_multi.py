@@ -144,28 +144,33 @@ class MdMultiCalculation(BaseLammpsCalculation):
             # Define Atom Level Outputs
             output_atom_dict = stage_dict.get("output_atom", {})
             if output_atom_dict.get("dump_rate", 0):
-                atom_dump_cmnds = atom_info_commands(
-                    output_atom_dict.get("variables", []),
-                    kind_symbols,
-                    potential_data.atom_style,
-                    output_atom_dict.get("dump_rate", 0),
-                    "{}-{}".format(stage_name, trajectory_filename),
-                    version_date,
-                    "atom_info",
+                atom_dump_cmnds, acomputes, afixes = atom_info_commands(
+                    variables=output_atom_dict.get("variables", []),
+                    ave_variables=output_atom_dict.get("ave_variables", []),
+                    kind_symbols=kind_symbols,
+                    atom_style=potential_data.atom_style,
+                    dump_rate=output_atom_dict.get("dump_rate", 0),
+                    average_rate=output_atom_dict.get("average_rate", 1),
+                    filename="{}-{}".format(stage_name, trajectory_filename),
+                    version_date=version_date,
+                    dump_name="atom_info",
                 )
                 if atom_dump_cmnds:
                     lammps_input_file += "\n".join(atom_dump_cmnds) + "\n"
                     current_dumps.append("atom_info")
+                current_computes.extend(acomputes)
+                current_fixes.extend(afixes)
 
             # Define System Level Outputs
             output_sys_dict = stage_dict.get("output_system", {})
             if output_sys_dict.get("dump_rate", 0):
                 sys_info_cmnds = sys_ave_commands(
                     variables=output_sys_dict.get("variables", []),
+                    ave_variables=output_sys_dict.get("ave_variables", []),
                     dump_rate=output_sys_dict.get("dump_rate", 0),
                     filename="{}-{}".format(stage_name, system_filename),
                     fix_name="sys_info",
-                    average_rate=output_sys_dict.get("average_rate", None),
+                    average_rate=output_sys_dict.get("average_rate", 1),
                 )
                 if sys_info_cmnds:
                     lammps_input_file += "\n".join(sys_info_cmnds) + "\n"
@@ -203,6 +208,24 @@ class MdMultiCalculation(BaseLammpsCalculation):
             lammps_input_file += "run             {}\n".format(
                 stage_dict.get("steps", 0)
             )
+
+            # check compute/fix/dump ids are unique
+            if len(current_computes) != len(set(current_computes)):
+                raise ValueError(
+                    "Stage {}: Non-unique compute ids; {}".format(
+                        stage_name, current_computes
+                    )
+                )
+            if len(current_fixes) != len(set(current_fixes)):
+                raise ValueError(
+                    "Stage {}: Non-unique fix ids; {}".format(stage_name, current_fixes)
+                )
+            if len(current_dumps) != len(set(current_dumps)):
+                raise ValueError(
+                    "Stage {}: Non-unique dump ids; {}".format(
+                        stage_name, current_dumps
+                    )
+                )
 
         lammps_input_file += "\n# Final Commands\n"
         # output final energy
@@ -271,26 +294,38 @@ def sys_print_commands(
 
 
 def sys_ave_commands(
-    variables, dump_rate, filename, fix_name="sys_info", average_rate=None
+    variables,
+    ave_variables,
+    dump_rate,
+    filename,
+    fix_name="sys_info",
+    average_rate=None,
 ):
     """Create commands to output required system variables to a file."""
     commands = []
 
-    if not variables:
+    if not (variables or ave_variables):
         return commands
+
+    if set(variables).intersection(ave_variables):
+        raise ValueError(
+            "variables cannot be in both 'variables' and 'ave_variables': {}".format(
+                set(variables).intersection(ave_variables)
+            )
+        )
 
     # Note step is included, by default, as the first arg
     var_aliases = []
-    for var in variables:
+    for var in variables + ave_variables:
         var_alias = var.replace("[", "_").replace("]", "_")
         var_aliases.append(var_alias)
         commands.append("variable {0} equal {1}".format(var_alias, var))
 
-    if average_rate is None:
+    if not ave_variables:
         nevery = dump_rate
         nrep = 1
     else:
-        if dump_rate % average_rate != 0:
+        if dump_rate % average_rate != 0 or average_rate > dump_rate:
             raise ValueError(
                 "The dump rate ({}) must be a multiple of the average_rate ({})".format(
                     dump_rate, average_rate
@@ -302,6 +337,7 @@ def sys_ave_commands(
     commands.append(
         """fix {fid} all ave/time {nevery} {nrepeat} {nfreq} &
     {variables} &
+    {non_ave} &
     title1 "step {header}" &
     file {filename}""".format(
             fid=fix_name,
@@ -309,6 +345,7 @@ def sys_ave_commands(
             nfreq=dump_rate,  # nfreq is the dump rate and must be a multiple of nevery
             nrepeat=nrep,  # average is over nrepeat quantities, nrepeat*nevery <= nfreq
             variables=" ".join(["v_{0}".format(v) for v in var_aliases]),
+            non_ave=" ".join(["off {0}".format(i + 1) for i in range(len(variables))]),
             header=" ".join(var_aliases),
             filename=filename,
         )
@@ -319,14 +356,15 @@ def sys_ave_commands(
 
 def atom_info_commands(
     variables,
+    ave_variables,
     kind_symbols,
     atom_style,
     dump_rate,
+    average_rate,
     filename,
     version_date,
     dump_name="atom_info",
     append=True,
-    pbc=True,
 ):
     """Create commands to output required atom variables to a file.
 
@@ -343,16 +381,13 @@ def atom_info_commands(
     dump_name : str
     append : bool
         Dump snapshots to the end of the dump file (if it exists).
-    pbc : bool
-         Ensure all atoms are remapped to the periodic box,
-         before the snapshot is written.
 
     Returns
     -------
     list[str]
 
     """
-    commands = []
+    commands, computes, fixes = [], [], []
 
     if atom_style == "charge":
         dump_variables = "element x y z q".split()
@@ -363,16 +398,71 @@ def atom_info_commands(
         if variable not in dump_variables:
             dump_variables.append(variable)
 
+    if ave_variables:
+        if dump_rate % average_rate != 0 or average_rate > dump_rate:
+            raise ValueError(
+                "The dump rate ({}) must be a multiple of the average_rate ({})".format(
+                    dump_rate, average_rate
+                )
+            )
+        nevery = average_rate
+        nrep = int(dump_rate / average_rate)
+
+        # work out which variables need to be computed
+        avar_props = [
+            v
+            for v in ave_variables
+            if not any([v.startswith(s) for s in ["c_", "f_", "v_"]])
+        ]
+        avar_names = []
+        c_at_vars = 1
+        for ave_var in ave_variables:
+            if any([ave_var.startswith(s) for s in ["c_", "f_", "v_"]]):
+                avar_names.append(ave_var)
+            else:
+                if len(avar_props) > 1:
+                    avar_names.append("c_at_vars[{}]".format(c_at_vars))
+                    c_at_vars += 1
+                else:
+                    avar_names.append("c_at_vars")
+
+        # compute required variables
+        if avar_props:
+            commands.append(
+                "compute at_vars all property/atom {}".format(" ".join(avar_props))
+            )
+            computes.append("at_vars")
+
+        # compute means for variables
+        commands.append(
+            "fix at_means all ave/atom {nevery} {nrepeat} {nfreq} {variables}".format(
+                nevery=nevery,  # compute variables every n steps
+                nfreq=dump_rate,  # nfreq is the dump rate and must be a multiple of nevery
+                nrepeat=nrep,  # average is over nrepeat quantities, nrepeat*nevery <= nfreq
+                variables=" ".join(avar_names),
+            )
+        )
+        fixes.append("at_means")
+
+        # set the averages as variables, just so the dump names are decipherable
+        for i, ave_var in enumerate(ave_variables):
+            commands.append(
+                "variable ave_{0} atom f_at_means{1}".format(
+                    ave_var, "[{}]".format(i + 1) if len(ave_variables) > 1 else ""
+                )
+            )
+
     commands.append(
-        "dump            {0} all custom {1} {2} {3}".format(
-            dump_name, dump_rate, filename, " ".join(dump_variables)
+        "dump     {dump_id} all custom {rate} {fname} {variables} {ave_vars}".format(
+            dump_id=dump_name,
+            rate=dump_rate,
+            fname=filename,
+            variables=" ".join(dump_variables),
+            ave_vars=" ".join(["v_ave_{}".format(v) for v in ave_variables]),
         )
     )
     if append:
         commands.append("dump_modify     {0} append yes".format(dump_name))
-    # if pbc:
-    # this is not available in older versions of lammps
-    #     commands.append("dump_modify     {0} pbc yes".format(dump_name))
 
     commands.extend(
         [
@@ -380,4 +470,4 @@ def atom_info_commands(
             "dump_modify     {0} element {1}".format(dump_name, " ".join(kind_symbols)),
         ]
     )
-    return commands
+    return commands, computes, fixes

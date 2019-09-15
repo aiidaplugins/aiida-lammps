@@ -28,7 +28,7 @@ velocity all create 300 12345 dist gaussian mom yes
 velocity all scale 300 
 
 # Stage 0: thermalise
-dump            atom_info all custom 10 thermalise-output.traj element x y z q
+dump     atom_info all custom 10 thermalise-output.traj element x y z q 
 dump_modify     atom_info append yes
 dump_modify     atom_info sort id
 dump_modify     atom_info element A B
@@ -37,6 +37,7 @@ variable etotal equal etotal
 variable c_reax_1_ equal c_reax[1]
 fix sys_info all ave/time 100 1 100 &
     v_temp v_etotal v_c_reax_1_ &
+    off 1 off 2 off 3 &
     title1 "step temp etotal c_reax_1_" &
     file thermalise-sys_info.txt
 restart         0
@@ -48,7 +49,12 @@ unfix sys_info
 unfix int
 undump atom_info
 compute         cna all cna/atom 3.0
-dump            atom_info all custom 100 equilibrate-output.traj element x y z q c_cna
+compute at_vars all property/atom xu yu zu
+fix at_means all ave/atom 10 10 100 c_at_vars[1] c_at_vars[2] c_at_vars[3]
+variable ave_xu atom f_at_means[1]
+variable ave_yu atom f_at_means[2]
+variable ave_zu atom f_at_means[3]
+dump     atom_info all custom 100 equilibrate-output.traj element x y z q c_cna v_ave_xu v_ave_yu v_ave_zu
 dump_modify     atom_info append yes
 dump_modify     atom_info sort id
 dump_modify     atom_info element A B
@@ -57,6 +63,7 @@ variable etotal equal etotal
 variable c_reax_1_ equal c_reax[1]
 fix sys_info all ave/time 2 5 10 &
     v_temp v_etotal v_c_reax_1_ &
+     &
     title1 "step temp etotal c_reax_1_" &
     file equilibrate-sys_info.txt
 restart         200 equilibrate-calc.restart
