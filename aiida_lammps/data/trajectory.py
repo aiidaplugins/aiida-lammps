@@ -27,6 +27,17 @@ class LammpsTrajectory(Data):
     _compression_method = ZIP_DEFLATED
 
     def __init__(self, fileobj=None, aliases=None, **kwargs):
+        """Store a lammps trajectory file.
+
+        Parameters
+        ----------
+        fileobj : str or file-like
+            the file or path to the file
+        aliases : dict[str, list] or None
+            mapping of variable names to one or more lammps variables,
+            e.g. {"position": ["x", "y", "z"]}
+
+        """
         super(LammpsTrajectory, self).__init__(**kwargs)
 
         if fileobj is not None:
@@ -37,6 +48,7 @@ class LammpsTrajectory(Data):
                 self.set_from_fileobj(fileobj, aliases)
 
     def _validate(self):
+        """Validate that a trajectory has been set, before storing."""
         from aiida.common.exceptions import ValidationError
 
         super(LammpsTrajectory, self)._validate()
@@ -44,7 +56,16 @@ class LammpsTrajectory(Data):
             raise ValidationError("trajectory has not yet been set")
 
     def set_from_fileobj(self, fileobj, aliases=None):
+        """Store a lammps trajectory file.
 
+        Parameters
+        ----------
+        fileobj : file-like
+        aliases : dict[str, list] or None
+            mapping of variable names to one or more lammps variables,
+            e.g. {"position": ["x", "y", "z"]}
+
+        """
         time_steps = []
         elements = set()
         field_names = None
@@ -134,6 +155,7 @@ class LammpsTrajectory(Data):
         return self.get_attribute("aliases")
 
     def get_step_string(self, step_idx):
+        """Return the content string, for a specific trajectory step."""
         step_idx = list(range(self.number_steps))[step_idx]
         zip_name = "{}{}".format(self.get_attribute("zip_prefix"), step_idx)
         with self.open(self.get_attribute("traj_filename"), mode="rb") as handle:
@@ -145,7 +167,20 @@ class LammpsTrajectory(Data):
         return six.ensure_text(content)
 
     def get_step_data(self, step_idx):
+        """Return parsed data, for a specific trajectory step."""
         return parse_step(self.get_step_string(step_idx).splitlines())
+
+    def iter_step_strings(self):
+        """Yield the content string, for a each trajectory step."""
+        with self.open(self.get_attribute("traj_filename"), mode="rb") as handle:
+            with ZipFile(
+                handle, "r", self.get_attribute("compression_method")
+            ) as zip_file:
+                for step_idx in range(self.number_steps):
+                    zip_name = "{}{}".format(self.get_attribute("zip_prefix"), step_idx)
+                    with zip_file.open(zip_name) as step_file:
+                        content = step_file.read()
+                        yield six.ensure_text(content)
 
     def get_step_structure(
         self,
@@ -154,6 +189,23 @@ class LammpsTrajectory(Data):
         position_fields=("x", "y", "z"),
         original_structure=None,
     ):
+        """Return a StructureData object, for a specific trajectory step.
+
+        Parameters
+        ----------
+        step_idx : int
+        symbol_field : str
+            the variable field denoting the symbol for each atom
+        position_fields : tuple, optional
+            the variable fields denoting the x, y, z position for each atom
+        original_structure : aiida.orm.StructureData or None
+            a structure that will be used to define kinds for each atom
+
+        Returns
+        -------
+        aiida.orm.StructureData
+
+        """
         data = self.get_step_data(step_idx)
         return create_structure(
             data,
@@ -161,3 +213,9 @@ class LammpsTrajectory(Data):
             position_fields=position_fields,
             original_structure=original_structure,
         )
+
+    def write_as_lammps(self, handle):
+        """Write out the lammps trajectory to file."""
+        for string in self.iter_step_strings():
+            handle.write(string)
+            handle.write(six.ensure_text("\n"))
