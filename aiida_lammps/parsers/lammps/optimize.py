@@ -2,8 +2,9 @@ import traceback
 
 from aiida.orm import Dict
 
+from aiida_lammps.data.trajectory import LammpsTrajectory
+from aiida_lammps.common.raw_parsers import get_units_dict
 from aiida_lammps.parsers.lammps.base import LAMMPSBaseParser
-from aiida_lammps.common.raw_parsers import DEFAULT_TRAJ_SET_MAP, get_units_dict
 
 
 class OptimizeParser(LAMMPSBaseParser):
@@ -24,23 +25,22 @@ class OptimizeParser(LAMMPSBaseParser):
             return exit_code
 
         traj_error = None
-        sets_map = dict(DEFAULT_TRAJ_SET_MAP)
-        sets_map["stresses"] = ["c_stpa[{}]".format(i + 1) for i in range(6)]
         if not resources.traj_paths:
             traj_error = self.exit_codes.ERROR_TRAJ_FILE_MISSING
         else:
             try:
-                trajectory_data = self.parse_trajectory(
+                trajectory_data = LammpsTrajectory(
                     resources.traj_paths[0],
-                    self.node.inputs.structure,
-                    sets_map=sets_map,
-                    dtype_map={"forces": float, "stresses": float, "q": float},
+                    aliases={
+                        "stresses": ["c_stpa[{}]".format(i + 1) for i in range(6)],
+                        "forces": ["fx", "fy", "fz"],
+                    },
                 )
                 self.out("trajectory_data", trajectory_data)
                 self.out(
                     "structure",
                     trajectory_data.get_step_structure(
-                        -1, custom_kinds=self.node.inputs.structure.kinds
+                        -1, original_structure=self.node.inputs.structure
                     ),
                 )
             except Exception as err:

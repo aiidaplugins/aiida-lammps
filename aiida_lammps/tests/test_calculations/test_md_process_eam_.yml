@@ -16,16 +16,17 @@ system_data:
   - 100
   units_style: metal
 trajectory_data:
-  array|cells:
-  - 101
-  - 3
-  - 3
-  array|positions:
-  - 101
-  - 2
-  - 3
-  array|steps:
-  - 101
-  symbols:
-  - Fe1
-  - Fe2
+  aliases: null
+  compression_method: 8
+  elements:
+  - Fe
+  field_names:
+  - element
+  - x
+  - y
+  - z
+  number_atoms: 2
+  number_steps: 101
+  timestep_filename: timesteps.txt
+  traj_filename: trajectory.zip
+  zip_prefix: step-

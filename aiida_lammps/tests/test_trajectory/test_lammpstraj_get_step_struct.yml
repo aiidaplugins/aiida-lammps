@@ -1,0 +1,87 @@
+cell:
+- - 5.38
+  - 0.0
+  - 0.0
+- - 0.0
+  - 5.38
+  - 0.0
+- - 0.0
+  - 0.0
+  - 5.38
+kinds:
+- mass: 55.84
+  name: Fe
+  symbols:
+  - Fe
+  weights:
+  - 1.0
+- mass: 32.06
+  name: S
+  symbols:
+  - S
+  weights:
+  - 1.0
+pbc1: true
+pbc2: true
+pbc3: true
+sites:
+- kind_name: Fe
+  position:
+  - 0.0
+  - 0.0
+  - 5.38
+- kind_name: Fe
+  position:
+  - 2.69
+  - 0.0
+  - 2.69
+- kind_name: Fe
+  position:
+  - 0.0
+  - 2.69
+  - 2.69
+- kind_name: Fe
+  position:
+  - 2.69
+  - 2.69
+  - 0.0
+- kind_name: S
+  position:
+  - 1.82
+  - 1.82
+  - 1.82
+- kind_name: S
+  position:
+  - 3.56
+  - 3.56
+  - 3.56
+- kind_name: S
+  position:
+  - 0.87
+  - 3.56
+  - 4.51
+- kind_name: S
+  position:
+  - 4.51
+  - 1.82
+  - 0.88
+- kind_name: S
+  position:
+  - 3.56
+  - 4.51
+  - 0.88
+- kind_name: S
+  position:
+  - 1.82
+  - 0.87
+  - 4.51
+- kind_name: S
+  position:
+  - 4.51
+  - 0.87
+  - 3.56
+- kind_name: S
+  position:
+  - 0.87
+  - 4.51
+  - 1.81

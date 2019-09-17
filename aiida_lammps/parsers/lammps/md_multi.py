@@ -5,8 +5,9 @@ import numpy as np
 
 from aiida.orm import Dict, ArrayData
 
-from aiida_lammps.parsers.lammps.base import LAMMPSBaseParser
+from aiida_lammps.data.trajectory import LammpsTrajectory
 from aiida_lammps.common.raw_parsers import convert_units, get_units_dict
+from aiida_lammps.parsers.lammps.base import LAMMPSBaseParser
 
 
 class MdMultiParser(LAMMPSBaseParser):
@@ -34,10 +35,8 @@ class MdMultiParser(LAMMPSBaseParser):
         else:
             try:
                 trajectories = {
-                    os.path.basename(traj_path).split("-")[0]: self.parse_trajectory(
-                        traj_path,
-                        self.node.inputs.structure,
-                        dtype_map={"forces": float, "q": float},
+                    os.path.basename(traj_path).split("-")[0]: LammpsTrajectory(
+                        traj_path
                     )
                     for traj_path in resources.traj_paths
                 }

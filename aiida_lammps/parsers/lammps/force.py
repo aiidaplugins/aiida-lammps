@@ -3,9 +3,9 @@ import numpy as np
 from aiida.orm import Dict, ArrayData
 
 from aiida_lammps.parsers.lammps.base import LAMMPSBaseParser
-from aiida_lammps.common.raw_parsers import (
-    iter_lammps_trajectories,
-    get_units_dict,
+from aiida_lammps.common.raw_parsers import get_units_dict
+from aiida_lammps.common.parse_trajectory import (
+    iter_trajectories,
     TRAJ_BLOCK,  # noqa: F401
 )
 
@@ -66,7 +66,7 @@ class ForceParser(LAMMPSBaseParser):
 
     def parse_traj_file(self, trajectory_filename):
         with self.retrieved.open(trajectory_filename, "r") as handle:
-            traj_steps = list(iter_lammps_trajectories(handle))
+            traj_steps = list(iter_trajectories(handle))
         if not traj_steps:
             raise IOError("trajectory file empty")
         if len(traj_steps) > 1:
@@ -74,22 +74,29 @@ class ForceParser(LAMMPSBaseParser):
 
         traj_step = traj_steps[0]  # type: TRAJ_BLOCK
 
+        for field in ["fx", "fy", "fz"]:
+            if field not in traj_step.atom_fields:
+                raise IOError(
+                    "trajectory file does not contain fields {}".format(field)
+                )
+
         array_data = ArrayData()
 
-        try:
-            fx_idx = traj_step.field_names.index("fx")
-            fy_idx = traj_step.field_names.index("fy")
-            fz_idx = traj_step.field_names.index("fz")
-        except ValueError:
-            raise IOError("trajectory file does not contain fields fx fy fz")
+        array_data.set_array(
+            "forces",
+            np.array(
+                [
+                    traj_step.atom_fields["fx"],
+                    traj_step.atom_fields["fy"],
+                    traj_step.atom_fields["fz"],
+                ],
+                dtype=float,
+            ).T,
+        )
 
-        forces = [[f[fx_idx], f[fy_idx], f[fz_idx]] for f in traj_step.fields]
-
-        array_data.set_array("forces", np.array(forces, dtype=float))
-
-        if "q" in traj_step.field_names:
-            q_idx = traj_step.field_names.index("q")
-            charges = [f[q_idx] for f in traj_step.fields]
-            array_data.set_array("charges", np.array(charges, dtype=float))
+        if "q" in traj_step.atom_fields:
+            array_data.set_array(
+                "charges", np.array(traj_step.atom_fields["q"], dtype=float)
+            )
 
         return array_data

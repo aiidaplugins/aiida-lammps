@@ -1,6 +1,6 @@
 {
   "name": "aiida-lammps",
-  "version": "0.6.0b5",
+  "version": "0.7.0b5",
   "description": "AiiDA plugin for LAMMPS",
   "url": "https://github.com/abelcarreras/aiida-lammps",
   "author": "Abel Carreras, Chris Sewell",
@@ -36,7 +36,8 @@
       "dynaphopy = aiida_lammps.parsers.dynaphopy: DynaphopyParser"
     ],
     "aiida.data": [
-      "lammps.potential = aiida_lammps.data.potential:EmpiricalPotential"
+      "lammps.potential = aiida_lammps.data.potential:EmpiricalPotential",
+      "lammps.trajectory = aiida_lammps.data.trajectory:LammpsTrajectory"
     ],
     "lammps.potentials": [
       "eam =  aiida_lammps.data.pot_plugins.eam:EAM",

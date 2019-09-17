@@ -189,7 +189,6 @@ def test_optimize_submission(db_test_app, get_potential_data, potential_type):
     parameters = get_calc_parameters(
         get_lammps_version(code), calc_plugin, potential.default_units, potential_type
     )
-    print(parameters.attributes)
     builder = code.get_builder()
     builder._update(
         {
@@ -334,10 +333,7 @@ def test_optimize_process(
     pdict.pop("warnings")
     trajectory_data = calc_node.outputs.trajectory_data.attributes
     # optimization steps may differ between lammps versions
-    trajectory_data = {
-        k: [None] + v[1:] if k.startswith("array|") else v
-        for k, v in trajectory_data.items()
-    }
+    trajectory_data = {k: v for k, v in trajectory_data.items() if k != "number_steps"}
     data_regression.check(
         {
             "results": tests.recursive_round(pdict, 1),

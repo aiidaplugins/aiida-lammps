@@ -3,14 +3,11 @@ from fnmatch import fnmatch
 import os
 import traceback
 
-import numpy as np
-
 from aiida.parsers.parser import Parser
-from aiida.orm import TrajectoryData
 from aiida.common import exceptions
 
 from aiida_lammps import __version__ as aiida_lammps_version
-from aiida_lammps.common.raw_parsers import read_log_file, parse_trajectory_file
+from aiida_lammps.common.raw_parsers import read_log_file
 
 ParsingResources = namedtuple(
     "ParsingResources", ["exit_code", "sys_paths", "traj_paths"]
@@ -126,53 +123,3 @@ class LAMMPSBaseParser(Parser):
         """Add standard information to output data."""
         output_data["parser_class"] = self.__class__.__name__
         output_data["parser_version"] = aiida_lammps_version
-
-    @staticmethod
-    def parse_trajectory(
-        trajectory_filepath, input_structure, sets_map=None, dtype_map=None
-    ):
-        """Parse a trajectory file."""
-
-        variables = parse_trajectory_file(trajectory_filepath, sets_map=sets_map)
-
-        if "element" not in variables:
-            raise IOError("trajectory does not contain element field")
-        if "positions" not in variables:
-            raise IOError(
-                "trajectory does not contain one or more of x, y and z fields"
-            )
-        elements = np.unique(variables.pop("element"), axis=0)
-        if len(elements) != 1:
-            raise IOError(
-                "trajectory element field is not equal for all steps: {}".format(
-                    elements.tolist()
-                )
-            )
-
-        kind_names = input_structure.get_site_kindnames()
-        kind_elements = [input_structure.get_kind(n).symbol for n in kind_names]
-        if elements[0].tolist() != kind_elements:
-            raise IOError(
-                "trajectory elements are not equal to input structure symbols: {} != {}".format(
-                    elements[0].tolist(), kind_elements
-                )
-            )
-
-        # save trajectories into node
-        trajectory_data = TrajectoryData()
-        trajectory_data.set_trajectory(
-            kind_names,
-            np.array(variables.pop("positions"), dtype=float),
-            stepids=np.array(variables.pop("timesteps"), dtype=int),
-            cells=np.array(variables.pop("cells")),
-        )
-        dtype_map = dtype_map or {}
-        for key, val in variables.items():
-            sanitized_key = key.replace("[", "_").replace("]", "_")
-            if key in dtype_map:
-                value = np.array(val, dtype=dtype_map[key])
-            else:
-                value = np.array(val)
-            trajectory_data.set_array(sanitized_key, value)
-
-        return trajectory_data

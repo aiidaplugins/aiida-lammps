@@ -15,24 +15,36 @@ structure:
   - Fe1
   - Fe2
 trajectory_data:
-  array|cells:
-  - null
-  - 3
-  - 3
-  array|forces:
-  - null
-  - 2
-  - 3
-  array|positions:
-  - null
-  - 2
-  - 3
-  array|steps:
-  - null
-  array|stresses:
-  - null
-  - 2
-  - 6
-  symbols:
-  - Fe1
-  - Fe2
+  aliases:
+    forces:
+    - fx
+    - fy
+    - fz
+    stresses:
+    - c_stpa[1]
+    - c_stpa[2]
+    - c_stpa[3]
+    - c_stpa[4]
+    - c_stpa[5]
+    - c_stpa[6]
+  compression_method: 8
+  elements:
+  - Fe
+  field_names:
+  - c_stpa[1]
+  - c_stpa[2]
+  - c_stpa[3]
+  - c_stpa[4]
+  - c_stpa[5]
+  - c_stpa[6]
+  - element
+  - fx
+  - fy
+  - fz
+  - x
+  - y
+  - z
+  number_atoms: 2
+  timestep_filename: timesteps.txt
+  traj_filename: trajectory.zip
+  zip_prefix: step-

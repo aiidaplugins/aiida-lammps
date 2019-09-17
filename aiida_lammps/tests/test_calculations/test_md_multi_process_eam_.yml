@@ -27,42 +27,36 @@ system__thermalise:
   - 2
   units_style: metal
 trajectory__equilibrate:
-  array|c_cna:
-  - 5
-  - 2
-  array|cells:
-  - 5
-  - 3
-  - 3
-  array|positions:
-  - 5
-  - 2
-  - 3
-  array|steps:
-  - 5
-  array|v_ave_xu:
-  - 5
-  - 2
-  array|v_ave_yu:
-  - 5
-  - 2
-  array|v_ave_zu:
-  - 5
-  - 2
-  symbols:
-  - Fe1
-  - Fe2
+  aliases: null
+  compression_method: 8
+  elements:
+  - Fe
+  field_names:
+  - c_cna
+  - element
+  - v_ave_xu
+  - v_ave_yu
+  - v_ave_zu
+  - x
+  - y
+  - z
+  number_atoms: 2
+  number_steps: 5
+  timestep_filename: timesteps.txt
+  traj_filename: trajectory.zip
+  zip_prefix: step-
 trajectory__thermalise:
-  array|cells:
-  - 11
-  - 3
-  - 3
-  array|positions:
-  - 11
-  - 2
-  - 3
-  array|steps:
-  - 11
-  symbols:
-  - Fe1
-  - Fe2
+  aliases: null
+  compression_method: 8
+  elements:
+  - Fe
+  field_names:
+  - element
+  - x
+  - y
+  - z
+  number_atoms: 2
+  number_steps: 11
+  timestep_filename: timesteps.txt
+  traj_filename: trajectory.zip
+  zip_prefix: step-

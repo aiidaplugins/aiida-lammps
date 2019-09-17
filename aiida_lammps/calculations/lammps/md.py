@@ -21,7 +21,7 @@ class MdCalculation(BaseLammpsCalculation):
 
         spec.output(
             "trajectory_data",
-            valid_type=DataFactory("array.trajectory"),
+            valid_type=DataFactory("lammps.trajectory"),
             required=True,
             help="atomic configuration data per dump step",
         )

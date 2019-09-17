@@ -4,8 +4,9 @@ import numpy as np
 
 from aiida.orm import Dict, ArrayData
 
-from aiida_lammps.parsers.lammps.base import LAMMPSBaseParser
+from aiida_lammps.data.trajectory import LammpsTrajectory
 from aiida_lammps.common.raw_parsers import convert_units, get_units_dict
+from aiida_lammps.parsers.lammps.base import LAMMPSBaseParser
 
 
 class MdParser(LAMMPSBaseParser):
@@ -32,11 +33,7 @@ class MdParser(LAMMPSBaseParser):
             traj_error = self.exit_codes.ERROR_TRAJ_FILE_MISSING
         else:
             try:
-                trajectory_data = self.parse_trajectory(
-                    resources.traj_paths[0],
-                    self.node.inputs.structure,
-                    dtype_map={"forces": float, "q": float},
-                )
+                trajectory_data = LammpsTrajectory(resources.traj_paths[0])
                 self.out("trajectory_data", trajectory_data)
             except Exception as err:
                 traceback.print_exc()

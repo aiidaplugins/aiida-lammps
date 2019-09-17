@@ -25,7 +25,7 @@ class OptimizeCalculation(BaseLammpsCalculation):
         )
         spec.output(
             "trajectory_data",
-            valid_type=DataFactory("array.trajectory"),
+            valid_type=DataFactory("lammps.trajectory"),
             required=True,
             help="forces, stresses and positions data per step",
         )

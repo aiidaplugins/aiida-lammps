@@ -30,7 +30,7 @@ class MdMultiCalculation(BaseLammpsCalculation):
         spec.output_namespace(
             "trajectory",
             dynamic=True,
-            valid_type=DataFactory("array.trajectory"),
+            valid_type=DataFactory("lammps.trajectory"),
             help="atomic configuration data per dump step of a stage",
         )
 

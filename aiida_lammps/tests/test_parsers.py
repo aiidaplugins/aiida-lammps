@@ -107,7 +107,7 @@ def test_empty_log(db_test_app, plugin_name):
 
     calc_node = db_test_app.generate_calcjob_node(plugin_name, retrieved)
     with db_test_app.sandbox_folder() as temp_path:
-        with temp_path.open("trajectory.lammpstrj", "w"):
+        with temp_path.open("x-trajectory.lammpstrj", "w"):
             pass
         results, calcfunction = db_test_app.parse_from_node(
             plugin_name, calc_node, temp_path.abspath
@@ -138,7 +138,7 @@ def test_empty_traj(db_test_app, plugin_name):
 
     calc_node = db_test_app.generate_calcjob_node(plugin_name, retrieved)
     with db_test_app.sandbox_folder() as temp_path:
-        with temp_path.open("trajectory.lammpstrj", "w") as handle:
+        with temp_path.open("x-trajectory.lammpstrj", "w") as handle:
             pass
         results, calcfunction = db_test_app.parse_from_node(
             plugin_name, calc_node, temp_path.abspath
@@ -160,7 +160,7 @@ def test_run_error(db_test_app, plugin_name):
     retrieved = FolderData()
     with retrieved.open("log.lammps", "w") as handle:
         handle.write(get_log())
-    with retrieved.open("trajectory.lammpstrj", "w") as handle:
+    with retrieved.open("x-trajectory.lammpstrj", "w") as handle:
         handle.write(get_traj_force())
     with retrieved.open("_scheduler-stdout.txt", "w") as handle:
         handle.write(six.ensure_text("ERROR description"))
@@ -170,7 +170,7 @@ def test_run_error(db_test_app, plugin_name):
     calc_node = db_test_app.generate_calcjob_node(plugin_name, retrieved)
 
     with db_test_app.sandbox_folder() as temp_path:
-        with temp_path.open("trajectory.lammpstrj", "w") as handle:
+        with temp_path.open("x-trajectory.lammpstrj", "w") as handle:
             handle.write(get_traj_force())
         results, calcfunction = db_test_app.parse_from_node(
             plugin_name, calc_node, temp_path.abspath
