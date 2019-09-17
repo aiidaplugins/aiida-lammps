@@ -116,6 +116,19 @@ def get_calc_parameters(lammps_version, plugin_name, units, potential_type):
     return Dict(dict=parameters_opt)
 
 
+def sanitize_results(results_dict, round_dp_all=None, round_energy=None):
+    """Sanitize the results dictionary for test regression."""
+    results_dict.pop("parser_version")
+    results_dict.pop("warnings")
+    results_dict.pop("steps_per_second", None)
+    results_dict.pop("total_wall_time", None)
+    if round_energy and "energy" in results_dict:
+        results_dict["energy"] = round(results_dict["energy"], round_energy)
+    if round_dp_all:
+        results_dict = tests.recursive_round(results_dict, round_dp_all)
+    return results_dict
+
+
 @pytest.mark.parametrize(
     "potential_type,calc_type",
     [
@@ -276,14 +289,9 @@ def test_force_process(
     link_labels = calc_node.get_outgoing().all_link_labels()
     assert set(link_labels).issuperset(["results", "arrays"])
 
-    pdict = calc_node.outputs.results.get_dict()
-    # assert pdict["warnings"].strip() == pot_data.output["warnings"]
-    # assert pdict["energy"] == pytest.approx(pot_data.output["initial_energy"])
-    pdict.pop("parser_version")
-    pdict.pop("warnings")
     data_regression.check(
         {
-            "results": tests.recursive_round(pdict, 1),
+            "results": sanitize_results(calc_node.outputs.results.get_dict(), 1),
             "arrays": calc_node.outputs.arrays.attributes,
         }
     )
@@ -325,18 +333,12 @@ def test_optimize_process(
     link_labels = calc_node.get_outgoing().all_link_labels()
     assert set(link_labels).issuperset(["results", "trajectory_data", "structure"])
 
-    pdict = calc_node.outputs.results.get_dict()
-    # assert pdict["warnings"].strip() == pot_data.output["warnings"]
-    # assert pdict["energy"] == pytest.approx(pot_data.output["energy"])
-
-    pdict.pop("parser_version")
-    pdict.pop("warnings")
     trajectory_data = calc_node.outputs.trajectory_data.attributes
     # optimization steps may differ between lammps versions
     trajectory_data = {k: v for k, v in trajectory_data.items() if k != "number_steps"}
     data_regression.check(
         {
-            "results": tests.recursive_round(pdict, 1),
+            "results": sanitize_results(calc_node.outputs.results.get_dict(), 1),
             "trajectory_data": trajectory_data,
             "structure": {"kind_names": calc_node.outputs.structure.get_kind_names()}
             # "structure": tests.recursive_round(
@@ -378,16 +380,11 @@ def test_md_process(db_test_app, get_potential_data, potential_type, data_regres
     link_labels = calc_node.get_outgoing().all_link_labels()
     assert set(link_labels).issuperset(["results", "trajectory_data", "system_data"])
 
-    pdict = calc_node.outputs.results.get_dict()
-    # assert set(pdict.keys()).issuperset(["warnings", "parser_class", "parser_version"])
-    # assert pdict["warnings"].strip() == pot_data.output["warnings"]
-
-    pdict.pop("parser_version")
-    pdict.pop("warnings")
-    pdict["energy"] = round(pdict["energy"], 1)
     data_regression.check(
         {
-            "results": pdict,
+            "results": sanitize_results(
+                calc_node.outputs.results.get_dict(), round_energy=1
+            ),
             "system_data": calc_node.outputs.system_data.attributes,
             "trajectory_data": calc_node.outputs.trajectory_data.attributes,
         }
@@ -438,13 +435,11 @@ def test_md_multi_process(
         ]
     )
 
-    pdict = calc_node.outputs.results.get_dict()
-    pdict.pop("parser_version")
-    pdict.pop("warnings")
-    pdict["energy"] = round(pdict["energy"], 1)
     data_regression.check(
         {
-            "results": pdict,
+            "results": sanitize_results(
+                calc_node.outputs.results.get_dict(), round_energy=1
+            ),
             "system__thermalise": calc_node.outputs.system__thermalise.attributes,
             "system__equilibrate": calc_node.outputs.system__equilibrate.attributes,
             "trajectory__thermalise": calc_node.outputs.trajectory__thermalise.attributes,

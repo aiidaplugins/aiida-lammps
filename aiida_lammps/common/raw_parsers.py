@@ -1,3 +1,5 @@
+import re
+
 import numpy as np
 
 
@@ -8,30 +10,40 @@ def read_log_file(logdata_txt, compute_stress=False):
     if not data:
         raise IOError("The logfile is empty")
 
+    perf_regex = re.compile(
+        r"Performance\:\s(.+)\sns\/day,\s(.+)\shours\/ns\,\s(.+)\stimesteps\/s\s*"
+    )
+
     data_dict = {}
     cell_params = None
     stress_params = None
     found_end = False
     for i, line in enumerate(data):
+        line = line.strip()
         if "END_OF_COMP" in line:
             found_end = True
+        elif "Total wall time:" in line:
+            data_dict["total_wall_time"] = line.split()[-1]
         # These are handled in LAMMPSBaseParser.add_warnings_and_errors
         # if line.strip().startswith("WARNING"):
         #     data_dict.setdefault("warnings", []).append(line.strip())
         # if line.strip().startswith("ERROR"):
         #     data_dict.setdefault("errors", []).append(line.strip())
-        if "units" in line:
+        elif perf_regex.match(line):
+            ns_day, hr_ns, step_sec = perf_regex.match(line).groups()
+            data_dict.setdefault("steps_per_second", []).append(float(step_sec))
+        elif "units" in line:
             data_dict["units_style"] = line.split()[1]
-        if line.startswith("final_energy:"):
+        elif line.startswith("final_energy:"):
             data_dict["energy"] = float(line.split()[1])
-        if line.startswith("final_variable:"):
+        elif line.startswith("final_variable:"):
             if "final_variables" not in data_dict:
                 data_dict["final_variables"] = {}
             data_dict["final_variables"][line.split()[1]] = float(line.split()[3])
 
-        if line.startswith("final_cell:"):
+        elif line.startswith("final_cell:"):
             cell_params = [float(v) for v in line.split()[1:10]]
-        if line.startswith("final_stress:"):
+        elif line.startswith("final_stress:"):
             stress_params = [float(v) for v in line.split()[1:7]]
 
     if not compute_stress:
