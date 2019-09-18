@@ -257,7 +257,11 @@ class MdMultiCalculation(BaseLammpsCalculation):
     def get_retrieve_lists(self):
         return (
             [],
-            ["*-" + self.options.trajectory_suffix, "*-" + self.options.system_suffix],
+            [
+                "*-" + self.options.trajectory_suffix,
+                "*-" + self.options.system_suffix,
+                "*-" + self.options.restart_filename + ".*",
+            ],
         )
 
 

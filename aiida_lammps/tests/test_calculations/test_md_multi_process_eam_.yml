@@ -10,6 +10,12 @@ results:
   time_units: picoseconds
   timestep_picoseconds: 0.001
   units_style: metal
+retrieved:
+- _scheduler-stderr.txt
+- _scheduler-stdout.txt
+- cell_transform.npy
+- equilibrate-lammps.restart.400
+- log.lammps
 system__equilibrate:
   array|etotal:
   - 40

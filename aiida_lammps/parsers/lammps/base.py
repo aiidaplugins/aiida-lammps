@@ -10,7 +10,7 @@ from aiida_lammps import __version__ as aiida_lammps_version
 from aiida_lammps.common.raw_parsers import read_log_file
 
 ParsingResources = namedtuple(
-    "ParsingResources", ["exit_code", "sys_paths", "traj_paths"]
+    "ParsingResources", ["exit_code", "sys_paths", "traj_paths", "restart_paths"]
 )
 
 
@@ -28,14 +28,14 @@ class LAMMPSBaseParser(Parser):
             out_folder = self.retrieved
         except exceptions.NotExistent:
             return ParsingResources(
-                self.exit_codes.ERROR_NO_RETRIEVED_FOLDER, None, None
+                self.exit_codes.ERROR_NO_RETRIEVED_FOLDER, None, None, None
             )
 
         # Check for temporary folder
         if traj_in_temp or sys_in_temp:
             if "retrieved_temporary_folder" not in kwargs:
                 return ParsingResources(
-                    self.exit_codes.ERROR_NO_RETRIEVED_TEMP_FOLDER, None, None
+                    self.exit_codes.ERROR_NO_RETRIEVED_TEMP_FOLDER, None, None, None
                 )
             temporary_folder = kwargs["retrieved_temporary_folder"]
             list_of_temp_files = os.listdir(temporary_folder)
@@ -45,16 +45,18 @@ class LAMMPSBaseParser(Parser):
 
         # check log file
         if self.node.get_option("output_filename") not in list_of_files:
-            return ParsingResources(self.exit_codes.ERROR_LOG_FILE_MISSING, None, None)
+            return ParsingResources(
+                self.exit_codes.ERROR_LOG_FILE_MISSING, None, None, None
+            )
 
         # check stdin and stdout
         if self.node.get_option("scheduler_stdout") not in list_of_files:
             return ParsingResources(
-                self.exit_codes.ERROR_STDOUT_FILE_MISSING, None, None
+                self.exit_codes.ERROR_STDOUT_FILE_MISSING, None, None, None
             )
         if self.node.get_option("scheduler_stderr") not in list_of_files:
             return ParsingResources(
-                self.exit_codes.ERROR_STDERR_FILE_MISSING, None, None
+                self.exit_codes.ERROR_STDERR_FILE_MISSING, None, None, None
             )
 
         # check for system info file(s)
@@ -83,7 +85,16 @@ class LAMMPSBaseParser(Parser):
                 if fnmatch(filename, "*" + trajectory_suffix):
                     trajectory_filepaths.append(filename)
 
-        return ParsingResources(None, system_filepaths, trajectory_filepaths)
+        # check for restart file(s)
+        restart_file = self.node.get_option("restart_filename")
+        restart_filepaths = []
+        for filename in list_of_temp_files:
+            if fnmatch(filename, "*" + restart_file + "*"):
+                restart_filepaths.append(os.path.join(temporary_folder, filename))
+
+        return ParsingResources(
+            None, system_filepaths, trajectory_filepaths, restart_filepaths
+        )
 
     def parse_log_file(self, compute_stress=False):
         """Parse the log file."""

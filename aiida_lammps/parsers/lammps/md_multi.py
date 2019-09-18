@@ -1,4 +1,6 @@
+import io
 import os
+import re
 import traceback
 
 import numpy as np
@@ -91,6 +93,22 @@ class MdMultiParser(LAMMPSBaseParser):
                 sys_data_error = self.exit_codes.ERROR_INFO_PARSING
         if arrays:
             self.out("system", arrays)
+
+        # retrieve the last restart file, per stage
+        restart_map = {}
+        for rpath in resources.restart_paths:
+            rpath_base = os.path.basename(rpath)
+            match = re.match(r"([^\-]*)\-.*\.([\d]+)", rpath_base)
+            if match:
+                stage, step = match.groups()
+                if int(step) > restart_map.get(stage, (-1, None))[0]:
+                    restart_map[stage] = (int(step), rpath)
+
+        for stage, (step, rpath) in restart_map.items():
+            with io.open(rpath, "rb") as handle:
+                self.retrieved.put_object_from_filelike(
+                    handle, os.path.basename(rpath), "wb", force=True
+                )
 
         if output_data["errors"]:
             return self.exit_codes.ERROR_LAMMPS_RUN

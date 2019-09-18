@@ -428,6 +428,7 @@ def test_md_multi_process(
     assert set(link_labels).issuperset(
         [
             "results",
+            "retrieved",
             "trajectory__thermalise",
             "trajectory__equilibrate",
             "system__thermalise",
@@ -437,6 +438,7 @@ def test_md_multi_process(
 
     data_regression.check(
         {
+            "retrieved": calc_node.outputs.retrieved.list_object_names(),
             "results": sanitize_results(
                 calc_node.outputs.results.get_dict(), round_energy=1
             ),
