@@ -15,7 +15,7 @@ def lammps_version(executable="lammps"):
     we assume `lammps -h` returns e.g. 'LAMMPS (10 Feb 2015)' or
     'Large-scale Atomic/Molecular Massively Parallel Simulator - 5 Jun 2019'
     """
-    out_text = subprocess.check_output([executable, "-h"], text=True)
+    out_text = subprocess.check_output([executable, "-h"]).decode("utf8")
     match = re.search(r"LAMMPS \((.*)\)", out_text)
     if match:
         return match.group(1)
