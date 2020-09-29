@@ -1,6 +1,6 @@
 {
   "name": "aiida-lammps",
-  "version": "0.7.0b5",
+  "version": "0.8.0",
   "description": "AiiDA plugin for LAMMPS",
   "url": "https://github.com/aiidaplugins/aiida-lammps",
   "author": "Abel Carreras, Chris Sewell",
