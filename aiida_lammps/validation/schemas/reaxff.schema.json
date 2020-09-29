@@ -1,0 +1,350 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "potential.reaxff.schema",
+    "description": "a schema for storing an ReaxFF empirical potential",
+    "type": "object",
+    "properties": {
+        "description": {
+            "type": "string"
+        },
+        "filecontent": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "control": {
+            "type": "object",
+            "description": "properties that control the output of data (LAMMPS only)",
+            "properties": {
+                "simulation_name": {
+                    "type": "string",
+                    "pattern": "[\\_a-zA-Z0-9]+"
+                },
+                "traj_title": {
+                    "description": "Title of the trajectory - not the name of the trajectory file.",
+                    "type": "string",
+                    "pattern": "[\\_a-zA-Z0-9]+"
+                },
+                "tabulate_long_range": {
+                    "description": "To improve performance, long range interactions can optionally be tabulated.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 0
+                },
+                "energy_update_freq": {
+                    "description": "Denotes the frequency (in number of steps) of writes into the partial energies file.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 0
+                },
+                "write_freq": {
+                    "description": "Frequency of writes into the trajectory file",
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 0
+                },
+                "print_atom_info": {
+                    "description": "print only atomic positions + charge",
+                    "type": "boolean",
+                    "default": false
+                },
+                "print_atom_forces": {
+                    "description": "add net forces to atom lines in the trajectory file",
+                    "type": "boolean",
+                    "default": false
+                },
+                "print_atom_velocities": {
+                    "description": "add atomic velocities to atoms line",
+                    "type": "boolean",
+                    "default": false
+                },
+                "print_bond_info": {
+                    "description": "print bonds in the trajectory file",
+                    "type": "boolean",
+                    "default": false
+                },
+                "print_angle_info": {
+                    "description": "print angles in the trajectory file",
+                    "type": "boolean",
+                    "default": false
+                },
+                "bond_graph_cutoff": {
+                    "description": "threshold used in determining what is a physical bond, what is not. Bonds and angles reported in the trajectory file rely on this cutoff.",
+                    "type": "number",
+                    "minimum": 0,
+                    "default": 0.3
+                },
+                "safezone": {
+                    "description": "factor used for allocating reax/c arrays. Increasing these values can avoid memory problems, such as segmentation faults and bondchk failed errors, that could occur under certain conditions.",
+                    "type": "number",
+                    "minimum": 0
+                },
+                "fix_modify_qeq": {
+                    "description": "Apply command `fix_modify qeq energy yes`",
+                    "type": "boolean",
+                    "default": true
+                }
+            }
+        },
+        "species": {
+            "description": "the list of species",
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+                "type": "string",
+                "pattern": "^[a-zA-Z]+ (core|shell)$"
+            }
+        },
+        "global": {
+            "description": "parameters that depend on no species",
+            "type": "object",
+            "patternProperties": {
+                ".*": {
+                    "type": [
+                        "integer",
+                        "number",
+                        "string",
+                        "boolean"
+                    ]
+                }
+            },
+            "properties": {
+                "nbrhood_cutoff": {
+                    "description": "The near neighbors cutoff (in Angstroms) regarding the bonded interactions (LAMMPS only).",
+                    "type": "number",
+                    "minimum": 0,
+                    "default": 5.0
+                },
+                "anglemin": {
+                    "description": "cutoff value for the strength of bonds to be considered in three body interactions.",
+                    "type": "number",
+                    "minimum": 0,
+                    "default": 0.001
+                },
+                "angleprod": {
+                    "description": "cutoff value for the strength of bond order products to be considered in three body interactions.",
+                    "type": "number",
+                    "minimum": 0,
+                    "default": 0.00001
+                },
+                "torsionprod": {
+                    "description": "cutoff value for the strength of bond order products to be considered in four body interactions (GULP only).",
+                    "type": "number",
+                    "minimum": 0,
+                    "default": 0.00001
+                },
+                "hbondmin": {
+                    "description": "cutoff value for the strength of bonds to be considered in hydrogen bond interactions (GULP only).",
+                    "type": "number",
+                    "minimum": 0,
+                    "default": 0.01
+                },
+                "hbonddist": {
+                    "description": "cutoff distance (in Angstroms) for hydrogen bond interactions.",
+                    "type": "number",
+                    "minimum": 0,
+                    "default": 7.5
+                }
+            }
+        },
+        "1body": {
+            "description": "parameters that depend on one species, mapping species index to properties",
+            "type": "object",
+            "additionalProperties": false,
+            "patternProperties": {
+                "[0-9]+": {
+                    "type": "object",
+                    "patternProperties": {
+                        ".*": {
+                            "type": [
+                                "integer",
+                                "number",
+                                "string",
+                                "boolean"
+                            ]
+                        }
+                    },
+                    "required": [
+                        "reaxff1_radii1",
+                        "reaxff1_valence1",
+                        "mass",
+                        "reaxff1_morse3",
+                        "reaxff1_morse2",
+                        "reaxff_gamma",
+                        "reaxff1_radii2",
+                        "reaxff1_valence3",
+                        "reaxff1_morse1",
+                        "reaxff1_morse4",
+                        "reaxff1_valence4",
+                        "reaxff1_under",
+                        "dummy1",
+                        "reaxff_chi",
+                        "reaxff_mu",
+                        "dummy2",
+                        "reaxff1_radii3",
+                        "reaxff1_lonepair2",
+                        "dummy3",
+                        "reaxff1_over2",
+                        "reaxff1_over1",
+                        "reaxff1_over3",
+                        "dummy4",
+                        "dummy5",
+                        "reaxff1_over4",
+                        "reaxff1_angle1",
+                        "dummy11",
+                        "reaxff1_valence2",
+                        "reaxff1_angle2",
+                        "dummy6",
+                        "dummy7",
+                        "dummy8"
+                    ]
+                }
+            }
+        },
+        "2body": {
+            "description": "parameters that depend on two species, mapping '<idx1>-<idx2>' to properties",
+            "type": "object",
+            "additionalProperties": false,
+            "patternProperties": {
+                "[0-9]+\\-[0-9]+": {
+                    "anyOf": [
+                        {
+                            "type": "object",
+                            "patternProperties": {
+                                ".*": {
+                                    "type": [
+                                        "integer",
+                                        "number",
+                                        "string",
+                                        "boolean"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "reaxff2_bond1",
+                                "reaxff2_bond2",
+                                "reaxff2_bond3",
+                                "reaxff2_bond4",
+                                "reaxff2_bo5",
+                                "reaxff2_bo7",
+                                "reaxff2_bo6",
+                                "reaxff2_over",
+                                "reaxff2_bond5",
+                                "reaxff2_bo3",
+                                "reaxff2_bo4",
+                                "dummy1",
+                                "reaxff2_bo1",
+                                "reaxff2_bo2",
+                                "reaxff2_bo8",
+                                "reaxff2_pen1"
+                            ]
+                        },
+                        {
+                            "type": "object",
+                            "patternProperties": {
+                                ".*": {
+                                    "type": [
+                                        "integer",
+                                        "number",
+                                        "string",
+                                        "boolean"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "reaxff2_morse1",
+                                "reaxff2_morse3",
+                                "reaxff2_morse2",
+                                "reaxff2_morse4",
+                                "reaxff2_morse5",
+                                "reaxff2_morse6"
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        "3body": {
+            "description": "parameters that depend on three species, mapping of '<idx1>-<idx2>-<idx3>' to properties. NOTE: the pivot atom should be the central one!",
+            "type": "object",
+            "additionalProperties": false,
+            "patternProperties": {
+                "[0-9]+\\-[0-9]+\\-[0-9]+": {
+                    "anyOf": [
+                        {
+                            "type": "object",
+                            "patternProperties": {
+                                ".*": {
+                                    "type": [
+                                        "integer",
+                                        "number",
+                                        "string",
+                                        "boolean"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "reaxff3_angle1",
+                                "reaxff3_angle2",
+                                "reaxff3_angle3",
+                                "reaxff3_coa1",
+                                "reaxff3_angle5",
+                                "reaxff3_penalty",
+                                "reaxff3_angle4"
+                            ]
+                        },
+                        {
+                            "type": "object",
+                            "patternProperties": {
+                                ".*": {
+                                    "type": [
+                                        "integer",
+                                        "number",
+                                        "string",
+                                        "boolean"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "reaxff3_hbond1",
+                                "reaxff3_hbond2",
+                                "reaxff3_hbond3",
+                                "reaxff3_hbond4"
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        "4body": {
+            "description": "parameters that depend on four species, mapping '<idx1>-<idx2>-<idx3>-<idx4>' to properties",
+            "type": "object",
+            "additionalProperties": false,
+            "patternProperties": {
+                "[0-9]+\\-[0-9]+\\-[0-9]+\\-[0-9]+": {
+                    "type": "object",
+                    "patternProperties": {
+                        ".*": {
+                            "type": [
+                                "integer",
+                                "number",
+                                "string",
+                                "boolean"
+                            ]
+                        }
+                    },
+                    "required": [
+                        "reaxff4_torsion1",
+                        "reaxff4_torsion2",
+                        "reaxff4_torsion3",
+                        "reaxff4_torsion4",
+                        "reaxff4_torsion5",
+                        "dummy1",
+                        "dummy2"
+                    ]
+                }
+            }
+        }
+    }
+}

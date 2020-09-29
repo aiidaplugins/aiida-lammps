@@ -1,0 +1,123 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "LAMMPS Optimize Run Parameters",
+  "type": "object",
+  "required": [
+    "relax",
+    "minimize",
+    "units"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "lammps_version": {
+      "description": "the version of lammps in date format, e.g 10 Nov 2015",
+      "type": "string"
+    },
+    "units": {
+      "description": "the unit system used",
+      "type": "string",
+      "enum": ["real", "nano", "metal", "electron", "micro", "si", "cgs"]
+    },
+    "relax": {
+      "description": "parameters for the box/relax fix",
+      "type": "object",
+      "required": [
+        "type",
+        "pressure"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "description": "type of relaxation",
+          "type": "string",
+          "enum": [
+            "iso",
+            "aniso",
+            "tri"
+          ]
+        },
+        "pressure": {
+          "description": "desired pressure (pressure units)",
+          "type": "number"
+        },
+        "vmax": {
+          "description": "max allowed volume change in one iteration (fraction)",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "exclusiveMinimum": true
+        },
+        "nreset": {
+          "description": "reset reference cell every this many minimizer iterations",
+          "type": "integer",
+          "minimum": 0,
+          "exclusiveMinimum": true
+        }
+      }
+    },
+    "minimize": {
+      "description": "parameters for the minimize command",
+      "type": "object",
+      "required": [
+        "energy_tolerance",
+        "force_tolerance",
+        "max_iterations",
+        "max_evaluations",
+        "style"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "energy_tolerance": {
+          "description": "stopping tolerance for energy (unitless)",
+          "type": "number",
+          "minimum": 0,
+          "exclusiveMinimum": true
+        },
+        "force_tolerance": {
+          "description": "stopping tolerance for force (force units)",
+          "type": "number",
+          "minimum": 0,
+          "exclusiveMinimum": true
+        },
+        "max_iterations": {
+          "description": "max iterations of minimizer",
+          "type": "integer",
+          "minimum": 0,
+          "exclusiveMinimum": true
+        },
+        "max_evaluations": {
+          "description": "max number of force/energy evaluations",
+          "type": "integer",
+          "minimum": 0,
+          "exclusiveMinimum": true
+        },
+        "style": {
+          "description": "minimization algorithm",
+          "type": "string",
+          "enum": [
+            "cg",
+            "sd"
+          ]
+        }
+      }
+    },
+    "thermo_keywords": {
+      "description": "additional keywords to append to 'thermo_style custom'",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9\\_\\[\\]]+$"
+      }
+    },
+    "output_variables": {
+      "description": "optimized output variables to record as attributes (see `thermo_style` for valid keywords)",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9\\_\\[\\]]+$"
+      }
+    }
+  }
+}

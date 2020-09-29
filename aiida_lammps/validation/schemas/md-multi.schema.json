@@ -1,0 +1,753 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "LAMMPS MD Run Parameters",
+  "type": "object",
+  "required": [
+    "units",
+    "timestep",
+    "stages"
+  ],
+  "additionalProperties": false,
+  "definitions": {
+    "velocity_keywords": {
+      "type": "object",
+      "properties": {
+        "dist": {
+          "type": "string",
+          "enum": [
+            "uniform",
+            "gaussian"
+          ]
+        },
+        "sum": {
+          "type": "boolean"
+        },
+        "mom": {
+          "type": "boolean"
+        },
+        "rot": {
+          "type": "boolean"
+        },
+        "temp": {
+          "type": "string"
+        },
+        "bias": {
+          "type": "boolean"
+        },
+        "loop": {
+          "type": "string",
+          "enum": [
+            "all",
+            "local",
+            "geom"
+          ]
+        },
+        "rigid": {
+          "type": "string"
+        },
+        "units": {
+          "type": "string",
+          "enum": [
+            "box",
+            "lattice"
+          ]
+        }
+      }
+    },
+    "int_constraint": {
+      "description": "Define an integration constraint, for e.g. temperature, pressure, etc",
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": [
+        {
+          "description": "external value at start of run",
+          "type": "number"
+        },
+        {
+          "description": "external value at end of run",
+          "type": "number"
+        },
+        {
+          "description": "damping parameter (time units)",
+          "type": "number",
+          "minimum": 0
+        }
+      ]
+    },
+    "time_int_stage": {
+      "description": "A stage of the the simulation, that performs time integration on Nose-Hoover style non-Hamiltonian equations of motion",
+      "type": "object",
+      "required": [
+        "name",
+        "steps",
+        "integration"
+      ],
+      "properties": {
+        "name": {
+          "description": "the name of the stage",
+          "type": "string",
+          "pattern": "[\\_\\-a-zA-Z0-9]+"
+        },
+        "steps": {
+          "description": "number of time steps to run for",
+          "type": "integer",
+          "minimum": 1
+        },
+        "restart_rate": {
+          "description": "Write out a binary restart file with the current state of the simulation every x steps",
+          "type": "integer",
+          "minimum": 0
+        },
+        "integration": {
+          "description": "the time integration method to update the position and velocity for atoms at each time step",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "style"
+          ],
+          "properties": {
+            "style": {
+              "type": "string",
+              "enum": [
+                "nvt",
+                "npt",
+                "nph"
+              ]
+            },
+            "constraints": {
+              "description": "external constraints to set",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "temp": {
+                  "description": "the temperature to run at",
+                  "$ref": "#/definitions/int_constraint"
+                },
+                "iso": {
+                  "description": "the pressure to run at",
+                  "$ref": "#/definitions/int_constraint"
+                },
+                "aniso": {
+                  "description": "the pressure to run at",
+                  "$ref": "#/definitions/int_constraint"
+                },
+                "tri": {
+                  "description": "the pressure to run at",
+                  "$ref": "#/definitions/int_constraint"
+                },
+                "x": {
+                  "description": "the stress tensor component to run at",
+                  "$ref": "#/definitions/int_constraint"
+                },
+                "y": {
+                  "description": "the stress tensor component to run at",
+                  "$ref": "#/definitions/int_constraint"
+                },
+                "z": {
+                  "description": "the stress tensor component to run at",
+                  "$ref": "#/definitions/int_constraint"
+                },
+                "xy": {
+                  "description": "the stress tensor component to run at",
+                  "$ref": "#/definitions/int_constraint"
+                },
+                "yz": {
+                  "description": "the stress tensor component to run at",
+                  "$ref": "#/definitions/int_constraint"
+                },
+                "xz": {
+                  "description": "the stress tensor component to run at",
+                  "$ref": "#/definitions/int_constraint"
+                }
+              }
+            },
+            "keywords": {
+              "description": "additional keywords",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "couple": {
+                  "description": "",
+                  "type": "string",
+                  "enum": [
+                    "none",
+                    "xyz",
+                    "xy",
+                    "yz",
+                    "xz"
+                  ]
+                },
+                "mtk": {
+                  "description": "add in MTK adjustment term or not",
+                  "type": "boolean"
+                },
+                "scalexy": {
+                  "description": "scale xy with ly",
+                  "type": "boolean"
+                },
+                "scaleyz": {
+                  "description": "scale yz with lz",
+                  "type": "boolean"
+                },
+                "scalexz": {
+                  "description": "scale xz with lz",
+                  "type": "boolean"
+                },
+                "flip": {
+                  "description": "allow or disallow box flips when it becomes highly skewed",
+                  "type": "boolean"
+                },
+                "drag": {
+                  "description": "drag factor added to barostat/thermostat",
+                  "type": "number",
+                  "minimum": 0,
+                  "default": 0
+                },
+                "tchain": {
+                  "description": "length of thermostat chain (1 = single thermostat)",
+                  "type": "integer",
+                  "minimum": 0,
+                  "default": 1
+                },
+                "pchain": {
+                  "description": "length of thermostat chain on barostat (0 = no thermostat)",
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "tloop": {
+                  "description": "number of sub-cycles to perform on thermostat",
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ploop": {
+                  "description": "number of sub-cycles to perform on barostat thermostat",
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "nreset": {
+                  "description": "reset reference cell every this many timesteps",
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            }
+          }
+        },
+        "computes": {
+          "description": "Define a computation that will be performed on a group of atoms.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "style"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "[\\_a-zA-Z0-9]+"
+              },
+              "style": {
+                "type": "string",
+                "enum": [
+                  "ackland/atom",
+                  "adf",
+                  "aggregate/atom",
+                  "angle",
+                  "angle/local",
+                  "angmom/chunk",
+                  "basal/atom",
+                  "body/local",
+                  "bond",
+                  "bond/local",
+                  "centro/atom",
+                  "chunk/atom",
+                  "chunk/spread/atom",
+                  "cluster/atom",
+                  "cna/atom",
+                  "cnp/atom",
+                  "com",
+                  "com/chunk",
+                  "contact/atom",
+                  "coord/atom",
+                  "damage/atom",
+                  "dihedral",
+                  "dihedral/local",
+                  "dilatation/atom",
+                  "dipole/chunk",
+                  "displace/atom",
+                  "dpd",
+                  "dpd/atom",
+                  "edpd/temp/atom",
+                  "entropy/atom",
+                  "erotate/asphere",
+                  "erotate/rigid",
+                  "erotate/sphere",
+                  "erotate/sphere/atom",
+                  "event/displace",
+                  "fep",
+                  "force/tally",
+                  "fragment/atom",
+                  "global/atom",
+                  "group/group",
+                  "gyration",
+                  "gyration/chunk",
+                  "gyration/shape",
+                  "heat/flux",
+                  "heat/flux/tally",
+                  "hexorder/atom",
+                  "improper",
+                  "improper/local",
+                  "inertia/chunk",
+                  "ke",
+                  "ke/atom",
+                  "ke/atom/eff",
+                  "ke/eff",
+                  "ke/rigid",
+                  "meso/e/atom",
+                  "meso/rho/atom",
+                  "meso/t/atom",
+                  "momentum",
+                  "msd",
+                  "msd/chunk",
+                  "msd/nongauss",
+                  "omega/chunk",
+                  "orientorder/atom",
+                  "pair",
+                  "pair/local",
+                  "pe",
+                  "pe/atom",
+                  "pe/mol/tally",
+                  "pe/tally",
+                  "plasticity/atom",
+                  "pressure",
+                  "pressure/cylinder",
+                  "pressure/uef",
+                  "property/atom",
+                  "property/chunk",
+                  "property/local",
+                  "ptm/atom",
+                  "rdf",
+                  "reduce",
+                  "reduce/chunk",
+                  "reduce/region",
+                  "rigid/local",
+                  "saed",
+                  "slice",
+                  "smd/contact/radius",
+                  "smd/damage",
+                  "smd/hourglass/error",
+                  "smd/internal/energy",
+                  "smd/plastic/strain",
+                  "smd/plastic/strain/rate",
+                  "smd/rho",
+                  "smd/tlsph/defgrad",
+                  "smd/tlsph/dt",
+                  "smd/tlsph/num/neighs",
+                  "smd/tlsph/shape",
+                  "smd/tlsph/strain",
+                  "smd/tlsph/strain/rate",
+                  "smd/tlsph/stress",
+                  "smd/triangle/vertices",
+                  "smd/ulsph/num/neighs",
+                  "smd/ulsph/strain",
+                  "smd/ulsph/strain/rate",
+                  "smd/ulsph/stress",
+                  "smd/vol",
+                  "sna/atom",
+                  "snad/atom",
+                  "snav/atom",
+                  "spin",
+                  "stress/atom",
+                  "stress/mop",
+                  "stress/mop/profile",
+                  "stress/tally",
+                  "tdpd/cc/atom",
+                  "temp",
+                  "temp/asphere",
+                  "temp/body",
+                  "temp/chunk",
+                  "temp/com",
+                  "temp/cs",
+                  "temp/deform",
+                  "temp/deform/eff",
+                  "temp/drude",
+                  "temp/eff",
+                  "temp/partial",
+                  "temp/profile",
+                  "temp/ramp",
+                  "temp/region",
+                  "temp/region/eff",
+                  "temp/rotate",
+                  "temp/sphere",
+                  "temp/uef",
+                  "ti",
+                  "torque/chunk",
+                  "vacf",
+                  "vcm/chunk",
+                  "voronoi/atom",
+                  "xrd"
+                ]
+              },
+              "args": {
+                "type": "array"
+              }
+            }
+          }
+        },
+        "output_atom": {
+          "description": "control output of atom level variables",
+          "type": "object",
+          "properties": {
+            "dump_rate": {
+              "description": "record trajectory every nth time step",
+              "type": "integer",
+              "minimum": 0
+            },
+            "variables": {
+              "description": "atom level variables to output, per dump_rate, to trajectory data (see `dump` for valid keywords, `x`, `y`, `z`, and `element` will always be output)",
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "pattern": "^[a-zA-Z0-9\\_\\[\\]]+$"
+              }
+            },
+            "average_rate": {
+              "description": "ave_variables will be an average of every nth step since the last dumped value. NB: `dump_rate mod average_rate` must equal 0",
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "ave_variables": {
+              "description": "atom level variables to output, per dump_rate, to trajectory data, that will be averaged in accordance with average_rate",
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "pattern": "^[a-zA-Z0-9\\_\\[\\]]+$"
+              }
+            }
+          }
+        },
+        "output_system": {
+          "description": "control output of system level variables",
+          "type": "object",
+          "properties": {
+            "dump_rate": {
+              "description": "record system information every nth time step",
+              "type": "integer",
+              "minimum": 0
+            },
+            "variables": {
+              "description": "system level variables to output, per dump_rate, to system array (see `thermo_style` for valid keywords)",
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "pattern": "^[a-zA-Z0-9\\_\\[\\]]+$"
+              }
+            },
+            "average_rate": {
+              "description": "ave_variables will be an average of every nth step since the last dumped value. NB: `dump_rate mod average_rate` must equal 0",
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "ave_variables": {
+              "description": "system level variables to output, per dump_rate, to system array, that will be averaged in accordance with average_rate",
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "pattern": "^[a-zA-Z0-9\\_\\[\\]]+$"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "properties": {
+    "lammps_version": {
+      "description": "the version of lammps in date format, e.g 10 Nov 2015",
+      "type": "string"
+    },
+    "units": {
+      "description": "the unit system used",
+      "type": "string",
+      "enum": [
+        "real",
+        "nano",
+        "metal",
+        "electron",
+        "micro",
+        "si",
+        "cgs"
+      ]
+    },
+    "timestep": {
+      "description": "the timestep (in time units of style used)",
+      "type": "number",
+      "minimum": 0,
+      "exclusiveMinimum": true
+    },
+    "neighbor": {
+      "description": "sets parameters that affect the building of pairwise neighbor lists",
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": [
+        {
+          "description": " extra distance beyond force cutoff (distance units)",
+          "type": "number",
+          "minimum": 0
+        },
+        {
+          "description": "style",
+          "type": "string",
+          "enum": [
+            "bin",
+            "nsq",
+            "multi"
+          ]
+        }
+      ]
+    },
+    "neigh_modify": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "delay": {
+          "description": "delay building until this many steps since last build",
+          "type": "integer",
+          "minimum": 0
+        },
+        "every": {
+          "description": "build neighbor list every this many steps",
+          "type": "integer",
+          "minimum": 0
+        },
+        "check": {
+          "description": "",
+          "type": "boolean"
+        },
+        "once": {
+          "description": "",
+          "type": "boolean"
+        },
+        "cluster": {
+          "description": "",
+          "type": "boolean"
+        },
+        "include": {
+          "description": "only build pair neighbor lists for atoms in this group",
+          "type": "integer"
+        },
+        "page": {
+          "description": "number of pairs stored in a single neighbor page",
+          "type": "integer"
+        },
+        "one": {
+          "description": "max number of neighbors of one atom",
+          "type": "integer"
+        },
+        "binsize": {
+          "description": "bin size for neighbor list construction (distance units)",
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "thermo_keywords": {
+      "description": "additional keywords to append to 'thermo_style custom'",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9\\_\\[\\]]+$"
+      }
+    },
+    "velocity": {
+      "description": "Setup initial velocities of atoms",
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "style",
+              "args"
+            ],
+            "properties": {
+              "style": {
+                "type": "string",
+                "pattern": "create"
+              },
+              "args": {
+                "description": "temp seed",
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "integer"
+                  }
+                ]
+              },
+              "keywords": {
+                "$ref": "#/definitions/velocity_keywords"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "style",
+              "args"
+            ],
+            "properties": {
+              "style": {
+                "type": "string",
+                "pattern": "set"
+              },
+              "args": {
+                "description": "vx vy vz",
+                "type": "array",
+                "minItems": 3,
+                "maxItems": 3,
+                "items": {
+                  "type": [
+                    "number",
+                    "string"
+                  ]
+                }
+              },
+              "keywords": {
+                "$ref": "#/definitions/velocity_keywords"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "style",
+              "args"
+            ],
+            "properties": {
+              "style": {
+                "type": "string",
+                "pattern": "scale"
+              },
+              "args": {
+                "description": "temp",
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 1,
+                "items": {
+                  "type": "number"
+                }
+              },
+              "keywords": {
+                "$ref": "#/definitions/velocity_keywords"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "style",
+              "args"
+            ],
+            "properties": {
+              "style": {
+                "type": "string",
+                "pattern": "ramp"
+              },
+              "args": {
+                "description": "vdim vlo vhi dim clo chi",
+                "type": "array",
+                "minItems": 6,
+                "maxItems": 6,
+                "items": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "vx",
+                      "vy",
+                      "vz"
+                    ]
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "string",
+                    "enum": [
+                      "x",
+                      "y",
+                      "z"
+                    ]
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              },
+              "keywords": {
+                "$ref": "#/definitions/velocity_keywords"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "style",
+              "args"
+            ],
+            "properties": {
+              "style": {
+                "type": "string",
+                "pattern": "zero"
+              },
+              "args": {
+                "description": "temp",
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 1,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "linear",
+                    "angular"
+                  ]
+                }
+              },
+              "keywords": {
+                "$ref": "#/definitions/velocity_keywords"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "stages": {
+      "description": "The stages of the simulation",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/time_int_stage"
+      }
+    }
+  }
+}

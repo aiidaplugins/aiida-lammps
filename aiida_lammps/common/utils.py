@@ -15,7 +15,7 @@ def convert_date_string(string):
 
 
 def convert_to_str(value):
-    """convert True/False to yes/no and all values to strongs"""
+    """convert True/False to yes/no and all values to strings"""
     if isinstance(value, bool):
         if value:
             return "yes"
@@ -35,8 +35,13 @@ def join_keywords(dct, ignore=None):
     value can be a single value or a list/tuple of values
     """
     ignore = [] if not ignore else ignore
-    return " ".join(["{0} {1}".format(k, _convert_values(v)) for k, v in dct.items()
-                     if k not in ignore])
+    return " ".join(
+        [
+            "{0} {1}".format(k, _convert_values(dct[k]))
+            for k in sorted(dct.keys())
+            if k not in ignore
+        ]
+    )
 
 
 def get_path(dct, path, default=None, raise_error=True):
@@ -45,7 +50,7 @@ def get_path(dct, path, default=None, raise_error=True):
     for i, key in enumerate(path):
         if not isinstance(subdct, dict) or key not in subdct:
             if raise_error:
-                raise KeyError("path does not exist in dct: {}".format(path[0:i+1]))
+                raise KeyError("path does not exist in dct: {}".format(path[0 : i + 1]))
             else:
                 return default
         subdct = subdct[key]

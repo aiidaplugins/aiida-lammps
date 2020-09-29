@@ -1,8 +1,9 @@
+allowed_element_names:
+- Fe
 atom_style: atomic
 default_units: metal
-input_lines_md5: 540d444ce5def35557bca11074642d35
-kind_elements:
-- Fe
-- Fe
-potential_md5: efea67b5f9c76b50476dcac1a053ac14
+external_files:
+- potential.pot
+md5|input_lines: 13197991dfa66e1833acf486de60ee72
+md5|potential_pot: efea67b5f9c76b50476dcac1a053ac14
 potential_type: eam

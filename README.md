@@ -1,5 +1,7 @@
-[![Build Status](https://travis-ci.org/abelcarreras/aiida-lammps.svg?branch=master)](https://travis-ci.org/abelcarreras/aiida-lammps)
+[![CI Status](https://github.com/aiidaplugins/aiida-lammps/workflows/CI/badge.svg)](https://github.com/aiidaplugins/aiida-lammps)
+[![Coverage Status](https://codecov.io/gh/aiidaplugins/aiida-lammps/branch/master/graph/badge.svg)](https://codecov.io/gh/aiidaplugins/aiida-lammps)
 [![PyPI](https://img.shields.io/pypi/v/aiida-lammps.svg)](https://pypi.python.org/pypi/aiida-lammps/)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 
 # AiiDA LAMMPS plugin
 
@@ -14,16 +16,19 @@ This plugin contains 4 code types:
 Note: `lammps.combinate` requires `aiida-phonopy` (https://github.com/abelcarreras/aiida-phonopy)
 plugin to work, DynaPhoPy can be found in: https://github.com/abelcarreras/aiida-phonopy
 
-- [AiiDA LAMMPS plugin](#AiiDA-LAMMPS-plugin)
-  - [Installation](#Installation)
-  - [Built-in Potential Support](#Built-in-Potential-Support)
-  - [Examples](#Examples)
-    - [Code Setup](#Code-Setup)
-    - [Structure Setup](#Structure-Setup)
-    - [Potential Setup](#Potential-Setup)
-    - [Force Calculation](#Force-Calculation)
-    - [Optimisation Calculation](#Optimisation-Calculation)
-    - [MD Calculation](#MD-Calculation)
+- [AiiDA LAMMPS plugin](#aiida-lammps-plugin)
+  - [Installation](#installation)
+  - [Built-in Potential Support](#built-in-potential-support)
+  - [Examples](#examples)
+    - [Code Setup](#code-setup)
+    - [Structure Setup](#structure-setup)
+    - [Potential Setup](#potential-setup)
+    - [Force Calculation](#force-calculation)
+    - [Optimisation Calculation](#optimisation-calculation)
+    - [MD Calculation](#md-calculation)
+  - [Development](#development)
+    - [Coding Style Requirements](#coding-style-requirements)
+    - [Testing](#testing)
 
 ## Installation
 
@@ -415,4 +420,47 @@ calc_node.outputs.trajectory_data.attributes
  'array|steps': [101],
  'array|positions': [101, 4, 3],
  'symbols': ['Ga', 'Ga', 'N', 'N']}
+```
+
+## Development
+
+### Coding Style Requirements
+
+The code style is tested using [flake8](http://flake8.pycqa.org),
+with the configuration set in `.flake8`,
+and code should be formatted with [black](https://github.com/ambv/black).
+
+Installing with `aiida-lammps[code_style]` makes the [pre-commit](https://pre-commit.com/)
+package available, which will ensure these tests are passed by reformatting the code
+and testing for lint errors before submitting a commit.
+It can be setup by:
+
+```shell
+>> cd aiida-lammps
+>> pre-commit install
+```
+
+Optionally you can run `black` and `flake8` separately:
+
+```shell
+>> black .
+>> flake8 .
+```
+
+Editors like VS Code also have automatic code reformat utilities, which can adhere to this standard.
+
+### Testing
+
+The following will discover and run all unit test:
+
+```shell
+>> pip install -e .[testing]
+>> reentry scan -r aiida
+>> pytest -v
+```
+
+To output the results of calcjob executions to a specific directory:
+
+```shell
+>> pytest --lammps-workdir "test_workdir"
 ```

@@ -1,0 +1,25 @@
+units          metal
+boundary        p p p
+box tilt large
+atom_style      atomic
+read_data       input.data
+pair_style      tersoff
+pair_coeff      * * potential.pot A B
+fix             int all box/relax iso 0.0 vmax 0.001
+compute         stpa all stress/atom NULL
+compute         stgb all reduce sum c_stpa[1] c_stpa[2] c_stpa[3] c_stpa[4] c_stpa[5] c_stpa[6]
+variable        stress_pr equal -(c_stgb[1]+c_stgb[2]+c_stgb[3])/(3*vol)
+thermo_style custom step temp press etotal v_stress_pr
+dump            aiida all custom 1 output.traj element x y z  fx fy fz c_stpa[1] c_stpa[2] c_stpa[3] c_stpa[4] c_stpa[5] c_stpa[6]
+dump_modify     aiida format line "%4s %16.10f %16.10f %16.10f %16.10f %16.10f %16.10f %16.10f %16.10f %16.10f %16.10f %16.10f %16.10f"
+dump_modify     aiida sort id
+dump_modify     aiida element A B
+min_style       cg
+minimize        1e-25 1e-25 50000 100000
+variable temp equal temp
+print "final_variable: temp = ${temp}"
+variable etotal equal etotal
+print "final_variable: etotal = ${etotal}"
+variable final_energy equal etotal
+print "final_energy: ${final_energy}"
+print "END_OF_COMP"

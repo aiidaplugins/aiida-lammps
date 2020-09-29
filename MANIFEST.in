@@ -1,5 +1,4 @@
 include LICENSE
 include setup.json
 include aiida_lammps/tests/input_files/*
-include aiida_lammps/validation/*.json
-
+include aiida_lammps/validation/schemas/*.json

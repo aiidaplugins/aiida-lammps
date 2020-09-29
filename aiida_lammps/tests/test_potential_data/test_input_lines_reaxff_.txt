@@ -1,5 +1,4 @@
-pair_style reax/c NULL safezone 1.6 
-pair_coeff      * * potential.pot Fe S
+pair_style reax/c potential.control safezone 1.6 
+pair_coeff      * * potential.pot {kind_symbols}
 fix qeq all qeq/reax 1 0.0 10.0 1e-6 reax/c
-fix_modify qeq energy yes
 compute reax all pair reax/c

@@ -1,0 +1,634 @@
+1body:
+  '1':
+    dummy1: 79.5548
+    dummy11: 1.0564
+    dummy2: 0.0
+    dummy3: 199.0303
+    dummy4: 0.8563
+    dummy5: 0.0
+    dummy6: 0.0
+    dummy7: 0.0
+    dummy8: 0.0
+    mass: 12.0
+    reaxff1_angle1: 2.5
+    reaxff1_angle2: 2.9663
+    reaxff1_lonepair1: 0.0
+    reaxff1_lonepair2: 0.0
+    reaxff1_morse1: 9.7602
+    reaxff1_morse2: 0.1853
+    reaxff1_morse3: 1.9133
+    reaxff1_morse4: 2.1346
+    reaxff1_over1: 34.7289
+    reaxff1_over2: 8.6991
+    reaxff1_over3: 13.3894
+    reaxff1_over4: -2.8983
+    reaxff1_radii1: 1.3825
+    reaxff1_radii2: 1.1359
+    reaxff1_radii3: 1.2104
+    reaxff1_under: 33.2433
+    reaxff1_valence1: 4.0
+    reaxff1_valence2: 4.0
+    reaxff1_valence3: 4.0
+    reaxff1_valence4: 4.0
+    reaxff_chi: 5.8678
+    reaxff_gamma: 0.9
+    reaxff_mu: 7.0
+  '2':
+    dummy1: 121.125
+    dummy11: 1.0338
+    dummy2: 1.0
+    dummy3: 62.4879
+    dummy4: 1.0698
+    dummy5: 0.0
+    dummy6: 0.0
+    dummy7: 0.0
+    dummy8: 0.0
+    mass: 1.008
+    reaxff1_angle1: 2.1488
+    reaxff1_angle2: 2.8793
+    reaxff1_lonepair1: 0.0
+    reaxff1_lonepair2: 0.0
+    reaxff1_morse1: 9.3557
+    reaxff1_morse2: 0.0419
+    reaxff1_morse3: 1.5904
+    reaxff1_morse4: 5.0518
+    reaxff1_over1: 3.3517
+    reaxff1_over2: 1.9771
+    reaxff1_over3: 0.7571
+    reaxff1_over4: -15.7683
+    reaxff1_radii1: 0.7853
+    reaxff1_radii2: -0.1
+    reaxff1_radii3: -0.1
+    reaxff1_under: 0.0
+    reaxff1_valence1: 1.0
+    reaxff1_valence2: 1.0
+    reaxff1_valence3: 1.0
+    reaxff1_valence4: 1.0
+    reaxff_chi: 5.32
+    reaxff_gamma: 1.0206
+    reaxff_mu: 7.4366
+  '3':
+    dummy1: 116.0768
+    dummy11: 1.0493
+    dummy2: 2.0
+    dummy3: 60.8726
+    dummy4: 0.9745
+    dummy5: 0.0
+    dummy6: 0.0
+    dummy7: 0.0
+    dummy8: 0.0
+    mass: 15.999
+    reaxff1_angle1: 2.7025
+    reaxff1_angle2: 2.9225
+    reaxff1_lonepair1: 2.0
+    reaxff1_lonepair2: 1.0003
+    reaxff1_morse1: 10.2127
+    reaxff1_morse2: 0.0904
+    reaxff1_morse3: 1.9236
+    reaxff1_morse4: 7.7719
+    reaxff1_over1: 3.3754
+    reaxff1_over2: 20.414
+    reaxff1_over3: 0.2702
+    reaxff1_over4: -3.6141
+    reaxff1_radii1: 1.2477
+    reaxff1_radii2: 1.0863
+    reaxff1_radii3: 0.9088
+    reaxff1_under: 36.9573
+    reaxff1_valence1: 2.0
+    reaxff1_valence2: 4.0
+    reaxff1_valence3: 6.0
+    reaxff1_valence4: 4.0
+    reaxff_chi: 8.5
+    reaxff_gamma: 1.0503
+    reaxff_mu: 8.9989
+2body:
+  1-1:
+    dummy1: 1.0
+    reaxff2_bo1: -0.075
+    reaxff2_bo2: 6.8316
+    reaxff2_bo3: -0.1
+    reaxff2_bo4: 9.2605
+    reaxff2_bo5: -0.4591
+    reaxff2_bo6: 37.7369
+    reaxff2_bo7: 1.0
+    reaxff2_bo8: 1.0
+    reaxff2_bond1: 156.5953
+    reaxff2_bond2: 100.0397
+    reaxff2_bond3: 80.0
+    reaxff2_bond4: -0.8157
+    reaxff2_bond5: 0.4527
+    reaxff2_over: 0.4235
+    reaxff2_pen1: 0.0
+  1-2:
+    dummy1: 1.0
+    reaxff2_bo1: -0.05
+    reaxff2_bo2: 6.8315
+    reaxff2_bo3: 1.0
+    reaxff2_bo4: 0.0
+    reaxff2_bo5: 0.0
+    reaxff2_bo6: 6.0
+    reaxff2_bo7: 1.0
+    reaxff2_bo8: 0.0
+    reaxff2_bond1: 170.2316
+    reaxff2_bond2: 0.0
+    reaxff2_bond3: 0.0
+    reaxff2_bond4: -0.5931
+    reaxff2_bond5: 5.2267
+    reaxff2_morse1: 0.1219
+    reaxff2_morse2: 9.8442
+    reaxff2_morse3: 1.4
+    reaxff2_morse4: 1.1203
+    reaxff2_morse5: -1.0
+    reaxff2_morse6: -1.0
+    reaxff2_over: 0.714
+    reaxff2_pen1: 0.0
+  1-3:
+    dummy1: 1.0
+    reaxff2_bo1: -0.1463
+    reaxff2_bo2: 5.2913
+    reaxff2_bo3: -0.3174
+    reaxff2_bo4: 7.0303
+    reaxff2_bo5: -0.1613
+    reaxff2_bo6: 10.8851
+    reaxff2_bo7: 1.0
+    reaxff2_bo8: 0.0
+    reaxff2_bond1: 160.4802
+    reaxff2_bond2: 105.1693
+    reaxff2_bond3: 23.3059
+    reaxff2_bond4: -0.3873
+    reaxff2_bond5: 0.5341
+    reaxff2_morse1: 0.1131
+    reaxff2_morse2: 9.8442
+    reaxff2_morse3: 1.8523
+    reaxff2_morse4: 1.2775
+    reaxff2_morse5: 1.1342
+    reaxff2_morse6: 1.0621
+    reaxff2_over: 1.0
+    reaxff2_pen1: 0.0
+  2-2:
+    dummy1: 1.0
+    reaxff2_bo1: -0.0593
+    reaxff2_bo2: 4.8358
+    reaxff2_bo3: 1.0
+    reaxff2_bo4: 0.0
+    reaxff2_bo5: 0.0
+    reaxff2_bo6: 6.0
+    reaxff2_bo7: 1.0
+    reaxff2_bo8: 0.0
+    reaxff2_bond1: 156.0973
+    reaxff2_bond2: 0.0
+    reaxff2_bond3: 0.0
+    reaxff2_bond4: -0.1377
+    reaxff2_bond5: 2.9907
+    reaxff2_over: 0.824
+    reaxff2_pen1: 0.0
+  2-3:
+    dummy1: 1.0
+    reaxff2_bo1: -0.0657
+    reaxff2_bo2: 5.0451
+    reaxff2_bo3: 1.0
+    reaxff2_bo4: 0.0
+    reaxff2_bo5: 0.0
+    reaxff2_bo6: 6.0
+    reaxff2_bo7: 1.0
+    reaxff2_bo8: 0.0
+    reaxff2_bond1: 180.4373
+    reaxff2_bond2: 0.0
+    reaxff2_bond3: 0.0
+    reaxff2_bond4: -0.8074
+    reaxff2_bond5: 1.249
+    reaxff2_morse1: 0.0344
+    reaxff2_morse2: 10.3247
+    reaxff2_morse3: 1.68
+    reaxff2_morse4: 0.9013
+    reaxff2_morse5: -1.0
+    reaxff2_morse6: -1.0
+    reaxff2_over: 0.5514
+    reaxff2_pen1: 0.0
+  3-3:
+    dummy1: 1.0
+    reaxff2_bo1: -0.1302
+    reaxff2_bo2: 6.2919
+    reaxff2_bo3: -0.1239
+    reaxff2_bo4: 7.6487
+    reaxff2_bo5: -0.1244
+    reaxff2_bo6: 29.6439
+    reaxff2_bo7: 1.0
+    reaxff2_bo8: 1.0
+    reaxff2_bond1: 60.1463
+    reaxff2_bond2: 176.6202
+    reaxff2_bond3: 51.143
+    reaxff2_bond4: -0.2802
+    reaxff2_bond5: 0.2441
+    reaxff2_over: 0.9114
+    reaxff2_pen1: 0.0
+3body:
+  1-1-1:
+    reaxff3_angle1: 67.2326
+    reaxff3_angle2: 22.0695
+    reaxff3_angle3: 1.6286
+    reaxff3_angle4: 1.8089
+    reaxff3_angle5: 1.7959
+    reaxff3_coa1: 0.0
+    reaxff3_penalty: 15.4141
+  1-1-2:
+    reaxff3_angle1: 65.2527
+    reaxff3_angle2: 14.3185
+    reaxff3_angle3: 6.2977
+    reaxff3_angle4: 1.153
+    reaxff3_angle5: 0.5645
+    reaxff3_coa1: 0.0
+    reaxff3_penalty: 0.0
+  1-1-3:
+    reaxff3_angle1: 49.5561
+    reaxff3_angle2: 7.3771
+    reaxff3_angle3: 4.9568
+    reaxff3_angle4: 1.001
+    reaxff3_angle5: 0.7533
+    reaxff3_coa1: 0.0
+    reaxff3_penalty: 15.9906
+  1-2-1:
+    reaxff3_angle1: 0.0
+    reaxff3_angle2: 3.411
+    reaxff3_angle3: 7.735
+    reaxff3_angle4: 1.04
+    reaxff3_angle5: 0.0
+    reaxff3_coa1: 0.0
+    reaxff3_penalty: 0.0
+  1-2-2:
+    reaxff3_angle1: 0.0
+    reaxff3_angle2: 0.0
+    reaxff3_angle3: 6.0
+    reaxff3_angle4: 1.04
+    reaxff3_angle5: 0.0
+    reaxff3_coa1: 0.0
+    reaxff3_penalty: 0.0
+  1-2-3:
+    reaxff3_angle1: 0.0
+    reaxff3_angle2: 25.0
+    reaxff3_angle3: 3.0
+    reaxff3_angle4: 1.04
+    reaxff3_angle5: 1.0
+    reaxff3_coa1: 0.0
+    reaxff3_penalty: 0.0
+  1-3-1:
+    reaxff3_angle1: 74.3994
+    reaxff3_angle2: 44.75
+    reaxff3_angle3: 0.7982
+    reaxff3_angle4: 1.0528
+    reaxff3_angle5: 3.0
+    reaxff3_coa1: 0.0
+    reaxff3_penalty: 0.0
+  1-3-2:
+    reaxff3_angle1: 71.5018
+    reaxff3_angle2: 21.7062
+    reaxff3_angle3: 0.4735
+    reaxff3_angle4: 1.1793
+    reaxff3_angle5: 0.5186
+    reaxff3_coa1: 0.0
+    reaxff3_penalty: 0.0
+  1-3-3:
+    reaxff3_angle1: 77.9854
+    reaxff3_angle2: 36.6201
+    reaxff3_angle3: 2.0201
+    reaxff3_angle4: 3.0
+    reaxff3_angle5: 0.7434
+    reaxff3_coa1: 0.0
+    reaxff3_penalty: 67.0264
+  2-1-2:
+    reaxff3_angle1: 70.084
+    reaxff3_angle2: 25.354
+    reaxff3_angle3: 3.4508
+    reaxff3_angle4: 3.0
+    reaxff3_angle5: 0.005
+    reaxff3_coa1: 0.0
+    reaxff3_penalty: 0.0
+  2-1-3:
+    reaxff3_angle1: 65.0
+    reaxff3_angle2: 14.2057
+    reaxff3_angle3: 4.8649
+    reaxff3_angle4: 1.7185
+    reaxff3_angle5: 0.3504
+    reaxff3_coa1: 0.0
+    reaxff3_penalty: 0.0
+  2-2-2:
+    reaxff3_angle1: 0.0
+    reaxff3_angle2: 27.9213
+    reaxff3_angle3: 5.8635
+    reaxff3_angle4: 1.04
+    reaxff3_angle5: 0.0
+    reaxff3_coa1: 0.0
+    reaxff3_penalty: 0.0
+  2-2-3:
+    reaxff3_angle1: 0.0
+    reaxff3_angle2: 9.7025
+    reaxff3_angle3: 6.0
+    reaxff3_angle4: 1.04
+    reaxff3_angle5: 0.0
+    reaxff3_coa1: 0.0
+    reaxff3_penalty: 0.0
+  2-3-2:
+    reaxff3_angle1: 77.0645
+    reaxff3_angle2: 10.4737
+    reaxff3_angle3: 1.2895
+    reaxff3_angle4: 1.1043
+    reaxff3_angle5: 0.9924
+    reaxff3_coa1: 0.0
+    reaxff3_penalty: 0.0
+  2-3-3:
+    reaxff3_angle1: 84.9468
+    reaxff3_angle2: 23.354
+    reaxff3_angle3: 1.5057
+    reaxff3_angle4: 1.3023
+    reaxff3_angle5: 2.6374
+    reaxff3_coa1: 0.0
+    reaxff3_penalty: 0.0
+  3-1-3:
+    reaxff3_angle1: 77.1171
+    reaxff3_angle2: 39.8746
+    reaxff3_angle3: 2.5403
+    reaxff3_angle4: 2.124
+    reaxff3_angle5: 1.774
+    reaxff3_coa1: -24.3902
+    reaxff3_penalty: -42.9758
+  3-2-3:
+    reaxff3_angle1: 0.0
+    reaxff3_angle2: 0.0148
+    reaxff3_angle3: 6.0
+    reaxff3_angle4: 1.04
+    reaxff3_angle5: 0.0
+    reaxff3_coa1: 0.0
+    reaxff3_hbond1: 1.9682
+    reaxff3_hbond2: -4.4628
+    reaxff3_hbond3: 1.7976
+    reaxff3_hbond4: 3.0
+    reaxff3_penalty: 0.0
+  3-3-3:
+    reaxff3_angle1: 80.7324
+    reaxff3_angle2: 30.4554
+    reaxff3_angle3: 0.9953
+    reaxff3_angle4: 1.0783
+    reaxff3_angle5: 1.631
+    reaxff3_coa1: 0.0
+    reaxff3_penalty: 50.0
+4body:
+  0-1-1-0:
+    dummy1: 0.0
+    dummy2: 0.0
+    reaxff4_torsion1: 0.0
+    reaxff4_torsion2: 50.0
+    reaxff4_torsion3: 0.3
+    reaxff4_torsion4: -4.0
+    reaxff4_torsion5: -2.0
+  0-1-2-0:
+    dummy1: 0.0
+    dummy2: 0.0
+    reaxff4_torsion1: 0.0
+    reaxff4_torsion2: 0.0
+    reaxff4_torsion3: 0.0
+    reaxff4_torsion4: 0.0
+    reaxff4_torsion5: 0.0
+  0-2-2-0:
+    dummy1: 0.0
+    dummy2: 0.0
+    reaxff4_torsion1: 0.0
+    reaxff4_torsion2: 0.0
+    reaxff4_torsion3: 0.0
+    reaxff4_torsion4: 0.0
+    reaxff4_torsion5: 0.0
+  0-2-3-0:
+    dummy1: 0.0
+    dummy2: 0.0
+    reaxff4_torsion1: 0.0
+    reaxff4_torsion2: 0.1
+    reaxff4_torsion3: 0.02
+    reaxff4_torsion4: -2.5415
+    reaxff4_torsion5: 0.0
+  0-3-3-0:
+    dummy1: 0.0
+    dummy2: 0.0
+    reaxff4_torsion1: 0.5511
+    reaxff4_torsion2: 25.415
+    reaxff4_torsion3: 1.133
+    reaxff4_torsion4: -5.1903
+    reaxff4_torsion5: -1.0
+  1-1-1-1:
+    dummy1: 0.0
+    dummy2: 0.0
+    reaxff4_torsion1: -0.25
+    reaxff4_torsion2: 11.5822
+    reaxff4_torsion3: 0.1879
+    reaxff4_torsion4: -4.7057
+    reaxff4_torsion5: -2.2047
+  1-1-1-2:
+    dummy1: 0.0
+    dummy2: 0.0
+    reaxff4_torsion1: -0.25
+    reaxff4_torsion2: 31.2596
+    reaxff4_torsion3: 0.1709
+    reaxff4_torsion4: -4.6391
+    reaxff4_torsion5: -1.9002
+  1-1-1-3:
+    dummy1: 0.0
+    dummy2: 0.0
+    reaxff4_torsion1: -0.7098
+    reaxff4_torsion2: 22.2951
+    reaxff4_torsion3: 0.006
+    reaxff4_torsion4: -2.5
+    reaxff4_torsion5: -2.1688
+  1-1-3-1:
+    dummy1: 0.0
+    dummy2: 0.0
+    reaxff4_torsion1: 2.0007
+    reaxff4_torsion2: 25.5641
+    reaxff4_torsion3: -0.0608
+    reaxff4_torsion4: -2.6456
+    reaxff4_torsion5: -1.1766
+  1-1-3-2:
+    dummy1: 0.0
+    dummy2: 0.0
+    reaxff4_torsion1: -1.1953
+    reaxff4_torsion2: 42.1545
+    reaxff4_torsion3: -1.0
+    reaxff4_torsion4: -8.0821
+    reaxff4_torsion5: -1.0
+  1-1-3-3:
+    dummy1: 0.0
+    dummy2: 0.0
+    reaxff4_torsion1: -0.0179
+    reaxff4_torsion2: 5.0603
+    reaxff4_torsion3: -0.1894
+    reaxff4_torsion4: -2.5
+    reaxff4_torsion5: -2.0399
+  1-3-3-1:
+    dummy1: 0.0
+    dummy2: 0.0
+    reaxff4_torsion1: 2.5
+    reaxff4_torsion2: -0.5332
+    reaxff4_torsion3: 1.0
+    reaxff4_torsion4: -3.5096
+    reaxff4_torsion5: -2.9
+  1-3-3-2:
+    dummy1: 0.0
+    dummy2: 0.0
+    reaxff4_torsion1: -2.5
+    reaxff4_torsion2: 3.3219
+    reaxff4_torsion3: 0.718
+    reaxff4_torsion4: -5.2021
+    reaxff4_torsion5: -2.933
+  1-3-3-3:
+    dummy1: 0.0
+    dummy2: 0.0
+    reaxff4_torsion1: 0.0531
+    reaxff4_torsion2: -17.3983
+    reaxff4_torsion3: 1.0
+    reaxff4_torsion4: -2.5
+    reaxff4_torsion5: -2.1584
+  2-1-1-2:
+    dummy1: 0.0
+    dummy2: 0.0
+    reaxff4_torsion1: -0.177
+    reaxff4_torsion2: 30.0252
+    reaxff4_torsion3: 0.434
+    reaxff4_torsion4: -5.0019
+    reaxff4_torsion5: -2.0697
+  2-1-1-3:
+    dummy1: 0.0
+    dummy2: 0.0
+    reaxff4_torsion1: -0.3568
+    reaxff4_torsion2: 22.6472
+    reaxff4_torsion3: 0.6045
+    reaxff4_torsion4: -4.0088
+    reaxff4_torsion5: -1.0
+  2-1-3-1:
+    dummy1: 0.0
+    dummy2: 0.0
+    reaxff4_torsion1: -0.9284
+    reaxff4_torsion2: 34.3952
+    reaxff4_torsion3: 0.7285
+    reaxff4_torsion4: -2.544
+    reaxff4_torsion5: -2.4641
+  2-1-3-2:
+    dummy1: 0.0
+    dummy2: 0.0
+    reaxff4_torsion1: -2.5
+    reaxff4_torsion2: 79.698
+    reaxff4_torsion3: 1.0
+    reaxff4_torsion4: -3.5697
+    reaxff4_torsion5: -2.7501
+  2-1-3-3:
+    dummy1: 0.0
+    dummy2: 0.0
+    reaxff4_torsion1: -0.5583
+    reaxff4_torsion2: 80.0
+    reaxff4_torsion3: 1.0
+    reaxff4_torsion4: -4.4
+    reaxff4_torsion5: -3.0
+  2-3-3-2:
+    dummy1: 0.0
+    dummy2: 0.0
+    reaxff4_torsion1: 2.25
+    reaxff4_torsion2: -6.2288
+    reaxff4_torsion3: 1.0
+    reaxff4_torsion4: -2.6189
+    reaxff4_torsion5: -1.0
+  2-3-3-3:
+    dummy1: 0.0
+    dummy2: 0.0
+    reaxff4_torsion1: 0.4723
+    reaxff4_torsion2: -12.4144
+    reaxff4_torsion3: -1.0
+    reaxff4_torsion4: -2.5
+    reaxff4_torsion5: -1.0
+  3-1-1-3:
+    dummy1: 0.0
+    dummy2: 0.0
+    reaxff4_torsion1: -0.0528
+    reaxff4_torsion2: 6.815
+    reaxff4_torsion3: 0.7498
+    reaxff4_torsion4: -5.0913
+    reaxff4_torsion5: -1.0
+  3-1-3-1:
+    dummy1: 0.0
+    dummy2: 0.0
+    reaxff4_torsion1: -2.5
+    reaxff4_torsion2: 76.0427
+    reaxff4_torsion3: -0.0141
+    reaxff4_torsion4: -3.7586
+    reaxff4_torsion5: -2.9
+  3-1-3-2:
+    dummy1: 0.0
+    dummy2: 0.0
+    reaxff4_torsion1: 0.0345
+    reaxff4_torsion2: 78.9586
+    reaxff4_torsion3: -0.681
+    reaxff4_torsion4: -4.1777
+    reaxff4_torsion5: -3.0
+  3-1-3-3:
+    dummy1: 0.0
+    dummy2: 0.0
+    reaxff4_torsion1: -2.5
+    reaxff4_torsion2: 66.3525
+    reaxff4_torsion3: 0.3986
+    reaxff4_torsion4: -3.0293
+    reaxff4_torsion5: -3.0
+  3-3-3-3:
+    dummy1: 0.0
+    dummy2: 0.0
+    reaxff4_torsion1: -2.5
+    reaxff4_torsion2: -25.0
+    reaxff4_torsion3: 1.0
+    reaxff4_torsion4: -2.5
+    reaxff4_torsion5: -1.0
+description: Reactive MD-force field c/h/o combustion force field
+global:
+  C2-correction: 70.0
+  Lower Taper-radius: 0.0
+  Not used 2: 6.1431
+  Not used 3: 0.0
+  Not used 4: 0.0
+  Not used 5: 0.0
+  Not used 6: 0.0
+  Not used 7: 0.0
+  Not used 8: 0.0
+  Triple bond stabilisation: 4.6
+  Triple bond stabilisation 1: 1.5105
+  Triple bond stabilisation 2: 6.663
+  Triple bond stabilization energy: -70.1292
+  Upper Taper-radius: 10.0
+  anglemin: 0.001
+  angleprod: 1.0e-05
+  bond order cutoff: 0.1
+  hbonddist: 7.5
+  hbondmin: 0.01
+  reaxff0_boc1: 50.0
+  reaxff0_boc2: 9.5469
+  reaxff0_cot2: 2.1645
+  reaxff0_lp1: 6.0891
+  reaxff0_ovun3: 50.0
+  reaxff0_ovun4: 0.6991
+  reaxff0_ovun6: 1.0588
+  reaxff0_ovun7: 12.1176
+  reaxff0_ovun8: 13.3056
+  reaxff0_pen2: 6.929
+  reaxff0_pen3: 0.3989
+  reaxff0_pen4: 3.9954
+  reaxff0_tor2: 5.7796
+  reaxff0_tor3: 10.0
+  reaxff0_tor4: 1.9487
+  reaxff0_val10: 2.0384
+  reaxff0_val7: 33.8667
+  reaxff0_val8: 1.8512
+  reaxff0_val9: 1.0563
+  reaxff0_vdw1: 1.5591
+  reaxff2_pen2: 0.0
+  reaxff2_pen3: 1.0
+  reaxff3_coa2: 26.5405
+  reaxff3_coa3: 2.6962
+  reaxff3_coa4: 2.1365
+  torsionprod: 1.0e-05
+species:
+- X core
+- C core
+- H core
+- O core

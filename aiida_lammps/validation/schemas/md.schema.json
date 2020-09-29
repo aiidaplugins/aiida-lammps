@@ -1,0 +1,276 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "LAMMPS MD Run Parameters",
+  "type": "object",
+  "required": [
+    "units",
+    "timestep",
+    "equilibrium_steps",
+    "total_steps",
+    "dump_rate",
+    "integration"
+  ],
+  "additionalProperties": false,
+  "definitions": {
+    "int_constraint": {
+      "description": "Define an integration constraint, for e.g. temperature, pressure, etc",
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": [
+        {
+          "description": "external value at start of run",
+          "type": "number"
+        },
+        {
+          "description": "external value at end of run",
+          "type": "number"
+        },
+        {
+          "description": "damping parameter (time units)",
+          "type": "number",
+          "minimum": 0
+        }
+      ]
+    }
+  },
+  "properties": {
+    "lammps_version": {
+      "description": "the version of lammps in date format, e.g 10 Nov 2015",
+      "type": "string"
+    },
+    "units": {
+      "description": "the unit system used",
+      "type": "string",
+      "enum": [
+        "real",
+        "nano",
+        "metal",
+        "electron",
+        "micro",
+        "si",
+        "cgs"
+      ]
+    },
+    "timestep": {
+      "description": "the timestep (in time units of style used)",
+      "type": "number",
+      "minimum": 0,
+      "exclusiveMinimum": true
+    },
+    "rand_seed": {
+      "description": "random seed (for use with setting initial velocities)",
+      "type": "integer",
+      "minimum": 1
+    },
+    "equilibrium_steps": {
+      "description": "number of initial time steps to equilibrate",
+      "type": "integer",
+      "minimum": 1
+    },
+    "total_steps": {
+      "description": "number of time steps to record (after equilibration)",
+      "type": "integer",
+      "minimum": 1
+    },
+    "dump_rate": {
+      "description": "record trajectory every x steps",
+      "type": "number",
+      "minimum": 0,
+      "exclusiveMinimum": true
+    },
+    "restart": {
+      "description": "Write out a binary restart file with the current state of the simulation every x steps",
+      "type": "integer",
+      "minimum": 0
+    },
+    "integration": {
+      "description": "the time integration method to update the position and velocity for atoms at each time step",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "style"
+      ],
+      "properties": {
+        "style": {
+          "type": "string",
+          "enum": [
+            "nvt",
+            "npt",
+            "nph"
+          ]
+        },
+        "constraints": {
+          "description": "external constraints to set",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "temp": {
+              "description": "the temperature to run at",
+              "$ref": "#/definitions/int_constraint"
+            },
+            "iso": {
+              "description": "the pressure to run at",
+              "$ref": "#/definitions/int_constraint"
+            },
+            "aniso": {
+              "description": "the pressure to run at",
+              "$ref": "#/definitions/int_constraint"
+            },
+            "tri": {
+              "description": "the pressure to run at",
+              "$ref": "#/definitions/int_constraint"
+            },
+            "x": {
+              "description": "the stress tensor component to run at",
+              "$ref": "#/definitions/int_constraint"
+            },
+            "y": {
+              "description": "the stress tensor component to run at",
+              "$ref": "#/definitions/int_constraint"
+            },
+            "z": {
+              "description": "the stress tensor component to run at",
+              "$ref": "#/definitions/int_constraint"
+            },
+            "xy": {
+              "description": "the stress tensor component to run at",
+              "$ref": "#/definitions/int_constraint"
+            },
+            "yz": {
+              "description": "the stress tensor component to run at",
+              "$ref": "#/definitions/int_constraint"
+            },
+            "xz": {
+              "description": "the stress tensor component to run at",
+              "$ref": "#/definitions/int_constraint"
+            }
+          }
+        },
+        "keywords": {
+          "description": "additional keywords",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "couple": {
+              "description": "",
+              "type": "string",
+              "enum": [
+                "none",
+                "xyz",
+                "xy",
+                "yz",
+                "xz"
+              ]
+            },
+            "mtk": {
+              "description": "",
+              "type": "boolean"
+            },
+            "scalexy": {
+              "description": "scale xy with ly",
+              "type": "boolean"
+            },
+            "scaleyz": {
+              "description": "scale yz with lz",
+              "type": "boolean"
+            },
+            "scalexz": {
+              "description": "scale xz with lz",
+              "type": "boolean"
+            },
+            "flip": {
+              "description": "allow or disallow box flips when it becomes highly skewed",
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "neighbor": {
+      "description": "sets parameters that affect the building of pairwise neighbor lists",
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": [
+        {
+          "description": " extra distance beyond force cutoff (distance units)",
+          "type": "number",
+          "minimum": 0
+        },
+        {
+          "description": "style",
+          "type": "string",
+          "enum": [
+            "bin",
+            "nsq",
+            "multi"
+          ]
+        }
+      ]
+    },
+    "neigh_modify": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "delay": {
+          "description": "delay building until this many steps since last build",
+          "type": "integer",
+          "minimum": 0
+        },
+        "every": {
+          "description": "build neighbor list every this many steps",
+          "type": "integer",
+          "minimum": 0
+        },
+        "check": {
+          "description": "",
+          "type": "boolean"
+        },
+        "once": {
+          "description": "",
+          "type": "boolean"
+        },
+        "cluster": {
+          "description": "",
+          "type": "boolean"
+        },
+        "include": {
+          "description": "only build pair neighbor lists for atoms in this group",
+          "type": "integer"
+        },
+        "page": {
+          "description": "number of pairs stored in a single neighbor page",
+          "type": "integer"
+        },
+        "one": {
+          "description": "max number of neighbors of one atom",
+          "type": "integer"
+        },
+        "binsize": {
+          "description": "bin size for neighbor list construction (distance units)",
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "thermo_keywords": {
+      "description": "additional keywords to append to 'thermo_style custom'",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9\\_\\[\\]]+$"
+      }
+    },
+    "output_variables": {
+      "description": "output variables, per dump_rate, to an array (see `thermo_style` for valid keywords)",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9\\_\\[\\]]+$"
+      }
+    }
+  }
+}

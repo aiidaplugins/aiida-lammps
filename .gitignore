@@ -9,8 +9,13 @@ dist/
 *.egg*
 .DS_Store
 .idea/
+.tox/
 .pytest_cache/
 .idea/vcs.xml
 postgres*.log
 .aiida_envs.yaml
 .vscode/
+
+pip-wheel-metadata/
+example_inputs/
+pytest_workdir/

@@ -1,16 +1,13 @@
 # Not working with Aiida 1.0
 
-from aiida.parsers.parser import Parser
-from aiida.parsers.exceptions import OutputParsingError
-from aiida.orm.data.array import ArrayData
 from aiida.orm.data.parameter import ParameterData
-
-from aiida_lammps.common.raw_parsers import parse_dynaphopy_output, parse_quasiparticle_data
+from aiida.parsers.parser import Parser
 from aiida_phonopy.common.raw_parsers import parse_FORCE_CONSTANTS
 
-import numpy as np
-
-
+from aiida_lammps.common.raw_parsers import (
+    parse_dynaphopy_output,
+    parse_quasiparticle_data,
+)
 
 
 class DynaphopyParser(Parser):
@@ -41,17 +38,19 @@ class DynaphopyParser(Parser):
             return False, ()
 
         # check what is inside the folder
-        list_of_files = out_folder.get_folder_list()
+        # list_of_files = out_folder.get_folder_list()
 
         # OUTPUT file should exist
-        #if not self._calc._OUTPUT_FILE_NAME in list_of_files:
+        # if not self._calc._OUTPUT_FILE_NAME in list_of_files:
         #    successful = False
         #    self.logger.error("Output file not found")
         #    return successful, ()
 
         # Get file and do the parsing
-        outfile = out_folder.get_abs_path( self._calc._OUTPUT_FILE_NAME)
-        force_constants_file = out_folder.get_abs_path(self._calc._OUTPUT_FORCE_CONSTANTS)
+        outfile = out_folder.get_abs_path(self._calc._OUTPUT_FILE_NAME)
+        force_constants_file = out_folder.get_abs_path(
+            self._calc._OUTPUT_FORCE_CONSTANTS
+        )
         qp_file = out_folder.get_abs_path(self._calc._OUTPUT_QUASIPARTICLES)
 
         try:
@@ -62,12 +61,12 @@ class DynaphopyParser(Parser):
 
         try:
             force_constants = parse_FORCE_CONSTANTS(force_constants_file)
-        except:
+        except Exception:
             pass
 
         # look at warnings
         warnings = []
-        with open(out_folder.get_abs_path( self._calc._SCHED_ERROR_FILE )) as f:
+        with open(out_folder.get_abs_path(self._calc._SCHED_ERROR_FILE)) as f:
             errors = f.read()
         if errors:
             warnings = [errors]
@@ -79,22 +78,27 @@ class DynaphopyParser(Parser):
 
         # save phonon data into node
         try:
-            new_nodes_list.append(('quasiparticle_data', ParameterData(dict=quasiparticle_data)))
+            new_nodes_list.append(
+                ("quasiparticle_data", ParameterData(dict=quasiparticle_data))
+            )
         except KeyError:  # keys not
             pass
 
         try:
-            new_nodes_list.append(('thermal_properties', ParameterData(dict=thermal_properties)))
+            new_nodes_list.append(
+                ("thermal_properties", ParameterData(dict=thermal_properties))
+            )
         except KeyError:  # keys not
             pass
 
         try:
-            new_nodes_list.append(('force_constants', force_constants))
+            new_nodes_list.append(("force_constants", force_constants))
         except KeyError:  # keys not
             pass
-
 
         # add the dictionary with warnings
-        new_nodes_list.append((self.get_linkname_outparams(), ParameterData(dict={'warnings': warnings})))
+        new_nodes_list.append(
+            (self.get_linkname_outparams(), ParameterData(dict={"warnings": warnings}))
+        )
 
         return successful, new_nodes_list

@@ -1,2 +1,2 @@
 pair_style      tersoff
-pair_coeff      * * potential.pot Ga N
+pair_coeff      * * potential.pot {kind_symbols}
