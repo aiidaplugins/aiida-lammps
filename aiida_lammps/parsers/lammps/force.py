@@ -1,13 +1,10 @@
+from aiida.orm import ArrayData, Dict
 import numpy as np
 
-from aiida.orm import Dict, ArrayData
-
-from aiida_lammps.parsers.lammps.base import LAMMPSBaseParser
+from aiida_lammps.common.parse_trajectory import TRAJ_BLOCK  # noqa: F401
+from aiida_lammps.common.parse_trajectory import iter_trajectories
 from aiida_lammps.common.raw_parsers import get_units_dict
-from aiida_lammps.common.parse_trajectory import (
-    iter_trajectories,
-    TRAJ_BLOCK,  # noqa: F401
-)
+from aiida_lammps.parsers.lammps.base import LAMMPSBaseParser
 
 
 class ForceParser(LAMMPSBaseParser):

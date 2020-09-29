@@ -1,9 +1,7 @@
 from collections import namedtuple
 
-import numpy as np
-
 from aiida.orm import StructureData
-
+import numpy as np
 
 TRAJ_BLOCK = namedtuple(
     "TRAJ_BLOCK", ["lines", "timestep", "natoms", "cell", "pbc", "atom_fields"]

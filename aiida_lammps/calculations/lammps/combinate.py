@@ -1,15 +1,15 @@
 # Not working with Aiida 1.0
 
 from aiida.common.exceptions import InputValidationError
+from aiida.orm import ArrayData, Dict
 from aiida_phonopy.common.raw_parsers import (
     get_force_constants,
-    get_poscar_txt,
     get_FORCE_SETS_txt,
+    get_poscar_txt,
 )
-from aiida_lammps.calculations.lammps import BaseLammpsCalculation
-from aiida.orm import Dict, ArrayData
 import numpy as np
-import six
+
+from aiida_lammps.calculations.lammps import BaseLammpsCalculation
 
 
 def generate_dynaphopy_input(
@@ -59,7 +59,7 @@ class CombinateCalculation(BaseLammpsCalculation):
         super(CombinateCalculation, cls).define(spec)
         spec.input(
             "metadata.options.parser_name",
-            valid_type=six.string_types,
+            valid_type=str,
             default="dynaphopy",
         )
         spec.input("parameters_dynaphopy", valid_type=Dict, help="dynaphopy parameters")
@@ -68,7 +68,7 @@ class CombinateCalculation(BaseLammpsCalculation):
         )
         spec.input("force_sets", valid_type=ArrayData, help="phonopy force sets")
 
-        # spec.input('settings', valid_type=six.string_types, default='lammps.optimize')
+        # spec.input('settings', valid_type=str, default='lammps.optimize')
 
     @staticmethod
     def create_main_input_content(
@@ -94,8 +94,10 @@ class CombinateCalculation(BaseLammpsCalculation):
         lammps_input_file += "neighbor        0.3 bin\n"
         lammps_input_file += "neigh_modify    every 1 delay 0 check no\n"
 
-        lammps_input_file += "velocity        all create {0} {1} dist gaussian mom yes\n".format(
-            parameter_data.dict.temperature, random_number
+        lammps_input_file += (
+            "velocity        all create {0} {1} dist gaussian mom yes\n".format(
+                parameter_data.dict.temperature, random_number
+            )
         )
         lammps_input_file += "velocity        all scale {}\n".format(
             parameter_data.dict.temperature

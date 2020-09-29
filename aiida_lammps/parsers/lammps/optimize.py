@@ -2,8 +2,8 @@ import traceback
 
 from aiida.orm import Dict
 
-from aiida_lammps.data.trajectory import LammpsTrajectory
 from aiida_lammps.common.raw_parsers import get_units_dict
+from aiida_lammps.data.trajectory import LammpsTrajectory
 from aiida_lammps.parsers.lammps.base import LAMMPSBaseParser
 
 

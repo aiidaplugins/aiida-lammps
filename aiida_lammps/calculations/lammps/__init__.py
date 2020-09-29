@@ -1,13 +1,12 @@
-from aiida.engine import CalcJob
-from aiida.common.exceptions import ValidationError
 from aiida.common import CalcInfo, CodeInfo
-from aiida.orm import StructureData, Dict
+from aiida.common.exceptions import ValidationError
+from aiida.engine import CalcJob
+from aiida.orm import Dict, StructureData
 from aiida.plugins import DataFactory
+import numpy as np
+
 from aiida_lammps.common.generate_structure import generate_lammps_structure
 from aiida_lammps.data.potential import EmpiricalPotential
-import six
-
-import numpy as np
 
 
 def get_supercell(structure, supercell_shape):
@@ -111,27 +110,27 @@ class BaseLammpsCalculation(CalcJob):
         spec.input("parameters", valid_type=Dict, help="the parameters", required=False)
         spec.input(
             "metadata.options.cell_transform_filename",
-            valid_type=six.string_types,
+            valid_type=str,
             default="cell_transform.npy",
         )
         spec.input(
             "metadata.options.output_filename",
-            valid_type=six.string_types,
+            valid_type=str,
             default=cls._DEFAULT_OUTPUT_FILE_NAME,
         )
         spec.input(
             "metadata.options.trajectory_suffix",
-            valid_type=six.string_types,
+            valid_type=str,
             default=cls._DEFAULT_TRAJECTORY_FILE_NAME,
         )
         spec.input(
             "metadata.options.system_suffix",
-            valid_type=six.string_types,
+            valid_type=str,
             default=cls._DEFAULT_SYSTEM_FILE_NAME,
         )
         spec.input(
             "metadata.options.restart_filename",
-            valid_type=six.string_types,
+            valid_type=str,
             default=cls._DEFAULT_RESTART_FILE_NAME,
         )
 

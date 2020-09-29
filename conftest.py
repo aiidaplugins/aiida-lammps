@@ -7,12 +7,13 @@ import os
 import shutil
 import tempfile
 
-from aiida.manage.fixtures import fixture_manager
 from aiida.plugins import DataFactory
 import numpy as np
 import pytest
 
-from aiida_lammps.tests.utils import AiidaTestApp, TEST_DIR
+from aiida_lammps.tests.utils import TEST_DIR, AiidaTestApp
+
+pytest_plugins = ["aiida.manage.tests.pytest_fixtures"]
 
 
 def pytest_addoption(parser):
@@ -54,18 +55,8 @@ def pytest_report_header(config):
     ]
 
 
-@pytest.fixture(scope="session")
-def aiida_environment():
-    """Setup a test profile for the duration of the tests."""
-    # TODO this is required locally for click
-    # (see https://click.palletsprojects.com/en/7.x/python3/)
-    os.environ["LC_ALL"] = "en_US.UTF-8"
-    with fixture_manager() as fixture_mgr:
-        yield fixture_mgr
-
-
 @pytest.fixture(scope="function")
-def db_test_app(aiida_environment, pytestconfig):
+def db_test_app(aiida_profile, pytestconfig):
     """Clear the database after each test."""
     exec_name = pytestconfig.getoption("lammps_exec") or "lammps"
     executables = {
@@ -82,8 +73,8 @@ def db_test_app(aiida_environment, pytestconfig):
     else:
         work_directory = tempfile.mkdtemp()
 
-    yield AiidaTestApp(work_directory, executables, environment=aiida_environment)
-    aiida_environment.reset_db()
+    yield AiidaTestApp(work_directory, executables, environment=aiida_profile)
+    aiida_profile.reset_db()
 
     if not test_workdir:
         shutil.rmtree(work_directory)
@@ -92,8 +83,7 @@ def db_test_app(aiida_environment, pytestconfig):
 @pytest.fixture(scope="function")
 def get_structure_data():
     def _get_structure_data(pkey):
-        """ return test structure data
-        """
+        """return test structure data"""
         if pkey == "Fe":
 
             cell = [
@@ -232,7 +222,7 @@ potential_data = namedtuple(
 @pytest.fixture(scope="function")
 def get_potential_data(get_structure_data):
     def _get_potential_data(pkey):
-        """ return data to create a potential,
+        """return data to create a potential,
         and accompanying structure data and expected output data to test it with
         """
         if pkey == "eam":
@@ -287,8 +277,8 @@ def get_potential_data(get_structure_data):
         elif pkey == "reaxff":
 
             from aiida_lammps.common.reaxff_convert import (
-                read_lammps_format,
                 filter_by_species,
+                read_lammps_format,
             )
 
             pair_style = "reaxff"

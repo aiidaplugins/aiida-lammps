@@ -1,8 +1,8 @@
 from hashlib import md5
-import six
+from io import StringIO
 
 from aiida.orm import Data
-from aiida.plugins.entry_point import load_entry_point, get_entry_point_names
+from aiida.plugins.entry_point import get_entry_point_names, load_entry_point
 
 
 class EmpiricalPotential(Data):
@@ -66,8 +66,7 @@ class EmpiricalPotential(Data):
         self.set_attribute(
             "md5|input_lines", md5(pot_lines.encode("utf-8")).hexdigest()
         )
-        with self.open(self.pot_lines_fname, mode="w") as handle:
-            handle.write(six.ensure_text(pot_lines))
+        self.put_object_from_filelike(StringIO(pot_lines), self.pot_lines_fname)
 
         # store external files required by the potential
         external_files = []
@@ -76,8 +75,7 @@ class EmpiricalPotential(Data):
                 "md5|{}".format(fname.replace(".", "_")),
                 md5(content.encode("utf-8")).hexdigest(),
             )
-            with self.open(fname, mode="w") as handle:
-                handle.write(six.ensure_text(content))
+            self.put_object_from_filelike(StringIO(content), fname)
             external_files.append(fname)
         self.set_attribute("external_files", sorted(external_files))
 

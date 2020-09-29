@@ -1,10 +1,10 @@
-import numpy as np
 from aiida.common.exceptions import InputValidationError
 from aiida.plugins import DataFactory
+import numpy as np
+
 from aiida_lammps.calculations.lammps import BaseLammpsCalculation
-from aiida_lammps.common.utils import convert_date_string, join_keywords, get_path
+from aiida_lammps.common.utils import convert_date_string, get_path, join_keywords
 from aiida_lammps.validation import validate_against_schema
-import six
 
 
 class MdCalculation(BaseLammpsCalculation):
@@ -14,7 +14,7 @@ class MdCalculation(BaseLammpsCalculation):
 
         spec.input(
             "metadata.options.parser_name",
-            valid_type=six.string_types,
+            valid_type=str,
             default="lammps.md",
         )
         spec.default_output_port = "results"
@@ -96,8 +96,10 @@ class MdCalculation(BaseLammpsCalculation):
             raise_error=False,
         )
         if initial_temp is not None:
-            lammps_input_file += "velocity        all create {0} {1} dist gaussian mom yes\n".format(
-                initial_temp, pdict.get("rand_seed", np.random.randint(10000000))
+            lammps_input_file += (
+                "velocity        all create {0} {1} dist gaussian mom yes\n".format(
+                    initial_temp, pdict.get("rand_seed", np.random.randint(10000000))
+                )
             )
             lammps_input_file += "velocity        all scale {}\n".format(initial_temp)
 

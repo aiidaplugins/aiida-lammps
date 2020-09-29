@@ -1,8 +1,8 @@
 from aiida.plugins import DataFactory
+
 from aiida_lammps.calculations.lammps import BaseLammpsCalculation
-from aiida_lammps.validation import validate_against_schema
 from aiida_lammps.common.utils import convert_date_string
-import six
+from aiida_lammps.validation import validate_against_schema
 
 
 class ForceCalculation(BaseLammpsCalculation):
@@ -12,11 +12,11 @@ class ForceCalculation(BaseLammpsCalculation):
 
         spec.input(
             "metadata.options.parser_name",
-            valid_type=six.string_types,
+            valid_type=str,
             default="lammps.force",
         )
 
-        # spec.input('settings', valid_type=six.string_types, default='lammps.optimize')
+        # spec.input('settings', valid_type=str, default='lammps.optimize')
 
         spec.output(
             "arrays",

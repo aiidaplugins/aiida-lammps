@@ -1,15 +1,13 @@
 import io
 import tempfile
-from zipfile import ZipFile, ZIP_DEFLATED
-
-import six
+from zipfile import ZIP_DEFLATED, ZipFile
 
 from aiida.orm import Data
 
 from aiida_lammps.common.parse_trajectory import (
+    create_structure,
     iter_trajectories,
     parse_step,
-    create_structure,
 )
 
 
@@ -41,7 +39,7 @@ class LammpsTrajectory(Data):
         super(LammpsTrajectory, self).__init__(**kwargs)
 
         if fileobj is not None:
-            if isinstance(fileobj, six.string_types):
+            if isinstance(fileobj, str):
                 with io.open(fileobj) as handle:
                     self.set_from_fileobj(handle, aliases)
             else:
@@ -119,8 +117,9 @@ class LammpsTrajectory(Data):
                 temp_handle, self._traj_filename, mode="wb", encoding=None
             )
 
-        with self.open(self._timestep_filename, "w") as handle:
-            handle.write(six.ensure_text(" ".join([str(t) for t in time_steps])))
+        self.put_object_from_filelike(
+            io.StringIO(" ".join([str(t) for t in time_steps])), self._timestep_filename
+        )
 
         self.set_attribute("number_steps", len(time_steps))
         self.set_attribute("number_atoms", number_atoms)
@@ -162,9 +161,9 @@ class LammpsTrajectory(Data):
             with ZipFile(
                 handle, "r", self.get_attribute("compression_method")
             ) as zip_file:
-                with zip_file.open(zip_name) as step_file:
+                with zip_file.open(zip_name, "r") as step_file:
                     content = step_file.read()
-        return six.ensure_text(content)
+        return content.decode("utf8")
 
     def get_step_data(self, step_idx):
         """Return parsed data, for a specific trajectory step."""
@@ -180,7 +179,7 @@ class LammpsTrajectory(Data):
                     zip_name = "{}{}".format(self.get_attribute("zip_prefix"), step_idx)
                     with zip_file.open(zip_name) as step_file:
                         content = step_file.read()
-                        yield six.ensure_text(content)
+                        yield content
 
     def get_step_structure(
         self,
@@ -218,4 +217,4 @@ class LammpsTrajectory(Data):
         """Write out the lammps trajectory to file."""
         for string in self.iter_step_strings():
             handle.write(string)
-            handle.write(six.ensure_text("\n"))
+            handle.write("\n")

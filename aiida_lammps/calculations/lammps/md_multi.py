@@ -1,9 +1,9 @@
 from aiida.common.exceptions import InputValidationError
 from aiida.plugins import DataFactory
+
 from aiida_lammps.calculations.lammps import BaseLammpsCalculation
-from aiida_lammps.common.utils import convert_date_string, join_keywords, get_path
+from aiida_lammps.common.utils import convert_date_string, get_path, join_keywords
 from aiida_lammps.validation import validate_against_schema
-import six
 
 
 class MdMultiCalculation(BaseLammpsCalculation):
@@ -15,7 +15,7 @@ class MdMultiCalculation(BaseLammpsCalculation):
 
         spec.input(
             "metadata.options.parser_name",
-            valid_type=six.string_types,
+            valid_type=str,
             default="lammps.md.multi",
         )
         spec.default_output_port = "results"

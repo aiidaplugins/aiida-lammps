@@ -1,7 +1,7 @@
-from aiida.plugins import CalculationFactory
-from aiida.orm import Code, Dict, StructureData
-from aiida.engine import run_get_node
 from aiida.common.extendeddicts import AttributeDict
+from aiida.engine import run_get_node
+from aiida.orm import Code, Dict, StructureData
+from aiida.plugins import CalculationFactory
 import numpy as np
 
 if __name__ == "__main__":

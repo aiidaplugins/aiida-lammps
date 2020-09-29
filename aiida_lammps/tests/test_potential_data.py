@@ -1,5 +1,5 @@
 import pytest
-import six
+
 from aiida_lammps.data.potential import EmpiricalPotential
 
 
@@ -28,9 +28,7 @@ def test_potential_files(
 ):
     potential = get_potential_data(potential_type)
     node = EmpiricalPotential(type=potential.type, data=potential.data)
-    file_regression.check(
-        six.ensure_text(node.get_object_content("potential.pot", "r"))
-    )
+    file_regression.check(node.get_object_content("potential.pot", "r"))
 
 
 @pytest.mark.parametrize(
@@ -39,4 +37,4 @@ def test_potential_files(
 def test_input_lines(db_test_app, get_potential_data, potential_type, file_regression):
     potential = get_potential_data(potential_type)
     node = EmpiricalPotential(type=potential.type, data=potential.data)
-    file_regression.check(six.ensure_text(node.get_input_lines()))
+    file_regression.check(node.get_input_lines())

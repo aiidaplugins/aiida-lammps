@@ -7,7 +7,6 @@ import os
 
 import importlib_resources
 import jsonschema
-import six
 
 from aiida_lammps.validation import schemas
 
@@ -50,7 +49,7 @@ def load_validator(schema):
         the validator to use
 
     """
-    if isinstance(schema, six.string_types):
+    if isinstance(schema, str):
         schema = load_schema(schema)
 
     validator_cls = jsonschema.validators.validator_for(schema)

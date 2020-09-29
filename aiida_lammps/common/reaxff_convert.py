@@ -7,7 +7,6 @@ import re
 
 from aiida_lammps.validation import validate_against_schema
 
-
 INDEX_SEP = "-"
 
 KEYS_GLOBAL = (

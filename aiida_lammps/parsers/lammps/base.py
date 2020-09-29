@@ -3,8 +3,8 @@ from fnmatch import fnmatch
 import os
 import traceback
 
-from aiida.parsers.parser import Parser
 from aiida.common import exceptions
+from aiida.parsers.parser import Parser
 
 from aiida_lammps import __version__ as aiida_lammps_version
 from aiida_lammps.common.raw_parsers import read_log_file

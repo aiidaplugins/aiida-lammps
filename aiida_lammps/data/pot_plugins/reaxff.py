@@ -112,11 +112,12 @@ class Reaxff(PotentialAbstract):
         )
         lammps_input_text += "fix qeq all qeq/reax 1 0.0 10.0 1e-6 reax/c\n"
         if control.get("fix_modify_qeq", True):
-            # TODO in conda-forge/osx-64::lammps-2019.06.05-py36_openmpi_5,
+            # TODO #15 in conda-forge/osx-64::lammps-2019.06.05-py36_openmpi_5,
             # an error is raised: ERROR: Illegal fix_modify command (src/fix.cpp:147)
             # posted question to lammps-users@lists.sourceforge.net
             # 'Using qeq/reax fix_modify energy in recent versions of LAMMPS'
-            lammps_input_text += "fix_modify qeq energy yes\n"
+            # lammps_input_text += "fix_modify qeq energy yes\n"
+            pass
         lammps_input_text += "compute reax all pair reax/c\n"
 
         return lammps_input_text

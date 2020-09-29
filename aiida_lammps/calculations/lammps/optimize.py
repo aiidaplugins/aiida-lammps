@@ -1,9 +1,9 @@
 from aiida.common.exceptions import InputValidationError
+from aiida.plugins import DataFactory
+
 from aiida_lammps.calculations.lammps import BaseLammpsCalculation
 from aiida_lammps.common.utils import convert_date_string, join_keywords
 from aiida_lammps.validation import validate_against_schema
-from aiida.plugins import DataFactory
-import six
 
 
 class OptimizeCalculation(BaseLammpsCalculation):
@@ -13,7 +13,7 @@ class OptimizeCalculation(BaseLammpsCalculation):
 
         spec.input(
             "metadata.options.parser_name",
-            valid_type=six.string_types,
+            valid_type=str,
             default="lammps.optimize",
         )
 

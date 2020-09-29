@@ -1,9 +1,8 @@
-import pytest
-
-from aiida.engine import run_get_node
 from aiida.cmdline.utils.common import get_calcjob_report
+from aiida.engine import run_get_node
 from aiida.orm import Dict
 from aiida.plugins import CalculationFactory, DataFactory
+import pytest
 
 import aiida_lammps.tests.utils as tests
 

@@ -1,10 +1,7 @@
 import abc
 
-import six
 
-
-@six.add_metaclass(abc.ABCMeta)
-class PotentialAbstract:
+class PotentialAbstract(abc.ABC):
     """Abstract class for potential plugins."""
 
     def __init__(self, data):

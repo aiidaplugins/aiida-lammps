@@ -1,13 +1,13 @@
 # Not working with Aiida 1.0
 
-from aiida.parsers.parser import Parser
 from aiida.orm.data.parameter import ParameterData
+from aiida.parsers.parser import Parser
+from aiida_phonopy.common.raw_parsers import parse_FORCE_CONSTANTS
 
 from aiida_lammps.common.raw_parsers import (
     parse_dynaphopy_output,
     parse_quasiparticle_data,
 )
-from aiida_phonopy.common.raw_parsers import parse_FORCE_CONSTANTS
 
 
 class DynaphopyParser(Parser):

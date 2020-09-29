@@ -6,7 +6,7 @@ default_units: real
 external_files:
 - potential.control
 - potential.pot
-md5|input_lines: 9a3f3e85cf7086b0d0b262b87c2d3019
+md5|input_lines: 924b38b68db0a9ed5779c054db4d62ac
 md5|potential_control: ae19ae9eb3dd37edf8aecbd147e48aa0
 md5|potential_pot: eec691f028ac0fc05aa17501b7cca734
 potential_type: reaxff

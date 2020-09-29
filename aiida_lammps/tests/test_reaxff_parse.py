@@ -1,9 +1,6 @@
 from textwrap import dedent
 
-import six
-
 from aiida_lammps.common.reaxff_convert import read_lammps_format, write_lammps_format
-
 
 lammps_file1 = dedent(
     """\
@@ -439,7 +436,7 @@ def test_read_lammps_format(data_regression):
 def test_round_trip_lammps_format(file_regression):
     data = read_lammps_format(lammps_file1.splitlines())
     output = write_lammps_format(data)
-    file_regression.check(six.ensure_text(output))
+    file_regression.check(output)
 
 
 def test_read_lammps_format2(data_regression):
@@ -450,4 +447,4 @@ def test_read_lammps_format2(data_regression):
 def test_round_trip_lammps_format2(file_regression):
     data = read_lammps_format(lammps_file2.splitlines())
     output = write_lammps_format(data)
-    file_regression.check(six.ensure_text(output))
+    file_regression.check(output)

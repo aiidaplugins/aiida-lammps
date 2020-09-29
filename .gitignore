@@ -9,6 +9,7 @@ dist/
 *.egg*
 .DS_Store
 .idea/
+.tox/
 .pytest_cache/
 .idea/vcs.xml
 postgres*.log

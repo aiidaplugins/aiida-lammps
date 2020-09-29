@@ -1,10 +1,10 @@
+from aiida.common.datastructures import CalcInfo, CodeInfo
+from aiida.common.exceptions import InputValidationError
+from aiida.common.utils import classproperty
 from aiida.engine import CalcJob
 from aiida.orm import ArrayData, StructureData, TrajectoryData
-from aiida.common.exceptions import InputValidationError
-from aiida.common.datastructures import CalcInfo, CodeInfo
-from aiida.common.utils import classproperty
-
 from aiida_phonopy.common.raw_parsers import get_force_constants, get_poscar_txt
+
 from aiida_lammps.common.generate_input_files import (
     get_trajectory_txt,
     parameters_to_input_file,
