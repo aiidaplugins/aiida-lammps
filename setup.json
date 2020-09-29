@@ -6,6 +6,16 @@
   "author": "Abel Carreras, Chris Sewell",
   "author_email": "abelcarreras83@gmail.com",
   "license": "MIT license",
+  "classifiers": [
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Topic :: Scientific/Engineering :: Chemistry",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Framework :: AiiDA"
+  ],
   "python_requires": ">=3.6",
   "install_requires": [
     "aiida-core>=1.4.0,<2.0.0",
