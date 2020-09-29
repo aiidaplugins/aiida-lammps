@@ -426,37 +426,52 @@ calc_node.outputs.trajectory_data.attributes
 
 ### Coding Style Requirements
 
-The code style is tested using [flake8](http://flake8.pycqa.org),
-with the configuration set in `.flake8`,
-and code should be formatted with [black](https://github.com/ambv/black).
-
-Installing with `aiida-lammps[code_style]` makes the [pre-commit](https://pre-commit.com/)
-package available, which will ensure these tests are passed by reformatting the code
-and testing for lint errors before submitting a commit.
-It can be setup by:
+The code is formatted and linted using [pre-commit](https://pre-commit.com/), which runs in an isolated, virtual environment:
 
 ```shell
->> cd aiida-lammps
+>> pip install pre-commit
+>> pre-commit run --all
+```
+
+or to automate runs, triggered before each commit:
+
+```shell
 >> pre-commit install
 ```
 
-Optionally you can run `black` and `flake8` separately:
-
-```shell
->> black .
->> flake8 .
-```
-
-Editors like VS Code also have automatic code reformat utilities, which can adhere to this standard.
-
 ### Testing
 
-The following will discover and run all unit test:
+the test suite can be run in an isolated, virtual environment using `tox` (see `tox.ini` in the repo):
+
+```shell
+>> pip install tox
+>> tox -e py37
+```
+
+or directly:
 
 ```shell
 >> pip install -e .[testing]
 >> reentry scan -r aiida
 >> pytest -v
+```
+
+The tests require that both PostgreSQL and RabbitMQ are running.
+If you wish to run an isolated RabbitMQ instance, see the `docker-compose.yml` file in the repo.
+
+Some tests require that a `lammps` executable be present.
+
+The easiest way to achieve this is to use Conda:
+
+```shell
+>> conda install lammps==2019.06.05
+# this will install lmp_serial and lmp_mpi
+```
+
+You can specify a different executable name for LAMMPS with:
+
+```shell
+>> tox -e py37 -- --lammps-exec lmp_exec
 ```
 
 To output the results of calcjob executions to a specific directory:
