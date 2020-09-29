@@ -1,4 +1,5 @@
-[![CI Status](https://travis-ci.org/abelcarreras/aiida-lammps.svg?branch=master)](https://travis-ci.org/abelcarreras/aiida-lammps)
+[![CI Status](https://github.com/aiidaplugins/aiida-lammps/workflows/CI/badge.svg)](https://github.com/aiidaplugins/aiida-lammps)
+[![Coverage Status](https://codecov.io/gh/aiidaplugins/aiida-lammps/branch/master/graph/badge.svg)](https://codecov.io/gh/aiidaplugins/aiida-lammps)
 [![PyPI](https://img.shields.io/pypi/v/aiida-lammps.svg)](https://pypi.python.org/pypi/aiida-lammps/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 
