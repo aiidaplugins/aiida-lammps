@@ -101,9 +101,8 @@ if __name__ == "__main__":
 
     # setup nodes
     inputs.structure = structure
-    # inputs.potential = Dict(dict=potential)
     inputs.potential = EmpiricalPotential(
-        structure=structure, type="tersoff", data=tersoff_gan
+        type=potential['pair_style'], data=potential['data']
     )
 
     inputs.parameters = Dict(dict=parameters_opt)

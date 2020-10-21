@@ -89,7 +89,7 @@ if __name__ == "__main__":
     # setup nodes
     inputs.structure = structure
     inputs.potential = EmpiricalPotential(
-        structure=structure, type="lennard_jones", data={"1  1": "0.01029   3.4    2.5"}
+        type=potential['pair_style'], data=potential['data']
     )
 
     inputs.parameters = Dict(dict=parameters_opt)

@@ -87,9 +87,8 @@ if __name__ == "__main__":
 
     # setup nodes
     inputs.structure = structure
-    # inputs.potential = Dict(dict=potential)
     inputs.potential = EmpiricalPotential(
-        structure=structure, type="eam", data=eam_data
+        type=potential['pair_style'], data=potential['data']
     )
 
     print(inputs.potential.get_potential_file())
