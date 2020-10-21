@@ -82,7 +82,7 @@ if __name__ == "__main__":
     # setup nodes
     inputs.structure = structure
     inputs.potential = EmpiricalPotential(
-        type=potential['pair_style'], data=potential['data']
+        type=potential["pair_style"], data=potential["data"]
     )
 
     # run calculation
