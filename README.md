@@ -113,7 +113,7 @@ potential_dict = {
     'N  N  Ga': '1.0 0.001632 0.000 65.20700 2.82100 -0.518000 1.0 0.0 0.00000 0.00000 2.90 0.20 0.00000 0.00000',
     'Ga N  Ga': '1.0 0.007874 1.846 1.918000 0.75000 -0.301300 1.0 0.0 0.00000 0.00000 2.87 0.15 0.00000 0.00000'}
 potential = DataFactory("lammps.potential")(
-    structure=structure, type=pair_style, data=potential_dict
+    type=pair_style, data=potential_dict
 )
 potential.attributes
 ```
