@@ -221,7 +221,6 @@ class LammpsTrajectory(Data):
 
     def write_as_lammps(self, handle, steps=None):
         """Write out the lammps trajectory to file.
-        
         :param handle: a file handle, opened in "wb" mode
         :param steps: a list of steps to write (default to all)
         """
