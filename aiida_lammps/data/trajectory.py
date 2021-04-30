@@ -217,4 +217,4 @@ class LammpsTrajectory(Data):
         """Write out the lammps trajectory to file."""
         for string in self.iter_step_strings():
             handle.write(string)
-            handle.write("\n")
+            handle.write(b"\n")
