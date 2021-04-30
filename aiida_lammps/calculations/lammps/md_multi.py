@@ -171,6 +171,7 @@ class MdMultiCalculation(BaseLammpsCalculation):
                     filename="{}-{}".format(stage_name, system_filename),
                     fix_name="sys_info",
                     average_rate=output_sys_dict.get("average_rate", 1),
+                    repeat_rate=output_sys_dict.get("repeat_rate", None),
                 )
                 if sys_info_cmnds:
                     lammps_input_file += "\n".join(sys_info_cmnds) + "\n"
@@ -305,6 +306,7 @@ def sys_ave_commands(
     filename,
     fix_name="sys_info",
     average_rate=None,
+    repeat_rate=None,
 ):
     """Create commands to output required system variables to a file."""
     commands = []
@@ -337,7 +339,17 @@ def sys_ave_commands(
                 )
             )
         nevery = average_rate
-        nrep = int(dump_rate / average_rate)
+
+        if repeat_rate:
+            if repeat_rate * nevery > dump_rate:
+                raise ValueError(
+                    "The dump rate ({}) must be less than the product of the average rate ({}) and the repeat rate ({})".format(
+                        dump_rate, average_rate, repeat_rate
+                    )
+                )
+            nrep = int(repeat_rate)
+        else:
+            nrep = int(dump_rate / average_rate)
 
     commands.append(
         """fix {fid} all ave/time {nevery} {nrepeat} {nfreq} &

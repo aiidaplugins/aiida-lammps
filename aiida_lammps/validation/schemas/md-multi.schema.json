@@ -455,6 +455,12 @@
               "minimum": 1,
               "default": 1
             },
+            "repeat_rate": {
+              "description": "How often to repeat",
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
             "ave_variables": {
               "description": "system level variables to output, per dump_rate, to system array, that will be averaged in accordance with average_rate",
               "type": "array",
