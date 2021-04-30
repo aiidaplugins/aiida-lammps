@@ -169,14 +169,13 @@ class LammpsTrajectory(Data):
         """Return parsed data, for a specific trajectory step."""
         return parse_step(self.get_step_string(step_idx).splitlines())
 
-    def iter_step_strings(self, steps = None):
+    def iter_step_strings(self, steps=None):
         """Yield the content string, for a each trajectory step."""
 
         if steps is None:
             steps = range(self.number_steps)
         elif isinstance(steps, int):
             steps = range(0, self.number_steps, steps)
-
 
         with self.open(self.get_attribute("traj_filename"), mode="rb") as handle:
             with ZipFile(
@@ -220,8 +219,8 @@ class LammpsTrajectory(Data):
             original_structure=original_structure,
         )
 
-    def write_as_lammps(self, handle, steps = None):
+    def write_as_lammps(self, handle, steps=None):
         """Write out the lammps trajectory to file."""
-        for string in self.iter_step_strings(steps = steps):
+        for string in self.iter_step_strings(steps=steps):
             handle.write(string)
             handle.write(b"\n")
