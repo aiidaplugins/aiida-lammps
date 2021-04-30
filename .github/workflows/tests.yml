@@ -90,7 +90,7 @@ jobs:
         pytest  --lammps-exec lmp_serial --cov=aiida_lammps --cov-report=xml --cov-report=term-missing
 
     - name: Upload to Codecov
-      if: matrix.os == 'ubuntu-latest' && matrix.python-version == 3.7
+      if: matrix.python-version == 3.8
       uses: codecov/codecov-action@v1
       with:
         name: pytests-lammps
