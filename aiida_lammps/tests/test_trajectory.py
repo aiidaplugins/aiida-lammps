@@ -74,7 +74,7 @@ def test_lammpstraj_timesteps(db_test_app):
         1000,
     ]
 
- 
+
 def test_write_as_lammps(db_test_app, tmp_path):
     path = os.path.join(TEST_DIR, "input_files", "trajectory.lammpstrj")
     data = LammpsTrajectory(path)
