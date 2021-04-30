@@ -17,7 +17,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v1
       with:
-        python-version: 3.7
+        python-version: 3.8
     - uses: pre-commit/action@v2.0.0
 
   tests:
@@ -27,9 +27,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.6, 3.7]
-        # TODO 3.8 is not compatible with lammps==2019.06.05,
-        # but the 2020 version changes the test results (1 more trajectory step)
+        python-version: [3.7, 3.8]
         os: [ubuntu-latest]
         backend: ['django']
         include:
@@ -89,7 +87,7 @@ jobs:
       if: matrix.os == 'ubuntu-latest' && matrix.python-version == 3.7
       uses: codecov/codecov-action@v1
       with:
-        name: pytests-py3.7
+        name: pytests-lammps
         flags: pytests
         file: ./coverage.xml
         fail_ci_if_error: true
@@ -102,10 +100,10 @@ jobs:
     steps:
     - name: Checkout source
       uses: actions/checkout@v2
-    - name: Set up Python 3.7
+    - name: Set up Python
       uses: actions/setup-python@v1
       with:
-        python-version: 3.7
+        python-version: 3.8
     - name: Build package
       run: |
         pip install wheel
