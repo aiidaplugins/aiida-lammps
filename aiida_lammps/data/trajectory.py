@@ -170,7 +170,7 @@ class LammpsTrajectory(Data):
         return parse_step(self.get_step_string(step_idx).splitlines())
 
     def iter_step_strings(self, steps=None):
-        """Yield the content string, for a each trajectory step."""
+        """Yield the content string, for each trajectory step."""
 
         if steps is None:
             steps = range(self.number_steps)
@@ -220,7 +220,11 @@ class LammpsTrajectory(Data):
         )
 
     def write_as_lammps(self, handle, steps=None):
-        """Write out the lammps trajectory to file."""
+        """Write out the lammps trajectory to file.
+        
+        :param handle: a file handle, opened in "wb" mode
+        :param steps: a list of steps to write (default to all)
+        """
         for string in self.iter_step_strings(steps=steps):
             handle.write(string)
             handle.write(b"\n")
