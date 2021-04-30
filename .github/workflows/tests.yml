@@ -17,7 +17,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v1
       with:
-        python-version: 3.7
+        python-version: 3.8
     - uses: pre-commit/action@v2.0.0
 
   tests:
@@ -27,17 +27,21 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.6, 3.7]
-        # TODO 3.8 is not compatible with lammps==2019.06.05,
-        # but the 2020 version changes the test results (1 more trajectory step)
-        os: [ubuntu-latest]
-        backend: ['django']
         include:
         - python-version: 3.7
-          os: ubuntu-latest
+          lammps-version: "2019.06.05"
+          backend: django
+        - python-version: 3.7
+          lammps-version: "2019.06.05"
           backend: sqlalchemy
+        - python-version: 3.8
+          lammps-version: "2020.12.24"
+          backend: django
+        - python-version: 3.9
+          lammps-version: "2020.12.24"
+          backend: django
 
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
 
     services:
       postgres:
@@ -69,7 +73,7 @@ jobs:
         conda-channels: conda-forge
 
     - name: install lammps
-      run: conda install -y lammps==2019.06.05
+      run: conda install -y lammps==${{ matrix.lammps-version }}
 
     - name: Upgrade pip
       run: |
@@ -86,10 +90,10 @@ jobs:
         pytest  --lammps-exec lmp_serial --cov=aiida_lammps --cov-report=xml --cov-report=term-missing
 
     - name: Upload to Codecov
-      if: matrix.os == 'ubuntu-latest' && matrix.python-version == 3.7
+      if: matrix.python-version == 3.8
       uses: codecov/codecov-action@v1
       with:
-        name: pytests-py3.7
+        name: pytests-lammps
         flags: pytests
         file: ./coverage.xml
         fail_ci_if_error: true
@@ -102,10 +106,10 @@ jobs:
     steps:
     - name: Checkout source
       uses: actions/checkout@v2
-    - name: Set up Python 3.7
+    - name: Set up Python
       uses: actions/setup-python@v1
       with:
-        python-version: 3.7
+        python-version: 3.8
     - name: Build package
       run: |
         pip install wheel
