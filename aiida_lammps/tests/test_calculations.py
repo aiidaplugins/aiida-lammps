@@ -354,8 +354,10 @@ def test_md_process(db_test_app, get_potential_data, potential_type, data_regres
     code = db_test_app.get_or_create_code(calc_plugin)
     pot_data = get_potential_data(potential_type)
     potential = DataFactory("lammps.potential")(type=pot_data.type, data=pot_data.data)
+    version = get_lammps_version(code)
+    version_year = version[-4:]
     parameters = get_calc_parameters(
-        get_lammps_version(code), calc_plugin, potential.default_units, potential_type
+        version, calc_plugin, potential.default_units, potential_type
     )
     builder = code.get_builder()
     builder._update(
@@ -386,7 +388,8 @@ def test_md_process(db_test_app, get_potential_data, potential_type, data_regres
             ),
             "system_data": calc_node.outputs.system_data.attributes,
             "trajectory_data": calc_node.outputs.trajectory_data.attributes,
-        }
+        },
+        basename=f"test_md_process-{potential_type}-{version_year}",
     )
 
 

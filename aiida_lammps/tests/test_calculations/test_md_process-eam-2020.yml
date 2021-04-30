@@ -1,0 +1,32 @@
+results:
+  distance_units: Angstroms
+  energy: -8.1
+  energy_units: eV
+  errors: []
+  parser_class: MdParser
+  time_units: picoseconds
+  timestep_picoseconds: 0.001
+  units_style: metal
+system_data:
+  array|etotal:
+  - 101
+  array|step:
+  - 101
+  array|temp:
+  - 101
+  units_style: metal
+trajectory_data:
+  aliases: null
+  compression_method: 8
+  elements:
+  - Fe
+  field_names:
+  - element
+  - x
+  - y
+  - z
+  number_atoms: 2
+  number_steps: 101
+  timestep_filename: timesteps.txt
+  traj_filename: trajectory.zip
+  zip_prefix: step-
