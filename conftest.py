@@ -48,7 +48,9 @@ def get_work_directory(config):
 def pytest_report_header(config):
     """Add header information for pytest execution."""
     return [
-        "LAMMPS Executable: {}".format(config.getoption("lammps_exec") or "lammps"),
+        "LAMMPS Executable: {}".format(
+            shutil.which(config.getoption("lammps_exec") or "lammps")
+        ),
         "LAMMPS Work Directory: {}".format(
             config.getoption("lammps_workdir") or "<TEMP>"
         ),
