@@ -103,7 +103,7 @@
           "description": "Dump rate for minimization trajectory output. Defaults to 1M to prevent unnecessarily large files being created.",
           "type": "integer",
           "minimum": 1,
-          "default": 1000000
+          "default": 1
         }
       }
     },
