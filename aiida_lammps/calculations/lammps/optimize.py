@@ -104,8 +104,10 @@ class OptimizeCalculation(BaseLammpsCalculation):
             dump_variables = "element x y z  fx fy fz c_stpa[1] c_stpa[2] c_stpa[3] c_stpa[4] c_stpa[5] c_stpa[6]"
             dump_format = "%4s " + " ".join(["%16.10f"] * 12)
 
-        lammps_input_file += "dump            aiida all custom 1 {0} {1}\n".format(
-            trajectory_filename, dump_variables
+        dump_rate = parameter_data["minimize"].get("dump_rate", 1)
+
+        lammps_input_file += "dump            aiida all custom {0} {1} {2}\n".format(
+            dump_rate, trajectory_filename, dump_variables
         )
 
         # TODO find exact version when changes were made
