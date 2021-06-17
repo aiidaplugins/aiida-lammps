@@ -4,7 +4,7 @@
   "description": "AiiDA plugin for LAMMPS",
   "url": "https://github.com/aiidaplugins/aiida-lammps",
   "author": "Abel Carreras, Chris Sewell",
-  "author_email": "abelcarreras83@gmail.com",
+  "author_email": "chrisj_sewell@hotmail.com",
   "license": "MIT license",
   "classifiers": [
     "Programming Language :: Python",
@@ -19,6 +19,7 @@
   "python_requires": ">=3.6",
   "install_requires": [
     "aiida-core>=1.4.0,<2.0.0",
+    "psycopg2-binary<2.9",
     "ase>=3.12.0,<4.0.0",
     "importlib_resources",
     "jsonschema",
@@ -67,6 +68,11 @@
     ],
     "code_style": [
       "pre-commit~=2.6"
+    ],
+    "docs": [
+      "myst-parser~=0.15.0",
+      "sphinx-external-toc",
+      "furo"
     ],
     "phonopy": [
       "dynaphopy"

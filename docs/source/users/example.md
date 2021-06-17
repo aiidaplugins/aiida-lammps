@@ -1,56 +1,6 @@
-[![CI Status](https://github.com/aiidaplugins/aiida-lammps/workflows/CI/badge.svg)](https://github.com/aiidaplugins/aiida-lammps)
-[![Coverage Status](https://codecov.io/gh/aiidaplugins/aiida-lammps/branch/master/graph/badge.svg)](https://codecov.io/gh/aiidaplugins/aiida-lammps)
-[![PyPI](https://img.shields.io/pypi/v/aiida-lammps.svg)](https://pypi.python.org/pypi/aiida-lammps/)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
+# User Example
 
-# AiiDA LAMMPS plugin
-
-A LAMMPS plugin for the [AiiDA](http://aiida-core.readthedocs.io/) framework.
-This plugin contains 4 code types:
-
-- `lammps.forces`: Atomic single-point forces calculation
-- `lammps.optimize`: Crystal structure optimization
-- `lammps.md`: Molecular dynamics calculation
-- `lammps.combinate`: DynaPhoPy calculation using LAMMPS MD trajectory (currently untested)
-
-Note: `lammps.combinate` requires `aiida-phonopy` (https://github.com/abelcarreras/aiida-phonopy)
-plugin to work, DynaPhoPy can be found in: https://github.com/abelcarreras/aiida-phonopy
-
-- [AiiDA LAMMPS plugin](#aiida-lammps-plugin)
-  - [Installation](#installation)
-  - [Built-in Potential Support](#built-in-potential-support)
-  - [Examples](#examples)
-    - [Code Setup](#code-setup)
-    - [Structure Setup](#structure-setup)
-    - [Potential Setup](#potential-setup)
-    - [Force Calculation](#force-calculation)
-    - [Optimisation Calculation](#optimisation-calculation)
-    - [MD Calculation](#md-calculation)
-  - [Development](#development)
-    - [Coding Style Requirements](#coding-style-requirements)
-    - [Testing](#testing)
-
-## Installation
-
-To install from pypi:
-
-```shell
-pip install aiida-lammps
-```
-
-## Built-in Potential Support
-
-- EAM
-- Lennad Jones
-- Tersoff
-- ReaxFF
-
-## Examples
-
-More example calculations are found in the folder **/examples**,
-and there are many test examples in **/aiida_lammps/tests/test_calculations**.
-
-### Code Setup
+## Code Setup
 
 ```python
 from aiida_lammps.tests.utils import (
@@ -69,7 +19,7 @@ meta_options = {
 }
 ```
 
-### Structure Setup
+## Structure Setup
 
 ```python
 from aiida.plugins import DataFactory
@@ -99,7 +49,7 @@ structure
 <StructureData: uuid: 96f9c02b-77c7-4889-9de2-dbda27bb03fa (unstored)>
 ```
 
-### Potential Setup
+## Potential Setup
 
 ```python
 pair_style = 'tersoff'
@@ -127,7 +77,7 @@ potential.attributes
  'input_lines_md5': '3145644a408a6d464e80866b833115a2'}
 ```
 
-### Force Calculation
+## Force Calculation
 
 ```python
 from aiida.engine import run_get_node
@@ -211,7 +161,7 @@ calc_node.outputs.arrays.attributes
 {'array|forces': [1, 4, 3]}
 ```
 
-### Optimisation Calculation
+## Optimisation Calculation
 
 ```python
 from aiida.engine import run_get_node
@@ -311,7 +261,7 @@ calc_node.outputs.arrays.attributes
  'array|forces': [56, 4, 3]}
 ```
 
-### MD Calculation
+## MD Calculation
 
 ```python
 from aiida.engine import submit
@@ -420,62 +370,4 @@ calc_node.outputs.trajectory_data.attributes
  'array|steps': [101],
  'array|positions': [101, 4, 3],
  'symbols': ['Ga', 'Ga', 'N', 'N']}
-```
-
-## Development
-
-### Coding Style Requirements
-
-The code is formatted and linted using [pre-commit](https://pre-commit.com/), which runs in an isolated, virtual environment:
-
-```shell
->> pip install pre-commit
->> pre-commit run --all
-```
-
-or to automate runs, triggered before each commit:
-
-```shell
->> pre-commit install
-```
-
-### Testing
-
-the test suite can be run in an isolated, virtual environment using `tox` (see `tox.ini` in the repo):
-
-```shell
->> pip install tox
->> tox -e py37
-```
-
-or directly:
-
-```shell
->> pip install -e .[testing]
->> reentry scan -r aiida
->> pytest -v
-```
-
-The tests require that both PostgreSQL and RabbitMQ are running.
-If you wish to run an isolated RabbitMQ instance, see the `docker-compose.yml` file in the repo.
-
-Some tests require that a `lammps` executable be present.
-
-The easiest way to achieve this is to use Conda:
-
-```shell
->> conda install lammps==2019.06.05
-# this will install lmp_serial and lmp_mpi
-```
-
-You can specify a different executable name for LAMMPS with:
-
-```shell
->> tox -e py37 -- --lammps-exec lmp_exec
-```
-
-To output the results of calcjob executions to a specific directory:
-
-```shell
->> pytest --lammps-workdir "test_workdir"
 ```

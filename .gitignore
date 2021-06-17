@@ -15,7 +15,7 @@ dist/
 postgres*.log
 .aiida_envs.yaml
 .vscode/
-
+docs/_build/
 pip-wheel-metadata/
 example_inputs/
 pytest_workdir/
