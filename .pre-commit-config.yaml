@@ -8,52 +8,33 @@ exclude: >
     )$
 
 repos:
-
-  - repo: git://github.com/pre-commit/pre-commit-hooks
-    rev: v3.2.0
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.5.0
     hooks:
-    - id: check-json
-    - id: check-yaml
-    - id: end-of-file-fixer
-    - id: trailing-whitespace
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-added-large-files
+      - id: double-quote-string-fixer
+      - id: forbid-new-submodules
 
-  - repo: https://github.com/timothycrosley/isort
-    rev: 5.5.3
+  - repo: https://github.com/pre-commit/mirrors-yapf
+    rev: v0.30.0
     hooks:
-    - id: isort
-
-  - repo: https://github.com/psf/black
-    rev: 20.8b1
-    hooks:
-    - id: black
-
-  - repo: https://gitlab.com/pycqa/flake8
-    rev: 3.8.3
-    hooks:
-    - id: flake8
-      # additional_dependencies:
-      # - flake8-bugbear==20.1.4
-      # - flake8-builtins==1.5.3
-      # - flake8-comprehensions==3.2.3
-      exclude: >
-        (?x)^(
-          aiida_lammps/calculations/dynaphopy.py
-        )$
+      - id: yapf
+        name: yapf
+        types: [python]
+        args: ["-i"]
 
   - repo: local
     hooks:
-    - id: version-number
-      name: Check version numbers
-      entry: python ./.pre-commit/check_version.py version
-      language: python
-      files: >-
-        (?x)^(
-          setup.json|
-          .pre-commit/check_version.py|
-          aiida_lammps/__init__.py
-        )$
-      pass_filenames: false
-      additional_dependencies:
-        - click
-
-    # TODO could also add check-manifest
+      - id: pylint
+        name: pylint
+        entry: pylint
+        types: [python]
+        language: system
+        exclude: |
+          (?x)(
+          ^examples/
+          )

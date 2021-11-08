@@ -18,14 +18,14 @@ def convert_to_str(value):
     """convert True/False to yes/no and all values to strings"""
     if isinstance(value, bool):
         if value:
-            return "yes"
-        return "no"
+            return 'yes'
+        return 'no'
     return str(value)
 
 
 def _convert_values(value):
     if isinstance(value, (tuple, list)):
-        return " ".join([convert_to_str(v) for v in value])
+        return ' '.join([convert_to_str(v) for v in value])
     return convert_to_str(value)
 
 
@@ -35,13 +35,10 @@ def join_keywords(dct, ignore=None):
     value can be a single value or a list/tuple of values
     """
     ignore = [] if not ignore else ignore
-    return " ".join(
-        [
-            "{0} {1}".format(k, _convert_values(dct[k]))
-            for k in sorted(dct.keys())
-            if k not in ignore
-        ]
-    )
+    return ' '.join([
+        '{0} {1}'.format(k, _convert_values(dct[k]))
+        for k in sorted(dct.keys()) if k not in ignore
+    ])
 
 
 def get_path(dct, path, default=None, raise_error=True):
@@ -50,7 +47,8 @@ def get_path(dct, path, default=None, raise_error=True):
     for i, key in enumerate(path):
         if not isinstance(subdct, dict) or key not in subdct:
             if raise_error:
-                raise KeyError("path does not exist in dct: {}".format(path[0 : i + 1]))
+                raise KeyError('path does not exist in dct: {}'.format(
+                    path[0:i + 1]))
             else:
                 return default
         subdct = subdct[key]

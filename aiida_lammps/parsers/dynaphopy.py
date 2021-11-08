@@ -14,7 +14,6 @@ class DynaphopyParser(Parser):
     """
     Simple Parser for LAMMPS.
     """
-
     def __init__(self, calc):
         """
         Initialize the instance of LammpsParser
@@ -34,7 +33,7 @@ class DynaphopyParser(Parser):
         try:
             out_folder = retrieved[self._calc._get_linkname_retrieved()]
         except KeyError:
-            self.logger.error("No retrieved folder found")
+            self.logger.error('No retrieved folder found')
             return False, ()
 
         # check what is inside the folder
@@ -49,8 +48,7 @@ class DynaphopyParser(Parser):
         # Get file and do the parsing
         outfile = out_folder.get_abs_path(self._calc._OUTPUT_FILE_NAME)
         force_constants_file = out_folder.get_abs_path(
-            self._calc._OUTPUT_FORCE_CONSTANTS
-        )
+            self._calc._OUTPUT_FORCE_CONSTANTS)
         qp_file = out_folder.get_abs_path(self._calc._OUTPUT_QUASIPARTICLES)
 
         try:
@@ -79,26 +77,23 @@ class DynaphopyParser(Parser):
         # save phonon data into node
         try:
             new_nodes_list.append(
-                ("quasiparticle_data", ParameterData(dict=quasiparticle_data))
-            )
+                ('quasiparticle_data', ParameterData(dict=quasiparticle_data)))
         except KeyError:  # keys not
             pass
 
         try:
             new_nodes_list.append(
-                ("thermal_properties", ParameterData(dict=thermal_properties))
-            )
+                ('thermal_properties', ParameterData(dict=thermal_properties)))
         except KeyError:  # keys not
             pass
 
         try:
-            new_nodes_list.append(("force_constants", force_constants))
+            new_nodes_list.append(('force_constants', force_constants))
         except KeyError:  # keys not
             pass
 
         # add the dictionary with warnings
-        new_nodes_list.append(
-            (self.get_linkname_outparams(), ParameterData(dict={"warnings": warnings}))
-        )
+        new_nodes_list.append((self.get_linkname_outparams(),
+                               ParameterData(dict={'warnings': warnings})))
 
         return successful, new_nodes_list

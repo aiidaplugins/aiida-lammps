@@ -17,20 +17,19 @@ class DynaphopyCalculation(CalcJob):
 
     Requirement: the node should be able to import phonopy
     """
-
     def _init_internal_params(self):
         super(DynaphopyCalculation, self)._init_internal_params()
 
-        self._INPUT_FILE_NAME = "input_dynaphopy"
-        self._INPUT_TRAJECTORY = "trajectory"
-        self._INPUT_CELL = "POSCAR"
-        self._INPUT_FORCE_CONSTANTS = "FORCE_CONSTANTS"
+        self._INPUT_FILE_NAME = 'input_dynaphopy'
+        self._INPUT_TRAJECTORY = 'trajectory'
+        self._INPUT_CELL = 'POSCAR'
+        self._INPUT_FORCE_CONSTANTS = 'FORCE_CONSTANTS'
 
-        self._OUTPUT_FORCE_CONSTANTS = "FORCE_CONSTANTS_OUT"
-        self._OUTPUT_FILE_NAME = "OUTPUT"
-        self._OUTPUT_QUASIPARTICLES = "quasiparticles_data.yaml"
+        self._OUTPUT_FORCE_CONSTANTS = 'FORCE_CONSTANTS_OUT'
+        self._OUTPUT_FILE_NAME = 'OUTPUT'
+        self._OUTPUT_QUASIPARTICLES = 'quasiparticles_data.yaml'
 
-        self._default_parser = "dynaphopy"
+        self._default_parser = 'dynaphopy'
 
     @classproperty
     def _use_methods(cls):
@@ -38,43 +37,44 @@ class DynaphopyCalculation(CalcJob):
         Additional use_* methods for the namelists class.
         """
         retdict = JobCalculation._use_methods
-        retdict.update(
-            {
-                "parameters": {
-                    "valid_types": ParameterData,
-                    "additional_parameter": None,
-                    "linkname": "parameters",
-                    "docstring": (
-                        "Use a node that specifies the dynaphopy input "
-                        "for the namelists"
-                    ),
-                },
-                "trajectory": {
-                    "valid_types": TrajectoryData,
-                    "additional_parameter": None,
-                    "linkname": "trajectory",
-                    "docstring": (
-                        "Use a node that specifies the trajectory data "
-                        "for the namelists"
-                    ),
-                },
-                "force_constants": {
-                    "valid_types": ArrayData,
-                    "additional_parameter": None,
-                    "linkname": "force_constants",
-                    "docstring": (
-                        "Use a node that specifies the force_constants "
-                        "for the namelists"
-                    ),
-                },
-                "structure": {
-                    "valid_types": StructureData,
-                    "additional_parameter": None,
-                    "linkname": "structure",
-                    "docstring": "Use a node for the structure",
-                },
-            }
-        )
+        retdict.update({
+            'parameters': {
+                'valid_types':
+                ParameterData,
+                'additional_parameter':
+                None,
+                'linkname':
+                'parameters',
+                'docstring': ('Use a node that specifies the dynaphopy input '
+                              'for the namelists'),
+            },
+            'trajectory': {
+                'valid_types':
+                TrajectoryData,
+                'additional_parameter':
+                None,
+                'linkname':
+                'trajectory',
+                'docstring': ('Use a node that specifies the trajectory data '
+                              'for the namelists'),
+            },
+            'force_constants': {
+                'valid_types':
+                ArrayData,
+                'additional_parameter':
+                None,
+                'linkname':
+                'force_constants',
+                'docstring': ('Use a node that specifies the force_constants '
+                              'for the namelists'),
+            },
+            'structure': {
+                'valid_types': StructureData,
+                'additional_parameter': None,
+                'linkname': 'structure',
+                'docstring': 'Use a node for the structure',
+            },
+        })
         return retdict
 
     def _prepare_for_submission(self, tempfolder, inputdict):
@@ -89,35 +89,39 @@ class DynaphopyCalculation(CalcJob):
         """
 
         try:
-            parameters_data = inputdict.pop(self.get_linkname("parameters"))
+            parameters_data = inputdict.pop(self.get_linkname('parameters'))
         except KeyError:
             pass
             # raise InputValidationError("No parameters specified for this "
             #                           "calculation")
         if not isinstance(parameters_data, ParameterData):
-            raise InputValidationError("parameters is not of type " "ParameterData")
+            raise InputValidationError('parameters is not of type '
+                                       'ParameterData')
 
         try:
-            structure = inputdict.pop(self.get_linkname("structure"))
-        except KeyError:
-            raise InputValidationError("no structure is specified for this calculation")
-
-        try:
-            trajectory = inputdict.pop(self.get_linkname("trajectory"))
-        except KeyError:
-            raise InputValidationError("trajectory is specified for this calculation")
-
-        try:
-            force_constants = inputdict.pop(self.get_linkname("force_constants"))
+            structure = inputdict.pop(self.get_linkname('structure'))
         except KeyError:
             raise InputValidationError(
-                "no force_constants is specified for this calculation"
-            )
+                'no structure is specified for this calculation')
 
         try:
-            code = inputdict.pop(self.get_linkname("code"))
+            trajectory = inputdict.pop(self.get_linkname('trajectory'))
         except KeyError:
-            raise InputValidationError("no code is specified for this calculation")
+            raise InputValidationError(
+                'trajectory is specified for this calculation')
+
+        try:
+            force_constants = inputdict.pop(
+                self.get_linkname('force_constants'))
+        except KeyError:
+            raise InputValidationError(
+                'no force_constants is specified for this calculation')
+
+        try:
+            code = inputdict.pop(self.get_linkname('code'))
+        except KeyError:
+            raise InputValidationError(
+                'no code is specified for this calculation')
 
         time_step = trajectory.get_times()[1] - trajectory.get_times()[0]
 
@@ -135,19 +139,20 @@ class DynaphopyCalculation(CalcJob):
         # =========================== dump to file =============================
 
         input_filename = tempfolder.get_abs_path(self._INPUT_FILE_NAME)
-        with open(input_filename, "w") as infile:
+        with open(input_filename, 'w') as infile:
             infile.write(input_txt)
 
         cell_filename = tempfolder.get_abs_path(self._INPUT_CELL)
-        with open(cell_filename, "w") as infile:
+        with open(cell_filename, 'w') as infile:
             infile.write(cell_txt)
 
-        force_constants_filename = tempfolder.get_abs_path(self._INPUT_FORCE_CONSTANTS)
-        with open(force_constants_filename, "w") as infile:
+        force_constants_filename = tempfolder.get_abs_path(
+            self._INPUT_FORCE_CONSTANTS)
+        with open(force_constants_filename, 'w') as infile:
             infile.write(force_constants_txt)
 
         trajectory_filename = tempfolder.get_abs_path(self._INPUT_TRAJECTORY)
-        with open(trajectory_filename, "w") as infile:
+        with open(trajectory_filename, 'w') as infile:
             infile.write(trajectory_txt)
 
         # ============================ calcinfo ================================
@@ -174,27 +179,26 @@ class DynaphopyCalculation(CalcJob):
         codeinfo.cmdline_params = [
             self._INPUT_FILE_NAME,
             self._INPUT_TRAJECTORY,
-            "-ts",
-            "{}".format(time_step),
-            "--silent",
-            "-sfc",
+            '-ts',
+            '{}'.format(time_step),
+            '--silent',
+            '-sfc',
             self._OUTPUT_FORCE_CONSTANTS,
-            "-thm",  # '--resolution 0.01',
-            "-psm",
-            "2",
-            "--normalize_dos",
-            "-sdata",
+            '-thm',  # '--resolution 0.01',
+            '-psm',
+            '2',
+            '--normalize_dos',
+            '-sdata',
         ]
 
-        if "temperature" in parameters_data.get_dict():
-            codeinfo.cmdline_params.append("--temperature")
-            codeinfo.cmdline_params.append(
-                "{}".format(parameters_data.dict.temperature)
-            )
+        if 'temperature' in parameters_data.get_dict():
+            codeinfo.cmdline_params.append('--temperature')
+            codeinfo.cmdline_params.append('{}'.format(
+                parameters_data.dict.temperature))
 
-        if "md_commensurate" in parameters_data.get_dict():
+        if 'md_commensurate' in parameters_data.get_dict():
             if parameters_data.dict.md_commensurate:
-                codeinfo.cmdline_params.append("--MD_commensurate")
+                codeinfo.cmdline_params.append('--MD_commensurate')
 
         codeinfo.stdout_name = self._OUTPUT_FILE_NAME
         codeinfo.code_uuid = code.uuid

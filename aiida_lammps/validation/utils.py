@@ -59,10 +59,9 @@ def load_validator(schema):
     def is_array(checker, instance):
         return isinstance(instance, (tuple, list))
 
-    type_checker = validator_cls.TYPE_CHECKER.redefine("array", is_array)
-    validator_cls = jsonschema.validators.extend(
-        validator_cls, type_checker=type_checker
-    )
+    type_checker = validator_cls.TYPE_CHECKER.redefine('array', is_array)
+    validator_cls = jsonschema.validators.extend(validator_cls,
+                                                 type_checker=type_checker)
 
     validator = validator_cls(schema=schema)
     return validator
@@ -95,15 +94,10 @@ def validate_against_schema(data, schema):
     # validator.validate(data)
     errors = sorted(validator.iter_errors(data), key=lambda e: e.path)
     if errors:
-        raise jsonschema.ValidationError(
-            "\n".join(
-                [
-                    "- {} [key path: '{}']".format(
-                        error.message, "/".join([str(p) for p in error.path])
-                    )
-                    for error in errors
-                ]
-            )
-        )
+        raise jsonschema.ValidationError('\n'.join([
+            "- {} [key path: '{}']".format(
+                error.message, '/'.join([str(p) for p in error.path]))
+            for error in errors
+        ]))
 
     return True

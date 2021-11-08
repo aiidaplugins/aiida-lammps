@@ -19,9 +19,9 @@ class LammpsTrajectory(Data):
 
     """
 
-    _zip_prefix = "step-"
-    _traj_filename = "trajectory.zip"
-    _timestep_filename = "timesteps.txt"
+    _zip_prefix = 'step-'
+    _traj_filename = 'trajectory.zip'
+    _timestep_filename = 'timesteps.txt'
     _compression_method = ZIP_DEFLATED
 
     def __init__(self, fileobj=None, aliases=None, **kwargs):
@@ -50,8 +50,8 @@ class LammpsTrajectory(Data):
         from aiida.common.exceptions import ValidationError
 
         super(LammpsTrajectory, self)._validate()
-        if self.get_attribute("number_steps", None) is None:
-            raise ValidationError("trajectory has not yet been set")
+        if self.get_attribute('number_steps', None) is None:
+            raise ValidationError('trajectory has not yet been set')
 
     def set_from_fileobj(self, fileobj, aliases=None):
         """Store a lammps trajectory file.
@@ -72,12 +72,14 @@ class LammpsTrajectory(Data):
         self.reset_attributes({})
 
         if not (aliases is None or isinstance(aliases, dict)):
-            raise ValueError("aliases must be None or dict")
+            raise ValueError('aliases must be None or dict')
 
         # Write the zip to a temporary file, and then add it to the node repository
         with tempfile.NamedTemporaryFile() as temp_handle:
-            with ZipFile(temp_handle, "w", self._compression_method) as zip_file:
-                for step_id, traj_step in enumerate(iter_trajectories(fileobj)):
+            with ZipFile(temp_handle, 'w',
+                         self._compression_method) as zip_file:
+                for step_id, traj_step in enumerate(
+                        iter_trajectories(fileobj)):
 
                     # extract data to store in attributes
                     time_steps.append(traj_step.timestep)
@@ -85,85 +87,84 @@ class LammpsTrajectory(Data):
                         number_atoms = traj_step.natoms
                     elif traj_step.natoms != number_atoms:
                         raise IOError(
-                            "step {} contains different number of atoms: {}".format(
-                                step_id, traj_step.natoms
-                            )
-                        )
+                            'step {} contains different number of atoms: {}'.
+                            format(step_id, traj_step.natoms))
                     if field_names is None:
                         field_names = list(traj_step.atom_fields.keys())
                     elif field_names != list(traj_step.atom_fields.keys()):
                         raise IOError(
-                            "step {} contains different field names: {}".format(
-                                step_id, list(traj_step.atom_fields.keys())
-                            )
-                        )
-                    if "element" in traj_step.atom_fields:
-                        elements.update(traj_step.atom_fields["element"])
+                            'step {} contains different field names: {}'.
+                            format(step_id,
+                                   list(traj_step.atom_fields.keys())))
+                    if 'element' in traj_step.atom_fields:
+                        elements.update(traj_step.atom_fields['element'])
 
                     # save content
-                    content = "\n".join(traj_step.lines)
-                    zip_name = "{}{}".format(self._zip_prefix, step_id)
+                    content = '\n'.join(traj_step.lines)
+                    zip_name = '{}{}'.format(self._zip_prefix, step_id)
                     zip_file.writestr(zip_name, content)
 
             if not time_steps:
-                raise IOError("The trajectory file does not contain any timesteps")
+                raise IOError(
+                    'The trajectory file does not contain any timesteps')
 
             # Flush and rewind the temporary handle,
             # otherwise the command to store it in the repo will write an empty file
             temp_handle.flush()
             temp_handle.seek(0)
 
-            self.put_object_from_filelike(
-                temp_handle, self._traj_filename, mode="wb", encoding=None
-            )
+            self.put_object_from_filelike(temp_handle,
+                                          self._traj_filename,
+                                          mode='wb',
+                                          encoding=None)
 
         self.put_object_from_filelike(
-            io.StringIO(" ".join([str(t) for t in time_steps])), self._timestep_filename
-        )
+            io.StringIO(' '.join([str(t) for t in time_steps])),
+            self._timestep_filename)
 
-        self.set_attribute("number_steps", len(time_steps))
-        self.set_attribute("number_atoms", number_atoms)
-        self.set_attribute("field_names", list(sorted(field_names)))
-        self.set_attribute("traj_filename", self._traj_filename)
-        self.set_attribute("timestep_filename", self._timestep_filename)
-        self.set_attribute("zip_prefix", self._zip_prefix)
-        self.set_attribute("compression_method", self._compression_method)
-        self.set_attribute("aliases", aliases)
-        self.set_attribute("elements", list(sorted(elements)))
+        self.set_attribute('number_steps', len(time_steps))
+        self.set_attribute('number_atoms', number_atoms)
+        self.set_attribute('field_names', list(sorted(field_names)))
+        self.set_attribute('traj_filename', self._traj_filename)
+        self.set_attribute('timestep_filename', self._timestep_filename)
+        self.set_attribute('zip_prefix', self._zip_prefix)
+        self.set_attribute('compression_method', self._compression_method)
+        self.set_attribute('aliases', aliases)
+        self.set_attribute('elements', list(sorted(elements)))
 
     @property
     def number_steps(self):
-        return self.get_attribute("number_steps")
+        return self.get_attribute('number_steps')
 
     @property
     def time_steps(self):
-        with self.open(self.get_attribute("timestep_filename"), "r") as handle:
+        with self.open(self.get_attribute('timestep_filename'), 'r') as handle:
             output = [int(i) for i in handle.readline().split()]
         return output
 
     @property
     def number_atoms(self):
-        return self.get_attribute("number_atoms")
+        return self.get_attribute('number_atoms')
 
     @property
     def field_names(self):
-        return self.get_attribute("field_names")
+        return self.get_attribute('field_names')
 
     @property
     def aliases(self):
-        return self.get_attribute("aliases")
+        return self.get_attribute('aliases')
 
     def get_step_string(self, step_idx):
         """Return the content string, for a specific trajectory step."""
         step_idx = list(range(self.number_steps))[step_idx]
-        zip_name = "{}{}".format(self.get_attribute("zip_prefix"), step_idx)
-        with self.open(self.get_attribute("traj_filename"), mode="rb") as handle:
-            with ZipFile(
-                handle, "r", self.get_attribute("compression_method")
-            ) as zip_file:
-                with zip_file.open(zip_name, "r") as step_file:
+        zip_name = '{}{}'.format(self.get_attribute('zip_prefix'), step_idx)
+        with self.open(self.get_attribute('traj_filename'),
+                       mode='rb') as handle:
+            with ZipFile(handle, 'r',
+                         self.get_attribute('compression_method')) as zip_file:
+                with zip_file.open(zip_name, 'r') as step_file:
                     content = step_file.read()
-        return content.decode("utf8")
+        return content.decode('utf8')
 
     def get_step_data(self, step_idx):
         """Return parsed data, for a specific trajectory step."""
@@ -177,22 +178,23 @@ class LammpsTrajectory(Data):
         elif isinstance(steps, int):
             steps = range(0, self.number_steps, steps)
 
-        with self.open(self.get_attribute("traj_filename"), mode="rb") as handle:
-            with ZipFile(
-                handle, "r", self.get_attribute("compression_method")
-            ) as zip_file:
+        with self.open(self.get_attribute('traj_filename'),
+                       mode='rb') as handle:
+            with ZipFile(handle, 'r',
+                         self.get_attribute('compression_method')) as zip_file:
                 for step_idx in steps:
-                    zip_name = "{}{}".format(self.get_attribute("zip_prefix"), step_idx)
+                    zip_name = '{}{}'.format(self.get_attribute('zip_prefix'),
+                                             step_idx)
                     with zip_file.open(zip_name) as step_file:
                         content = step_file.read()
                         yield content
 
     def get_step_structure(
-        self,
-        step_idx,
-        symbol_field="element",
-        position_fields=("x", "y", "z"),
-        original_structure=None,
+            self,
+            step_idx,
+            symbol_field='element',
+            position_fields=('x', 'y', 'z'),
+            original_structure=None,
     ):
         """Return a StructureData object, for a specific trajectory step.
 
@@ -226,4 +228,4 @@ class LammpsTrajectory(Data):
         """
         for string in self.iter_step_strings(steps=steps):
             handle.write(string)
-            handle.write(b"\n")
+            handle.write(b'\n')
