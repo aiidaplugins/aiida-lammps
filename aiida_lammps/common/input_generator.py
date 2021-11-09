@@ -42,8 +42,10 @@ def write_control_block(parameters_control: dict = None) -> str:
     return control_block
 
 
-def write_potential_block(potential=None,
-                          parameters_potential: dict = None) -> str:
+def write_potential_block(
+    potential=None,
+    parameters_potential: dict = None,
+) -> str:
     """
     Generate the input block with potential options.
 
@@ -121,8 +123,10 @@ def write_minimize_block(parameters_minimize: dict = None) -> str:
     return minimize_block
 
 
-def write_md_block(parameters_md: dict = None,
-                   parameters_fix: dict = None) -> str:
+def write_md_block(
+    parameters_md: dict = None,
+    parameters_fix: dict = None,
+) -> str:
     """
     Generate the input block with the MD options.
 
