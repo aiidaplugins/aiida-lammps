@@ -61,8 +61,10 @@ def write_potential_block(
     potential_block = '# ---- Start of Potential information ----\n'
     potential_block += f'pair_style {potential.pair_style}\n'
     potential_block += f'{potential.potential_line}'
-    potential_block += f"neighbor {parameters_potential.get('neighbor_update', 2.0)} bin\n"
-    potential_block += f"neigh_modify {join_keywords(parameters_potential['neigh_modify'])}\n"
+    if 'neighbor':
+        potential_block += f"neighbor {join_keywords(parameters_potential['neighbor_update'])}\n"
+    if 'neigh_modify' in parameters_potential:
+        potential_block += f"neigh_modify {(parameters_potential['neigh_modify'])}\n"
     potential_block += '# ---- End of Potential information ----\n'
     return potential_block
 
