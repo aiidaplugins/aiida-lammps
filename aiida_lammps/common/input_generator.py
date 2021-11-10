@@ -305,14 +305,42 @@ def write_dump_block(
 
     site_specific_fixes = [fix for fix in fixes_list if 'ave_' in fix]
 
-    dump_block = '# ---- Start of the Compute information ----\n'
+    dump_block = '# ---- Start of the Dump information ----\n'
     dump_block += f'dump aiida all custom {parameters_dump.get("dump_rate", 10)} '
     dump_block += f'{trajectory_filename} id type element x y z'
     dump_block += f'{" q" if atom_style=="charge" else ""}\n'
-    dump_block += '# ---- End of the Compute information ----\n'
+    dump_block += '# ---- End of the Dump information ----\n'
 
     return dump_block
 
+def write_thermo_block(parameters_thermo: dict, computes_list: list = None) -> str:
+    """Generate the block with the thermo command.
+
+    This will take all the global computes which were generated during the calculation
+    plus the 'common' thermodynamic parameters set by LAMMPS and set them so that
+    they are printed to the LAMMPS log file.
+
+    :param parameters_thermo: user defined parameters to control the log data.
+    :type parameters_thermo: dict
+    :param computes_list: list with all the computes set in this calculation, defaults to None
+    :type computes_list: list, optional
+    :return: block with the thermo options for the calculation.
+    :rtype: str
+    """
+
+
+    global_computes = [
+        f'c_{compute}' for compute in computes_list if '_atom_' not in compute
+    ]
+
+    fixed_thermo = ['step', 'temp', 'epair', 'emol', 'etotal', 'press']
+
+    thermo_block = '# ---- Start of the Thermo information ----\n'
+    thermo_block += f'thermo_style {" ".join(fixed_thermo)} {" ".join(global_computes)}\n'
+    thermo_block += f'thermo {parameters_thermo.get("printing_rate", 1000)}\n'
+    thermo_block += '# ---- End of the Thermo information ----\n'
+
+    return thermo_block
 
 def generate_id_tag(name: str = None, group: str = None) -> str:
     """Generate an id tag for fixes and/or computes.
