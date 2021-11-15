@@ -9,21 +9,21 @@ be set in the LAMMPS file in accordance to the user defined parameters.
 Certain blocks are conditionally called, e.g. if no fixes are specified the
 fixes block is never called, on the other hand the control block is always
 called since it is necessary for the functioning of LAMMPS.
-
 """
 from typing import Union
+import json
 from aiida import orm
 
 
-def write_control_block(parameters_control: dict = None) -> str:
+def write_control_block(parameters_control: dict) -> str:
     """
     Generate the input block with global control options.
 
     This takes the general options that affect the entire simulation, these
     are then used (or their default values) to generate the control block.
 
-    :param parameters_control: dictionary with the basic control parameters, defaults to None
-    :type parameters_control: dict, optional
+    :param parameters_control: dictionary with the basic control parameters
+    :type parameters_control: dict
     :return: control block with general parameters of the simulation.
     :rtype: str
     """
@@ -52,8 +52,8 @@ def write_control_block(parameters_control: dict = None) -> str:
 
 
 def write_potential_block(
-    potential=None,
-    parameters_potential: dict = None,
+    potential,
+    parameters_potential: dict,
 ) -> str:
     """
     Generate the input block with potential options.
@@ -62,14 +62,15 @@ def write_potential_block(
     parameters which affect the usage of the potential (such as neighbor information)
     and generate a block that is written in the LAMMPS input file.
 
-    :param potential: md-potential which will be used in the calculation, defaults to None
-    :type potential: [type], optional
-    :param parameters_potential: parameters which have to deal with the potential, defaults to None
-    :type parameters_potential: dict, optional
+    :param potential: md-potential which will be used in the calculation
+    :type potential: [type],
+    :param parameters_potential: parameters which have to deal with the potential
+    :type parameters_potential: dict
     :return: block with the information needed to setup the potential part of
     the LAMMPS calculation.
     :rtype: str
     """
+
     potential_block = '# ---- Start of Potential information ----\n'
     potential_block += f'pair_style {potential.pair_style}\n'
     potential_block += f'{potential.potential_line}'
@@ -82,9 +83,9 @@ def write_potential_block(
 
 
 def write_structure_block(
-    parameters_structure: dict = None,
-    structure: orm.StructureData = None,
-    structure_filename: str = None,
+    parameters_structure: dict,
+    structure: orm.StructureData,
+    structure_filename: str,
 ) -> Union[str, list]:
     """
     Generate the input block with the structure options.
@@ -95,13 +96,13 @@ def write_structure_block(
     be used for different compute and/or fixes operations.
 
     :param parameters_structure: set of user defined parameters relating to the
-    structure, defaults to None
-    :type parameters_structure: dict, optional
-    :param structure: structure that will be studied, defaults to None
-    :type structure: orm.StructureData, optional
+    structure.
+    :type parameters_structure: dict
+    :param structure: structure that will be studied
+    :type structure: orm.StructureData
     :param structure_filename: name of the file where the structure will be
-    written so that LAMMPS can read it, defaults to None
-    :type structure_filename: str, optional
+    written so that LAMMPS can read it
+    :type structure_filename: str
     :return: block with the structural information and list of groups present
     :rtype: Union[str, list]
     """
@@ -128,10 +129,11 @@ def write_structure_block(
         for _group in parameters_structure['group']:
             # Check if the given type name corresponds to the ones assigned to the atom types
             if 'type' in _group['args']:
-                assert all(
-                    kind in kind_name_id_map.values()
-                    for kind in _group['args'][_group['args'].index('type') +
-                                               1:]), 'atom type not defined'
+
+                _subset = _group['args'][_group['args'].index('type') + 1:]
+
+                assert all(kind in kind_name_id_map.values()
+                           for kind in _subset), 'atom type not defined'
             # Set the current group
             structure_block += f"group {_group['name']} {join_keywords(_group['args'])}\n"
             # Store the name of the group for later usage
@@ -141,7 +143,7 @@ def write_structure_block(
     return structure_block, group_names
 
 
-def write_minimize_block(parameters_minimize: dict = None) -> str:
+def write_minimize_block(parameters_minimize: dict) -> str:
     """
     Generate the input block with the minimization options.
 
@@ -150,11 +152,12 @@ def write_minimize_block(parameters_minimize: dict = None) -> str:
 
     .. note: this mode is mutually exclusive with the md mode.
 
-    :param parameters_minimize: user defined parameters for the minimization, defaults to None
-    :type parameters_minimize: dict, optional
+    :param parameters_minimize: user defined parameters for the minimization
+    :type parameters_minimize: dict
     :return: block with the minimization options.
     :rtype: str
     """
+
     minimize_block = '# ---- Start of the Minimization information ----\n'
     minimize_block += f"min_style {parameters_minimize.get('style', 'cg')}\n"
     minimize_block += f"minimize {parameters_minimize.get('energy_tolerance', 1e-4)}"
@@ -166,7 +169,7 @@ def write_minimize_block(parameters_minimize: dict = None) -> str:
     return minimize_block
 
 
-def write_md_block(parameters_md: dict = None) -> str:
+def write_md_block(parameters_md: dict) -> str:
     """
     Generate the input block with the MD options.
 
@@ -179,8 +182,8 @@ def write_md_block(parameters_md: dict = None) -> str:
 
     .. note: this mode is mutually exclusive with the minimize mode.
 
-    :param parameters_md: user defined parameters for the MD run, defaults to None
-    :type parameters_md: dict, optional
+    :param parameters_md: user defined parameters for the MD run
+    :type parameters_md: dict
     :return: block with the MD options.
     :rtype: str
     """
@@ -199,7 +202,7 @@ def write_md_block(parameters_md: dict = None) -> str:
 
 
 def write_fix_block(
-    parameters_fix: dict = None,
+    parameters_fix: dict,
     group_names: list = None,
 ) -> Union[str, list]:
     """
@@ -216,8 +219,8 @@ def write_fix_block(
     ..note: the md mode required one of the integrators (nve, nvt, etc) to be defined
     their existence is checked by the schema.
 
-    :param parameters_fix: fixes that will be applied to the calculation, defaults to None
-    :type parameters_fix: dict, optional
+    :param parameters_fix: fixes that will be applied to the calculation
+    :type parameters_fix: dict
     :param group_names: list of groups names as defined during structure
     generation, defaults to None
     :type group_names: list, optional
@@ -226,6 +229,9 @@ def write_fix_block(
     """
 
     fixes_list = []
+
+    if group_names is None:
+        group_names = []
 
     fix_block = '# ---- Start of the Fix information ----\n'
     for key, value in parameters_fix.items():
@@ -239,7 +245,7 @@ def write_fix_block(
 
 
 def write_compute_block(
-    parameters_compute: dict = None,
+    parameters_compute: dict,
     group_names: list = None,
 ) -> Union[str, list]:
     """
@@ -250,9 +256,8 @@ def write_compute_block(
     selected by the user and are checked to exist with the previously defined groups
     in the structure setup.
 
-    :param parameters_compute: computes that will be applied to the calculation,
-    defaults to None
-    :type parameters_compute: dict, optional
+    :param parameters_compute: computes that will be applied to the calculation
+    :type parameters_compute: dict
     :param group_names: list of groups names as defined during structure
     generation, defaults to None
     :type group_names: list, optional
@@ -261,6 +266,9 @@ def write_compute_block(
     """
 
     computes_list = []
+
+    if group_names is None:
+        group_names = []
 
     compute_block = '# ---- Start of the Compute information ----\n'
     for key, value in parameters_compute.items():
@@ -299,9 +307,16 @@ def write_dump_block(
     :return: block with the dump options for the calculation
     :rtype: str
     """
+
+    if computes_list is None:
+        computes_list = []
+
     site_specific_computes = [
         compute for compute in computes_list if '_atom_' in compute
     ]
+
+    if fixes_list is None:
+        fixes_list = []
 
     site_specific_fixes = [fix for fix in fixes_list if 'ave_' in fix]
 
@@ -313,7 +328,12 @@ def write_dump_block(
 
     return dump_block
 
-def write_thermo_block(parameters_thermo: dict, computes_list: list = None) -> str:
+
+def write_thermo_block(
+    parameters_thermo: dict,
+    computes_list: list = None,
+    computes_printing: dict = None,
+) -> str:
     """Generate the block with the thermo command.
 
     This will take all the global computes which were generated during the calculation
@@ -324,16 +344,25 @@ def write_thermo_block(parameters_thermo: dict, computes_list: list = None) -> s
     :type parameters_thermo: dict
     :param computes_list: list with all the computes set in this calculation, defaults to None
     :type computes_list: list, optional
+    :param computes_printing: dict with all the user defined computes to be printed, defaults to None
+    :type computes_printing: dict, optional
     :return: block with the thermo options for the calculation.
     :rtype: str
     """
 
+    if computes_list is None:
+        computes_list = []
 
     global_computes = [
         f'c_{compute}' for compute in computes_list if '_atom_' not in compute
     ]
 
-    fixed_thermo = ['step', 'temp', 'epair', 'emol', 'etotal', 'press']
+    if computes_printing is None or not computes_printing:
+        fixed_thermo = ['step', 'temp', 'epair', 'emol', 'etotal', 'press']
+    else:
+        fixed_thermo = [
+            key for key, value in computes_printing.items() if value
+        ]
 
     thermo_block = '# ---- Start of the Thermo information ----\n'
     thermo_block += f'thermo_style {" ".join(fixed_thermo)} {" ".join(global_computes)}\n'
@@ -341,6 +370,45 @@ def write_thermo_block(parameters_thermo: dict, computes_list: list = None) -> s
     thermo_block += '# ---- End of the Thermo information ----\n'
 
     return thermo_block
+
+
+def generate_compute_string(name: str, group: str) -> str:
+    """
+    [summary]
+
+    [extended_summary]
+
+    :param name: [description]
+    :type name: str
+    :param group: [description]
+    :type group: str
+    :return: [description]
+    :rtype: str
+    """
+
+
+    with open('variables_types.json', 'r') as handler:
+        _compute_variables = json.load(handler)['computes']
+
+    _type = _compute_variables[name]["type"]
+    _size = _compute_variables[name]["size"]
+
+    c_string = []
+
+    if _type == "vector" and _size > 0:
+        for index in range(1, _size+1):
+            c_string.append(f"{name.replace('/','_')}_{group}_aiida[{index}]")
+
+    if _type == "mixed" and _size > 0:
+        c_string.append(f"{name.replace('/','_')}_{group}_aiida")
+        for index in range(1, _size+1):
+            c_string.append(f"{name.replace('/','_')}_{group}_aiida[{index}]")
+
+    if _type == "scalar":
+        c_string.append(f"{name.replace('/','_')}_{group}_aiida")
+
+    return " ".join(c_string)
+
 
 def generate_id_tag(name: str = None, group: str = None) -> str:
     """Generate an id tag for fixes and/or computes.
@@ -358,6 +426,7 @@ def generate_id_tag(name: str = None, group: str = None) -> str:
     :return: if tag for the compute/fix
     :rtype: str
     """
+
     return f"{name.replace('/','_')}_{group}_aiida"
 
 
@@ -377,6 +446,7 @@ def join_keywords(value: list) -> str:
     :return: LAMMPS compliant string with the fix/compute options
     :rtype: str
     """
+
     return ' '.join([
         f"{entry['keyword']} {entry['value']}"
         if isinstance(entry, dict) else f'{entry}' for entry in value
