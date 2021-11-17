@@ -10,6 +10,7 @@ Certain blocks are conditionally called, e.g. if no fixes are specified the
 fixes block is never called, on the other hand the control block is always
 called since it is necessary for the functioning of LAMMPS.
 """
+import os
 from typing import Union
 import json
 from aiida import orm
@@ -265,8 +266,6 @@ def write_compute_block(
     :rtype: Union[str, list]
     """
 
-    computes_list = []
-
     if group_names is None:
         group_names = []
 
@@ -276,17 +275,16 @@ def write_compute_block(
         assert _group in group_names + ['all'], 'group name not defined'
         compute_block += f'compute {generate_id_tag(key, _group)} {_group} {key} '
         compute_block += f"{join_keywords(value['type'])}\n"
-        computes_list.append(generate_id_tag(key, _group))
 
     compute_block += '# ---- End of the Compute information ----\n'
-    return compute_block, computes_list
+    return compute_block
 
 
 def write_dump_block(
     parameters_dump: dict,
     trajectory_filename: str,
     atom_style: str,
-    computes_list: list = None,
+    parameters_compute: dict = None,
     fixes_list: list = None,
 ) -> str:
     """Generate the block with dumps commands.
@@ -300,20 +298,33 @@ def write_dump_block(
     :param trajectory_filename: name of the file where the trajectory is written.
     :type trajectory_filename: str
     :param atom_style: which kind of LAMMPS atomic style is used for the calculation.
-    :param computes_list: list with all the computes set in this calculation, defaults to None
-    :type computes_list: list, optional
+    :param parameters_compute: computes that will be applied to the calculation
+    :type parameters_compute: dict
     :param fixes_list: list with all the fixes defined for the calculation, defaults to None
     :type fixes_list: list, optional
     :return: block with the dump options for the calculation
     :rtype: str
     """
 
-    if computes_list is None:
-        computes_list = []
+    with open(
+            os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                         'variables_types.json'), 'r') as handler:
+        _compute_variables = json.load(handler)['computes']
 
-    site_specific_computes = [
-        compute for compute in computes_list if '_atom_' in compute
-    ]
+    computes_list = []
+
+    for key, value in parameters_compute.items():
+        name = key
+        group = value['group']
+        if _compute_variables[name][
+                'locality'] == 'local' and _compute_variables[name][
+                    'printable']:
+            computes_list.append(
+                generate_thermo_string(
+                    name=name,
+                    group=group,
+                    calculation_type='compute',
+                ))
 
     if fixes_list is None:
         fixes_list = []
@@ -322,8 +333,9 @@ def write_dump_block(
 
     dump_block = '# ---- Start of the Dump information ----\n'
     dump_block += f'dump aiida all custom {parameters_dump.get("dump_rate", 10)} '
-    dump_block += f'{trajectory_filename} id type element x y z'
-    dump_block += f'{" q" if atom_style=="charge" else ""}\n'
+    dump_block += f'{trajectory_filename} id type element x y z '
+    dump_block += f'{"q " if atom_style=="charge" else ""}'
+    dump_block += f'{" ".join(computes_list)}\n'
     dump_block += '# ---- End of the Dump information ----\n'
 
     return dump_block
@@ -331,8 +343,8 @@ def write_dump_block(
 
 def write_thermo_block(
     parameters_thermo: dict,
-    computes_list: list = None,
     computes_printing: dict = None,
+    parameters_compute: dict = None,
 ) -> str:
     """Generate the block with the thermo command.
 
@@ -342,20 +354,33 @@ def write_thermo_block(
 
     :param parameters_thermo: user defined parameters to control the log data.
     :type parameters_thermo: dict
-    :param computes_list: list with all the computes set in this calculation, defaults to None
-    :type computes_list: list, optional
     :param computes_printing: dict with all the user defined computes to be printed, defaults to None
     :type computes_printing: dict, optional
+    :param parameters_compute: computes that will be applied to the calculation
+    :type parameters_compute: dict
     :return: block with the thermo options for the calculation.
     :rtype: str
     """
 
-    if computes_list is None:
-        computes_list = []
+    with open(
+            os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                         'variables_types.json'), 'r') as handler:
+        _compute_variables = json.load(handler)['computes']
 
-    global_computes = [
-        f'c_{compute}' for compute in computes_list if '_atom_' not in compute
-    ]
+    computes_list = []
+
+    for key, value in parameters_compute.items():
+        name = key
+        group = value['group']
+        if _compute_variables[name][
+                'locality'] == 'global' and _compute_variables[name][
+                    'printable']:
+            computes_list.append(
+                generate_thermo_string(
+                    name=name,
+                    group=group,
+                    calculation_type='compute',
+                ))
 
     if computes_printing is None or not computes_printing:
         fixed_thermo = ['step', 'temp', 'epair', 'emol', 'etotal', 'press']
@@ -365,14 +390,18 @@ def write_thermo_block(
         ]
 
     thermo_block = '# ---- Start of the Thermo information ----\n'
-    thermo_block += f'thermo_style {" ".join(fixed_thermo)} {" ".join(global_computes)}\n'
+    thermo_block += f'thermo_style {" ".join(fixed_thermo)} {" ".join(computes_list)}\n'
     thermo_block += f'thermo {parameters_thermo.get("printing_rate", 1000)}\n'
     thermo_block += '# ---- End of the Thermo information ----\n'
 
     return thermo_block
 
 
-def generate_compute_string(name: str, group: str) -> str:
+def generate_thermo_string(
+    name: str,
+    group: str,
+    calculation_type: str,
+) -> str:
     """
     [summary]
 
@@ -386,28 +415,44 @@ def generate_compute_string(name: str, group: str) -> str:
     :rtype: str
     """
 
+    if calculation_type == 'compute':
+        prefactor = 'c'
+    if calculation_type == 'fix':
+        prefactor = 'f'
 
-    with open('variables_types.json', 'r') as handler:
+    with open(
+            os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                         'variables_types.json'), 'r') as handler:
         _compute_variables = json.load(handler)['computes']
 
-    _type = _compute_variables[name]["type"]
-    _size = _compute_variables[name]["size"]
+    _type = _compute_variables[name]['type']
+    _size = _compute_variables[name]['size']
 
-    c_string = []
+    _string = []
 
-    if _type == "vector" and _size > 0:
-        for index in range(1, _size+1):
-            c_string.append(f"{name.replace('/','_')}_{group}_aiida[{index}]")
+    if _type == 'vector' and _size > 0:
+        for index in range(1, _size + 1):
+            _string.append(
+                f'{prefactor}_{generate_id_tag(name, group)}[{index}]')
+    elif _type == 'vector' and _size == 0:
+        _string.append(f'{prefactor}_{generate_id_tag(name, group)}[*]')
 
-    if _type == "mixed" and _size > 0:
-        c_string.append(f"{name.replace('/','_')}_{group}_aiida")
-        for index in range(1, _size+1):
-            c_string.append(f"{name.replace('/','_')}_{group}_aiida[{index}]")
+    if _type == 'mixed' and _size > 0:
+        _string.append(f'{prefactor}_{generate_id_tag(name, group)}')
+        for index in range(1, _size + 1):
+            _string.append(
+                f'{prefactor}_{generate_id_tag(name, group)}[{index}]')
+    elif _type == 'mixed' and _size == 0:
+        _string.append(f'{prefactor}_{generate_id_tag(name, group)}')
+        _string.append(f'{prefactor}_{generate_id_tag(name, group)}[*]')
 
-    if _type == "scalar":
-        c_string.append(f"{name.replace('/','_')}_{group}_aiida")
+    if _type == 'scalar':
+        _string.append(f'{prefactor}_{generate_id_tag(name, group)}')
 
-    return " ".join(c_string)
+    if _type == 'array':
+        _string.append(f'{prefactor}_{generate_id_tag(name, group)}')
+
+    return ' '.join(_string)
 
 
 def generate_id_tag(name: str = None, group: str = None) -> str:
