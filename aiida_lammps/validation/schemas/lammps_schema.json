@@ -9,7 +9,8 @@
             "minimize",
             "md",
             "fix",
-            "thermo_print"
+            "thermo",
+            "dump"
         ]
     },
     "properties": {
@@ -17,86 +18,129 @@
             "$ref": "#/definitions/computes"
         },
         "md": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "run_style": {
+                    "type": "string"
+                },
+                "rspa_options": {
+                    "type": "array"
+                },
+                "max_number_steps": {
+                    "type": "integer"
+                }
+            }
         },
         "minimize": {
-            "type": "object"
-        },
-        "thermo_print": {
             "type": "object",
-            "propertyNames":{
-                "enum":[
-                    "step",
-                    "elapsed",
-                    "elaplong",
-                    "dt",
-                    "time",
-                    "cpu",
-                    "tpcpu",
-                    "spcpu",
-                    "cpuremain",
-                    "part",
-                    "timeremain",
-                    "atoms",
-                    "temp",
-                    "press",
-                    "pe",
-                    "ke",
-                    "etotal",
-                    "evdwl",
-                    "ecoul",
-                    "epair",
-                    "ebond",
-                    "eangle",
-                    "edihed",
-                    "eimp",
-                    "emol",
-                    "elong",
-                    "etail",
-                    "enthalpy",
-                    "ecouple",
-                    "econserve",
-                    "vol",
-                    "density",
-                    "lx",
-                    "ly",
-                    "lz",
-                    "xlo",
-                    "xhi",
-                    "ylo",
-                    "yhi",
-                    "zlo",
-                    "zhi",
-                    "xy",
-                    "xz",
-                    "yz",
-                    "xlat",
-                    "ylat",
-                    "zlat",
-                    "bonds",
-                    "angles",
-                    "dihedrals",
-                    "impropers",
-                    "pxx",
-                    "pyy",
-                    "pzz",
-                    "pxy",
-                    "pxz",
-                    "pyz",
-                    "fmax",
-                    "fnorm",
-                    "nbuild",
-                    "ndanger",
-                    "cella",
-                    "cellb",
-                    "cellc",
-                    "cellalpha",
-                    "cellbeta",
-                    "cellgamma"
-                ],
-                "patternProperties": {
-                    "^": {
-                        "type": "boolean"
+            "properties": {
+                "style": {
+                    "type": "string"
+                },
+                "energy_tolerance": {
+                    "type": "numeric"
+                },
+                "force_tolerance": {
+                    "type": "numeric"
+                },
+                "max_iterations": {
+                    "type": "integer"
+                },
+                "max_evaluations": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dump": {
+            "type": "object",
+            "properties": {
+                "dump_rate": {
+                    "type": "integer"
+                }
+            }
+        },
+        "thermo": {
+            "type": "object",
+            "properties": {
+                "printing_rate":{
+                    "type": "integer"
+                },
+                "thermo_print":{
+                    "propertyNames":{
+                        "enum":[
+                            "step",
+                            "elapsed",
+                            "elaplong",
+                            "dt",
+                            "time",
+                            "cpu",
+                            "tpcpu",
+                            "spcpu",
+                            "cpuremain",
+                            "part",
+                            "timeremain",
+                            "atoms",
+                            "temp",
+                            "press",
+                            "pe",
+                            "ke",
+                            "etotal",
+                            "evdwl",
+                            "ecoul",
+                            "epair",
+                            "ebond",
+                            "eangle",
+                            "edihed",
+                            "eimp",
+                            "emol",
+                            "elong",
+                            "etail",
+                            "enthalpy",
+                            "ecouple",
+                            "econserve",
+                            "vol",
+                            "density",
+                            "lx",
+                            "ly",
+                            "lz",
+                            "xlo",
+                            "xhi",
+                            "ylo",
+                            "yhi",
+                            "zlo",
+                            "zhi",
+                            "xy",
+                            "xz",
+                            "yz",
+                            "xlat",
+                            "ylat",
+                            "zlat",
+                            "bonds",
+                            "angles",
+                            "dihedrals",
+                            "impropers",
+                            "pxx",
+                            "pyy",
+                            "pzz",
+                            "pxy",
+                            "pxz",
+                            "pyz",
+                            "fmax",
+                            "fnorm",
+                            "nbuild",
+                            "ndanger",
+                            "cella",
+                            "cellb",
+                            "cellc",
+                            "cellalpha",
+                            "cellbeta",
+                            "cellgamma"
+                        ],
+                        "patternProperties": {
+                            "^": {
+                                "type": "boolean"
+                            }
+                        }
                     }
                 }
             }
@@ -784,18 +828,21 @@
         "children": {
             "id": "#children",
             "description": "schema for the entries related to the compute and fixes",
-            "type": "object",
-            "properties": {
-                "type": {
-                    "type": "array"
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "array"
+                    },
+                    "group": {
+                        "type": "string"
+                    }
                 },
-                "group": {
-                    "type": "string"
-                }
-            },
-            "required": [
-                "type"
-            ]
+                "required": [
+                    "type"
+                ]
+            }
         }
     }
 }

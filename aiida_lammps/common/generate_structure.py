@@ -64,8 +64,7 @@ def generate_lammps_structure(
     """
     if atom_style not in ['atomic', 'charge']:
         raise ValueError(
-            "atom_style must be in ['atomic', 'charge'], not '{}'".format(
-                atom_style))
+            f"atom_style must be in ['atomic', 'charge'], not '{atom_style}'")
     if charge_dict is None:
         charge_dict = {}
 
@@ -78,9 +77,9 @@ def generate_lammps_structure(
     kind_mass_dict = {kind.name: kind.mass for kind in structure.kinds}
 
     filestring = ''
-    filestring += '# {}\n\n'.format(docstring)
-    filestring += '{0} atoms\n'.format(len(structure.sites))
-    filestring += '{0} atom types\n\n'.format(len(kind_name_id_map))
+    filestring += f'# {docstring}\n\n'
+    filestring += f'{len(structure.sites)} atoms\n'
+    filestring += f'{len(kind_name_id_map)} atom types\n\n'
 
     atoms = structure.get_ase()
     cell, coord_transform = transform_cell(atoms.cell)
@@ -91,16 +90,14 @@ def generate_lammps_structure(
         cell = np.round(cell, round_dp) + 0.0
         positions = np.round(positions, round_dp) + 0.0
 
-    filestring += '0.0 {0:20.10f} xlo xhi\n'.format(cell[0][0])
-    filestring += '0.0 {0:20.10f} ylo yhi\n'.format(cell[1][1])
-    filestring += '0.0 {0:20.10f} zlo zhi\n'.format(cell[2][2])
-    filestring += '{0:20.10f} {1:20.10f} {2:20.10f} xy xz yz\n\n'.format(
-        cell[1][0], cell[2][0], cell[2][1])
+    filestring += f'0.0 {cell[0][0]:20.10f} xlo xhi\n'
+    filestring += f'0.0 {cell[1][1]:20.10f} ylo yhi\n'
+    filestring += f'0.0 {cell[2][2]:20.10f} zlo zhi\n'
+    filestring += f'{cell[1][0]:20.10f} {cell[2][0]:20.10f} {cell[2][1]:20.10f} xy xz yz\n\n'
 
     filestring += 'Masses\n\n'
     for kind_name in sorted(list(kind_name_id_map.keys())):
-        filestring += '{0} {1:20.10f} \n'.format(kind_name_id_map[kind_name],
-                                                 kind_mass_dict[kind_name])
+        filestring += f'{kind_name_id_map[kind_name]} {kind_mass_dict[kind_name]:20.10f} \n'
     filestring += '\n'
 
     filestring += 'Atoms\n\n'
@@ -110,13 +107,11 @@ def generate_lammps_structure(
         kind_id = kind_name_id_map[site.kind_name]
 
         if atom_style == 'atomic':
-            filestring += '{0} {1} {2:20.10f} {3:20.10f} {4:20.10f}\n'.format(
-                site_index + 1, kind_id, pos[0], pos[1], pos[2])
+            filestring += f'{site_index + 1} {kind_id} {pos[0]:20.10f} {pos[1]:20.10f} {pos[2]:20.10f}\n'
         elif atom_style == 'charge':
             charge = charge_dict.get(site.kind_name, 0.0)
-            filestring += '{0} {1} {2} {3:20.10f} {4:20.10f} {5:20.10f}\n'.format(
-                site_index + 1, kind_id, charge, pos[0], pos[1], pos[2])
+            filestring += f'{site_index + 1} {kind_id} {charge} {pos[0]:20.10f} {pos[1]:20.10f} {pos[2]:20.10f}\n'
         else:
-            raise ValueError('atom_style unknown: {}'.format(atom_style))
+            raise ValueError(f'atom_style unknown: {atom_style}')
 
     return filestring, coord_transform

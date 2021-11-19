@@ -205,7 +205,7 @@ def write_md_block(parameters_md: dict) -> str:
 def write_fix_block(
     parameters_fix: dict,
     group_names: list = None,
-) -> Union[str, list]:
+) -> str:
     """
     Generate the input block with the fix options.
 
@@ -225,30 +225,28 @@ def write_fix_block(
     :param group_names: list of groups names as defined during structure
     generation, defaults to None
     :type group_names: list, optional
-    :return: block with the fixes information, list of applied fixes
-    :rtype: Union[str, list]
+    :return: block with the fixes information
+    :rtype: str
     """
-
-    fixes_list = []
 
     if group_names is None:
         group_names = []
 
     fix_block = '# ---- Start of the Fix information ----\n'
     for key, value in parameters_fix.items():
-        _group = value.get('group', 'all')
-        assert _group in group_names + ['all'], 'group name not defined'
-        fix_block += f'fix {generate_id_tag(key, _group)} {_group} {key} '
-        fix_block += f"{join_keywords(value['type'])}\n"
-        fixes_list.append(generate_id_tag(key, _group))
+        for entry in value:
+            _group = entry.get('group', 'all')
+            assert _group in group_names + ['all'], 'group name not defined'
+            fix_block += f'fix {generate_id_tag(key, _group)} {_group} {key} '
+            fix_block += f'{join_keywords(entry["type"])}\n'
     fix_block += '# ---- End of the Fix information ----\n'
-    return fix_block, fixes_list
+    return fix_block
 
 
 def write_compute_block(
     parameters_compute: dict,
     group_names: list = None,
-) -> Union[str, list]:
+) -> str:
     """
     Generate the input block with the compute options.
 
@@ -262,8 +260,8 @@ def write_compute_block(
     :param group_names: list of groups names as defined during structure
     generation, defaults to None
     :type group_names: list, optional
-    :return: block with the computes information, list with all the applied computes
-    :rtype: Union[str, list]
+    :return: block with the computes information
+    :rtype: str
     """
 
     if group_names is None:
@@ -271,11 +269,11 @@ def write_compute_block(
 
     compute_block = '# ---- Start of the Compute information ----\n'
     for key, value in parameters_compute.items():
-        _group = value.get('group', 'all')
-        assert _group in group_names + ['all'], 'group name not defined'
-        compute_block += f'compute {generate_id_tag(key, _group)} {_group} {key} '
-        compute_block += f"{join_keywords(value['type'])}\n"
-
+        for entry in value:
+            _group = entry.get('group', 'all')
+            assert _group in group_names + ['all'], 'group name not defined'
+            compute_block += f'compute {generate_id_tag(key, _group)} {_group} {key} '
+            compute_block += f'{join_keywords(entry["type"])}\n'
     compute_block += '# ---- End of the Compute information ----\n'
     return compute_block
 
@@ -285,7 +283,6 @@ def write_dump_block(
     trajectory_filename: str,
     atom_style: str,
     parameters_compute: dict = None,
-    fixes_list: list = None,
 ) -> str:
     """Generate the block with dumps commands.
 
@@ -300,36 +297,32 @@ def write_dump_block(
     :param atom_style: which kind of LAMMPS atomic style is used for the calculation.
     :param parameters_compute: computes that will be applied to the calculation
     :type parameters_compute: dict
-    :param fixes_list: list with all the fixes defined for the calculation, defaults to None
-    :type fixes_list: list, optional
     :return: block with the dump options for the calculation
     :rtype: str
     """
 
-    with open(
-            os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                         'variables_types.json'), 'r') as handler:
+    _file = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        'variables_types.json',
+    )
+
+    with open(_file, 'r') as handler:
         _compute_variables = json.load(handler)['computes']
 
     computes_list = []
 
     for key, value in parameters_compute.items():
-        name = key
-        group = value['group']
-        if _compute_variables[name][
-                'locality'] == 'local' and _compute_variables[name][
-                    'printable']:
-            computes_list.append(
-                generate_thermo_string(
-                    name=name,
-                    group=group,
-                    calculation_type='compute',
-                ))
+        for entry in value:
+            _locality = _compute_variables[key]['locality']
+            _printable = _compute_variables[key]['printable']
 
-    if fixes_list is None:
-        fixes_list = []
-
-    site_specific_fixes = [fix for fix in fixes_list if 'ave_' in fix]
+            if _locality == 'local' and _printable:
+                computes_list.append(
+                    generate_printing_string(
+                        name=key,
+                        group=entry['group'],
+                        calculation_type='compute',
+                    ))
 
     dump_block = '# ---- Start of the Dump information ----\n'
     dump_block += f'dump aiida all custom {parameters_dump.get("dump_rate", 10)} '
@@ -343,7 +336,6 @@ def write_dump_block(
 
 def write_thermo_block(
     parameters_thermo: dict,
-    computes_printing: dict = None,
     parameters_compute: dict = None,
 ) -> str:
     """Generate the block with the thermo command.
@@ -354,33 +346,36 @@ def write_thermo_block(
 
     :param parameters_thermo: user defined parameters to control the log data.
     :type parameters_thermo: dict
-    :param computes_printing: dict with all the user defined computes to be printed, defaults to None
-    :type computes_printing: dict, optional
     :param parameters_compute: computes that will be applied to the calculation
     :type parameters_compute: dict
     :return: block with the thermo options for the calculation.
     :rtype: str
     """
 
-    with open(
-            os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                         'variables_types.json'), 'r') as handler:
+    _file = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        'variables_types.json',
+    )
+
+    with open(_file, 'r') as handler:
         _compute_variables = json.load(handler)['computes']
 
     computes_list = []
 
     for key, value in parameters_compute.items():
-        name = key
-        group = value['group']
-        if _compute_variables[name][
-                'locality'] == 'global' and _compute_variables[name][
-                    'printable']:
-            computes_list.append(
-                generate_thermo_string(
-                    name=name,
-                    group=group,
-                    calculation_type='compute',
-                ))
+        for entry in value:
+            _locality = _compute_variables[key]['locality']
+            _printable = _compute_variables[key]['printable']
+
+            if _locality == 'global' and _printable:
+                computes_list.append(
+                    generate_printing_string(
+                        name=key,
+                        group=entry['group'],
+                        calculation_type='compute',
+                    ))
+
+    computes_printing = parameters_thermo.get('thermo_printing', None)
 
     if computes_printing is None or not computes_printing:
         fixed_thermo = ['step', 'temp', 'epair', 'emol', 'etotal', 'press']
@@ -397,21 +392,24 @@ def write_thermo_block(
     return thermo_block
 
 
-def generate_thermo_string(
+def generate_printing_string(
     name: str,
     group: str,
     calculation_type: str,
 ) -> str:
     """
-    [summary]
+    Generate string for the quantities that will be printed.
 
-    [extended_summary]
+    The idea is to take the name as well as the group of the parameter
+    that one wishes to print, then in conjunction with the information
+    stored for each parameter one can generate a string for either the thermo
+    or dump commands.
 
-    :param name: [description]
+    :param name: Name of the compute/fix that one wishes to print
     :type name: str
-    :param group: [description]
+    :param group: Name of the group where the compute/fix is calculated
     :type group: str
-    :return: [description]
+    :return: string for the compute/fix that will be used for printing
     :rtype: str
     """
 
@@ -420,9 +418,12 @@ def generate_thermo_string(
     if calculation_type == 'fix':
         prefactor = 'f'
 
-    with open(
-            os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                         'variables_types.json'), 'r') as handler:
+    _file = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        'variables_types.json',
+    )
+
+    with open(_file, 'r') as handler:
         _compute_variables = json.load(handler)['computes']
 
     _type = _compute_variables[name]['type']
