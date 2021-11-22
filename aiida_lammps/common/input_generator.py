@@ -14,6 +14,7 @@ import os
 from typing import Union
 import json
 from aiida import orm
+from aiida_lammps.data.lammps_potential import LammpsPotentialData
 
 
 def write_control_block(parameters_control: dict) -> str:
@@ -53,8 +54,10 @@ def write_control_block(parameters_control: dict) -> str:
 
 
 def write_potential_block(
-    potential,
+    potential: LammpsPotentialData,
+    structure: orm.StructureData,
     parameters_potential: dict,
+    potential_file: str,
 ) -> str:
     """
     Generate the input block with potential options.
@@ -64,21 +67,35 @@ def write_potential_block(
     and generate a block that is written in the LAMMPS input file.
 
     :param potential: md-potential which will be used in the calculation
-    :type potential: [type],
+    :type potential: LammpsPotentialData,
+    :param structure: structure used for the calculation
+    :type structure: orm.StructureData
     :param parameters_potential: parameters which have to deal with the potential
     :type parameters_potential: dict
+    :param potential_file: filename for the potential to be used.
+    :type str:
     :return: block with the information needed to setup the potential part of
     the LAMMPS calculation.
     :rtype: str
     """
 
+    default_potential = LammpsPotentialData._default_potential_info
+
+    kind_symbols = [kind.symbol for kind in structure.kinds]
+
     potential_block = '# ---- Start of Potential information ----\n'
-    potential_block += f'pair_style {potential.pair_style}\n'
-    potential_block += f'{potential.potential_line}'
-    if 'neighbor' in parameters_potential:
-        potential_block += f"neighbor {join_keywords(parameters_potential['neighbor_update'])}\n"
+    potential_block += f'pair_style {potential.pair_style}'
+    potential_block += f' {" ".join(parameters_potential.get("potential_style_options", ""))}\n'
+
+    if default_potential[potential.pair_style].get('read_from_file'):
+        potential_block += f'pair_coeff * * {potential_file} {" ".join(kind_symbols)}\n'
+    if not default_potential[potential.pair_style].get('read_from_file'):
+        potential_block += f'pair_coeff {potential.get_content()}\n'
+
+    if 'neighbor_update' in parameters_potential:
+        potential_block += f'neighbor {join_keywords(parameters_potential["neighbor_update"])}\n'
     if 'neigh_modify' in parameters_potential:
-        potential_block += f"neigh_modify {(parameters_potential['neigh_modify'])}\n"
+        potential_block += f'neigh_modify {(parameters_potential["neigh_modify"])}\n'
     potential_block += '# ---- End of Potential information ----\n'
     return potential_block
 
