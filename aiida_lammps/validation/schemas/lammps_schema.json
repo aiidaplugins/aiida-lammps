@@ -5,6 +5,9 @@
     "type": "object",
     "propertyNames": {
         "enum": [
+            "control",
+            "potential",
+            "structure",
             "compute",
             "minimize",
             "md",
@@ -12,6 +15,88 @@
             "thermo",
             "dump"
         ]
+    },
+    "control": {
+        "type": "object",
+        "properties": {
+            "units": {
+                "type": "string",
+                "propertyNames": {
+                    "enum": [
+                        "si",
+                        "metal",
+                        "lj",
+                        "real",
+                        "cgs",
+                        "electron",
+                        "micro",
+                        "nano"
+                    ]
+                }
+            },
+            "newton": {
+                "type": "string",
+                "propertyNames": {
+                    "enum": ["on", "off"]
+                }
+            },
+            "processors": {
+                "type": "string"
+            },
+            "timestep": {
+                "type": "numeric"
+            }
+        }
+    },
+    "potential": {
+        "type": "object",
+        "properties": {
+            "potential_style_options": {
+                "type": "array"
+            },
+            "neighbor": {
+                "type": "array"
+            },
+            "neighbor_modify": {
+                "type": "array"
+            }
+        }
+    },
+    "structure": {
+        "type": "object",
+        "properties": {
+            "atom_style": {
+                "type": "string",
+                "propertyNames": {
+                    "enum": [
+                        "angle",
+                        "atomic",
+                        "body",
+                        "bond",
+                        "charge",
+                        "dipole",
+                        "dpd",
+                        "edpd",
+                        "electron",
+                        "ellipsoid",
+                        "full",
+                        "line",
+                        "mdpd",
+                        "molecular",
+                        "oxdna",
+                        "peri",
+                        "smd",
+                        "sph",
+                        "sphere",
+                        "spin",
+                        "tdpd",
+                        "tri",
+                        "template",
+                        "hybrid"
+                    ]
+                }
+            }
+        }
     },
     "properties": {
         "compute": {
@@ -24,7 +109,10 @@
                     "type": "string"
                 },
                 "rspa_options": {
-                    "type": "array"
+                    "type": "array",
+                    "propertyNames": {
+                        "enum": ["verlet", "verlet/split", "respa"]
+                    }
                 },
                 "max_number_steps": {
                     "type": "integer"

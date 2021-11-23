@@ -23,19 +23,18 @@ def iter_step_lines(file_obj):
         yield init_line, step_content
 
 
-def parse_step(lines, intial_line=0):
+def parse_step(lines, initial_line=0):
     if 'ITEM: TIMESTEP' not in lines[0]:
-        raise IOError('expected line {} to be TIMESTEP'.format(intial_line))
+        raise IOError(f'expected line {initial_line} to be TIMESTEP')
     if 'ITEM: NUMBER OF ATOMS' not in lines[2]:
         raise IOError(
-            'expected line {} to be NUMBER OF ATOMS'.format(intial_line + 2))
+            f'expected line {initial_line + 2} to be NUMBER OF ATOMS')
     if 'ITEM: BOX BOUNDS xy xz yz' not in lines[4]:
         raise IOError(
-            'expected line {} to be BOX BOUNDS xy xz yz'.format(intial_line +
-                                                                4))
+            f'expected line {initial_line + 4} to be BOX BOUNDS xy xz yz')
         # TODO handle case when xy xz yz not present -> orthogonal box
     if 'ITEM: ATOMS' not in lines[8]:
-        raise IOError('expected line {} to be ATOMS'.format(intial_line + 8))
+        raise IOError(f'expected line {initial_line + 8} to be ATOMS')
     timestep = int(lines[1])
     number_of_atoms = int(lines[3])
 
@@ -98,8 +97,7 @@ def create_structure(
         ]
         if symbols != kind_symbols:
             raise ValueError(
-                'original_structure has different symbols:: {} != {}'.format(
-                    kind_symbols, symbols))
+                f'original_structure has different symbols:: {kind_symbols} != {symbols}')
         structure = original_structure.clone()
         structure.reset_cell(traj_block.cell)
         structure.reset_sites_positions(positions)
@@ -113,7 +111,7 @@ def create_structure(
         elif pbc == 'ff':
             pbcs.append(False)
         else:
-            raise NotImplementedError('pbc = {}'.format(traj_block.pbc))
+            raise NotImplementedError(f'pbc = {traj_block.pbc}')
 
     structure = StructureData(cell=traj_block.cell, pbc=pbcs)
     for symbol, position in zip(symbols, positions):

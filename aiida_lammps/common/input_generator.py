@@ -75,7 +75,7 @@ def write_potential_block(
     :param potential_file: filename for the potential to be used.
     :type str:
     :return: block with the information needed to setup the potential part of
-    the LAMMPS calculation.
+        the LAMMPS calculation.
     :rtype: str
     """
 
@@ -85,17 +85,17 @@ def write_potential_block(
 
     potential_block = '# ---- Start of Potential information ----\n'
     potential_block += f'pair_style {potential.pair_style}'
-    potential_block += f' {" ".join(parameters_potential.get("potential_style_options", ""))}\n'
+    potential_block += f' {" ".join(parameters_potential.get("potential_style_options", [""]))}\n'
 
     if default_potential[potential.pair_style].get('read_from_file'):
         potential_block += f'pair_coeff * * {potential_file} {" ".join(kind_symbols)}\n'
     if not default_potential[potential.pair_style].get('read_from_file'):
         potential_block += f'pair_coeff {potential.get_content()}\n'
 
-    if 'neighbor_update' in parameters_potential:
-        potential_block += f'neighbor {join_keywords(parameters_potential["neighbor_update"])}\n'
-    if 'neigh_modify' in parameters_potential:
-        potential_block += f'neigh_modify {(parameters_potential["neigh_modify"])}\n'
+    if 'neighbor' in parameters_potential:
+        potential_block += f'neighbor {join_keywords(parameters_potential["neighbor"])}\n'
+    if 'neighbor_modify' in parameters_potential:
+        potential_block += f'neigh_modify {(parameters_potential["neighbor_modify"])}\n'
     potential_block += '# ---- End of Potential information ----\n'
     return potential_block
 
@@ -114,12 +114,12 @@ def write_structure_block(
     be used for different compute and/or fixes operations.
 
     :param parameters_structure: set of user defined parameters relating to the
-    structure.
+        structure.
     :type parameters_structure: dict
     :param structure: structure that will be studied
     :type structure: orm.StructureData
     :param structure_filename: name of the file where the structure will be
-    written so that LAMMPS can read it
+        written so that LAMMPS can read it
     :type structure_filename: str
     :return: block with the structural information and list of groups present
     :rtype: Union[str, list]
@@ -168,7 +168,7 @@ def write_minimize_block(parameters_minimize: dict) -> str:
     If the user wishes to do a minimization calculation the parameters will be passed
     to this routine and the necessary block for the input file will be generated.
 
-    .. note: this mode is mutually exclusive with the md mode.
+    .. note:: this mode is mutually exclusive with the md mode.
 
     :param parameters_minimize: user defined parameters for the minimization
     :type parameters_minimize: dict
@@ -194,11 +194,11 @@ def write_md_block(parameters_md: dict) -> str:
     If the user wishes to perform an MD run this will take the user defined
     parameters and set them in a LAMMPS compliant form.
 
-    .. note: For MD to function an integrator must be provided, this is done
-    by providing a fix in the fix part of the input. The existence of at least one
-    integrator is checked by the schema.
+    .. note:: For MD to function an integrator must be provided, this is done
+        by providing a fix in the fix part of the input. The existence of at least one
+        integrator is checked by the schema.
 
-    .. note: this mode is mutually exclusive with the minimize mode.
+    .. note:: this mode is mutually exclusive with the minimize mode.
 
     :param parameters_md: user defined parameters for the MD run
     :type parameters_md: dict
@@ -231,16 +231,16 @@ def write_fix_block(
     selected by the user and are checked to exist with the previously defined groups
     in the structure setup.
 
-    ..note: fixes which are incompatible with the minimize option are checked by
-    the validation schema.
+    .. note:: fixes which are incompatible with the minimize option are checked by
+        the validation schema.
 
-    ..note: the md mode required one of the integrators (nve, nvt, etc) to be defined
-    their existence is checked by the schema.
+    .. note:: the md mode required one of the integrators (nve, nvt, etc) to be defined
+        their existence is checked by the schema.
 
     :param parameters_fix: fixes that will be applied to the calculation
     :type parameters_fix: dict
     :param group_names: list of groups names as defined during structure
-    generation, defaults to None
+        generation, defaults to None
     :type group_names: list, optional
     :return: block with the fixes information
     :rtype: str
@@ -275,7 +275,7 @@ def write_compute_block(
     :param parameters_compute: computes that will be applied to the calculation
     :type parameters_compute: dict
     :param group_names: list of groups names as defined during structure
-    generation, defaults to None
+        generation, defaults to None
     :type group_names: list, optional
     :return: block with the computes information
     :rtype: str

@@ -34,16 +34,13 @@ def get_trajectory_txt(trajectory):
     lammps_data_file = ''
     for i, position_step in enumerate(trajectory.get_positions()):
         lammps_data_file += 'ITEM: TIMESTEP\n'
-        lammps_data_file += '{}\n'.format(ind[i])
+        lammps_data_file += f'{ind[i]}\n'
         lammps_data_file += 'ITEM: NUMBER OF ATOMS\n'
-        lammps_data_file += '{}\n'.format(len(position_step))
+        lammps_data_file += f'{len(position_step)}\n'
         lammps_data_file += 'ITEM: BOX BOUNDS xy xz yz pp pp pp\n'
-        lammps_data_file += '{0:20.10f} {1:20.10f} {2:20.10f}\n'.format(
-            xlo_bound, xhi_bound, xy)
-        lammps_data_file += '{0:20.10f} {1:20.10f} {2:20.10f}\n'.format(
-            ylo_bound, yhi_bound, xz)
-        lammps_data_file += '{0:20.10f} {1:20.10f} {2:20.10f}\n'.format(
-            zlo_bound, zhi_bound, yz)
+        lammps_data_file += f'{xlo_bound:20.10f} {xhi_bound:20.10f} {xy:20.10f}\n'
+        lammps_data_file += f'{ylo_bound:20.10f} {yhi_bound:20.10f} {yz:20.10f}\n'
+        lammps_data_file += f'{zlo_bound:20.10f} {zhi_bound:20.10f} {yz:20.10f}\n'
         lammps_data_file += 'ITEM: ATOMS x y z\n'
         for position in position_step:
             lammps_data_file += '{0:20.10f} {1:20.10f} {2:20.10f}\n'.format(
