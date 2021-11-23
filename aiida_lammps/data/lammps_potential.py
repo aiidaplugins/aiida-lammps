@@ -1,13 +1,24 @@
 """
-[summary]
+Base class for the LAMMPS potentials.
 
-[extended_summary]
+This class allows the storage/recovering of LAMMPS potentials, it allows
+one to store any LAMMPS potential as a ``SinglefileData`` object, which can
+then be either written to the LAMMPS input script and/or to a file, where
+it can be easily read by LAMMPS. This distinction depends on the assigned
+``pair_style`` which require different ``pair_coeff`` entries in the input
+file.
+
+Based on the
+`pseudo <https://github.com/aiidateam/aiida-pseudo/blob/master/aiida_pseudo/data/pseudo/pseudo.py>`_
+class written by Sebaastian Huber.
 """
+# pylint: disable=arguments-differ, too-many-public-methods
 import io
 import os
 import pathlib
 import typing
 import json
+import datetime
 
 from aiida import orm
 from aiida import plugins
@@ -16,28 +27,22 @@ from aiida.common.exceptions import StoringNotAllowed
 from aiida.common.files import md5_from_filelike
 
 
-class LammpsPotentialData(orm.SinglefileData):
+class LammpsPotentialData(orm.SinglefileData):  # pylint: disable=too-many-arguments, too-many-ancestors
     """
-    [summary]
+    Base class for the LAMMPS potentials.
 
-    [extended_summary]
+    This class allows the storage/recovering of LAMMPS potentials, it allows
+    one to store any LAMMPS potential as a ``SinglefileData`` object, which can
+    then be either written to the LAMMPS input script and/or to a file, where
+    it can be easily read by LAMMPS. This distinction depends on the assigned
+    ``pair_style`` which require different ``pair_coeff`` entries in the input
+    file.
 
-    :param orm: [description]
-    :type orm: [type]
-    :raises TypeError: [description]
-    :raises ValueError: [description]
-    :raises TypeError: [description]
-    :raises KeyError: [description]
-    :raises TypeError: [description]
-    :raises ValueError: [description]
-    :raises ValueError: [description]
-    :raises ValueError: [description]
-    :raises ValueError: [description]
-    :raises ValueError: [description]
-    :raises StoringNotAllowed: [description]
-    :return: [description]
-    :rtype: [type]
-    """
+    Based on the
+    `pseudo <https://github.com/aiidateam/aiida-pseudo/blob/master/aiida_pseudo/data/pseudo/pseudo.py>`_
+    class written by Sebaastian Huber.
+    """  # pylint: disable=line-too-long
+
     _key_element = 'element'
     _key_md5 = 'md5'
 
@@ -61,19 +66,19 @@ class LammpsPotentialData(orm.SinglefileData):
             'type': str
         },
         'developer': {
-            'type': str
+            'type': (str, list)
         },
         'disclaimer': {
             'type': str
         },
         'properties': {
-            'type': str
+            'type': (str, list)
         },
         'publication_year': {
-            'type': str
+            'type': (str, datetime.datetime, int)
         },
         'source_citations': {
-            'type': str
+            'type': (str, list)
         },
         'title': {
             'type': str
@@ -95,13 +100,31 @@ class LammpsPotentialData(orm.SinglefileData):
         atom_style: str = None,
         units: str = None,
         extra_tags: dict = None,
-    ):
-        """Get lammps potential data node from database with matching md5 checksum or create a new one if not existent.
-        :param source: the source potential content, either a binary stream, or a ``str`` or ``Path`` to the path
-            of the file on disk, which can be relative or absolute.
+    ):  # pylint: disable=too-many-arguments
+        """Get lammps potential data node from database or create a new one.
+
+        This will check if there is a potential data node with matching md5
+        checksum and use that or create a new one if not existent.
+
+        :param source: the source potential content, either a binary stream,
+            or a ``str`` or ``Path`` to the path of the file on disk,
+            which can be relative or absolute.
         :param filename: optional explicit filename to give to the file stored in the repository.
-        :return: instance of ``LammpsPotentialData``, stored if taken from database, unstored otherwise.
-        :raises TypeError: if the source is not a ``str``, ``pathlib.Path`` instance or binary stream.
+        :param pair_style: Type of potential according to LAMMPS
+        :type pair_style: str
+        :param species: Species that can be used for this potential.
+        :type species: list
+        :param atom_style: Type of treatment of the atoms according to LAMMPS.
+        :type atom_style: str
+        :param units: Default units to be used with this potential.
+        :type units:  str
+        :param extra_tags: Dictionary with extra information to tag the
+            potential, based on the KIM schema.
+        :type extra_tags: dict
+        :return: instance of ``LammpsPotentialData``, stored if taken from
+            database, unstored otherwise.
+        :raises TypeError: if the source is not a ``str``, ``pathlib.Path``
+            instance or binary stream.
         :raises FileNotFoundError: if the source is a filepath but does not exist.
         """
         source = cls.prepare_source(source)
@@ -118,16 +141,13 @@ class LammpsPotentialData(orm.SinglefileData):
         if existing:
             potential = existing[0]
         else:
+            cls.pair_style = pair_style
+            cls.species = species
+            cls.atom_style = atom_style
+            cls.units = units
+            cls.extra_tags = extra_tags
             source.seek(0)
-            potential = cls(
-                source,
-                filename,
-                pair_style,
-                species,
-                atom_style,
-                units,
-                extra_tags,
-            )
+            potential = cls(source, filename)
 
         return potential
 
@@ -144,9 +164,10 @@ class LammpsPotentialData(orm.SinglefileData):
 
     @staticmethod
     def is_readable_byte_stream(stream) -> bool:
-        """Return whether an object appears to be a readable filelike object in binary mode or stream of bytes.
+        """Return if object is a readable filelike object in binary mode or stream of bytes.
         :param stream: the object to analyse.
-        :returns: True if ``stream`` appears to be a readable filelike object in binary mode, False otherwise.
+        :returns: True if ``stream`` appears to be a readable filelike object
+            in binary mode, False otherwise.
         """
         return (isinstance(stream, io.BytesIO)
                 or (hasattr(stream, 'read') and hasattr(stream, 'mode')
@@ -157,16 +178,18 @@ class LammpsPotentialData(orm.SinglefileData):
         cls, source: typing.Union[str, pathlib.Path, typing.BinaryIO]
     ) -> typing.BinaryIO:
         """Validate the ``source`` representing a file on disk or a byte stream.
-        .. note:: if the ``source`` is a valid file on disk, its content is read and returned as a stream of bytes.
-        :raises TypeError: if the source is not a ``str``, ``pathlib.Path`` instance or binary stream.
+        .. note:: if the ``source`` is a valid file on disk, its content is
+            read and returned as a stream of bytes.
+        :raises TypeError: if the source is not a ``str``, ``pathlib.Path``
+        instance or binary stream.
         :raises FileNotFoundError: if the source is a filepath but does not exist.
         """
         if not isinstance(
                 source,
             (str, pathlib.Path)) and not cls.is_readable_byte_stream(source):
             raise TypeError(
-                f'`source` should be a `str` or `pathlib.Path` filepath on disk or a stream of bytes, got: {source}'
-            )
+                '`source` should be a `str` or `pathlib.Path` filepath on ' +
+                f'disk or a stream of bytes, got: {source}')
 
         if isinstance(source, (str, pathlib.Path)):
             filename = pathlib.Path(source).name
@@ -281,7 +304,6 @@ class LammpsPotentialData(orm.SinglefileData):
         correspond to the ones accepted by the class. It will also check that
         the type of the entries are of the appropriate python type. If the
         entries can take only a subset of values they are checked against them.
-
         :param extra_tags: dictionary with the extra tags that can be used to tag the potential
         :type extra_tags: dict
         :raises ValueError: If the type of the entry does not matches the expected
@@ -292,9 +314,11 @@ class LammpsPotentialData(orm.SinglefileData):
             _types = value.get('type', None)
             _values = value.get('values', None)
             if _value is not None:
-                if isinstance(_value, _types):
-                    raise ValueError(f'Tag "{key}" is not of type "{_types}"')
-                if _values is not None and _value in _values:
+                if not isinstance(_value, _types):
+                    raise ValueError(
+                        f'Tag "{key}" with value "{_value}" is not of type "{_types}"'
+                    )
+                if _values is not None and _value not in _values:
                     raise ValueError(
                         f'Tag "{key}" is not in the accepted values "{_values}"'
                     )
@@ -307,20 +331,27 @@ class LammpsPotentialData(orm.SinglefileData):
         species: list = None,
         atom_style: str = None,
         units: str = None,
-        extras_tags: dict = None,
+        extra_tags: dict = None,
         **kwargs,
-    ):
+    ):  # pylint: disable=too-many-arguments
         """Set the file content.
-        .. note:: this method will first analyse the type of the ``source`` and if it is a filepath will convert it
-            to a binary stream of the content located at that filepath, which is then passed on to the superclass. This
-            needs to be done first, because it will properly set the file and filename attributes that are expected by
-            other methods. Straight after the superclass call, the source seeker needs to be reset to zero if it needs
-            to be read again, because the superclass most likely will have read the stream to the end. Finally it is
-            important that the ``prepare_source`` is called here before the superclass invocation, because this way the
-            conversion from filepath to byte stream will be performed only once. Otherwise, each subclass would perform
-            the conversion over and over again.
-        :param source: the source lammps potential content, either a binary stream, or a ``str`` or ``Path`` to the path
-            of the file on disk, which can be relative or absolute.
+
+        .. note:: this method will first analyse the type of the ``source``
+            and if it is a filepath will convert it to a binary stream of the
+            content located at that filepath, which is then passed on to the
+            superclass. This needs to be done first, because it will properly
+            set the file and filename attributes that are expected by other
+            methods. Straight after the superclass call, the source seeker
+            needs to be reset to zero if it needs to be read again, because the
+            superclass most likely will have read the stream to the end.
+            Finally it is important that the ``prepare_source`` is called here
+            before the superclass invocation, because this way the conversion
+            from filepath to byte stream will be performed only once.
+            Otherwise, each subclass would perform the conversion over and over again.
+
+        :param source: the source lammps potential content, either a binary
+            stream, or a ``str`` or ``Path`` to the path of the file on disk,
+            which can be relative or absolute.
         :type source: typing.Union[str, pathlib.Path, typing.BinaryIO]
         :param filename: optional explicit filename to give to the file stored in the repository.
         :type filename: str
@@ -332,22 +363,39 @@ class LammpsPotentialData(orm.SinglefileData):
         :type atom_style: str
         :param units: Default units to be used with this potential.
         :type unite:  str
-        :param extra_tags: Dictionary with extra information to tag the potential, based on the KIM schema.
+        :param extra_tags: Dictionary with extra information to tag the
+            potential, based on the KIM schema.
         :type extra_tags: dict
-        :raises TypeError: if the source is not a ``str``, ``pathlib.Path`` instance or binary stream.
+
+        :raises TypeError: if the source is not a ``str``, ``pathlib.Path``
+            instance or binary stream.
         :raises FileNotFoundError: if the source is a filepath but does not exist.
         """
         source = self.prepare_source(source)
+
+        if self.pair_style is not None and pair_style is None:
+            pair_style = self.pair_style
+        if self.species is not None and species is None:
+            species = self.species
+        if self.atom_style is not None and atom_style is None:
+            atom_style = self.atom_style
+        if self.units is not None and units is None:
+            units = self.units
+        if self.extra_tags is not None and extra_tags is None:
+            extra_tags = self.extra_tags
+
         self.validate_pair_style(pair_style=pair_style)
         self.validate_species(species=species)
         self.validate_atom_style(atom_style=atom_style, pair_style=pair_style)
         self.validate_units(units=units, pair_style=pair_style)
-        if extras_tags is None:
-            extras_tags = dict()
-        if extras_tags is not None:
-            self.validate_extra_tags(extra_tags=extras_tags)
-        for key in self._extra_keys.keys():
-            self.set_attribute(key, extras_tags.get(key, None))
+
+        if extra_tags is None:
+            extra_tags = dict()
+        if extra_tags is not None:
+            self.validate_extra_tags(extra_tags=extra_tags)
+        for key in self._extra_keys:
+            self.set_attribute(key, extra_tags.get(key, None))
+
         super().set_file(source, filename, **kwargs)
         source.seek(0)
         self.md5 = md5_from_filelike(source)
