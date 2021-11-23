@@ -97,7 +97,8 @@ def create_structure(
         ]
         if symbols != kind_symbols:
             raise ValueError(
-                f'original_structure has different symbols:: {kind_symbols} != {symbols}')
+                f'original_structure has different symbols:: {kind_symbols} != {symbols}'
+            )
         structure = original_structure.clone()
         structure.reset_cell(traj_block.cell)
         structure.reset_sites_positions(positions)

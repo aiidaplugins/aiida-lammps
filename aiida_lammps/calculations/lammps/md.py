@@ -48,8 +48,7 @@ class MdCalculation(BaseLammpsCalculation):
             pdict.get('lammps_version', '11 Aug 2017'))
 
         # Geometry Setup
-        lammps_input_file = 'units           {0}\n'.format(
-            potential_data.default_units)
+        lammps_input_file = f'units           {potential_data.default_units}\n'
         lammps_input_file += 'boundary        p p p\n'
         lammps_input_file += 'box tilt large\n'
         lammps_input_file += 'atom_style      {0}\n'.format(

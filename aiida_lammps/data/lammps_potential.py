@@ -11,6 +11,10 @@ file.
 Based on the
 `pseudo <https://github.com/aiidateam/aiida-pseudo/blob/master/aiida_pseudo/data/pseudo/pseudo.py>`_
 class written by Sebaastian Huber.
+
+The potentials are also tagged by following the KIM-API
+`schema <https://openkim.org/doc/schema/kimspec/>`_, as to make them more easy
+to track and as compatible as possible to the KIM schema.
 """
 # pylint: disable=arguments-differ, too-many-public-methods
 import io
@@ -41,6 +45,10 @@ class LammpsPotentialData(orm.SinglefileData):  # pylint: disable=too-many-argum
     Based on the
     `pseudo <https://github.com/aiidateam/aiida-pseudo/blob/master/aiida_pseudo/data/pseudo/pseudo.py>`_
     class written by Sebaastian Huber.
+
+    The potentials are also tagged by following the KIM-API
+    `schema <https://openkim.org/doc/schema/kimspec/>`_, as to make them more easy
+    to track and as compatible as possible to the KIM schema.
     """  # pylint: disable=line-too-long
 
     _key_element = 'element'
@@ -56,7 +64,7 @@ class LammpsPotentialData(orm.SinglefileData):  # pylint: disable=too-many-argum
             'type': str
         },
         'content_other_locations': {
-            'type': str
+            'type': (str, list)
         },
         'data_method': {
             'type': str,
@@ -69,6 +77,9 @@ class LammpsPotentialData(orm.SinglefileData):  # pylint: disable=too-many-argum
             'type': (str, list)
         },
         'disclaimer': {
+            'type': str
+        },
+        'generation_method': {
             'type': str
         },
         'properties': {
@@ -413,7 +424,7 @@ class LammpsPotentialData(orm.SinglefileData):  # pylint: disable=too-many-argum
         return super().store(**kwargs)
 
     @property
-    def atom_style(self):
+    def atom_style(self) -> str:
         """
         Return the default `atomic_style` of this potential.
         :return: the default `atomic_style` of this potential
@@ -422,7 +433,7 @@ class LammpsPotentialData(orm.SinglefileData):  # pylint: disable=too-many-argum
         return self.get_attribute('atom_style')
 
     @property
-    def pair_style(self):
+    def pair_style(self) -> str:
         """
         Return the `pair_style` of this potential according to the LAMMPS notation
         :return: the `pair_style` of the potential
@@ -431,7 +442,7 @@ class LammpsPotentialData(orm.SinglefileData):  # pylint: disable=too-many-argum
         return self.get_attribute('pair_style')
 
     @property
-    def species(self):
+    def species(self) -> list:
         """Return the list of species which this potential can be used for.
         :return: The list of chemical species which are contained in this potential.
         :rtype: list
@@ -439,7 +450,7 @@ class LammpsPotentialData(orm.SinglefileData):  # pylint: disable=too-many-argum
         return self.get_attribute('species')
 
     @property
-    def default_units(self):
+    def default_units(self) -> str:
         """
         Return the default units associated with this potential.
         :return: the default units associated with this potential
@@ -448,7 +459,7 @@ class LammpsPotentialData(orm.SinglefileData):  # pylint: disable=too-many-argum
         return self.get_attribute('default_units')
 
     @property
-    def content_origin(self):
+    def content_origin(self) -> str:
         """
         Return the place where this potential information can be found.
 
@@ -465,7 +476,7 @@ class LammpsPotentialData(orm.SinglefileData):  # pylint: disable=too-many-argum
         return self.get_attribute('content_origin')
 
     @property
-    def content_other_locations(self):
+    def content_other_locations(self) -> typing.Union[str, list]:
         """
         Return other locations where the potential can be found.
 
@@ -473,12 +484,12 @@ class LammpsPotentialData(orm.SinglefileData):  # pylint: disable=too-many-argum
         to other location(s) where the content is available.
 
         :return: other locations where the potential can be found.
-        :rtype: str
+        :rtype: typing.Union[str, list]
         """
         return self.get_attribute('content_other_locations')
 
     @property
-    def data_method(self):
+    def data_method(self) -> str:
         """
         Return the data method used to generate the potential.
 
@@ -492,7 +503,7 @@ class LammpsPotentialData(orm.SinglefileData):  # pylint: disable=too-many-argum
         return self.get_attribute('data_method')
 
     @property
-    def description(self):
+    def description(self) -> str:
         """
         Return a description of the potential.
 
@@ -507,7 +518,7 @@ class LammpsPotentialData(orm.SinglefileData):  # pylint: disable=too-many-argum
         return self.get_attribute('description')
 
     @property
-    def developer(self):
+    def developer(self) -> typing.Union[str, list]:
         """
         Return the developer information of this potential.
 
@@ -518,12 +529,12 @@ class LammpsPotentialData(orm.SinglefileData):  # pylint: disable=too-many-argum
         of an interatomic model or a specific parameter set for it.
 
         :return: developer information of this potential
-        :rtype: str
+        :rtype: typing.Union[str, list]
         """
         return self.get_attribute('developer')
 
     @property
-    def disclaimer(self):
+    def disclaimer(self) -> str:
         """
         Return a disclaimer regarding the usage of the potential.
 
@@ -537,31 +548,31 @@ class LammpsPotentialData(orm.SinglefileData):  # pylint: disable=too-many-argum
         return self.get_attribute('disclaimer')
 
     @property
-    def properties(self):
+    def properties(self) -> typing.Union[str, list]:
         """
         Return the properties for which this potential was devised.
 
         As based in the KIM schema. A list of properties reported by a KIM Item.
 
         :return: properties fow which this potential was devised.
-        :rtype: str
+        :rtype: typing.Union[str, list]
         """
         return self.get_attribute('properties')
 
     @property
-    def publication_year(self):
+    def publication_year(self) -> typing.Union[str, datetime.datetime, int]:
         """
         Return the year of publication of this potential.
 
         As based in the KIM schema. Year this item was published on openkim.org.
 
         :return: year of publication of this potential
-        :rtype: str
+        :rtype: typing.Union[str, datetime.datetime, int]
         """
         return self.get_attribute('publication_year')
 
     @property
-    def source_citations(self):
+    def source_citations(self) -> typing.Union[str, list]:
         """
         Return the citation where the potential was originally published.
 
@@ -569,12 +580,12 @@ class LammpsPotentialData(orm.SinglefileData):  # pylint: disable=too-many-argum
         corresponding to primary published work(s) describing the KIM Item.
 
         :return: the citation where the potential was originally published.
-        :rtype: str.
+        :rtype: typing.Union[str, list].
         """
         return self.get_attribute('source_citations')
 
     @property
-    def title(self):
+    def title(self) -> str:
         """
         Return the title of the potential.
 
@@ -593,6 +604,19 @@ class LammpsPotentialData(orm.SinglefileData):  # pylint: disable=too-many-argum
         :return: the md5 of the stored file.
         """
         return self.get_attribute(self._key_md5, None)
+
+    @property
+    def generation_method(self) -> str:
+        """
+        Return the geneation method of the potential.
+
+        In here one can describe how the potential itself was generated, if it
+        was done via ML, fitting via specific codes, analytical fitting, etc.
+
+        :return: the generation method of the potential
+        :rtype: str
+        """
+        return self.get_attribute('generation_method')
 
     @md5.setter
     def md5(self, value: str):

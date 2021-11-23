@@ -95,6 +95,12 @@
                         "hybrid"
                     ]
                 }
+            },
+            "box_tilt": {
+                "type": "string",
+                "propertyNames": {
+                    "enum": ["small", "large"]
+                }
             }
         }
     },

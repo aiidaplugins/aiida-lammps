@@ -10,6 +10,7 @@ Certain blocks are conditionally called, e.g. if no fixes are specified the
 fixes block is never called, on the other hand the control block is always
 called since it is necessary for the functioning of LAMMPS.
 """
+from builtins import ValueError
 import os
 from typing import Union
 import json
@@ -44,11 +45,11 @@ def write_control_block(parameters_control: dict) -> str:
     _time = default_timestep[parameters_control.get('units', 'si')]
     control_block = '# ---- Start of the Control information ----\n'
     control_block += 'clear\n'
-    control_block += f"units {parameters_control.get('units', 'si')}\n"
-    control_block += f"newton {parameters_control.get('newton', 'on')}\n"
+    control_block += f'units {parameters_control.get("units", "si")}\n'
+    control_block += f'newton {parameters_control.get("newton", "on")}\n'
     if 'processors' in parameters_control:
-        control_block += f"processors {join_keywords(parameters_control['processors'])}\n"
-    control_block += f"timestep {parameters_control.get('timestep', _time)}\n"
+        control_block += f'processors {join_keywords(parameters_control["processors"])}\n'
+    control_block += f'timestep {parameters_control.get("timestep", _time)}\n'
     control_block += '# ---- End of the Control information ----\n'
     return control_block
 
@@ -133,14 +134,14 @@ def write_structure_block(
             kind_name_id_map[site.kind_name] = len(kind_name_id_map) + 1
 
     structure_block = '# ---- Start of the Structure information ----\n'
-    structure_block += f"box tilt {parameters_structure.get('box_tilt','small')}\n"
+    structure_block += f'box tilt {parameters_structure.get("box_tilt", "small")}\n'
 
-    structure_block += f"dimension {structure.get_dimensionality()['dim']}\n"
+    structure_block += f'dimension {structure.get_dimensionality()["dim"]}\n'
     structure_block += 'boundary '
     for _bound in ['pbc1', 'pbc2', 'pbc3']:
-        structure_block += f"{'p' if structure.attributes[_bound] else 'f'} "
+        structure_block += f'{"p" if structure.attributes[_bound] else "f"} '
     structure_block += '\n'
-    structure_block += f"atom_style {parameters_structure['atom_style']}\n"
+    structure_block += f'atom_style {parameters_structure["atom_style"]}\n'
     structure_block += f'read_data {structure_filename}\n'
     # Set the groups which will be used for the calculations
     if 'groups' in parameters_structure:
@@ -150,10 +151,11 @@ def write_structure_block(
 
                 _subset = _group['args'][_group['args'].index('type') + 1:]
 
-                assert all(kind in kind_name_id_map.values()
-                           for kind in _subset), 'atom type not defined'
+                if not all(kind in kind_name_id_map.values()
+                           for kind in _subset):
+                    raise ValueError('atom type not defined')
             # Set the current group
-            structure_block += f"group {_group['name']} {join_keywords(_group['args'])}\n"
+            structure_block += f'group {_group["name"]} {join_keywords(_group["args"])}\n'
             # Store the name of the group for later usage
             group_names.append(_group['name'])
     structure_block += '# ---- End of the Structure information ----\n'
@@ -177,11 +179,11 @@ def write_minimize_block(parameters_minimize: dict) -> str:
     """
 
     minimize_block = '# ---- Start of the Minimization information ----\n'
-    minimize_block += f"min_style {parameters_minimize.get('style', 'cg')}\n"
-    minimize_block += f"minimize {parameters_minimize.get('energy_tolerance', 1e-4)}"
-    minimize_block += f" {parameters_minimize.get('force_tolerance', 1e-4)}"
-    minimize_block += f" {parameters_minimize.get('max_iterations', 1000)}"
-    minimize_block += f" {parameters_minimize.get('max_evaluations', 1000)}\n"
+    minimize_block += f'min_style {parameters_minimize.get("style", "cg")}\n'
+    minimize_block += f'minimize {parameters_minimize.get("energy_tolerance", 1e-4)}'
+    minimize_block += f' {parameters_minimize.get("force_tolerance", 1e-4)}'
+    minimize_block += f' {parameters_minimize.get("max_iterations", 1000)}'
+    minimize_block += f' {parameters_minimize.get("max_evaluations", 1000)}\n'
     minimize_block += '# ---- End of the Minimization information ----\n'
 
     return minimize_block
@@ -209,11 +211,11 @@ def write_md_block(parameters_md: dict) -> str:
     md_block = '# ---- Start of the MD information ----\n'
     md_block += 'reset_timestep 0\n'
     if parameters_md.get('run_style', 'verlet') == 'rspa':
-        md_block += f"run_style {parameters_md.get('run_style', 'verlet')} "
-        md_block += f"{join_keywords(parameters_md['rspa_options'])}\n"
+        md_block += f'run_style {parameters_md.get("run_style", "verlet")} '
+        md_block += f'{join_keywords(parameters_md["rspa_options"])}\n'
     else:
-        md_block += f"run_style {parameters_md.get('run_style', 'verlet')}\n"
-    md_block += f"run {parameters_md.get('max_number_steps', 10)}\n"
+        md_block += f'run_style {parameters_md.get("run_style", "verlet")}\n'
+    md_block += f'run {parameters_md.get("max_number_steps", 10)}\n'
     md_block += '# ---- End of the MD information ----\n'
 
     return md_block
@@ -253,7 +255,9 @@ def write_fix_block(
     for key, value in parameters_fix.items():
         for entry in value:
             _group = entry.get('group', 'all')
-            assert _group in group_names + ['all'], 'group name not defined'
+            if _group not in group_names + ['all']:
+                raise ValueError(
+                    f'group name "{_group}" is not the defined groups')
             fix_block += f'fix {generate_id_tag(key, _group)} {_group} {key} '
             fix_block += f'{join_keywords(entry["type"])}\n'
     fix_block += '# ---- End of the Fix information ----\n'
@@ -288,7 +292,9 @@ def write_compute_block(
     for key, value in parameters_compute.items():
         for entry in value:
             _group = entry.get('group', 'all')
-            assert _group in group_names + ['all'], 'group name not defined'
+            if _group not in group_names + ['all']:
+                raise ValueError(
+                    f'group name "{_group}" is not the defined groups')
             compute_block += f'compute {generate_id_tag(key, _group)} {_group} {key} '
             compute_block += f'{join_keywords(entry["type"])}\n'
     compute_block += '# ---- End of the Compute information ----\n'
