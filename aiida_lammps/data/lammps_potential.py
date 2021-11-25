@@ -98,8 +98,8 @@ class LammpsPotentialData(orm.SinglefileData):  # pylint: disable=too-many-argum
 
     with open(_schema_file, 'r') as handler:
         _defaults = json.load(handler)
-        _default_potential_info = _defaults['pair_style']
-        _default_atom_style_info = _defaults['atom_style']
+        default_potential_info = _defaults['pair_style']
+        default_atom_style_info = _defaults['atom_style']
 
     @classmethod
     def get_or_create(
@@ -237,7 +237,7 @@ class LammpsPotentialData(orm.SinglefileData):  # pylint: disable=too-many-argum
         if pair_style is None:
             raise TypeError(
                 'The pair_style of the potential must be provided.')
-        if pair_style not in self._default_potential_info.keys():
+        if pair_style not in self.default_potential_info.keys():
             raise KeyError(f'The pair_style "{pair_style}" is not valid')
         self.set_attribute('pair_style', pair_style)
 
@@ -272,8 +272,8 @@ class LammpsPotentialData(orm.SinglefileData):  # pylint: disable=too-many-argum
         :raises ValueError: If the `atom_style` is not supported by LAMMPS
         """
         if atom_style is None:
-            atom_style = self._default_potential_info[pair_style]['atom_style']
-        if atom_style not in self._default_atom_style_info:
+            atom_style = self.default_potential_info[pair_style]['atom_style']
+        if atom_style not in self.default_atom_style_info:
             raise ValueError(f'The atom_style "{atom_style}" is not valid')
         self.set_attribute('atom_style', atom_style)
 
@@ -300,7 +300,7 @@ class LammpsPotentialData(orm.SinglefileData):  # pylint: disable=too-many-argum
         :raises ValueError: If the `units` are not LAMMPS compatible.
         """
         if units is None:
-            units = self._default_potential_info[pair_style]['units']
+            units = self.default_potential_info[pair_style]['units']
         if units not in [
                 'si', 'lj', 'real', 'metal', 'cgs', 'electron', 'micro', 'nano'
         ]:

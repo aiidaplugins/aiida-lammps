@@ -80,7 +80,7 @@ def write_potential_block(
     :rtype: str
     """
 
-    default_potential = LammpsPotentialData._default_potential_info
+    default_potential = LammpsPotentialData.default_potential_info
 
     kind_symbols = [kind.symbol for kind in structure.kinds]
 
@@ -96,7 +96,7 @@ def write_potential_block(
     if 'neighbor' in parameters_potential:
         potential_block += f'neighbor {join_keywords(parameters_potential["neighbor"])}\n'
     if 'neighbor_modify' in parameters_potential:
-        potential_block += f'neigh_modify {(parameters_potential["neighbor_modify"])}\n'
+        potential_block += f'neigh_modify {join_keywords(parameters_potential["neighbor_modify"])}\n'
     potential_block += '# ---- End of Potential information ----\n'
     return potential_block
 
@@ -208,17 +208,124 @@ def write_md_block(parameters_md: dict) -> str:
     :rtype: str
     """
 
+    integration_options = generate_integration_options(
+        style=parameters_md['integration'].get('style', 'nve'),
+        integration_parameters=parameters_md['integration'].get('constraints'),
+    )
+
     md_block = '# ---- Start of the MD information ----\n'
+    md_block += f'fix {parameters_md["integration"].get("style", "nve")}{integration_options}\n'
     md_block += 'reset_timestep 0\n'
     if parameters_md.get('run_style', 'verlet') == 'rspa':
         md_block += f'run_style {parameters_md.get("run_style", "verlet")} '
         md_block += f'{join_keywords(parameters_md["rspa_options"])}\n'
     else:
         md_block += f'run_style {parameters_md.get("run_style", "verlet")}\n'
-    md_block += f'run {parameters_md.get("max_number_steps", 10)}\n'
+    md_block += f'run {parameters_md.get("max_number_steps", 100)}\n'
     md_block += '# ---- End of the MD information ----\n'
 
     return md_block
+
+
+def generate_integration_options(
+    style: str,
+    integration_parameters: dict,
+) -> str:
+    """
+    Create a string with the integration options.
+
+    This will check that the appropriate options are setup for each of the
+    supported integrators. These will be appended to a string which is then
+    passed to each of the integrators.
+
+    :param style: Integration style performed in MD mode
+    :type style: str
+    :param integration_parameters: dictionary with the constraints for the integration
+    :type integration_parameters: dict
+    :return: string with the integration options.
+    :rtype: str
+    """
+
+    temperature_dependent = [
+        'nvt',
+        'nvt/asphere',
+        'nvt/body',
+        'nvt/eff',
+        'nvt/manifold/rattle',
+        'nvt/sllod',
+        'nvt/sllod/eff',
+        'nvt/sphere',
+        'nvt/uef',
+        'nphug',
+        'npt',
+        'npt/asphere',
+        'npt/body',
+        'npt/cauchy',
+        'npt/eff',
+        'npt/sphere',
+        'npt/uef',
+    ]
+
+    pressure_dependent = [
+        'nph',
+        'nph/asphere',
+        'nph/body',
+        'nph/eff',
+        'nph/sphere',
+        'nphug',
+        'npt',
+        'npt/asphere',
+        'npt/body',
+        'npt/cauchy',
+        'npt/eff',
+        'npt/sphere',
+        'npt/uef',
+    ]
+
+    uef_dependent = ['npt/uef', 'nvt/uef']
+
+    temperature_options = ['temp', 'tchain', 'tloop', 'drag']
+
+    pressure_options = [
+        'ani', 'iso', 'tri', 'x', 'y', 'z', 'xy', 'xz', 'yz', 'couple',
+        'pchain', 'mtk', 'ploop', 'nreset', 'drag', 'dilate', 'scaleyz',
+        'scalexz', 'scalexy', 'flip', 'fixedpoint', 'update'
+    ]
+
+    uef_options = ['ext', 'erotate']
+
+    options = ''
+
+    # Set the options that depend on the temperature
+    if style in temperature_dependent:
+        for _option in temperature_options:
+            if _option in integration_parameters:
+                _value = integration_parameters.get(_option)
+                _value = [str(val) for val in _value]
+                options += f' {_option} {" ".join(_value) if isinstance(_value, list) else _value} '
+    # Set the options that depend on the pressure
+    if style in pressure_dependent:
+        for _option in pressure_options:
+            if _option in integration_parameters:
+                _value = integration_parameters.get(_option)
+                _value = [str(val) for val in _value]
+                options += f' {_option} {" ".join(_value) if isinstance(_value, list) else _value} '
+    # Set the options that depend on the 'uef' parameters
+    if style in uef_dependent:
+        for _option in uef_options:
+            if _option in integration_parameters:
+                _value = integration_parameters.get(_option)
+                _value = [str(val) for val in _value]
+                options += f' {_option} {" ".join(_value) if isinstance(_value, list) else _value} '
+    # Set the options that depend on the 'nve/limit' parameters
+    if style in ['nve/limit']:
+        options += f' {integration_parameters.get("xmax", 0.1)} '
+    # Set the options that depend on the 'langevin' parameters
+    if style in ['nve/dotc/langevin']:
+        options += f' {integration_parameters.get("temp")}'
+        options += f' {integration_parameters.get("seed")}'
+        options += f' angmom {integration_parameters.get("angmom")}'
+    return options
 
 
 def write_fix_block(
@@ -257,7 +364,8 @@ def write_fix_block(
             _group = entry.get('group', 'all')
             if _group not in group_names + ['all']:
                 raise ValueError(
-                    f'group name "{_group}" is not the defined groups')
+                    f'group name "{_group}" is not the defined groups {group_names + ["all"]}'
+                )
             fix_block += f'fix {generate_id_tag(key, _group)} {_group} {key} '
             fix_block += f'{join_keywords(entry["type"])}\n'
     fix_block += '# ---- End of the Fix information ----\n'

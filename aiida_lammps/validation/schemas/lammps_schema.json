@@ -110,6 +110,7 @@
         },
         "md": {
             "type": "object",
+            "required": ["integration"],
             "properties": {
                 "run_style": {
                     "type": "string"
@@ -122,6 +123,236 @@
                 },
                 "max_number_steps": {
                     "type": "integer"
+                },
+                "velocity": {
+                    "type": "object",
+                    "properties": {
+                        "create": {
+                            "type": "object",
+                            "properties": {
+                                "temp": {
+                                    "type":"number"
+                                },
+                                "seed": {
+                                    "type": "integer"
+                                }
+                            }
+                        },
+                        "set": {
+                            "type": "object",
+                            "properties": {
+                                "vx": {
+                                    "type": "number"
+                                },
+                                "vy": {
+                                    "type": "number"
+                                },
+                                "vz": {
+                                    "type": "number"
+                                }
+                            }
+                        },
+                        "scale": {
+                            "type": "number"
+                        },
+                        "ramp": {
+                            "type": "object",
+                            "properties": {
+                                "vdim": {
+                                    "type": "string",
+                                    "enum": ["vx", "vy", "vz"]
+                                },
+                                "vlo": {
+                                    "type": "number"
+                                },
+                                "vhi": {
+                                    "type": "number"
+                                },
+                                "dim": {
+                                    "type": "string",
+                                    "enum": ["x", "y", "z"]
+                                },
+                                "clo": {
+                                    "type": "number"
+                                },
+                                "chi": {
+                                    "type": "number"
+                                }
+                            }
+                        },
+                        "zero": {
+                            "type": "string",
+                            "enum": ["linear", "angular"]
+                        }
+                    }
+                },
+                "integration": {
+                    "type": "object",
+                    "properties": {
+                        "style": {
+                            "type": "string",
+                            "enum": [
+                                "nph",
+                                "nph/asphere",
+                                "nph/body",
+                                "nph/eff",
+                                "nph/sphere",
+                                "nphug",
+                                "npt",
+                                "npt/asphere",
+                                "npt/body",
+                                "npt/cauchy",
+                                "npt/eff",
+                                "npt/sphere",
+                                "npt/uef",
+                                "nve",
+                                "nve/asphere",
+                                "nve/ashphere/noforce",
+                                "nve/awpmd",
+                                "nve/body",
+                                "nve/dot",
+                                "nve/dotc/langevin",
+                                "nve/eff",
+                                "nve/limit",
+                                "nve/line",
+                                "nve/manifold/rattle",
+                                "nve/noforce",
+                                "nve/sphere",
+                                "nve/spin",
+                                "nve/tri",
+                                "nvk",
+                                "nvt",
+                                "nvt/asphere",
+                                "nvt/body",
+                                "nvt/eff",
+                                "nvt/manifold/rattle",
+                                "nvt/sllod",
+                                "nvt/sllod/eff",
+                                "nvt/sphere",
+                                "nvt/uef"
+                            ]
+                        },
+                        "constraints": {
+                            "type": "object",
+                            "properties": {
+                                "temp": {
+                                    "$ref" : "#/definitions/int_constraint"
+                                },
+                                "iso": {
+                                    "$ref" : "#/definitions/int_constraint"
+                                },
+                                "tri": {
+                                    "$ref" : "#/definitions/int_constraint"
+                                },
+                                "aniso": {
+                                    "$ref" : "#/definitions/int_constraint"
+                                },
+                                "x": {
+                                    "$ref" : "#/definitions/int_constraint"
+                                },
+                                "y": {
+                                    "$ref" : "#/definitions/int_constraint"
+                                },
+                                "z": {
+                                    "$ref" : "#/definitions/int_constraint"
+                                },
+                                "xy": {
+                                    "$ref" : "#/definitions/int_constraint"
+                                },
+                                "xz": {
+                                    "$ref" : "#/definitions/int_constraint"
+                                },
+                                "yz": {
+                                    "$ref" : "#/definitions/int_constraint"
+                                },
+                                "couple": {
+                                    "type": "string",
+                                    "enum": ["none", "xyz", "xy", "yz", "xz"]
+                                },
+                                "tchain": {
+                                    "type": "integer"
+                                },
+                                "pchain": {
+                                    "type": "integer"
+                                },
+                                "mtk": {
+                                    "type": "string",
+                                    "enum": ["yes", "no"]
+                                },
+                                "tloop": {
+                                    "type": "integer"
+                                },
+                                "ploop": {
+                                    "type": "integer"
+                                },
+                                "nreset": {
+                                    "type": "integer"
+                                },
+                                "drag": {
+                                    "type": "numeric"
+                                },
+                                "ptemp": {
+                                    "type": "numeric"
+                                },
+                                "dilate": {
+                                    "type": "string"
+                                },
+                                "scalexy": {
+                                    "type": "string",
+                                    "enum": ["yes", "no"]
+                                },
+                                "scalexz": {
+                                    "type": "string",
+                                    "enum": ["yes", "no"]
+                                },
+                                "scaleyz": {
+                                    "type": "string",
+                                    "enum": ["yes", "no"]
+                                },
+                                "flip": {
+                                    "type": "string",
+                                    "enum": ["yes", "no"]
+                                },
+                                "fixedpoint": {
+                                    "type": "string",
+                                    "enum": ["x", "y", "z"]
+                                },
+                                "update": {
+                                    "type": "string",
+                                    "enum": ["dipole", "dipole/dlm"]
+                                },
+                                "ext": {
+                                    "type": "string",
+                                    "enum": ["x", "y", "z", "xy", "yz", "xz"]
+                                },
+                                "erate": {
+                                    "type": "array",
+                                    "minItems": 2,
+                                    "maxItems": 2,
+                                    "items": [
+                                        {
+                                            "description" : "strain rates in the x direction",
+                                            "type": "number"
+                                        },
+                                        {
+                                            "description": "strain rates in the y direction",
+                                            "type": "number"
+                                        }
+                                    ]
+                                },
+                                "seed": {
+                                    "type": "integer"
+                                },
+                                "angmom": {
+                                    "type": "integer"
+                                },
+                                "xmax": {
+                                    "type": "number"
+                                }
+                            }
+                        }
+                    },
+                    "required": ["style", "constraints"]
                 }
             }
         },
@@ -572,45 +803,8 @@
                     "mvv/tdpd",
                     "neb",
                     "neb/spin",
-                    "nph",
-                    "nph/asphere",
-                    "nph/body",
-                    "nph/eff",
-                    "nph/sphere",
                     "nphug",
-                    "npt",
-                    "npt/asphere",
-                    "npt/body",
-                    "npt/cauchy",
-                    "npt/eff",
-                    "npt/sphere",
-                    "npt/uef",
                     "numdiff",
-                    "nve",
-                    "nve/asphere",
-                    "nve/asphere/noforce",
-                    "nve/awpmd",
-                    "nve/body",
-                    "nve/dot",
-                    "nve/dotc/langevin",
-                    "nve/eff",
-                    "nve/limit",
-                    "nve/line",
-                    "nve/manifold/rattle",
-                    "nve/noforce",
-                    "nve/sphere",
-                    "nve/spin",
-                    "nve/tri",
-                    "nvk",
-                    "nvt",
-                    "nvt/asphere",
-                    "nvt/body",
-                    "nvt/eff",
-                    "nvt/manifold/rattle",
-                    "nvt/sllod",
-                    "nvt/sllod/eff",
-                    "nvt/sphere",
-                    "nvt/uef",
                     "oneway",
                     "orient/bcc",
                     "orient/fcc",
@@ -725,197 +919,26 @@
                 "^": {
                     "$ref": "#/definitions/children"
                 }
-            },
-            "oneOf": [
+            }
+        },
+        "int_constraint": {
+            "description": "Define an integration constraint, for e.g. temperature, pressure, etc",
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "items": [
                 {
-                    "required": [
-                        "nph"
-                    ]
+                    "description": "external value at start of run",
+                    "type": "number"
                 },
                 {
-                    "required": [
-                        "nph/asphere"
-                    ]
+                    "description": "external value at end of run",
+                    "type": "number"
                 },
                 {
-                    "required": [
-                        "nph/body"
-                    ]
-                },
-                {
-                    "required": [
-                        "nph/eff"
-                    ]
-                },
-                {
-                    "required": [
-                        "nph/sphere"
-                    ]
-                },
-                {
-                    "required": [
-                        "nphug"
-                    ]
-                },
-                {
-                    "required": [
-                        "npt"
-                    ]
-                },
-                {
-                    "required": [
-                        "npt/asphere"
-                    ]
-                },
-                {
-                    "required": [
-                        "npt/body"
-                    ]
-                },
-                {
-                    "required": [
-                        "npt/cauchy"
-                    ]
-                },
-                {
-                    "required": [
-                        "npt/eff"
-                    ]
-                },
-                {
-                    "required": [
-                        "npt/sphere"
-                    ]
-                },
-                {
-                    "required": [
-                        "npt/uef"
-                    ]
-                },
-                {
-                    "required": [
-                        "nve"
-                    ]
-                },
-                {
-                    "required": [
-                        "nve/asphere"
-                    ]
-                },
-                {
-                    "required": [
-                        "nve/asphere/noforce"
-                    ]
-                },
-                {
-                    "required": [
-                        "nve/awpmd"
-                    ]
-                },
-                {
-                    "required": [
-                        "nve/body"
-                    ]
-                },
-                {
-                    "required": [
-                        "nve/dot"
-                    ]
-                },
-                {
-                    "required": [
-                        "nve/dotc/langevin"
-                    ]
-                },
-                {
-                    "required": [
-                        "nve/eff"
-                    ]
-                },
-                {
-                    "required": [
-                        "nve/limit"
-                    ]
-                },
-                {
-                    "required": [
-                        "nve/line"
-                    ]
-                },
-                {
-                    "required": [
-                        "nve/manifold/rattle"
-                    ]
-                },
-                {
-                    "required": [
-                        "nve/noforce"
-                    ]
-                },
-                {
-                    "required": [
-                        "nve/sphere"
-                    ]
-                },
-                {
-                    "required": [
-                        "nve/spin"
-                    ]
-                },
-                {
-                    "required": [
-                        "nve/tri"
-                    ]
-                },
-                {
-                    "required": [
-                        "nvk"
-                    ]
-                },
-                {
-                    "required": [
-                        "nvt"
-                    ]
-                },
-                {
-                    "required": [
-                        "nvt/asphere"
-                    ]
-                },
-                {
-                    "required": [
-                        "nvt/body"
-                    ]
-                },
-                {
-                    "required": [
-                        "nvt/eff"
-                    ]
-                },
-                {
-                    "required": [
-                        "nvt/manifold/rattle"
-                    ]
-                },
-                {
-                    "required": [
-                        "nvt/sllod"
-                    ]
-                },
-                {
-                    "required": [
-                        "nvt/sllod/eff"
-                    ]
-                },
-                {
-                    "required": [
-                        "nvt/sphere"
-                    ]
-                },
-                {
-                    "required": [
-                        "nvt/uef"
-                    ]
+                    "description": "damping parameter (time units)",
+                    "type": "number",
+                    "minimum": 0
                 }
             ]
         },
