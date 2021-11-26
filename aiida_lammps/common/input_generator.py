@@ -14,6 +14,7 @@ from builtins import ValueError
 import os
 from typing import Union
 import json
+import numpy as np
 from aiida import orm
 from aiida_lammps.data.lammps_potential import LammpsPotentialData
 
@@ -215,6 +216,8 @@ def write_md_block(parameters_md: dict) -> str:
 
     md_block = '# ---- Start of the MD information ----\n'
     md_block += f'fix {parameters_md["integration"].get("style", "nve")}{integration_options}\n'
+    if 'velocity' in parameters_md:
+        md_block += f'{generate_velocity_string(parameters_velocity=parameters_md["velocity"])}\n'
     md_block += 'reset_timestep 0\n'
     if parameters_md.get('run_style', 'verlet') == 'rspa':
         md_block += f'run_style {parameters_md.get("run_style", "verlet")} '
@@ -225,6 +228,67 @@ def write_md_block(parameters_md: dict) -> str:
     md_block += '# ---- End of the MD information ----\n'
 
     return md_block
+
+
+def generate_velocity_string(parameters_velocity: dict) -> str:
+    """
+    Generate the velocity string for the MD block.
+
+    This takes the different possible velocity settings and generate a string
+    which is LAMMPS compatible.
+
+    :param parameters_velocity: dictionary with the velocity parameters
+    :type parameters_velocity: dict
+    :return: string with the velocity options
+    :rtype: str
+    """
+    options = ''
+    for entry in parameters_velocity:
+        _options = generate_velocity_options(entry)
+        if 'create' in entry:
+            options += f'velocity {entry.get("group", "all")} create'
+            options += f' {entry["create"].get("temp")}'
+            options += f' {entry["create"].get("seed", np.random.randint(9e9))} {_options}\n'
+        if 'set' in entry:
+            options += f'velocity {entry.get("group", "all")} set'
+            options += f' {entry["set"].get("vx", "NULL")}'
+            options += f' {entry["set"].get("vy", "NULL")}'
+            options += f' {entry["set"].get("vz", "NULL")} {_options}\n'
+        if 'scale' in entry:
+            options += f'velocity {entry.get("group", "all")} scale'
+            options += f' {entry["scale"]} {_options}\n'
+        if 'ramp' in entry:
+            options += f'velocity {entry.get("group", "all")} ramp'
+            options += f' {entry["ramp"].get("vdim")} {entry["ramp"].get("vlo")}'
+            options += f' {entry["ramp"].get("vhi")} {entry["ramp"].get("dim")}'
+            options += f' {entry["ramp"].get("clo")} {entry["ramp"].get("chi")} {_options}\n'
+        if 'zero' in entry:
+            options += f'velocity {entry.get("group", "all")} zero'
+            options += f' {entry["zero"]} {_options}\n'
+    return options
+
+
+def generate_velocity_options(options_velocity: dict) -> str:
+    """
+    Generate the options string for every velocity.
+
+    Independent of the way in which one specifies the velocity there are several
+    options that are global, this functions allows them to be setup.
+
+    :param options_velocity: dictionary with the velocity parameters
+    :type options_velocity: dict
+    :return: string with the velocity options
+    :rtype: str
+    """
+    _options = [
+        'dist', 'sum', 'mom'
+        'rot', 'temp', 'bias', 'loop', 'rigid', 'units'
+    ]
+
+    velocity_option = ''
+    for _option in _options:
+        velocity_option += f' {_option} {options_velocity[_option]} '
+    return velocity_option
 
 
 def generate_integration_options(

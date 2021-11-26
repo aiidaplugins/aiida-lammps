@@ -113,78 +113,144 @@
             "required": ["integration"],
             "properties": {
                 "run_style": {
-                    "type": "string"
+                    "type": "string",
+                    "enum": ["verlet", "verlet/split", "respa"]
                 },
                 "rspa_options": {
-                    "type": "array",
-                    "propertyNames": {
-                        "enum": ["verlet", "verlet/split", "respa"]
-                    }
+                    "type": "array"
                 },
                 "max_number_steps": {
                     "type": "integer"
                 },
                 "velocity": {
-                    "type": "object",
-                    "properties": {
-                        "create": {
-                            "type": "object",
-                            "properties": {
-                                "temp": {
-                                    "type":"number"
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "create": {
+                                "type": "object",
+                                "properties": {
+                                    "temp": {
+                                        "type":"number"
+                                    },
+                                    "seed": {
+                                        "type": "integer"
+                                    }
                                 },
-                                "seed": {
-                                    "type": "integer"
+                                "required": ["temp", "seed"]
+                            },
+                            "set": {
+                                "type": "object",
+                                "properties": {
+                                    "vx": {
+                                        "type": "number"
+                                    },
+                                    "vy": {
+                                        "type": "number"
+                                    },
+                                    "vz": {
+                                        "type": "number"
+                                    }
                                 }
-                            }
-                        },
-                        "set": {
-                            "type": "object",
-                            "properties": {
-                                "vx": {
-                                    "type": "number"
-                                },
-                                "vy": {
-                                    "type": "number"
-                                },
-                                "vz": {
-                                    "type": "number"
+                            },
+                            "scale": {
+                                "type": "number"
+                            },
+                            "ramp": {
+                                "type": "object",
+                                "properties": {
+                                    "vdim": {
+                                        "type": "string",
+                                        "enum": ["vx", "vy", "vz"]
+                                    },
+                                    "vlo": {
+                                        "type": "number"
+                                    },
+                                    "vhi": {
+                                        "type": "number"
+                                    },
+                                    "dim": {
+                                        "type": "string",
+                                        "enum": ["x", "y", "z"]
+                                    },
+                                    "clo": {
+                                        "type": "number"
+                                    },
+                                    "chi": {
+                                        "type": "number"
+                                    }
                                 }
+                            },
+                            "zero": {
+                                "type": "string",
+                                "enum": ["linear", "angular"]
+                            },
+                            "dist": {"type": "string", "enum": ["uniform", "gaussian"]},
+                            "sum": {"type": "string", "enum": ["yes", "no"]},
+                            "mom": {"type": "string", "enum": ["yes", "no"]},
+                            "rot": {"type": "string", "enum": ["yes", "no"]},
+                            "temp": {"type": "string"},
+                            "bias": {"type": "string", "enum": ["yes", "no"]},
+                            "loop": {"type": "string", "enum": ["all", "local", "geom"]},
+                            "rigid": {"type": "string"},
+                            "units": {"type": "string", "enum": ["box", "lattice"]},
+                            "group": {
+                                "type": "string"
                             }
-                        },
-                        "scale": {
-                            "type": "number"
-                        },
-                        "ramp": {
-                            "type": "object",
-                            "properties": {
-                                "vdim": {
-                                    "type": "string",
-                                    "enum": ["vx", "vy", "vz"]
-                                },
-                                "vlo": {
-                                    "type": "number"
-                                },
-                                "vhi": {
-                                    "type": "number"
-                                },
-                                "dim": {
-                                    "type": "string",
-                                    "enum": ["x", "y", "z"]
-                                },
-                                "clo": {
-                                    "type": "number"
-                                },
-                                "chi": {
-                                    "type": "number"
-                                }
-                            }
-                        },
-                        "zero": {
-                            "type": "string",
-                            "enum": ["linear", "angular"]
                         }
-                    }
+                    },
+                    "oneOf": [
+                        {
+                            "required": [
+                                "create"
+                            ],
+                            "not": {
+                                "required": [
+                                    "set", "scale", "ramp", "zero"
+                                ]
+                            }
+                        },
+                        {
+                            "required": [
+                                "set"
+                            ],
+                            "not": {
+                                "required": [
+                                    "create", "scale", "ramp", "zero"
+                                ]
+                            }
+                        },
+                        {
+                            "required": [
+                                "scale"
+                            ],
+                            "not": {
+                                "required": [
+                                    "create", "set", "ramp", "zero"
+                                ]
+                            }
+                        },
+                        {
+                            "required": [
+                                "ramp"
+                            ],
+                            "not": {
+                                "required": [
+                                    "create", "scale", "set", "zero"
+                                ]
+                            }
+                        },
+                        {
+                            "required": [
+                                "zero"
+                            ],
+                            "not": {
+                                "required": [
+                                    "create", "scale", "ramp", "set"
+                                ]
+                            }
+                        }
+                    ]
                 },
                 "integration": {
                     "type": "object",
