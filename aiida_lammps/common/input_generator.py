@@ -14,9 +14,31 @@ from builtins import ValueError
 import os
 from typing import Union
 import json
+import jsonschema
 import numpy as np
 from aiida import orm
 from aiida_lammps.data.lammps_potential import LammpsPotentialData
+
+
+def validate_input_parameters(parameters: dict = None):
+    """
+    Validate the input parameters and compares them against a schema.
+
+    Takes the input parameters dictionaries that will be used to generate the
+    LAMMPS input parameter and will be checked against a schema for validation.
+
+    :param parameters: dictionary with the input parameters, defaults to None
+    :type parameters: dict, optional
+    """
+    _file = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        '..', 'validation/schemas/lammps_schema.json',
+    )
+
+    with open(_file) as handler:
+        schema = json.load(handler)
+
+    jsonschema.validate(schema=schema, instance=parameters)
 
 
 def write_control_block(parameters_control: dict) -> str:

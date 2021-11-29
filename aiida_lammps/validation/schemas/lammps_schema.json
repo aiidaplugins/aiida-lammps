@@ -44,7 +44,7 @@
                 "type": "string"
             },
             "timestep": {
-                "type": "numeric"
+                "type": "number"
             }
         }
     },
@@ -355,10 +355,10 @@
                                     "type": "integer"
                                 },
                                 "drag": {
-                                    "type": "numeric"
+                                    "type": "number"
                                 },
                                 "ptemp": {
-                                    "type": "numeric"
+                                    "type": "number"
                                 },
                                 "dilate": {
                                     "type": "string"
@@ -429,10 +429,10 @@
                     "type": "string"
                 },
                 "energy_tolerance": {
-                    "type": "numeric"
+                    "type": "number"
                 },
                 "force_tolerance": {
-                    "type": "numeric"
+                    "type": "number"
                 },
                 "max_iterations": {
                     "type": "integer"
