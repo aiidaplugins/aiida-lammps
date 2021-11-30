@@ -1,6 +1,6 @@
 """Module for parsing REAXFF input files.
 
-Note: this module is copied directly from aiida-crystal17 v0.10.0b5
+.. note:: this module is copied directly from aiida-crystal17 v0.10.0b5
 """
 import copy
 import re

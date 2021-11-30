@@ -1,3 +1,10 @@
+"""[summary]
+
+:raises ValueError: [description]
+:raises ValueError: [description]
+:return: [description]
+:rtype: [type]
+"""
 from hashlib import md5
 from io import StringIO
 
@@ -15,13 +22,25 @@ class EmpiricalPotential(Data):
 
     @classmethod
     def list_types(cls):
+        """[summary]
+
+        :return: [description]
+        :rtype: [type]
+        """
         return get_entry_point_names(cls.entry_name)
 
     @classmethod
     def load_type(cls, entry_name):
+        """[summary]
+
+        :param entry_name: [description]
+        :type entry_name: [type]
+        :return: [description]
+        :rtype: [type]
+        """
         return load_entry_point(cls.entry_name, entry_name)
 
-    def __init__(self, type, data=None, **kwargs):
+    def __init__(self, potential_type, data=None, **kwargs):
         """Empirical potential data, used to create LAMMPS input files.
 
         Parameters
@@ -32,8 +51,8 @@ class EmpiricalPotential(Data):
             data required to create the potential file and input lines
 
         """
-        super(EmpiricalPotential, self).__init__(**kwargs)
-        self.set_data(type, data)
+        super().__init__(**kwargs)
+        self.set_data(potential_type, data)
 
     def set_data(self, potential_type, data=None):
         """Store the potential type (e.g. Tersoff, EAM, LJ, ..)."""

@@ -1,3 +1,4 @@
+"""Single point calculation of the energy in LAMMPS."""
 from aiida.plugins import DataFactory
 
 from aiida_lammps.calculations.lammps import BaseLammpsCalculation
@@ -6,6 +7,8 @@ from aiida_lammps.validation import validate_against_schema
 
 
 class ForceCalculation(BaseLammpsCalculation):
+    """Calculation of a single point in LAMMPS, to obtain the energy of the system.
+    """
     @classmethod
     def define(cls, spec):
         super(ForceCalculation, cls).define(spec)
@@ -15,8 +18,6 @@ class ForceCalculation(BaseLammpsCalculation):
             valid_type=str,
             default='lammps.force',
         )
-
-        # spec.input('settings', valid_type=str, default='lammps.optimize')
 
         spec.output(
             'arrays',
@@ -35,18 +36,16 @@ class ForceCalculation(BaseLammpsCalculation):
         system_filename,
         restart_filename,
     ):
-
+        # pylint: disable=too-many-arguments, too-many-locals
         version_date = convert_date_string(
             parameter_data.get_attribute('lammps_version', '11 Aug 2017'))
 
-        lammps_input_file = 'units          {0}\n'.format(
-            potential_data.default_units)
+        lammps_input_file = f'units          {potential_data.default_units}\n'
         lammps_input_file += 'boundary        p p p\n'
         lammps_input_file += 'box tilt large\n'
-        lammps_input_file += 'atom_style      {0}\n'.format(
-            potential_data.atom_style)
+        lammps_input_file += f'atom_style      {potential_data.atom_style}\n'
 
-        lammps_input_file += 'read_data       {}\n'.format(structure_filename)
+        lammps_input_file += f'read_data       {structure_filename}\n'
 
         lammps_input_file += potential_data.get_input_lines(kind_symbols)
 
@@ -103,9 +102,19 @@ class ForceCalculation(BaseLammpsCalculation):
         return lammps_input_file
 
     @staticmethod
-    def validate_parameters(param_data, potential_object):
+    def validate_parameters(param_data):
+        """Validate the parameters for a force calculation.
+
+        :param param_data: parameters for the LAMMPS force calculation
+        :type param_data: orm.Dict
+        """
         if param_data is not None:
             validate_against_schema(param_data.get_dict(), 'force.schema.json')
 
     def get_retrieve_lists(self):
+        """Get list of files to be retrieved when the calculation is done.
+
+        :return: list of files to be retrieved.
+        :rtype: list
+        """
         return [self.options.trajectory_suffix], []

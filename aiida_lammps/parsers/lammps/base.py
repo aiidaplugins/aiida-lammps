@@ -1,3 +1,8 @@
+"""[summary]
+
+:return: [description]
+:rtype: [type]
+"""
 from collections import namedtuple
 from fnmatch import fnmatch
 import os
@@ -18,12 +23,14 @@ class LAMMPSBaseParser(Parser):
     """Abstract Base Parser for LAMMPS, supplying common methods."""
     def __init__(self, node):
         """Initialize the parser."""
-        super(LAMMPSBaseParser, self).__init__(node)
+        super().__init__(node)
 
-    def get_parsing_resources(self,
-                              kwargs,
-                              traj_in_temp=False,
-                              sys_in_temp=True):
+    def get_parsing_resources(
+        self,
+        kwargs,
+        traj_in_temp=False,
+        sys_in_temp=True,
+    ):
         """Check that all resources, required for parsing, are present."""
         # Check for retrieved folder
         try:
@@ -99,8 +106,10 @@ class LAMMPSBaseParser(Parser):
         output_filename = self.node.get_option('output_filename')
         output_txt = self.retrieved.get_object_content(output_filename)
         try:
-            output_data = read_log_file(output_txt,
-                                        compute_stress=compute_stress)
+            output_data = read_log_file(
+                output_txt,
+                compute_stress=compute_stress,
+            )
         except Exception:
             traceback.print_exc()
             return None, self.exit_codes.ERROR_LOG_PARSING

@@ -1,7 +1,9 @@
-from aiida.orm import ArrayData, Dict
-import numpy as np
+"""[summary]
 
-from aiida_lammps.common.parse_trajectory import TRAJ_BLOCK  # noqa: F401
+"""
+import numpy as np
+from aiida.orm import ArrayData, Dict
+
 from aiida_lammps.common.parse_trajectory import iter_trajectories
 from aiida_lammps.common.raw_parsers import get_units_dict
 from aiida_lammps.parsers.lammps.base import LAMMPSBaseParser
@@ -11,7 +13,7 @@ class ForceParser(LAMMPSBaseParser):
     """Parser for LAMMPS single point energy calculation."""
     def __init__(self, node):
         """Initialize the instance of Force Lammps Parser."""
-        super(ForceParser, self).__init__(node)
+        super().__init__(node)
 
     def parse(self, **kwargs):
         """Parse the retrieved files and store results."""
@@ -57,8 +59,19 @@ class ForceParser(LAMMPSBaseParser):
 
         if not log_data.get('found_end', False):
             return self.exit_codes.ERROR_RUN_INCOMPLETE
+        return None
 
     def parse_traj_file(self, trajectory_filename):
+        """[summary]
+
+        :param trajectory_filename: [description]
+        :type trajectory_filename: [type]
+        :raises IOError: [description]
+        :raises IOError: [description]
+        :raises IOError: [description]
+        :return: [description]
+        :rtype: [type]
+        """
         with self.retrieved.open(trajectory_filename, 'r') as handle:
             traj_steps = list(iter_trajectories(handle))
         if not traj_steps:

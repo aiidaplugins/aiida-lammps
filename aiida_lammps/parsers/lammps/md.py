@@ -1,3 +1,5 @@
+"""[summary]
+"""
 import traceback
 
 from aiida.orm import ArrayData, Dict
@@ -12,10 +14,11 @@ class MdParser(LAMMPSBaseParser):
     """Parser for LAMMPS MD calculations."""
     def __init__(self, node):
         """Initialize the instance of Lammps MD Parser."""
-        super(MdParser, self).__init__(node)
+        super().__init__(node)
 
     def parse(self, **kwargs):
         """Parse the retrieved folder and store results."""
+        # pylint: disable=too-many-locals, too-many-branches
         # retrieve resources
         resources = self.get_parsing_resources(kwargs, traj_in_temp=True)
         if resources.exit_code is not None:
@@ -89,3 +92,4 @@ class MdParser(LAMMPSBaseParser):
 
         if not log_data.get('found_end', False):
             return self.exit_codes.ERROR_RUN_INCOMPLETE
+        return None

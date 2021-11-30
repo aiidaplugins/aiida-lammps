@@ -31,7 +31,7 @@ from aiida.common.exceptions import StoringNotAllowed
 from aiida.common.files import md5_from_filelike
 
 
-class LammpsPotentialData(orm.SinglefileData):  # pylint: disable=too-many-arguments, too-many-ancestors
+class LammpsPotentialData(orm.SinglefileData):
     """
     Base class for the LAMMPS potentials.
 
@@ -51,6 +51,7 @@ class LammpsPotentialData(orm.SinglefileData):  # pylint: disable=too-many-argum
     to track and as compatible as possible to the KIM schema.
     """  # pylint: disable=line-too-long
 
+    # pylint: disable=too-many-arguments, too-many-ancestors
     _key_element = 'element'
     _key_md5 = 'md5'
 
@@ -111,7 +112,7 @@ class LammpsPotentialData(orm.SinglefileData):  # pylint: disable=too-many-argum
         atom_style: str = None,
         units: str = None,
         extra_tags: dict = None,
-    ):  # pylint: disable=too-many-arguments
+    ):
         """Get lammps potential data node from database or create a new one.
 
         This will check if there is a potential data node with matching md5
@@ -138,6 +139,7 @@ class LammpsPotentialData(orm.SinglefileData):  # pylint: disable=too-many-argum
             instance or binary stream.
         :raises FileNotFoundError: if the source is a filepath but does not exist.
         """
+        # pylint: disable=too-many-arguments
         source = cls.prepare_source(source)
 
         query = orm.QueryBuilder()
@@ -344,7 +346,7 @@ class LammpsPotentialData(orm.SinglefileData):  # pylint: disable=too-many-argum
         units: str = None,
         extra_tags: dict = None,
         **kwargs,
-    ):  # pylint: disable=too-many-arguments
+    ):
         """Set the file content.
 
         .. note:: this method will first analyse the type of the ``source``
@@ -382,6 +384,8 @@ class LammpsPotentialData(orm.SinglefileData):  # pylint: disable=too-many-argum
             instance or binary stream.
         :raises FileNotFoundError: if the source is a filepath but does not exist.
         """
+        # pylint: disable=too-many-arguments
+
         source = self.prepare_source(source)
 
         if self.pair_style is not None and pair_style is None:

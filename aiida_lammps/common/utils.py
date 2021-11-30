@@ -1,3 +1,9 @@
+"""[summary]
+
+:raises KeyError: [description]
+:return: [description]
+:rtype: [type]
+"""
 from datetime import datetime
 
 from dateutil.parser import parse as get_date
@@ -48,7 +54,6 @@ def get_path(dct, path, default=None, raise_error=True):
         if not isinstance(subdct, dict) or key not in subdct:
             if raise_error:
                 raise KeyError(f'path does not exist in dct: {path[0:i + 1]}')
-            else:
-                return default
+            return default
         subdct = subdct[key]
     return subdct
