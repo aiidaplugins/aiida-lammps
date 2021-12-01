@@ -1,3 +1,4 @@
+"""Abstract class for potential plugins."""
 import abc
 
 
@@ -10,6 +11,7 @@ class PotentialAbstract(abc.ABC):
     @abc.abstractmethod
     def validate_data(self, data):
         """Validate the input data."""
+        # pylint: disable=unnecessary-pass
         pass
 
     @abc.abstractmethod
@@ -25,6 +27,7 @@ class PotentialAbstract(abc.ABC):
         None or dict
 
         """
+        # pylint: disable=unnecessary-pass
         pass
 
     @abc.abstractmethod
@@ -42,22 +45,26 @@ class PotentialAbstract(abc.ABC):
         str
 
         """
+        # pylint: disable=unnecessary-pass
         pass
 
-    @abc.abstractproperty
+    @property
     def default_units(self):
         """Return the default unit style to use."""
+        # pylint: disable=unnecessary-pass
         pass
 
-    @abc.abstractproperty
+    @property
     def atom_style(self):
         """Return the atomic style to use."""
+        # pylint: disable=unnecessary-pass
         pass
 
-    @abc.abstractproperty
+    @property
     def allowed_element_names(self):
         """Return the allowed element names.
 
         (used in ``pair_coeff`` to map atom types to elements).
         """
+        # pylint: disable=unnecessary-pass
         pass

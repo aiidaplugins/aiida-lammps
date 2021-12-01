@@ -4,7 +4,8 @@
 exclude: >
     (?x)^(
       aiida_lammps/tests/input_files/.*|
-      aiida_lammps/tests/.*txt
+      aiida_lammps/tests/.*txt|
+      aiida_lammps/tests/
     )$
 
 repos:
@@ -36,5 +37,6 @@ repos:
         language: system
         exclude: |
           (?x)(
-          ^examples/
+          ^examples/|
+          ^tests/
           )

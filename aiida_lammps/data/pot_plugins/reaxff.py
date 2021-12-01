@@ -1,3 +1,5 @@
+"""Class for creation of ReaxFF potential inputs."""
+# pylint: disable=fixme
 from aiida_lammps.common.reaxff_convert import write_lammps_format
 from aiida_lammps.data.pot_plugins.base_plugin import PotentialAbstract
 from aiida_lammps.validation import validate_against_schema
@@ -6,8 +8,8 @@ from aiida_lammps.validation import validate_against_schema
 class Reaxff(PotentialAbstract):
     """Class for creation of ReaxFF potential inputs.
 
-    NOTE: to use c_reax[1] - c_reax[14],
-    c_reax[1] must be added to ``thermo_style custom``, to trigger the compute
+    .. note:: to use c_reax[1] - c_reax[14],
+        c_reax[1] must be added to ``thermo_style custom``, to trigger the compute
 
     The array values correspond to:
 
@@ -36,15 +38,25 @@ class Reaxff(PotentialAbstract):
         validate_against_schema(data, 'reaxff.schema.json')
 
     def get_potential_file_content(self):
+        """Get the data from the potential file
+
+        :return: reaxff potential file content
+        :rtype: str
+        """
         if 'file_contents' in self.data:
             content = ''
             for line in self.data['file_contents']:
-                content += '{}'.format(line)
+                content += f'{line}'
         else:
             content = write_lammps_format(self.data)
         return content
 
     def get_control_file_content(self):
+        """Get the contents from the control file.
+
+        :return: text information from the control file
+        :rtype: str
+        """
         control = self.data.get('control', {})
         global_dict = self.data.get('global', {})
         content = []
@@ -58,7 +70,7 @@ class Reaxff(PotentialAbstract):
 
         for key, name in tolerances.items():
             if key in global_dict:
-                content.append('{} {}'.format(name, global_dict[key]))
+                content.append(f'{name} {global_dict[key]}')
 
         control_variables = [
             'simulation_name',
@@ -71,7 +83,7 @@ class Reaxff(PotentialAbstract):
 
         for name in control_variables:
             if name in control:
-                content.append('{} {}'.format(name, control[name]))
+                content.append(f'{name} {control[name]}')
 
         bool_to_int = {
             'print_atom_info': 'atom_info',
@@ -83,22 +95,31 @@ class Reaxff(PotentialAbstract):
 
         for key, name in bool_to_int.items():
             if key in control:
-                content.append('{} {}'.format(name, 1 if control[key] else 0))
+                content.append(f'{name} {1 if control[key] else 0}')
 
         if content:
             return '\n'.join(content)
         return None
 
     def get_external_content(self):
+        """get information from extrenal sources
 
+        :return: dictionary with the potential file content and the control
+            file content
+        :rtype: dict
+        """
         fmap = {self.potential_fname: self.get_potential_file_content()}
         content = self.get_control_file_content()
         if content:
             fmap[self.control_fname] = content
         return fmap
 
-    def get_input_potential_lines(self):
+    def get_input_potential_lines(self):  # pylint: disable=arguments-differ
+        """Get the potential lines associated with the LAMMPS input file.
 
+        :return: lammps input text
+        :rtype: str
+        """
         control = self.data.get('control', {})
 
         lammps_input_text = 'pair_style reax/c {} '.format(

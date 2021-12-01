@@ -1,7 +1,7 @@
 """Class describing the calculation of the optimization of a structure
 using LAMMPS (minimize method).
 """
-# pylint: disable=fixme
+# pylint: disable=fixme, duplicate-code, useless-super-delegation
 from aiida.common.exceptions import InputValidationError
 from aiida.plugins import DataFactory
 

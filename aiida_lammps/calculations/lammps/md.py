@@ -1,3 +1,5 @@
+"""Single stage MD calculation in LAMMPS."""
+# pylint: disable=fixme, useless-super-delegation
 from aiida.common.exceptions import InputValidationError
 from aiida.plugins import DataFactory
 import numpy as np
@@ -8,6 +10,7 @@ from aiida_lammps.validation import validate_against_schema
 
 
 class MdCalculation(BaseLammpsCalculation):
+    """Calculation of a single MD stage in LAMMPS."""
     @classmethod
     def define(cls, spec):
         super(MdCalculation, cls).define(spec)
@@ -42,7 +45,7 @@ class MdCalculation(BaseLammpsCalculation):
         system_filename,
         restart_filename,
     ):
-
+        # pylint: disable=too-many-locals, too-many-arguments¸ too-many-branches, too-many-statements
         pdict = parameter_data.get_dict()
         version_date = convert_date_string(
             pdict.get('lammps_version', '11 Aug 2017'))
@@ -150,12 +153,11 @@ class MdCalculation(BaseLammpsCalculation):
             lammps_input_file += 'variable {0} equal {1}\n'.format(
                 var_alias, var)
         if variables:
-            lammps_input_file += 'fix sys_info all print {0} "{1}" title "{2}" file {3} screen no\n'.format(
-                parameter_data.dict.dump_rate,
-                ' '.join(['${{{0}}}'.format(v) for v in var_aliases]),
-                ' '.join(var_aliases),
-                system_filename,
-            )
+            lammps_input_file += 'fix sys_info all print'
+            lammps_input_file += f' {parameter_data.dict.dump_rate}'
+            lammps_input_file += f' "{" ".join(["${{{0}}}".format(v) for v in var_aliases])}"'
+            lammps_input_file += f' title "{" ".join(var_aliases)}"'
+            lammps_input_file += f' file {system_filename} screen no\n'
 
         lammps_input_file += 'run             {}\n'.format(
             parameter_data.dict.total_steps)

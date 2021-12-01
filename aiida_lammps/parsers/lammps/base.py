@@ -23,7 +23,8 @@ class LAMMPSBaseParser(Parser):
     """Abstract Base Parser for LAMMPS, supplying common methods."""
     def __init__(self, node):
         """Initialize the parser."""
-        super().__init__(node)
+        # pylint: disable=super-with-arguments, useless-super-delegation
+        super(LAMMPSBaseParser, self).__init__(node)
 
     def get_parsing_resources(
         self,
@@ -32,6 +33,7 @@ class LAMMPSBaseParser(Parser):
         sys_in_temp=True,
     ):
         """Check that all resources, required for parsing, are present."""
+        # pylint: disable=too-many-branches
         # Check for retrieved folder
         try:
             out_folder = self.retrieved
@@ -110,7 +112,7 @@ class LAMMPSBaseParser(Parser):
                 output_txt,
                 compute_stress=compute_stress,
             )
-        except Exception:
+        except Exception:  # pylint: disable=broad-except
             traceback.print_exc()
             return None, self.exit_codes.ERROR_LOG_PARSING
         return output_data, None

@@ -1,16 +1,22 @@
 #!/usr/bin/env python
-
-from __future__ import absolute_import
-
+"""Define the setup for the `aiida-lammps` plugin."""
 import json
 
 from setuptools import find_packages, setup
 
 if __name__ == '__main__':
-    with open('setup.json', 'r') as info:
-        kwargs = json.load(info)
+    FILENAME_SETUP_JSON = 'setup.json'
+    FILENAME_DESCRIPTION = 'README.md'
 
-    setup(packages=find_packages(),
-          long_description=open('README.md').read(),
-          long_description_content_type='text/markdown',
-          **kwargs)
+    with open(FILENAME_SETUP_JSON, 'r') as handle:
+        setup_json = json.load(handle)
+
+    with open(FILENAME_DESCRIPTION, 'r') as handle:
+        description = handle.read()
+
+    setup(
+        packages=find_packages(),
+        long_description=description,
+        long_description_content_type='text/markdown',
+        **setup_json,
+    )

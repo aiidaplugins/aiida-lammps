@@ -1,9 +1,11 @@
+"""Base dynaphopy calculation"""
+# pylint: disable=too-many-instance-attributes, abstract-method
 from aiida.common.datastructures import CalcInfo, CodeInfo
 from aiida.common.exceptions import InputValidationError
 from aiida.common.utils import classproperty
 from aiida.engine import CalcJob
 from aiida.orm import ArrayData, StructureData, TrajectoryData
-from aiida_phonopy.common.raw_parsers import get_force_constants, get_poscar_txt
+from aiida_phonopy.common.raw_parsers import get_force_constants, get_poscar_txt  # pylint: disable=no-name-in-module
 
 from aiida_lammps.common.generate_input_files import (
     get_trajectory_txt,
@@ -18,29 +20,31 @@ class DynaphopyCalculation(CalcJob):
     Requirement: the node should be able to import phonopy
     """
     def _init_internal_params(self):
+        # pylint: disable=super-with-arguments
         super(DynaphopyCalculation, self)._init_internal_params()
 
-        self._INPUT_FILE_NAME = 'input_dynaphopy'
-        self._INPUT_TRAJECTORY = 'trajectory'
-        self._INPUT_CELL = 'POSCAR'
-        self._INPUT_FORCE_CONSTANTS = 'FORCE_CONSTANTS'
+        self._INPUT_FILE_NAME = 'input_dynaphopy'  # pylint: disable=invalid-name, attribute-defined-outside-init
+        self._INPUT_TRAJECTORY = 'trajectory'  # pylint: disable=invalid-name, attribute-defined-outside-init
+        self._INPUT_CELL = 'POSCAR'  # pylint: disable=invalid-name, attribute-defined-outside-init
+        self._INPUT_FORCE_CONSTANTS = 'FORCE_CONSTANTS'  # pylint: disable=invalid-name, attribute-defined-outside-init
 
-        self._OUTPUT_FORCE_CONSTANTS = 'FORCE_CONSTANTS_OUT'
-        self._OUTPUT_FILE_NAME = 'OUTPUT'
-        self._OUTPUT_QUASIPARTICLES = 'quasiparticles_data.yaml'
+        self._OUTPUT_FORCE_CONSTANTS = 'FORCE_CONSTANTS_OUT'  # pylint: disable=invalid-name, attribute-defined-outside-init
+        self._OUTPUT_FILE_NAME = 'OUTPUT'  # pylint: disable=invalid-name, attribute-defined-outside-init
+        self._OUTPUT_QUASIPARTICLES = 'quasiparticles_data.yaml'  # pylint: disable=invalid-name, attribute-defined-outside-init
 
-        self._default_parser = 'dynaphopy'
+        self._default_parser = 'dynaphopy'  # pylint: disable=attribute-defined-outside-init
 
     @classproperty
     def _use_methods(cls):
         """
         Additional use_* methods for the namelists class.
         """
-        retdict = JobCalculation._use_methods
+        # pylint: disable=no-self-argument, no-self-use
+        retdict = JobCalculation._use_methods  # pylint: disable=protected-access, undefined-variable
         retdict.update({
             'parameters': {
                 'valid_types':
-                ParameterData,
+                ParameterData,  # pylint: disable=undefined-variable
                 'additional_parameter':
                 None,
                 'linkname':
@@ -87,41 +91,43 @@ class DynaphopyCalculation(CalcJob):
         :param inputdict: a dictionary with the input nodes, as they would
                 be returned by get_inputdata_dict (without the Code!)
         """
-
+        # pylint: disable=too-many-locals, too-many-statements
         try:
             parameters_data = inputdict.pop(self.get_linkname('parameters'))
         except KeyError:
             pass
             # raise InputValidationError("No parameters specified for this "
             #                           "calculation")
-        if not isinstance(parameters_data, ParameterData):
+        if not isinstance(parameters_data, ParameterData):  # pylint: disable=undefined-variable
             raise InputValidationError('parameters is not of type '
                                        'ParameterData')
 
         try:
             structure = inputdict.pop(self.get_linkname('structure'))
-        except KeyError:
+        except KeyError as key_error:
             raise InputValidationError(
-                'no structure is specified for this calculation')
+                'no structure is specified for this calculation'
+            ) from key_error
 
         try:
             trajectory = inputdict.pop(self.get_linkname('trajectory'))
-        except KeyError:
+        except KeyError as key_error:
             raise InputValidationError(
-                'trajectory is specified for this calculation')
+                'trajectory is specified for this calculation') from key_error
 
         try:
             force_constants = inputdict.pop(
                 self.get_linkname('force_constants'))
-        except KeyError:
+        except KeyError as key_error:
             raise InputValidationError(
-                'no force_constants is specified for this calculation')
+                'no force_constants is specified for this calculation'
+            ) from key_error
 
         try:
             code = inputdict.pop(self.get_linkname('code'))
-        except KeyError:
+        except KeyError as key_error:
             raise InputValidationError(
-                'no code is specified for this calculation')
+                'no code is specified for this calculation') from key_error
 
         time_step = trajectory.get_times()[1] - trajectory.get_times()[0]
 

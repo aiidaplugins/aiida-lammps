@@ -20,7 +20,8 @@ class MdMultiParser(LAMMPSBaseParser):
     """Parser for LAMMPS MDMulti calculations."""
     def __init__(self, node):
         """Initialize the instance of Lammps MD Parser."""
-        super().__init__(node)
+        # pylint: disable=super-with-arguments, useless-super-delegation
+        super(MdMultiParser, self).__init__(node)
 
     def parse(self, **kwargs):
         """Parse the retrieved folder and store results."""
@@ -46,7 +47,7 @@ class MdMultiParser(LAMMPSBaseParser):
                     for traj_path in resources.traj_paths
                 }
                 self.out('trajectory', trajectories)
-            except Exception as err:
+            except Exception as err:  # pylint: disable=broad-except
                 traceback.print_exc()
                 self.logger.error(str(err))
                 traj_error = self.exit_codes.ERROR_TRAJ_PARSING
@@ -90,7 +91,7 @@ class MdMultiParser(LAMMPSBaseParser):
                                    ndmin=2)):
                     sys_data.set_array(names[i], col)
                 arrays[stage_name] = sys_data
-            except Exception:
+            except Exception:  # pylint: disable=broad-except
                 traceback.print_exc()
                 sys_data_error = self.exit_codes.ERROR_INFO_PARSING
         if arrays:

@@ -245,13 +245,13 @@ def convert_units(value, style, unit_type, out_units):
     return value * conversion[in_units] * (1.0 / conversion[out_units])
 
 
-def parse_quasiparticle_data(qp_file):
-    """[summary]
+def parse_quasiparticle_data(qp_file: str) -> dict:
+    """Parse quasiparticle information from dynaphopy.
 
-    :param qp_file: [description]
-    :type qp_file: [type]
-    :return: [description]
-    :rtype: [type]
+    :param qp_file: file with the quasiparticle information
+    :type qp_file: str
+    :return: dictionary with the quasiparticle information
+    :rtype: dict
     """
 
     with open(qp_file, 'r') as handle:
@@ -264,18 +264,18 @@ def parse_quasiparticle_data(qp_file):
     return data_dict
 
 
-def parse_dynaphopy_output(file):
-    """[summary]
+def parse_dynaphopy_output(filename: str) -> dict:
+    """Parse output from a dynaphopy calculation.
 
-    :param file: [description]
-    :type file: [type]
-    :return: [description]
-    :rtype: [type]
+    :param filename: output file from the dynaphopy calculation.
+    :type file: str
+    :return: dictionary with the dynaphopy output
+    :rtype: dict
     """
     # pylint: disable=too-many-locals
     thermal_properties = None
 
-    with open(file, 'r') as handle:
+    with open(filename, 'r') as handle:
         data_lines = handle.readlines()
 
     indices = []

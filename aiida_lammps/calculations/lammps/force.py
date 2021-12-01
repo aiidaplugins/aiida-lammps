@@ -1,4 +1,5 @@
 """Single point calculation of the energy in LAMMPS."""
+# pylint: disable=fixme, duplicate-code, useless-super-delegation
 from aiida.plugins import DataFactory
 
 from aiida_lammps.calculations.lammps import BaseLammpsCalculation
@@ -102,7 +103,7 @@ class ForceCalculation(BaseLammpsCalculation):
         return lammps_input_file
 
     @staticmethod
-    def validate_parameters(param_data):
+    def validate_parameters(param_data, potential_object):
         """Validate the parameters for a force calculation.
 
         :param param_data: parameters for the LAMMPS force calculation

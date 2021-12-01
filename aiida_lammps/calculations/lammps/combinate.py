@@ -1,5 +1,6 @@
+"""Combined MD and Phonopy calculation"""
 # Not working with Aiida 1.0
-
+# pylint: disable=no-name-in-module
 from aiida.common.exceptions import InputValidationError
 from aiida.orm import ArrayData, Dict
 from aiida_phonopy.common.raw_parsers import (
@@ -14,12 +15,28 @@ from aiida_lammps.calculations.lammps import BaseLammpsCalculation
 
 def generate_dynaphopy_input(
     parameters_object,
-    poscar_name='POSCAR',
-    force_constants_name='FORCE_CONSTANTS',
-    force_sets_filename='FORCE_SETS',
-    use_sets=False,
-):
+    poscar_name: str = 'POSCAR',
+    force_constants_name: str = 'FORCE_CONSTANTS',
+    force_sets_filename: str = 'FORCE_SETS',
+    use_sets: bool = False,
+) -> str:
+    """Generates the input needed for the dynaphopy calculation.
 
+    :param parameters_object: input parameters dictionary
+    :type parameters_object: dict
+    :param poscar_name: name of the POSCAR file, defaults to 'POSCAR'
+    :type poscar_name: str, optional
+    :param force_constants_name: name of the file with the force constants,
+        defaults to 'FORCE_CONSTANTS'
+    :type force_constants_name: str, optional
+    :param force_sets_filename: name of the file with the force sets,
+        defaults to 'FORCE_SETS'
+    :type force_sets_filename: str, optional
+    :param use_sets: whether or not to use the force sets, defaults to False
+    :type use_sets: bool, optional
+    :return: dynaphopy input file
+    :rtype: str
+    """
     parameters = parameters_object.get_dict()
     input_file = 'STRUCTURE FILE POSCAR\n{}\n\n'.format(poscar_name)
 
@@ -43,6 +60,7 @@ def generate_dynaphopy_input(
 
 
 class CombinateCalculation(BaseLammpsCalculation):
+    """Combined MD and Phonopy calculation"""
 
     _POSCAR_NAME = 'POSCAR'
     _INPUT_FORCE_CONSTANTS = 'FORCE_CONSTANTS'
@@ -52,7 +70,8 @@ class CombinateCalculation(BaseLammpsCalculation):
     _OUTPUT_QUASIPARTICLES = 'quasiparticles_data.yaml'
     _OUTPUT_FILE_NAME = 'OUTPUT'
 
-    # self._retrieve_list = [self._OUTPUT_QUASIPARTICLES, self._OUTPUT_FORCE_CONSTANTS, self._OUTPUT_FILE_NAME]
+    # self._retrieve_list = [self._OUTPUT_QUASIPARTICLES,
+    # self._OUTPUT_FORCE_CONSTANTS, self._OUTPUT_FILE_NAME]
 
     @classmethod
     def define(cls, spec):
@@ -84,7 +103,7 @@ class CombinateCalculation(BaseLammpsCalculation):
         system_filename,
         restart_filename,
     ):
-
+        # pylint: disable=too-many-arguments, arguments-renamed
         random_number = np.random.randint(10000000)
 
         lammps_input_file = 'units           {0}\n'.format(
@@ -113,7 +132,7 @@ class CombinateCalculation(BaseLammpsCalculation):
         return lammps_input_file
 
     def prepare_extra_files(self, tempfolder, potential_object):
-
+        # pylint: disable=too-many-locals
         if 'fore_constants' in self.inputs:
             force_constants = self.inputs.force_constants
         else:
@@ -151,9 +170,10 @@ class CombinateCalculation(BaseLammpsCalculation):
         try:
             parameters_data_dynaphopy = Dict.pop(
                 self.get_linkname('parameters_dynaphopy'))
-        except KeyError:
+        except KeyError as key_error:
             raise InputValidationError(
-                'No dynaphopy parameters specified for this calculation')
+                'No dynaphopy parameters specified for this calculation'
+            ) from key_error
 
         parameters_dynaphopy_txt = generate_dynaphopy_input(
             parameters_data_dynaphopy,

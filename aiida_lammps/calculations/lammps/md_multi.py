@@ -1,3 +1,5 @@
+"""Run a multi-stage molecular dynamic simulation."""
+# pylint: disable=fixme
 from aiida.common.exceptions import InputValidationError
 from aiida.plugins import DataFactory
 
@@ -43,6 +45,7 @@ class MdMultiCalculation(BaseLammpsCalculation):
         system_filename,
         restart_filename,
     ):
+        # pylint: disable=too-many-arguments, too-many-locals, too-many-branches, too-many-statements
 
         pdict = parameter_data.get_dict()
         version_date = convert_date_string(
@@ -249,13 +252,16 @@ class MdMultiCalculation(BaseLammpsCalculation):
         )
 
 
-def sys_print_commands(variables,
-                       dump_rate,
-                       filename,
-                       fix_name='sys_info',
-                       append=True,
-                       print_header=True):
+def sys_print_commands(
+    variables,
+    dump_rate,
+    filename,
+    fix_name: str = 'sys_info',
+    append: bool = True,
+    print_header: bool = True,
+):
     """Create commands to output required system variables to a file."""
+    # pylint: disable=too-many-arguments
     commands = []
 
     if not variables:
@@ -288,10 +294,11 @@ def sys_ave_commands(
     ave_variables,
     dump_rate,
     filename,
-    fix_name='sys_info',
-    average_rate=None,
+    fix_name: str = 'sys_info',
+    average_rate: bool = None,
 ):
     """Create commands to output required system variables to a file."""
+    # pylint: disable=too-many-arguments
     commands = []
 
     if not (variables or ave_variables):
@@ -350,8 +357,8 @@ def atom_info_commands(
     average_rate,
     filename,
     version_date,
-    dump_name='atom_info',
-    append=True,
+    dump_name: str = 'atom_info',
+    append: bool = True,
 ):
     """Create commands to output required atom variables to a file.
 
@@ -374,6 +381,7 @@ def atom_info_commands(
     list[str]
 
     """
+    # pylint: disable=too-many-arguments, too-many-locals, too-many-branches, unused-argument
     commands, computes, fixes = [], [], []
 
     if atom_style == 'charge':
@@ -396,12 +404,12 @@ def atom_info_commands(
         # work out which variables need to be computed
         avar_props = [
             v for v in ave_variables
-            if not any([v.startswith(s) for s in ['c_', 'f_', 'v_']])
+            if not any([v.startswith(s) for s in ['c_', 'f_', 'v_']])  # pylint: disable=use-a-generator
         ]
         avar_names = []
         c_at_vars = 1
         for ave_var in ave_variables:
-            if any([ave_var.startswith(s) for s in ['c_', 'f_', 'v_']]):
+            if any([ave_var.startswith(s) for s in ['c_', 'f_', 'v_']]):  # pylint: disable=use-a-generator
                 avar_names.append(ave_var)
             else:
                 if len(avar_props) > 1:

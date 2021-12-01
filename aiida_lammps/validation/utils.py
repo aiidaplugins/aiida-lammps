@@ -56,7 +56,7 @@ def load_validator(schema):
     validator_cls.check_schema(schema)
 
     # by default, only validates lists
-    def is_array(checker, instance):
+    def is_array(checker, instance):  # pylint: disable=unused-argument
         return isinstance(instance, (tuple, list))
 
     type_checker = validator_cls.TYPE_CHECKER.redefine('array', is_array)

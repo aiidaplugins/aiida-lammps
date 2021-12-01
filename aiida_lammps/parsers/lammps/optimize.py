@@ -16,7 +16,8 @@ class OptimizeParser(LAMMPSBaseParser):
     """Parser for LAMMPS optimization calculation."""
     def __init__(self, node):
         """Initialize the instance of Optimize Lammps Parser."""
-        super().__init__(node)
+        # pylint: disable=super-with-arguments, useless-super-delegation
+        super(OptimizeParser, self).__init__(node)
 
     def parse(self, **kwargs):
         """Parses the datafolder, stores results."""
@@ -46,7 +47,7 @@ class OptimizeParser(LAMMPSBaseParser):
                     trajectory_data.get_step_structure(
                         -1, original_structure=self.node.inputs.structure),
                 )
-            except Exception as err:
+            except Exception as err:  # pylint: disable=broad-except
                 traceback.print_exc()
                 self.logger.error(str(err))
                 traj_error = self.exit_codes.ERROR_TRAJ_PARSING

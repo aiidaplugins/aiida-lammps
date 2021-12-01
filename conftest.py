@@ -1,6 +1,7 @@
 """
 initialise a text database and profile
 """
+# pylint: disable=fixme, redefined-outer-name
 from collections import namedtuple
 import io
 import os
@@ -12,6 +13,10 @@ import numpy as np
 import pytest
 
 from aiida_lammps.tests.utils import TEST_DIR, AiidaTestApp
+from aiida_lammps.common.reaxff_convert import (
+    filter_by_species,
+    read_lammps_format,
+)
 
 pytest_plugins = ['aiida.manage.tests.pytest_fixtures']
 
@@ -82,6 +87,7 @@ def db_test_app(aiida_profile, pytestconfig):
 
 @pytest.fixture(scope='function')
 def get_structure_data():
+    """get the structure data for the simulation."""
     def _get_structure_data(pkey):
         """return test structure data"""
         if pkey == 'Fe':
@@ -216,12 +222,17 @@ def get_structure_data():
     return _get_structure_data
 
 
-potential_data = namedtuple('PotentialTestData',
-                            ['type', 'data', 'structure', 'output'])
+PotentialData = namedtuple('PotentialTestData',
+                           ['type', 'data', 'structure', 'output'])
 
 
 @pytest.fixture(scope='function')
 def get_potential_data(get_structure_data):
+    """Get the potnetial information for different types of potentials.
+
+    :param get_structure_data: Structure to be used in the simulation
+    :type get_structure_data: orm.StructureData
+    """
     def _get_potential_data(pkey):
         """return data to create a potential,
         and accompanying structure data and expected output data to test it with
@@ -261,21 +272,29 @@ def get_potential_data(get_structure_data):
 
             potential_dict = {
                 'Ga Ga Ga':
-                '1.0 0.007874 1.846 1.918000 0.75000 -0.301300 1.0 1.0 1.44970 410.132 2.87 0.15 1.60916 535.199',
+                '1.0 0.007874 1.846 1.918000 0.75000 -0.301300 '+\
+                    '1.0 1.0 1.44970 410.132 2.87 0.15 1.60916 535.199',
                 'N  N  N':
-                '1.0 0.766120 0.000 0.178493 0.20172 -0.045238 1.0 1.0 2.38426 423.769 2.20 0.20 3.55779 1044.77',
+                '1.0 0.766120 0.000 0.178493 0.20172 -0.045238 '+\
+                    '1.0 1.0 2.38426 423.769 2.20 0.20 3.55779 1044.77',
                 'Ga Ga N':
-                '1.0 0.001632 0.000 65.20700 2.82100 -0.518000 1.0 0.0 0.00000 0.00000 2.90 0.20 0.00000 0.00000',
+                '1.0 0.001632 0.000 65.20700 2.82100 -0.518000 '+\
+                    '1.0 0.0 0.00000 0.00000 2.90 0.20 0.00000 0.00000',
                 'Ga N  N':
-                '1.0 0.001632 0.000 65.20700 2.82100 -0.518000 1.0 1.0 2.63906 3864.27 2.90 0.20 2.93516 6136.44',
+                '1.0 0.001632 0.000 65.20700 2.82100 -0.518000 '+\
+                    '1.0 1.0 2.63906 3864.27 2.90 0.20 2.93516 6136.44',
                 'N  Ga Ga':
-                '1.0 0.001632 0.000 65.20700 2.82100 -0.518000 1.0 1.0 2.63906 3864.27 2.90 0.20 2.93516 6136.44',
+                '1.0 0.001632 0.000 65.20700 2.82100 -0.518000 '+\
+                    '1.0 1.0 2.63906 3864.27 2.90 0.20 2.93516 6136.44',
                 'N  Ga N ':
-                '1.0 0.766120 0.000 0.178493 0.20172 -0.045238 1.0 0.0 0.00000 0.00000 2.20 0.20 0.00000 0.00000',
+                '1.0 0.766120 0.000 0.178493 0.20172 -0.045238 '+\
+                    '1.0 0.0 0.00000 0.00000 2.20 0.20 0.00000 0.00000',
                 'N  N  Ga':
-                '1.0 0.001632 0.000 65.20700 2.82100 -0.518000 1.0 0.0 0.00000 0.00000 2.90 0.20 0.00000 0.00000',
+                '1.0 0.001632 0.000 65.20700 2.82100 -0.518000 '+\
+                    '1.0 0.0 0.00000 0.00000 2.90 0.20 0.00000 0.00000',
                 'Ga N  Ga':
-                '1.0 0.007874 1.846 1.918000 0.75000 -0.301300 1.0 0.0 0.00000 0.00000 2.87 0.15 0.00000 0.00000',
+                '1.0 0.007874 1.846 1.918000 0.75000 -0.301300 '+\
+                    '1.0 0.0 0.00000 0.00000 2.87 0.15 0.00000 0.00000',
             }
 
             pair_style = 'tersoff'
@@ -283,11 +302,6 @@ def get_potential_data(get_structure_data):
             output_dict = {'initial_energy': -18.109886, 'energy': -18.110852}
 
         elif pkey == 'reaxff':
-
-            from aiida_lammps.common.reaxff_convert import (
-                filter_by_species,
-                read_lammps_format,
-            )
 
             pair_style = 'reaxff'
             with io.open(
@@ -297,8 +311,10 @@ def get_potential_data(get_structure_data):
                     handle.read().splitlines(), tolerances={'hbonddist': 7.0})
                 potential_dict = filter_by_species(potential_dict,
                                                    ['Fe core', 'S core'])
-                for n in ['anglemin', 'angleprod', 'hbondmin', 'torsionprod']:
-                    potential_dict['global'].pop(n)
+                for name in [
+                        'anglemin', 'angleprod', 'hbondmin', 'torsionprod'
+                ]:
+                    potential_dict['global'].pop(name)
                 potential_dict['control'] = {'safezone': 1.6}
                 # potential_dict = {
                 #     "file_contents": handle.readlines(),
@@ -315,9 +331,13 @@ def get_potential_data(get_structure_data):
             }
 
         else:
-            raise ValueError('Unknown potential key: {}'.format(pkey))
+            raise ValueError(f'Unknown potential key: {pkey}')
 
-        return potential_data(pair_style, potential_dict, structure,
-                              output_dict)
+        return PotentialData(
+            pair_style,
+            potential_dict,
+            structure,
+            output_dict,
+        )
 
     return _get_potential_data

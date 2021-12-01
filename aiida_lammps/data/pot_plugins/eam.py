@@ -1,3 +1,5 @@
+"""Class for creation of EAM potential inputs."""
+# pylint: disable=fixme
 from aiida_lammps.data.pot_plugins.base_plugin import PotentialAbstract
 
 
@@ -23,7 +25,7 @@ class EAM(PotentialAbstract):
 
         return {self.potential_fname: potential_file}
 
-    def get_input_potential_lines(self):
+    def get_input_potential_lines(self):  # pylint: disable=arguments-differ
 
         lammps_input_text = 'pair_style      eam/{}\n'.format(
             self.data['type'])

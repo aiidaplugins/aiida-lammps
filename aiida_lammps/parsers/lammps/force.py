@@ -1,6 +1,4 @@
-"""[summary]
-
-"""
+"""Parser for LAMMPS single point energy calculation."""
 import numpy as np
 from aiida.orm import ArrayData, Dict
 
@@ -13,7 +11,8 @@ class ForceParser(LAMMPSBaseParser):
     """Parser for LAMMPS single point energy calculation."""
     def __init__(self, node):
         """Initialize the instance of Force Lammps Parser."""
-        super().__init__(node)
+        # pylint: disable=super-with-arguments, useless-super-delegation
+        super(ForceParser, self).__init__(node)
 
     def parse(self, **kwargs):
         """Parse the retrieved files and store results."""
@@ -61,16 +60,16 @@ class ForceParser(LAMMPSBaseParser):
             return self.exit_codes.ERROR_RUN_INCOMPLETE
         return None
 
-    def parse_traj_file(self, trajectory_filename):
-        """[summary]
+    def parse_traj_file(self, trajectory_filename: str) -> ArrayData:
+        """Parse the trajectory file.
 
-        :param trajectory_filename: [description]
-        :type trajectory_filename: [type]
-        :raises IOError: [description]
-        :raises IOError: [description]
-        :raises IOError: [description]
-        :return: [description]
-        :rtype: [type]
+        :param trajectory_filename: trajectory file for the single point calculation
+        :type trajectory_filename: str
+        :raises IOError: if the file is empty
+        :raises IOError: if the file has multiple steps instead of only one
+        :raises IOError: if a required field is not found
+        :return: array with the forces and charges (if present) for the calculation
+        :rtype: orm.ArrayData
         """
         with self.retrieved.open(trajectory_filename, 'r') as handle:
             traj_steps = list(iter_trajectories(handle))

@@ -1,6 +1,7 @@
+"""Parser for dynaphopy calculations."""
 # Not working with Aiida 1.0
-
-from aiida.orm.data.parameter import ParameterData
+# pylint: disable=useless-super-delegation, super-with-arguments
+from aiida.orm.data.parameter import ParameterData  # pylint: disable=no-name-in-module, import-error
 from aiida.parsers.parser import Parser
 from aiida_phonopy.common.raw_parsers import parse_FORCE_CONSTANTS
 
@@ -31,7 +32,7 @@ class DynaphopyParser(Parser):
         # select the folder object
         # Check that the retrieved folder is there
         try:
-            out_folder = retrieved[self._calc._get_linkname_retrieved()]
+            out_folder = retrieved[self._calc._get_linkname_retrieved()]  # pylint: disable=protected-access, no-member
         except KeyError:
             self.logger.error('No retrieved folder found')
             return False, ()
@@ -46,10 +47,10 @@ class DynaphopyParser(Parser):
         #    return successful, ()
 
         # Get file and do the parsing
-        outfile = out_folder.get_abs_path(self._calc._OUTPUT_FILE_NAME)
+        outfile = out_folder.get_abs_path(self._calc._OUTPUT_FILE_NAME)  # pylint: disable=no-member, protected-access
         force_constants_file = out_folder.get_abs_path(
-            self._calc._OUTPUT_FORCE_CONSTANTS)
-        qp_file = out_folder.get_abs_path(self._calc._OUTPUT_QUASIPARTICLES)
+            self._calc._OUTPUT_FORCE_CONSTANTS)  # pylint: disable=no-member, protected-access
+        qp_file = out_folder.get_abs_path(self._calc._OUTPUT_QUASIPARTICLES)  # pylint: disable=no-member, protected-access
 
         try:
             thermal_properties = parse_dynaphopy_output(outfile)
@@ -59,13 +60,14 @@ class DynaphopyParser(Parser):
 
         try:
             force_constants = parse_FORCE_CONSTANTS(force_constants_file)
-        except Exception:
+        except Exception:  # pylint: disable=broad-except
             pass
 
         # look at warnings
         warnings = []
-        with open(out_folder.get_abs_path(self._calc._SCHED_ERROR_FILE)) as f:
-            errors = f.read()
+        with open(out_folder.get_abs_path(
+                self._calc._SCHED_ERROR_FILE)) as _file:  # pylint: disable=no-member, protected-access
+            errors = _file.read()
         if errors:
             warnings = [errors]
 
@@ -93,7 +95,8 @@ class DynaphopyParser(Parser):
             pass
 
         # add the dictionary with warnings
-        new_nodes_list.append((self.get_linkname_outparams(),
-                               ParameterData(dict={'warnings': warnings})))
+        new_nodes_list.append((
+            self.get_linkname_outparams(),  # pylint: disable=no-member
+            ParameterData(dict={'warnings': warnings})))
 
         return successful, new_nodes_list
