@@ -82,7 +82,7 @@ jobs:
 
     - name: Installation
       run: |
-        pip install -e .[testing]
+        pip install -e .[testing, pre-commit]
         reentry scan
 
     - name: Run pytest
