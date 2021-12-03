@@ -84,7 +84,7 @@ class ForceParser(LAMMPSBaseParser):
         for field in ['fx', 'fy', 'fz']:
             if field not in traj_step.atom_fields:
                 raise IOError(
-                    'trajectory file does not contain fields {}'.format(field))
+                    f'trajectory file does not contain fields {field}')
 
         array_data = ArrayData()
 
