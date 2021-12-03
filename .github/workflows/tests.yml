@@ -37,7 +37,7 @@ jobs:
       run: pip install wheel
     - name: Install AiiDA-LAMMPS
       run: |
-        pip install -e .[testing, pre-commit]
+        pip install -e .[testing,pre-commit]
         pip freeze
     - name: Run pre-commit
       run: pre-commit run --all-files || ( git diff; git status; exit 1; )
@@ -104,7 +104,7 @@ jobs:
 
     - name: Installation
       run: |
-        pip install -e .[testing]
+        pip install -e .[testing,pre-commit]
         reentry scan
 
     - name: Run pytest
@@ -122,7 +122,7 @@ jobs:
 
   publish:
     name: Publish to PyPi
-    needs: [pre-commit, tests]
+    needs: [pre-commit,test]
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
     runs-on: ubuntu-latest
     steps:
