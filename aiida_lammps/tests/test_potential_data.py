@@ -15,8 +15,10 @@ def test_load_type():
     EmpiricalPotential.load_type('eam')
 
 
-@pytest.mark.parametrize('potential_type',
-                         ['lennard-jones', 'tersoff', 'eam', 'reaxff'])
+@pytest.mark.parametrize(
+    'potential_type',
+    ['lennard-jones', 'tersoff', 'eam', 'reaxff'],
+)
 def test_init(
     db_test_app,  # pylint: disable=unused-argument
     get_potential_data,
@@ -42,8 +44,10 @@ def test_potential_files(
     file_regression.check(node.get_object_content('potential.pot', 'r'))
 
 
-@pytest.mark.parametrize('potential_type',
-                         ['lennard-jones', 'tersoff', 'eam', 'reaxff'])
+@pytest.mark.parametrize(
+    'potential_type',
+    ['lennard-jones', 'tersoff', 'eam', 'reaxff'],
+)
 def test_input_lines(
     db_test_app,  # pylint: disable=unused-argument
     get_potential_data,

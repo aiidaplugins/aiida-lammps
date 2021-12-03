@@ -3,11 +3,11 @@ Tests to aiida-lammps parsers.
 """
 from io import StringIO
 from textwrap import dedent
+import pytest
 
 from aiida.cmdline.utils.common import get_calcjob_report
 from aiida.orm import FolderData
 from aiida.plugins import ParserFactory
-import pytest
 
 
 def get_log():

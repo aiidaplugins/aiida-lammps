@@ -157,16 +157,19 @@ def create_structure(
 
         return structure
 
-    pbcs = []
+    boundary_conditions = []
     for pbc in trajectory_block.pbc:
         if pbc == 'pp':
-            pbcs.append(True)
+            boundary_conditions.append(True)
         elif pbc == 'ff':
-            pbcs.append(False)
+            boundary_conditions.append(False)
         else:
             raise NotImplementedError(f'pbc = {trajectory_block.pbc}')
 
-    structure = orm.StructureData(cell=trajectory_block.cell, pbc=pbcs)
+    structure = orm.StructureData(
+        cell=trajectory_block.cell,
+        pbc=boundary_conditions,
+    )
     for symbol, position in zip(symbols, positions):
         structure.append_atom(position=position, symbols=symbol)
 

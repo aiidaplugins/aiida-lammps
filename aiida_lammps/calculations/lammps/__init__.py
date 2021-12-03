@@ -336,10 +336,10 @@ class BaseLammpsCalculation(CalcJob):
         :type restart_filename: [type]
         :raises NotImplementedError: [description]
         """
-        # pylint: disable=no-self-use, too-many-arguments, unused-argument, duplicate-code
+        # pylint: disable=no-self-use, too-many-arguments, unused-argument, duplicate-code, arguments-differ
         raise NotImplementedError
 
-    def prepare_for_submission(self, tempfolder):
+    def prepare_for_submission(self, tempfolder):  # pylint: disable=arguments-differ
         """Create the input files from the input nodes passed to this instance of the `CalcJob`.
 
         :param tempfolder: an `aiida.common.folders.Folder` to temporarily write files on disk

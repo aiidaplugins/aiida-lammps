@@ -7,11 +7,9 @@ import io
 import os
 import shutil
 import tempfile
-
-from aiida.plugins import DataFactory
-import numpy as np
 import pytest
-
+import numpy as np
+from aiida.plugins import DataFactory
 from aiida_lammps.tests.utils import TEST_DIR, AiidaTestApp
 from aiida_lammps.common.reaxff_convert import (
     filter_by_species,

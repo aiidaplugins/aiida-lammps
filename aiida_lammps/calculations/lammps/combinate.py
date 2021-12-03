@@ -119,7 +119,7 @@ class CombinateCalculation(BaseLammpsCalculation):
         system_filename,
         restart_filename,
     ):
-        # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-arguments, arguments-differ
         random_number = np.random.randint(10000000)
 
         lammps_input_file = f'units           {potential_data.default_units}\n'
@@ -182,7 +182,7 @@ class CombinateCalculation(BaseLammpsCalculation):
             )
 
         try:
-            parameters_data_dynaphopy = orm.Dict.pop( # pylint: disable=no-member
+            parameters_data_dynaphopy = orm.Dict.pop(  # pylint: disable=no-member
                 self.get_linkname('parameters_dynaphopy'))
         except KeyError as key_error:
             raise InputValidationError(
