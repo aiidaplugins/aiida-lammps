@@ -1,5 +1,4 @@
 """Parser for LAMMPS MD calculations."""
-# pylint: disable=unspecified-encoding
 import traceback
 
 from aiida.orm import ArrayData, Dict
@@ -14,7 +13,7 @@ class MdParser(LAMMPSBaseParser):
     """Parser for LAMMPS MD calculations."""
     def __init__(self, node):
         """Initialize the instance of Lammps MD Parser."""
-        # pylint: disable=super-with-arguments, useless-super-delegation
+        # pylint: disable=useless-super-delegation
         super(MdParser, self).__init__(node)
 
     def parse(self, **kwargs):

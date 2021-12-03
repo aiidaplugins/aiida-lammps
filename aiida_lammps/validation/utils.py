@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Utility functions for validating JSON objects against schemas."""
-# pylint: disable=unspecified-encoding
 import io
 import json
 import os

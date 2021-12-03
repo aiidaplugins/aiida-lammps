@@ -1,6 +1,6 @@
 """Parser for dynaphopy calculations."""
 # Not working with Aiida 1.0
-# pylint: disable=useless-super-delegation, super-with-arguments, unspecified-encoding
+# pylint: disable=useless-super-delegation
 from aiida.orm.data.parameter import ParameterData  # pylint: disable=no-name-in-module, import-error
 from aiida.parsers.parser import Parser
 from aiida_phonopy.common.raw_parsers import parse_FORCE_CONSTANTS  # pylint: disable=import-error

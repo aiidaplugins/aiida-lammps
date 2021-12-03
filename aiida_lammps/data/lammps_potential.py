@@ -16,7 +16,7 @@ The potentials are also tagged by following the KIM-API
 `schema <https://openkim.org/doc/schema/kimspec/>`_, as to make them more easy
 to track and as compatible as possible to the KIM schema.
 """
-# pylint: disable=arguments-differ, too-many-public-methods, unspecified-encoding
+# pylint: disable=arguments-differ, too-many-public-methods
 import io
 import os
 import pathlib

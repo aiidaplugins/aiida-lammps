@@ -1,12 +1,12 @@
 """Combined MD and Phonopy calculation"""
 # Not working with Aiida 1.0
-# pylint: disable=no-name-in-module, unspecified-encoding
+# pylint: disable=no-name-in-module
+import numpy as np
 from aiida.common.exceptions import InputValidationError
 from aiida import orm
 from aiida_phonopy.common.raw_parsers import (  # pylint: disable=import-error
     get_force_constants, get_FORCE_SETS_txt, get_poscar_txt,
 )
-import numpy as np
 
 from aiida_lammps.calculations.lammps import BaseLammpsCalculation
 
@@ -119,7 +119,7 @@ class CombinateCalculation(BaseLammpsCalculation):
         system_filename,
         restart_filename,
     ):
-        # pylint: disable=too-many-arguments, arguments-renamed
+        # pylint: disable=too-many-arguments
         random_number = np.random.randint(10000000)
 
         lammps_input_file = f'units           {potential_data.default_units}\n'
@@ -182,7 +182,7 @@ class CombinateCalculation(BaseLammpsCalculation):
             )
 
         try:
-            parameters_data_dynaphopy = orm.Dict.pop(
+            parameters_data_dynaphopy = orm.Dict.pop( # pylint: disable=no-member
                 self.get_linkname('parameters_dynaphopy'))
         except KeyError as key_error:
             raise InputValidationError(

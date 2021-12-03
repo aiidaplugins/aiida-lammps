@@ -1,7 +1,7 @@
 """
 initialise a text database and profile
 """
-# pylint: disable=fixme, redefined-outer-name, unspecified-encoding
+# pylint: disable=fixme, redefined-outer-name
 from collections import namedtuple
 import io
 import os

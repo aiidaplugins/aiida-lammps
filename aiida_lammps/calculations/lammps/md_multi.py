@@ -267,7 +267,7 @@ def sys_print_commands(
         var_aliases.append(var_alias)
         commands.append(f'variable {var_alias} equal {var}')
 
-    commands.append('fix {0} all print {1} "{2}" {3} {4} {5} screen no'.format(  # pylint: disable=consider-using-f-string
+    commands.append('fix {0} all print {1} "{2}" {3} {4} {5} screen no'.format(
         fix_name,
         dump_rate,
         ' '.join(['${{{0}}}'.format(v) for v in var_aliases]),
@@ -321,7 +321,7 @@ def sys_ave_commands(
     {variables} &
     {non_ave} &
     title1 "step {header}" &
-    file {filename}""".format(  # pylint: disable=consider-using-f-string
+    file {filename}""".format(
         fid=fix_name,
         nevery=nevery,  # compute variables every n steps
         nfreq=
@@ -417,7 +417,7 @@ def atom_info_commands(
         # compute means for variables
         commands.append(
             'fix at_means all ave/atom {nevery} {nrepeat} {nfreq} {variables}'.
-            format(  # pylint: disable=consider-using-f-string
+            format(
                 nevery=nevery,  # compute variables every n steps
                 nfreq=
                 dump_rate,  # nfreq is the dump rate and must be a multiple of nevery
@@ -435,7 +435,7 @@ def atom_info_commands(
 
     commands.append(
         'dump     {dump_id} all custom {rate} {fname} {variables} {ave_vars}'.
-        format(  # pylint: disable=consider-using-f-string
+        format(
             dump_id=dump_name,
             rate=dump_rate,
             fname=filename,

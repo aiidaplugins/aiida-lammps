@@ -1,5 +1,5 @@
 """Base LAMMPS calculation for AiiDA."""
-# pylint: disable=duplicate-code, unspecified-encoding
+# pylint: disable=duplicate-code
 import itertools
 import numpy as np
 from aiida.common import CalcInfo, CodeInfo
@@ -345,7 +345,7 @@ class BaseLammpsCalculation(CalcJob):
         :param tempfolder: an `aiida.common.folders.Folder` to temporarily write files on disk
         :return: `aiida.common.CalcInfo` instance
         """
-        # pylint: disable=too-many-locals, arguments-renamed
+        # pylint: disable=too-many-locals
         # assert that the potential and structure have the same kind elements
         if self.inputs.potential.allowed_element_names is not None and not set(
                 k.symbol for k in self.inputs.structure.kinds).issubset(

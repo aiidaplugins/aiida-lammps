@@ -11,7 +11,7 @@ class ForceParser(LAMMPSBaseParser):
     """Parser for LAMMPS single point energy calculation."""
     def __init__(self, node):
         """Initialize the instance of Force Lammps Parser."""
-        # pylint: disable=super-with-arguments, useless-super-delegation
+        # pylint: disable=useless-super-delegation
         super(ForceParser, self).__init__(node)
 
     def parse(self, **kwargs):

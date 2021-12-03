@@ -1,5 +1,4 @@
 """Parser for LAMMPS MDMulti calculations."""
-# pylint: disable=unspecified-encoding
 import io
 import os
 import re
@@ -17,7 +16,7 @@ class MdMultiParser(LAMMPSBaseParser):
     """Parser for LAMMPS MDMulti calculations."""
     def __init__(self, node):
         """Initialize the instance of Lammps MD Parser."""
-        # pylint: disable=super-with-arguments, useless-super-delegation
+        # pylint: disable=useless-super-delegation
         super(MdMultiParser, self).__init__(node)
 
     def parse(self, **kwargs):

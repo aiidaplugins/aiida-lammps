@@ -1,5 +1,5 @@
 """Base dynaphopy calculation"""
-# pylint: disable=too-many-instance-attributes, abstract-method, unspecified-encoding
+# pylint: disable=too-many-instance-attributes, abstract-method
 from aiida.common.datastructures import CalcInfo, CodeInfo
 from aiida.common.exceptions import InputValidationError
 from aiida.common.utils import classproperty
@@ -20,7 +20,6 @@ class DynaphopyCalculation(CalcJob):
     Requirement: the node should be able to import phonopy
     """
     def _init_internal_params(self):
-        # pylint: disable=super-with-arguments
         super(DynaphopyCalculation, self)._init_internal_params()
 
         self._INPUT_FILE_NAME = 'input_dynaphopy'  # pylint: disable=invalid-name, attribute-defined-outside-init
