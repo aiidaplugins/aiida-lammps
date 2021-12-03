@@ -1,7 +1,7 @@
 """
 initialise a text database and profile
 """
-# pylint: disable=fixme, redefined-outer-name
+# pylint: disable=fixme, redefined-outer-name, unspecified-encoding
 from collections import namedtuple
 import io
 import os
@@ -53,10 +53,8 @@ def get_work_directory(config):
 def pytest_report_header(config):
     """Add header information for pytest execution."""
     return [
-        'LAMMPS Executable: {}'.format(
-            shutil.which(config.getoption('lammps_exec') or 'lammps')),
-        'LAMMPS Work Directory: {}'.format(
-            config.getoption('lammps_workdir') or '<TEMP>'),
+        f'LAMMPS Executable: {shutil.which(config.getoption("lammps_exec") or "lammps")}',
+        f'LAMMPS Work Directory: {config.getoption("lammps_workdir") or "<TEMP>"}'
     ]
 
 
@@ -117,8 +115,10 @@ def get_structure_data():
 
             symbols = names = ['Ar'] * 2
 
-            positions = [(0.33333, 0.66666, 0.25000),
-                         (0.66667, 0.33333, 0.75000)]
+            positions = [
+                (0.33333, 0.66666, 0.25000),
+                (0.66667, 0.33333, 0.75000),
+            ]
             fractional = True
 
         elif pkey == 'GaN':
@@ -208,7 +208,7 @@ def get_structure_data():
             ]
 
         else:
-            raise ValueError('Unknown structure key: {}'.format(pkey))
+            raise ValueError(f'Unknown structure key: {pkey}')
 
         # create structure
         structure = DataFactory('structure')(cell=cell)
@@ -222,8 +222,10 @@ def get_structure_data():
     return _get_structure_data
 
 
-PotentialData = namedtuple('PotentialTestData',
-                           ['type', 'data', 'structure', 'output'])
+PotentialData = namedtuple(
+    'PotentialTestData',
+    ['type', 'data', 'structure', 'output'],
+)
 
 
 @pytest.fixture(scope='function')

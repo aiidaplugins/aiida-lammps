@@ -1,6 +1,5 @@
-"""Base LAMMPS calculation for AiiDA.
-"""
-# pylint: disable=duplicate-code
+"""Base LAMMPS calculation for AiiDA."""
+# pylint: disable=duplicate-code, unspecified-encoding
 import itertools
 import numpy as np
 from aiida.common import CalcInfo, CodeInfo
@@ -84,14 +83,15 @@ def structure_to_poscar(structure: orm.StructureData) -> str:
     poscar += '\n1.0\n'
     cell = structure.cell
     for row in cell:
-        poscar += '{0: 22.16f} {1: 22.16f} {2: 22.16f}\n'.format(*row)
+        poscar += f'{row[0]: 22.16f} {row[1]: 22.16f} {row[2]: 22.16f}\n'
     poscar += ' '.join(np.unique([site.kind_name
                                   for site in structure.sites])) + '\n'
     poscar += ' '.join(np.array(labels, dtype=str)) + '\n'
     poscar += 'Cartesian\n'
     for site in structure.sites:
-        poscar += '{0: 22.16f} {1: 22.16f} {2: 22.16f}\n'.format(
-            *site.position)
+        poscar += f'{site.position[0]: 22.16f} '
+        poscar += f'{site.position[1]: 22.16f} '
+        poscar += f'{site.position[2]: 22.16f}\n'
 
     return poscar
 
@@ -108,14 +108,26 @@ def parameters_to_input_file(parameters_object: dict) -> str:
     input_file = 'STRUCTURE FILE POSCAR\nPOSCAR\n\n'
     input_file += 'FORCE CONSTANTS\nFORCE_CONSTANTS\n\n'
     input_file += 'PRIMITIVE MATRIX\n'
-    input_file += ('{} {} {} \n').format(*np.array(parameters['primitive'])[0])
-    input_file += ('{} {} {} \n').format(*np.array(parameters['primitive'])[1])
-    input_file += ('{} {} {} \n').format(*np.array(parameters['primitive'])[2])
+    input_file += f'{np.array(parameters["primitive"])[0, 0]} '
+    input_file += f'{np.array(parameters["primitive"])[0, 1]} '
+    input_file += f'{np.array(parameters["primitive"])[0, 2]} \n'
+    input_file += f'{np.array(parameters["primitive"])[1, 0]} '
+    input_file += f'{np.array(parameters["primitive"])[1, 1]} '
+    input_file += f'{np.array(parameters["primitive"])[1, 2]} \n'
+    input_file += f'{np.array(parameters["primitive"])[2, 0]} '
+    input_file += f'{np.array(parameters["primitive"])[2, 1]} '
+    input_file += f'{np.array(parameters["primitive"])[2, 2]} \n'
     input_file += '\n'
     input_file += 'SUPERCELL MATRIX PHONOPY\n'
-    input_file += ('{} {} {} \n').format(*np.array(parameters['supercell'])[0])
-    input_file += ('{} {} {} \n').format(*np.array(parameters['supercell'])[1])
-    input_file += ('{} {} {} \n').format(*np.array(parameters['supercell'])[2])
+    input_file += f'{np.array(parameters["supercell"])[0, 0]} '
+    input_file += f'{np.array(parameters["supercell"])[0, 1]} '
+    input_file += f'{np.array(parameters["supercell"])[0, 2]} \n'
+    input_file += f'{np.array(parameters["supercell"])[1, 0]} '
+    input_file += f'{np.array(parameters["supercell"])[1, 1]} '
+    input_file += f'{np.array(parameters["supercell"])[1, 2]} \n'
+    input_file += f'{np.array(parameters["supercell"])[2, 0]} '
+    input_file += f'{np.array(parameters["supercell"])[2, 1]} '
+    input_file += f'{np.array(parameters["supercell"])[2, 2]} \n'
     input_file += '\n'
 
     return input_file

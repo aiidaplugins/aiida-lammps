@@ -1,5 +1,5 @@
-"""[summary]
-"""
+"""Parser for LAMMPS MD calculations."""
+# pylint: disable=unspecified-encoding
 import traceback
 
 from aiida.orm import ArrayData, Dict

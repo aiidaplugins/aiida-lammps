@@ -5,7 +5,8 @@ exclude: >
     (?x)^(
       aiida_lammps/tests/input_files/.*|
       aiida_lammps/tests/.*txt|
-      aiida_lammps/tests/
+      aiida_lammps/tests/|
+      .pre-commit/check_version.py
     )$
 
 repos:

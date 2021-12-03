@@ -1,8 +1,5 @@
-"""[summary]
-
-:return: [description]
-:rtype: [type]
-"""
+"""Parser for LAMMPS MDMulti calculations."""
+# pylint: disable=unspecified-encoding
 import io
 import os
 import re

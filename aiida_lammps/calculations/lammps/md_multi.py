@@ -52,18 +52,15 @@ class MdMultiCalculation(BaseLammpsCalculation):
             pdict.get('lammps_version', '11 Aug 2017'))
         lammps_input_file = ''
 
-        lammps_input_file += '# Input written to comply with LAMMPS {}\n'.format(
-            version_date)
+        lammps_input_file += f'# Input written to comply with LAMMPS {version_date}\n'
 
         # Configuration setup
         lammps_input_file += '\n# Atomic Configuration\n'
-        lammps_input_file += 'units           {0}\n'.format(
-            potential_data.default_units)
+        lammps_input_file += f'units           {potential_data.default_units}\n'
         lammps_input_file += 'boundary        p p p\n'  # TODO allow non-periodic
         lammps_input_file += 'box tilt large\n'
-        lammps_input_file += 'atom_style      {0}\n'.format(
-            potential_data.atom_style)
-        lammps_input_file += 'read_data       {}\n'.format(structure_filename)
+        lammps_input_file += f'atom_style      {potential_data.atom_style}\n'
+        lammps_input_file += f'read_data       {structure_filename}\n'
 
         # Potential specification
         lammps_input_file += '\n# Potential Setup\n'
@@ -73,14 +70,12 @@ class MdMultiCalculation(BaseLammpsCalculation):
         lammps_input_file += '\n# General Setup\n'
         if 'neighbor' in pdict:
             # neighbor skin_dist bin/nsq/multi
-            lammps_input_file += 'neighbor {0} {1}\n'.format(
-                pdict['neighbor'][0], pdict['neighbor'][1])
+            lammps_input_file += f'neighbor {pdict["neighbor"][0]} {pdict["neighbor"][1]}\n'
         if 'neigh_modify' in pdict:
             # e.g. 'neigh_modify every 1 delay 0 check no\n'
-            lammps_input_file += 'neigh_modify {}\n'.format(
-                join_keywords(pdict['neigh_modify']))
+            lammps_input_file += f'neigh_modify {join_keywords(pdict["neigh_modify"])}\n'
         # Define Timestep
-        lammps_input_file += 'timestep        {}\n'.format(pdict['timestep'])
+        lammps_input_file += f'timestep        {pdict["timestep"]}\n'
 
         # Define computation/printing of thermodynamic info
         lammps_input_file += '\n# Thermodynamic Information Output\n'
@@ -88,19 +83,16 @@ class MdMultiCalculation(BaseLammpsCalculation):
         for kwd in pdict.get('thermo_keywords', []):
             if kwd not in thermo_keywords:
                 thermo_keywords.append(kwd)
-        lammps_input_file += 'thermo_style custom {}\n'.format(
-            ' '.join(thermo_keywords))
+        lammps_input_file += f'thermo_style custom {" ".join(thermo_keywords)}\n'
         lammps_input_file += 'thermo          1000\n'  # TODO make variable?
 
         # Setup initial velocities of atoms
         if 'velocity' in pdict:
             lammps_input_file += '\n# Intial Atom Velocity\n'
         for vdict in pdict.get('velocity', []):
-            lammps_input_file += 'velocity all {0} {1} {2}\n'.format(
-                vdict['style'],
-                ' '.join([str(a) for a in vdict['args']]),
-                join_keywords(vdict.get('keywords', {})),
-            )
+            lammps_input_file += f'velocity all {vdict["style"]} '
+            lammps_input_file += f'{" ".join([str(a) for a in vdict["args"]])} '
+            lammps_input_file += f'{join_keywords(vdict.get("keywords", {}))}\n'
 
         stage_names = []
         current_fixes = []
@@ -111,25 +103,23 @@ class MdMultiCalculation(BaseLammpsCalculation):
 
             stage_name = stage_dict.get('name')
             if stage_name in stage_names:
-                raise ValueError(
-                    'non-unique stage name: {}'.format(stage_name))
+                raise ValueError(f'non-unique stage name: {stage_name}')
             stage_names.append(stage_name)
 
-            lammps_input_file += '\n# Stage {}: {}\n'.format(
-                stage_id, stage_name)
+            lammps_input_file += f'\n# Stage {stage_id}: {stage_name}\n'
 
             # clear timestep
             # lammps_input_file += "reset_timestep  0\n"
 
             # Clear fixes, dumps and computes
             for fix in current_fixes:
-                lammps_input_file += 'unfix {}\n'.format(fix)
+                lammps_input_file += f'unfix {fix}\n'
             current_fixes = []
             for dump in current_dumps:
-                lammps_input_file += 'undump {}\n'.format(dump)
+                lammps_input_file += f'undump {dump}\n'
             current_dumps = []
             for compute in current_computes:
-                lammps_input_file += 'uncompute {}\n'.format(compute)
+                lammps_input_file += f'uncompute {compute}\n'
             current_computes = []
 
             # Define Computes
@@ -137,8 +127,7 @@ class MdMultiCalculation(BaseLammpsCalculation):
                 c_id = compute['id']
                 c_style = compute['style']
                 c_args = ' '.join([str(a) for a in compute.get('args', [])])
-                lammps_input_file += 'compute         {0} all {1} {2}\n'.format(
-                    c_id, c_style, c_args)
+                lammps_input_file += f'compute         {c_id} all {c_style} {c_args}\n'
                 current_computes.append(c_id)
 
             # Define Atom Level Outputs
@@ -178,43 +167,44 @@ class MdMultiCalculation(BaseLammpsCalculation):
 
             # Define restart
             if stage_dict.get('restart_rate', 0):
-                lammps_input_file += 'restart         {0} {1}\n'.format(
-                    stage_dict.get('restart_rate', 0),
-                    '{}-{}'.format(stage_name, restart_filename),
-                )
+                lammps_input_file += 'restart         '
+                lammps_input_file += f'{stage_dict.get("restart_rate", 0)} '
+                lammps_input_file += f'{"{}-{}".format(stage_name, restart_filename)}\n'
             else:
                 lammps_input_file += 'restart         0\n'
 
             # Define time integration method
-            lammps_input_file += 'fix             int all {0} {1} {2}\n'.format(
-                get_path(stage_dict, ['integration', 'style']),
-                join_keywords(
-                    get_path(
-                        stage_dict,
-                        ['integration', 'constraints'],
-                        {},
-                        raise_error=False,
-                    )),
-                join_keywords(
-                    get_path(stage_dict, ['integration', 'keywords'], {},
-                             raise_error=False)),
-            )
+            lammps_input_file += 'fix             int all '
+            lammps_input_file += f'{get_path(stage_dict, ["integration", "style"])} '
+            _temp = join_keywords(
+                get_path(
+                    stage_dict,
+                    ['integration', 'constraints'],
+                    {},
+                    raise_error=False,
+                ))
+            lammps_input_file += f'{_temp} '
+            _temp = join_keywords(
+                get_path(stage_dict, ['integration', 'keywords'], {},
+                         raise_error=False))
+            lammps_input_file += f'{_temp}\n'
             current_fixes.append('int')
 
             # Run
-            lammps_input_file += 'run             {}\n'.format(
-                stage_dict.get('steps', 0))
+            lammps_input_file += f'run             {stage_dict.get("steps", 0)}\n'
 
             # check compute/fix/dump ids are unique
             if len(current_computes) != len(set(current_computes)):
-                raise ValueError('Stage {}: Non-unique compute ids; {}'.format(
-                    stage_name, current_computes))
+                raise ValueError(
+                    f'Stage {stage_name}: Non-unique compute ids; {current_computes}'
+                )
             if len(current_fixes) != len(set(current_fixes)):
-                raise ValueError('Stage {}: Non-unique fix ids; {}'.format(
-                    stage_name, current_fixes))
+                raise ValueError(
+                    f'Stage {stage_name}: Non-unique fix ids; {current_fixes}')
             if len(current_dumps) != len(set(current_dumps)):
-                raise ValueError('Stage {}: Non-unique dump ids; {}'.format(
-                    stage_name, current_dumps))
+                raise ValueError(
+                    f'Stage {stage_name}: Non-unique dump ids; {current_dumps}'
+                )
 
         lammps_input_file += '\n# Final Commands\n'
         # output final energy
@@ -236,8 +226,8 @@ class MdMultiCalculation(BaseLammpsCalculation):
         punits = param_data.get_dict()['units']
         if not punits == potential_object.default_units:
             raise InputValidationError(
-                'the units of the parameters ({}) and potential ({}) are different'
-                .format(punits, potential_object.default_units))
+                f'the units of the parameters ({punits}) and potential '
+                f'({potential_object.default_units}) are different')
 
         return True
 
@@ -275,9 +265,9 @@ def sys_print_commands(
     for var in variables:
         var_alias = var.replace('[', '_').replace(']', '_')
         var_aliases.append(var_alias)
-        commands.append('variable {0} equal {1}'.format(var_alias, var))
+        commands.append(f'variable {var_alias} equal {var}')
 
-    commands.append('fix {0} all print {1} "{2}" {3} {4} {5} screen no'.format(
+    commands.append('fix {0} all print {1} "{2}" {3} {4} {5} screen no'.format(  # pylint: disable=consider-using-f-string
         fix_name,
         dump_rate,
         ' '.join(['${{{0}}}'.format(v) for v in var_aliases]),
@@ -306,15 +296,15 @@ def sys_ave_commands(
 
     if set(variables).intersection(ave_variables):
         raise ValueError(
-            "variables cannot be in both 'variables' and 'ave_variables': {}".
-            format(set(variables).intersection(ave_variables)))
+            'variables cannot be in both "variables" and "ave_variables": '
+            f'{set(variables).intersection(ave_variables)}')
 
     # Note step is included, by default, as the first arg
     var_aliases = []
     for var in variables + ave_variables:
         var_alias = var.replace('[', '_').replace(']', '_')
         var_aliases.append(var_alias)
-        commands.append('variable {0} equal {1}'.format(var_alias, var))
+        commands.append(f'variable {var_alias} equal {var}')
 
     if not ave_variables:
         nevery = dump_rate
@@ -322,8 +312,8 @@ def sys_ave_commands(
     else:
         if dump_rate % average_rate != 0 or average_rate > dump_rate:
             raise ValueError(
-                'The dump rate ({}) must be a multiple of the average_rate ({})'
-                .format(dump_rate, average_rate))
+                f'The dump rate ({dump_rate}) must be a multiple of the '
+                f'average_rate ({average_rate})')
         nevery = average_rate
         nrep = int(dump_rate / average_rate)
 
@@ -331,7 +321,7 @@ def sys_ave_commands(
     {variables} &
     {non_ave} &
     title1 "step {header}" &
-    file {filename}""".format(
+    file {filename}""".format(  # pylint: disable=consider-using-f-string
         fid=fix_name,
         nevery=nevery,  # compute variables every n steps
         nfreq=
@@ -396,8 +386,8 @@ def atom_info_commands(
     if ave_variables:
         if dump_rate % average_rate != 0 or average_rate > dump_rate:
             raise ValueError(
-                'The dump rate ({}) must be a multiple of the average_rate ({})'
-                .format(dump_rate, average_rate))
+                f'The dump rate ({dump_rate}) must be a multiple of '
+                f'the average_rate ({average_rate})')
         nevery = average_rate
         nrep = int(dump_rate / average_rate)
 
@@ -413,21 +403,21 @@ def atom_info_commands(
                 avar_names.append(ave_var)
             else:
                 if len(avar_props) > 1:
-                    avar_names.append('c_at_vars[{}]'.format(c_at_vars))
+                    avar_names.append(f'c_at_vars[{c_at_vars}]')
                     c_at_vars += 1
                 else:
                     avar_names.append('c_at_vars')
 
         # compute required variables
         if avar_props:
-            commands.append('compute at_vars all property/atom {}'.format(
-                ' '.join(avar_props)))
+            commands.append(
+                f'compute at_vars all property/atom {" ".join(avar_props)}')
             computes.append('at_vars')
 
         # compute means for variables
         commands.append(
             'fix at_means all ave/atom {nevery} {nrepeat} {nfreq} {variables}'.
-            format(
+            format(  # pylint: disable=consider-using-f-string
                 nevery=nevery,  # compute variables every n steps
                 nfreq=
                 dump_rate,  # nfreq is the dump rate and must be a multiple of nevery
@@ -445,19 +435,18 @@ def atom_info_commands(
 
     commands.append(
         'dump     {dump_id} all custom {rate} {fname} {variables} {ave_vars}'.
-        format(
+        format(  # pylint: disable=consider-using-f-string
             dump_id=dump_name,
             rate=dump_rate,
             fname=filename,
             variables=' '.join(dump_variables),
-            ave_vars=' '.join(['v_ave_{}'.format(v) for v in ave_variables]),
+            ave_vars=' '.join([f'v_ave_{v}' for v in ave_variables]),
         ))
     if append:
-        commands.append('dump_modify     {0} append yes'.format(dump_name))
+        commands.append(f'dump_modify     {dump_name} append yes')
 
     commands.extend([
-        'dump_modify     {0} sort id'.format(dump_name),
-        'dump_modify     {0} element {1}'.format(dump_name,
-                                                 ' '.join(kind_symbols)),
+        f'dump_modify     {dump_name} sort id',
+        f'dump_modify     {dump_name} element {" ".join(kind_symbols)}',
     ])
     return commands, computes, fixes

@@ -10,6 +10,7 @@ Certain blocks are conditionally called, e.g. if no fixes are specified the
 fixes block is never called, on the other hand the control block is always
 called since it is necessary for the functioning of LAMMPS.
 """
+# pylint: disable=unspecified-encoding
 from builtins import ValueError
 import os
 from typing import Union

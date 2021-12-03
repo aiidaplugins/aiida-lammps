@@ -122,13 +122,12 @@ class Reaxff(PotentialAbstract):
         """
         control = self.data.get('control', {})
 
-        lammps_input_text = 'pair_style reax/c {} '.format(
-            self.control_fname if self.get_control_file_content() else 'NULL')
+        lammps_input_text = 'pair_style reax/c '
+        lammps_input_text += f'{self.control_fname if self.get_control_file_content() else "NULL"} '
         if 'safezone' in control:
-            lammps_input_text += 'safezone {0} '.format(control['safezone'])
+            lammps_input_text += f'safezone {control["safezone"]} '
         lammps_input_text += '\n'
-        lammps_input_text += 'pair_coeff      * * {} {{kind_symbols}}\n'.format(
-            self.potential_fname)
+        lammps_input_text += f'pair_coeff      * * {self.potential_fname} {{kind_symbols}}\n'
         lammps_input_text += 'fix qeq all qeq/reax 1 0.0 10.0 1e-6 reax/c\n'
         if control.get('fix_modify_qeq', True):
             # TODO #15 in conda-forge/osx-64::lammps-2019.06.05-py36_openmpi_5,

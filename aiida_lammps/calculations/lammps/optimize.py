@@ -45,7 +45,7 @@ class OptimizeCalculation(BaseLammpsCalculation):
         system_filename,
         restart_filename,
     ):
-        # pylint: disable=too-many-locals, too-many-arguments
+        # pylint: disable=too-many-locals, too-many-arguments, too-many-statements
 
         parameter_data = parameter_data.get_dict()
         version_date = convert_date_string(
@@ -59,12 +59,12 @@ class OptimizeCalculation(BaseLammpsCalculation):
 
         lammps_input_file += potential_data.get_input_lines(kind_symbols)
 
-        lammps_input_file += 'fix             int all box/relax {} {} {}\n'.format(
-            parameter_data['relax']['type'],
-            parameter_data['relax']['pressure'],
-            join_keywords(parameter_data['relax'], ignore=['type',
-                                                           'pressure']),
-        )
+        lammps_input_file += 'fix             int all box/relax'
+        lammps_input_file += f' {parameter_data["relax"]["type"]}'
+        lammps_input_file += f' {parameter_data["relax"]["pressure"]}'
+        _temp = join_keywords(parameter_data['relax'],
+                              ignore=['type', 'pressure'])
+        lammps_input_file += f' {_temp}\n'
 
         # TODO find exact version when changes were made
         if version_date <= convert_date_string('11 Nov 2013'):
@@ -88,8 +88,7 @@ class OptimizeCalculation(BaseLammpsCalculation):
         for kwd in parameter_data.get('thermo_keywords', []):
             if kwd not in thermo_keywords:
                 thermo_keywords.append(kwd)
-        lammps_input_file += 'thermo_style custom {}\n'.format(
-            ' '.join(thermo_keywords))
+        lammps_input_file += f'thermo_style custom {" ".join(thermo_keywords)}\n'
 
         if potential_data.atom_style == 'charge':
             dump_variables = 'element x y z  fx fy fz q'
@@ -100,8 +99,8 @@ class OptimizeCalculation(BaseLammpsCalculation):
             dump_variables += ' c_stpa[1] c_stpa[2] c_stpa[3] c_stpa[4] c_stpa[5] c_stpa[6]'
             dump_format = '%4s ' + ' '.join(['%16.10f'] * 12)
 
-        lammps_input_file += 'dump            aiida all custom 1 {0} {1}\n'.format(
-            trajectory_filename, dump_variables)
+        lammps_input_file += 'dump            aiida all custom 1 '
+        lammps_input_file += f'{trajectory_filename} {dump_variables}\n'
 
         # TODO find exact version when changes were made
         if version_date <= convert_date_string('10 Feb 2015'):
@@ -109,28 +108,23 @@ class OptimizeCalculation(BaseLammpsCalculation):
         else:
             dump_mod_cmnd = 'format line'
 
-        lammps_input_file += 'dump_modify     aiida {0} "{1}"\n'.format(
-            dump_mod_cmnd, dump_format)
+        lammps_input_file += f'dump_modify     aiida {dump_mod_cmnd} "{dump_format}"\n'
 
         lammps_input_file += 'dump_modify     aiida sort id\n'
-        lammps_input_file += 'dump_modify     aiida element {}\n'.format(
-            ' '.join(kind_symbols))
-        lammps_input_file += 'min_style       {}\n'.format(
-            parameter_data['minimize']['style'])
+        lammps_input_file += f'dump_modify     aiida element {" ".join(kind_symbols)}\n'
+        lammps_input_file += f'min_style       {parameter_data["minimize"]["style"]}\n'
         # lammps_input_file += 'min_style       cg\n'
-        lammps_input_file += 'minimize        {} {} {} {}\n'.format(
-            parameter_data['minimize']['energy_tolerance'],
-            parameter_data['minimize']['force_tolerance'],
-            parameter_data['minimize']['max_iterations'],
-            parameter_data['minimize']['max_evaluations'],
-        )
+        lammps_input_file += 'minimize        '
+        lammps_input_file += f'{parameter_data["minimize"]["energy_tolerance"]} '
+        lammps_input_file += f'{parameter_data["minimize"]["force_tolerance"]} '
+        lammps_input_file += f'{parameter_data["minimize"]["max_iterations"]} '
+        lammps_input_file += f'{parameter_data["minimize"]["max_evaluations"]}\n'
 
         variables = parameter_data.get('output_variables', [])
         for var in variables:
             var_alias = var.replace('[', '_').replace(']', '_')
             lammps_input_file += f'variable {var_alias} equal {var}\n'
-            lammps_input_file += 'print "final_variable: {0} = ${{{0}}}"\n'.format(
-                var_alias)
+            lammps_input_file += f'print "final_variable: {var_alias} = ${{{var_alias}}}"\n'
 
         lammps_input_file += 'variable final_energy equal etotal\n'
         lammps_input_file += 'print "final_energy: ${final_energy}"\n'

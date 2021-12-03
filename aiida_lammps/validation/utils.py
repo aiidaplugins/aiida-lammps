@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Utility functions for validating JSON objects against schemas."""
+# pylint: disable=unspecified-encoding
 import io
 import json
 import os
@@ -95,8 +96,7 @@ def validate_against_schema(data, schema):
     errors = sorted(validator.iter_errors(data), key=lambda e: e.path)
     if errors:
         raise jsonschema.ValidationError('\n'.join([
-            "- {} [key path: '{}']".format(
-                error.message, '/'.join([str(p) for p in error.path]))
+            f'- {error.message} [key path: "{"/".join([str(p) for p in error.path])}"]'
             for error in errors
         ]))
 

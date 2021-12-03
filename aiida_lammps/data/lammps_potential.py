@@ -16,7 +16,7 @@ The potentials are also tagged by following the KIM-API
 `schema <https://openkim.org/doc/schema/kimspec/>`_, as to make them more easy
 to track and as compatible as possible to the KIM schema.
 """
-# pylint: disable=arguments-differ, too-many-public-methods
+# pylint: disable=arguments-differ, too-many-public-methods, unspecified-encoding
 import io
 import os
 import pathlib
@@ -405,7 +405,7 @@ class LammpsPotentialData(orm.SinglefileData):
         self.validate_units(units=units, pair_style=pair_style)
 
         if extra_tags is None:
-            extra_tags = dict()
+            extra_tags = {}
         if extra_tags is not None:
             self.validate_extra_tags(extra_tags=extra_tags)
         for key in self._extra_keys:

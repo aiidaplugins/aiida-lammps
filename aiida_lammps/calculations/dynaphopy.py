@@ -1,11 +1,11 @@
 """Base dynaphopy calculation"""
-# pylint: disable=too-many-instance-attributes, abstract-method
+# pylint: disable=too-many-instance-attributes, abstract-method, unspecified-encoding
 from aiida.common.datastructures import CalcInfo, CodeInfo
 from aiida.common.exceptions import InputValidationError
 from aiida.common.utils import classproperty
 from aiida.engine import CalcJob
 from aiida.orm import ArrayData, StructureData, TrajectoryData
-from aiida_phonopy.common.raw_parsers import get_force_constants, get_poscar_txt  # pylint: disable=no-name-in-module
+from aiida_phonopy.common.raw_parsers import get_force_constants, get_poscar_txt  # pylint: disable=no-name-in-module, import-error
 
 from aiida_lammps.common.generate_input_files import (
     get_trajectory_txt,
@@ -186,7 +186,7 @@ class DynaphopyCalculation(CalcJob):
             self._INPUT_FILE_NAME,
             self._INPUT_TRAJECTORY,
             '-ts',
-            '{}'.format(time_step),
+            f'{time_step}',
             '--silent',
             '-sfc',
             self._OUTPUT_FORCE_CONSTANTS,
@@ -199,8 +199,8 @@ class DynaphopyCalculation(CalcJob):
 
         if 'temperature' in parameters_data.get_dict():
             codeinfo.cmdline_params.append('--temperature')
-            codeinfo.cmdline_params.append('{}'.format(
-                parameters_data.dict.temperature))
+            codeinfo.cmdline_params.append(
+                f'{parameters_data.dict.temperature}')
 
         if 'md_commensurate' in parameters_data.get_dict():
             if parameters_data.dict.md_commensurate:

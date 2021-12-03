@@ -1,3 +1,4 @@
+"""Test the aiida-lammps calculations."""
 from aiida.cmdline.utils.common import get_calcjob_report
 from aiida.engine import run_get_node
 from aiida.orm import Dict
@@ -8,11 +9,27 @@ import aiida_lammps.tests.utils as tests
 
 
 def get_lammps_version(code):
+    """Get the version of the lammps code"""
     exec_path = code.get_remote_exec_path()
     return tests.lammps_version(exec_path)
 
 
 def get_calc_parameters(lammps_version, plugin_name, units, potential_type):
+    """
+    Get the calculation parameters for a given test
+
+    :param lammps_version: version of the lammps code
+    :type lammps_version: str
+    :param plugin_name: name of the plugin
+    :type plugin_name: str
+    :param units: name of the units for the calculation
+    :type units: str
+    :param potential_type: name of the potential type
+    :type potential_type: str
+    :raises ValueError: [description]
+    :return: dictionary with the calculation parameters
+    :rtype: orm.Dict
+    """
 
     if potential_type == 'reaxff':
         output_variables = ['temp', 'etotal', 'c_reax[1]']
@@ -177,14 +194,27 @@ def sanitize_results(results_dict, round_dp_all=None, round_energy=None):
         ('reaxff', 'lammps.md.multi'),
     ],
 )
-def test_input_creation(db_test_app, get_potential_data, calc_type,
-                        potential_type, file_regression):
+def test_input_creation(
+    db_test_app,  # pylint: disable=unused-argument
+    get_potential_data,
+    calc_type,
+    potential_type,
+    file_regression,
+):
+    """
+    Test the generation of the input file for lammps
+    """
     pot_data = get_potential_data(potential_type)
-    potential_data = DataFactory('lammps.potential')(type=pot_data.type,
-                                                     data=pot_data.data)
-    parameter_data = get_calc_parameters('17 Aug 2017', calc_type,
-                                         potential_data.default_units,
-                                         potential_type)
+    potential_data = DataFactory('lammps.potential')(
+        type=pot_data.type,
+        data=pot_data.data,
+    )
+    parameter_data = get_calc_parameters(
+        '17 Aug 2017',
+        calc_type,
+        potential_data.default_units,
+        potential_type,
+    )
 
     calc = CalculationFactory(calc_type)
     content = calc.create_main_input_content(
@@ -199,18 +229,33 @@ def test_input_creation(db_test_app, get_potential_data, calc_type,
     file_regression.check(content)
 
 
-@pytest.mark.parametrize('potential_type',
-                         ['lennard-jones', 'tersoff', 'eam', 'reaxff'])
-def test_force_submission(db_test_app, get_potential_data, potential_type):
+@pytest.mark.parametrize(
+    'potential_type',
+    ['lennard-jones', 'tersoff', 'eam', 'reaxff'],
+)
+def test_force_submission(
+    db_test_app,
+    get_potential_data,
+    potential_type,
+):
+    """
+    Test the submission of the force-type calculations.
+    """
     calc_plugin = 'lammps.force'
     code = db_test_app.get_or_create_code(calc_plugin)
     pot_data = get_potential_data(potential_type)
-    potential = DataFactory('lammps.potential')(type=pot_data.type,
-                                                data=pot_data.data)
-    parameters = get_calc_parameters(get_lammps_version(code), calc_plugin,
-                                     potential.default_units, potential_type)
+    potential = DataFactory('lammps.potential')(
+        type=pot_data.type,
+        data=pot_data.data,
+    )
+    parameters = get_calc_parameters(
+        get_lammps_version(code),
+        calc_plugin,
+        potential.default_units,
+        potential_type,
+    )
     builder = code.get_builder()
-    builder._update({
+    builder._update({ # pylint: disable=protected-access
         'metadata': tests.get_default_metadata(),
         'code': code,
         'structure': pot_data.structure,
@@ -226,18 +271,29 @@ def test_force_submission(db_test_app, get_potential_data, potential_type):
             ['input.data', 'input.in'])
 
 
-@pytest.mark.parametrize('potential_type',
-                         ['lennard-jones', 'tersoff', 'eam', 'reaxff'])
+@pytest.mark.parametrize(
+    'potential_type',
+    ['lennard-jones', 'tersoff', 'eam', 'reaxff'],
+)
 def test_optimize_submission(db_test_app, get_potential_data, potential_type):
+    """
+    Test the submission of the optimize type of calculation
+    """
     calc_plugin = 'lammps.optimize'
     code = db_test_app.get_or_create_code(calc_plugin)
     pot_data = get_potential_data(potential_type)
-    potential = DataFactory('lammps.potential')(type=pot_data.type,
-                                                data=pot_data.data)
-    parameters = get_calc_parameters(get_lammps_version(code), calc_plugin,
-                                     potential.default_units, potential_type)
+    potential = DataFactory('lammps.potential')(
+        type=pot_data.type,
+        data=pot_data.data,
+    )
+    parameters = get_calc_parameters(
+        get_lammps_version(code),
+        calc_plugin,
+        potential.default_units,
+        potential_type,
+    )
     builder = code.get_builder()
-    builder._update({
+    builder._update({ # pylint: disable=protected-access
         'metadata': tests.get_default_metadata(),
         'code': code,
         'structure': pot_data.structure,
@@ -253,18 +309,27 @@ def test_optimize_submission(db_test_app, get_potential_data, potential_type):
             ['input.data', 'input.in'])
 
 
-@pytest.mark.parametrize('potential_type',
-                         ['lennard-jones', 'tersoff', 'eam', 'reaxff'])
+@pytest.mark.parametrize(
+    'potential_type',
+    ['lennard-jones', 'tersoff', 'eam', 'reaxff'],
+)
 def test_md_submission(db_test_app, get_potential_data, potential_type):
+    """Test the submission of the md type of calculation"""
     calc_plugin = 'lammps.md'
     code = db_test_app.get_or_create_code(calc_plugin)
     pot_data = get_potential_data(potential_type)
-    potential = DataFactory('lammps.potential')(type=pot_data.type,
-                                                data=pot_data.data)
-    parameters = get_calc_parameters(get_lammps_version(code), calc_plugin,
-                                     potential.default_units, potential_type)
+    potential = DataFactory('lammps.potential')(
+        type=pot_data.type,
+        data=pot_data.data,
+    )
+    parameters = get_calc_parameters(
+        get_lammps_version(code),
+        calc_plugin,
+        potential.default_units,
+        potential_type,
+    )
     builder = code.get_builder()
-    builder._update({
+    builder._update({ # pylint: disable=protected-access
         'metadata': tests.get_default_metadata(),
         'code': code,
         'structure': pot_data.structure,
@@ -281,19 +346,32 @@ def test_md_submission(db_test_app, get_potential_data, potential_type):
 
 
 @pytest.mark.lammps_call
-@pytest.mark.parametrize('potential_type',
-                         ['lennard-jones', 'tersoff', 'eam', 'reaxff'])
-def test_force_process(db_test_app, get_potential_data, potential_type,
-                       data_regression):
+@pytest.mark.parametrize(
+    'potential_type',
+    ['lennard-jones', 'tersoff', 'eam', 'reaxff'],
+)
+def test_force_process(
+    db_test_app,
+    get_potential_data,
+    potential_type,
+    data_regression,
+):
+    """Test the functionality of the force calculation type"""
     calc_plugin = 'lammps.force'
     code = db_test_app.get_or_create_code(calc_plugin)
     pot_data = get_potential_data(potential_type)
-    potential = DataFactory('lammps.potential')(type=pot_data.type,
-                                                data=pot_data.data)
-    parameters = get_calc_parameters(get_lammps_version(code), calc_plugin,
-                                     potential.default_units, potential_type)
+    potential = DataFactory('lammps.potential')(
+        type=pot_data.type,
+        data=pot_data.data,
+    )
+    parameters = get_calc_parameters(
+        get_lammps_version(code),
+        calc_plugin,
+        potential.default_units,
+        potential_type,
+    )
     builder = code.get_builder()
-    builder._update({
+    builder._update({ # pylint: disable=protected-access
         'metadata': tests.get_default_metadata(),
         'code': code,
         'structure': pot_data.structure,
@@ -326,19 +404,32 @@ def test_force_process(db_test_app, get_potential_data, potential_type,
 
 
 @pytest.mark.lammps_call
-@pytest.mark.parametrize('potential_type',
-                         ['lennard-jones', 'tersoff', 'eam', 'reaxff'])
-def test_optimize_process(db_test_app, get_potential_data, potential_type,
-                          data_regression):
+@pytest.mark.parametrize(
+    'potential_type',
+    ['lennard-jones', 'tersoff', 'eam', 'reaxff'],
+)
+def test_optimize_process(
+    db_test_app,
+    get_potential_data,
+    potential_type,
+    data_regression,
+):
+    """Test the functionality of the optimization calculation type"""
     calc_plugin = 'lammps.optimize'
     code = db_test_app.get_or_create_code(calc_plugin)
     pot_data = get_potential_data(potential_type)
-    potential = DataFactory('lammps.potential')(type=pot_data.type,
-                                                data=pot_data.data)
-    parameters = get_calc_parameters(get_lammps_version(code), calc_plugin,
-                                     potential.default_units, potential_type)
+    potential = DataFactory('lammps.potential')(
+        type=pot_data.type,
+        data=pot_data.data,
+    )
+    parameters = get_calc_parameters(
+        get_lammps_version(code),
+        calc_plugin,
+        potential.default_units,
+        potential_type,
+    )
     builder = code.get_builder()
-    builder._update({
+    builder._update({ # pylint: disable=protected-access
         'metadata': tests.get_default_metadata(),
         'code': code,
         'structure': pot_data.structure,
@@ -380,9 +471,17 @@ def test_optimize_process(db_test_app, get_potential_data, potential_type,
 
 
 @pytest.mark.lammps_call
-@pytest.mark.parametrize('potential_type', ['lennard-jones', 'tersoff', 'eam'])
-def test_md_process(db_test_app, get_potential_data, potential_type,
-                    data_regression):
+@pytest.mark.parametrize(
+    'potential_type',
+    ['lennard-jones', 'tersoff', 'eam'],
+)
+def test_md_process(
+    db_test_app,
+    get_potential_data,
+    potential_type,
+    data_regression,
+):
+    """Test the functionality of the md calculation type"""
     calc_plugin = 'lammps.md'
     code = db_test_app.get_or_create_code(calc_plugin)
     pot_data = get_potential_data(potential_type)
@@ -390,10 +489,14 @@ def test_md_process(db_test_app, get_potential_data, potential_type,
                                                 data=pot_data.data)
     version = get_lammps_version(code)
     version_year = version[-4:]
-    parameters = get_calc_parameters(version, calc_plugin,
-                                     potential.default_units, potential_type)
+    parameters = get_calc_parameters(
+        version,
+        calc_plugin,
+        potential.default_units,
+        potential_type,
+    )
     builder = code.get_builder()
-    builder._update({
+    builder._update({ # pylint: disable=protected-access
         'metadata': tests.get_default_metadata(),
         'code': code,
         'structure': pot_data.structure,
@@ -417,8 +520,10 @@ def test_md_process(db_test_app, get_potential_data, potential_type,
     data_regression.check(
         {
             'results':
-            sanitize_results(calc_node.outputs.results.get_dict(),
-                             round_energy=1),
+            sanitize_results(
+                calc_node.outputs.results.get_dict(),
+                round_energy=1,
+            ),
             'system_data':
             calc_node.outputs.system_data.attributes,
             'trajectory_data':
@@ -429,19 +534,32 @@ def test_md_process(db_test_app, get_potential_data, potential_type,
 
 
 @pytest.mark.lammps_call
-@pytest.mark.parametrize('potential_type',
-                         ['lennard-jones', 'tersoff', 'eam', 'reaxff'])
-def test_md_multi_process(db_test_app, get_potential_data, potential_type,
-                          data_regression):
+@pytest.mark.parametrize(
+    'potential_type',
+    ['lennard-jones', 'tersoff', 'eam', 'reaxff'],
+)
+def test_md_multi_process(
+    db_test_app,
+    get_potential_data,
+    potential_type,
+    data_regression,
+):
+    """Test the functionality of the multi-stage md calculation type"""
     calc_plugin = 'lammps.md.multi'
     code = db_test_app.get_or_create_code(calc_plugin)
     pot_data = get_potential_data(potential_type)
-    potential = DataFactory('lammps.potential')(type=pot_data.type,
-                                                data=pot_data.data)
-    parameters = get_calc_parameters(get_lammps_version(code), calc_plugin,
-                                     potential.default_units, potential_type)
+    potential = DataFactory('lammps.potential')(
+        type=pot_data.type,
+        data=pot_data.data,
+    )
+    parameters = get_calc_parameters(
+        get_lammps_version(code),
+        calc_plugin,
+        potential.default_units,
+        potential_type,
+    )
     builder = code.get_builder()
-    builder._update({
+    builder._update({ # pylint: disable=protected-access
         'metadata': tests.get_default_metadata(),
         'code': code,
         'structure': pot_data.structure,

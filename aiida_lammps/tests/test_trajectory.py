@@ -1,3 +1,4 @@
+"""Tests for the aiida-lammps trajectory data type"""
 import io
 import os
 
@@ -7,6 +8,7 @@ from aiida_lammps.tests.utils import TEST_DIR, recursive_round
 
 
 def test_iter_trajectories(data_regression):
+    """Test that one can iterate over the trajectory steps"""
     path = os.path.join(TEST_DIR, 'input_files', 'trajectory.lammpstrj')
     output = []
     with io.open(path) as handle:
@@ -18,7 +20,8 @@ def test_iter_trajectories(data_regression):
     data_regression.check(output)
 
 
-def test_create_structure(db_test_app, data_regression):
+def test_create_structure(db_test_app, data_regression):  # pylint: disable=unused-argument
+    """Test that one can create an structure from a trajectory step"""
     path = os.path.join(TEST_DIR, 'input_files', 'trajectory.lammpstrj')
     with io.open(path) as handle:
         traj_block = next(iter_trajectories(handle))
@@ -28,19 +31,22 @@ def test_create_structure(db_test_app, data_regression):
         recursive_round(structure.attributes, 2, apply_lists=True))
 
 
-def test_lammps_trajectory_data(db_test_app, data_regression):
+def test_lammps_trajectory_data(db_test_app, data_regression):  # pylint: disable=unused-argument
+    """Test that one can generate a trajectory from a file"""
     path = os.path.join(TEST_DIR, 'input_files', 'trajectory.lammpstrj')
     data = LammpsTrajectory(path)
     data_regression.check(data.attributes)
 
 
-def test_lammpstraj_get_step_string(db_test_app, file_regression):
+def test_lammpstraj_get_step_string(db_test_app, file_regression):  # pylint: disable=unused-argument
+    """Get the step information from a trajectory data file"""
     path = os.path.join(TEST_DIR, 'input_files', 'trajectory.lammpstrj')
     data = LammpsTrajectory(path)
     file_regression.check(data.get_step_string(-1))
 
 
-def test_lammpstraj_get_step_struct(db_test_app, data_regression):
+def test_lammpstraj_get_step_struct(db_test_app, data_regression):  # pylint: disable=unused-argument
+    """Get the structure data for a given trajectory step"""
     path = os.path.join(TEST_DIR, 'input_files', 'trajectory.lammpstrj')
     data = LammpsTrajectory(path)
     data_regression.check(
@@ -49,7 +55,8 @@ def test_lammpstraj_get_step_struct(db_test_app, data_regression):
                         apply_lists=True))
 
 
-def test_lammpstraj_timesteps(db_test_app):
+def test_lammpstraj_timesteps(db_test_app):  # pylint: disable=unused-argument
+    """Get the list of timesteps for the trajectory data"""
     path = os.path.join(TEST_DIR, 'input_files', 'trajectory.lammpstrj')
     data = LammpsTrajectory(path)
     assert data.time_steps == [
@@ -77,7 +84,8 @@ def test_lammpstraj_timesteps(db_test_app):
     ]
 
 
-def test_write_as_lammps(db_test_app, tmp_path):
+def test_write_as_lammps(db_test_app, tmp_path):  # pylint: disable=unused-argument
+    """Test that one can write the trajectory in a lammps compatible format"""
     path = os.path.join(TEST_DIR, 'input_files', 'trajectory.lammpstrj')
     data = LammpsTrajectory(path)
     with tmp_path.joinpath('trajectory.lammpstrj').open(mode='wb') as handle:

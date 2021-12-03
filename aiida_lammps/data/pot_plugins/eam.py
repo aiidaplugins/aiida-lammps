@@ -21,16 +21,15 @@ class EAM(PotentialAbstract):
         # )
         potential_file = ''
         for line in self.data['file_contents']:
-            potential_file += '{}'.format(line)
+            potential_file += f'{line}'
 
         return {self.potential_fname: potential_file}
 
     def get_input_potential_lines(self):  # pylint: disable=arguments-differ
 
-        lammps_input_text = 'pair_style      eam/{}\n'.format(
-            self.data['type'])
-        lammps_input_text += 'pair_coeff      * * {0} {{kind_symbols}}\n'.format(
-            self.potential_fname)
+        lammps_input_text = f'pair_style      eam/{self.data["type"]}\n'
+        lammps_input_text += f'pair_coeff      * * {self.potential_fname} '
+        lammps_input_text += '{{kind_symbols}}\n'
 
         return lammps_input_text
 

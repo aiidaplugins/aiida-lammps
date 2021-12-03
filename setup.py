@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 """Define the setup for the `aiida-lammps` plugin."""
+# pylint: disable=unspecified-encoding
 import json
 
 from setuptools import find_packages, setup

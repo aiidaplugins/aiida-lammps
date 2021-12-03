@@ -18,13 +18,12 @@ class LennardJones(PotentialAbstract):
 
         cut = np.max([float(i.split()[2]) for i in self.data.values()])
 
-        lammps_input_text = 'pair_style  lj/cut {}\n'.format(cut)
+        lammps_input_text = f'pair_style  lj/cut {cut}\n'
 
         # TODO how to map kinds to pair coefficient for lj?
 
         for key in sorted(self.data.keys()):
-            lammps_input_text += 'pair_coeff {}    {}\n'.format(
-                key, self.data[key])
+            lammps_input_text += f'pair_coeff {key}    {self.data[key]}\n'
         return lammps_input_text
 
     @property

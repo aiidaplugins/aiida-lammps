@@ -1,3 +1,4 @@
+"""Test the reaxff parser"""
 from textwrap import dedent
 
 from aiida_lammps.common.reaxff_convert import read_lammps_format, write_lammps_format
@@ -425,22 +426,26 @@ lammps_file2 = dedent("""\
 
 
 def test_read_lammps_format(data_regression):
+    """Check that the reaxff potential is compatible with the lammps format"""
     output = read_lammps_format(lammps_file1.splitlines())
     data_regression.check(output)
 
 
 def test_round_trip_lammps_format(file_regression):
+    """Check that one can write the reaxff potential"""
     data = read_lammps_format(lammps_file1.splitlines())
     output = write_lammps_format(data)
     file_regression.check(output)
 
 
 def test_read_lammps_format2(data_regression):
+    """Check that the reaxff potential is compatible with the second lammps format"""
     output = read_lammps_format(lammps_file2.splitlines())
     data_regression.check(output)
 
 
 def test_round_trip_lammps_format2(file_regression):
+    """Check that one can write the reaxff potential in the second format"""
     data = read_lammps_format(lammps_file2.splitlines())
     output = write_lammps_format(data)
     file_regression.check(output)

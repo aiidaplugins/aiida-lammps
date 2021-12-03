@@ -1,3 +1,4 @@
+"""Set of functions to test the aiida-lammps functionality."""
 from collections.abc import Mapping
 from contextlib import contextmanager
 import distutils.spawn
@@ -5,6 +6,15 @@ import os
 import re
 import subprocess
 import sys
+
+from aiida.common import NotExistent
+from aiida.orm import Computer, Code, CalcJobNode
+from aiida.plugins import ParserFactory, CalculationFactory, DataFactory
+from aiida.engine.utils import instantiate_process
+from aiida.manage.manager import get_manager
+from aiida.common.links import LinkType
+from aiida.plugins.entry_point import format_entry_point_string
+from aiida.common.folders import SandboxFolder
 
 TEST_DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -70,8 +80,6 @@ def get_or_create_local_computer(work_directory, name='localhost'):
     aiida.orm.computers.Computer
 
     """
-    from aiida.common import NotExistent
-    from aiida.orm import Computer
 
     try:
         computer = Computer.objects.get(label=name)
@@ -93,14 +101,12 @@ def get_or_create_local_computer(work_directory, name='localhost'):
 
 def get_or_create_code(entry_point, computer, executable, exec_path=None):
     """Setup code on localhost computer"""
-    from aiida.common import NotExistent
-    from aiida.orm import Code, Computer
 
     if isinstance(computer, str):
         computer = Computer.objects.get(label=computer)
 
     try:
-        code = Code.objects.get(
+        code = Code.objects.get(  # pylint: disable=no-member
             label='{}-{}-{}'.format(entry_point, executable, computer.label))
     except NotExistent:
         if exec_path is None:
@@ -142,19 +148,26 @@ def get_default_metadata(
     }
 
 
-def recursive_round(ob, dp, apply_lists=False):
-    """ map a function on to all values of a nested dictionary """
-    if isinstance(ob, Mapping):
-        return {k: recursive_round(v, dp, apply_lists) for k, v in ob.items()}
-    elif apply_lists and isinstance(ob, (list, tuple)):
-        return [recursive_round(v, dp, apply_lists) for v in ob]
-    elif isinstance(ob, float):
-        return round(ob, dp)
-    else:
-        return ob
+def recursive_round(check_object, precision, apply_lists=False):
+    """Map a function on to all values of a nested dictionary """
+    if isinstance(check_object, Mapping):
+        return {
+            k: recursive_round(v, precision, apply_lists)
+            for k, v in check_object.items()
+        }
+    if apply_lists and isinstance(check_object, (list, tuple)):
+        return [
+            recursive_round(v, precision, apply_lists) for v in check_object
+        ]
+    if isinstance(check_object, float):
+        return round(check_object, precision)
+    return check_object
 
 
 class AiidaTestApp(object):
+    """A class providing methods for testing purposes"""
+
+    # pylint: disable=useless-object-inheritance
     def __init__(self, work_directory, executable_map, environment=None):
         """a class providing methods for testing purposes
 
@@ -193,19 +206,25 @@ class AiidaTestApp(object):
 
         try:
             executable = self._executables[entry_point]
-        except KeyError:
+        except KeyError as key_error:
             raise KeyError(
-                'Entry point {} not recognized. Allowed values: {}'.format(
-                    entry_point, self._executables.keys()))
+                f'Entry point {entry_point} not recognized. '
+                f'Allowed values: {self._executables.keys()}') from key_error
 
         return get_or_create_code(entry_point, computer, executable)
 
     @staticmethod
-    def get_default_metadata(max_num_machines=1,
-                             max_wallclock_seconds=1800,
-                             with_mpi=False):
-        return get_default_metadata(max_num_machines, max_wallclock_seconds,
-                                    with_mpi)
+    def get_default_metadata(
+        max_num_machines=1,
+        max_wallclock_seconds=1800,
+        with_mpi=False,
+    ):
+        """Get the metadata for a calculation"""
+        return get_default_metadata(
+            max_num_machines,
+            max_wallclock_seconds,
+            with_mpi,
+        )
 
     @staticmethod
     def get_parser_cls(entry_point_name):
@@ -221,7 +240,6 @@ class AiidaTestApp(object):
         aiida.parsers.parser.Parser
 
         """
-        from aiida.plugins import ParserFactory
 
         return ParserFactory(entry_point_name)
 
@@ -239,7 +257,6 @@ class AiidaTestApp(object):
         aiida.orm.nodes.data.Data
 
         """
-        from aiida.plugins import DataFactory
 
         return DataFactory(entry_point_name)(**kwargs)
 
@@ -253,15 +270,16 @@ class AiidaTestApp(object):
             entry point name of the data node class
 
         """
-        from aiida.plugins import CalculationFactory
 
         return CalculationFactory(entry_point_name)
 
-    def generate_calcjob_node(self,
-                              entry_point_name,
-                              retrieved,
-                              computer_name='localhost',
-                              attributes=None):
+    def generate_calcjob_node(
+        self,
+        entry_point_name,
+        retrieved,
+        computer_name='localhost',
+        attributes=None,
+    ):
         """Fixture to generate a mock `CalcJobNode` for testing parsers.
 
         Parameters
@@ -281,9 +299,6 @@ class AiidaTestApp(object):
             instance with the `retrieved` node linked as outgoing
 
         """
-        from aiida.common.links import LinkType
-        from aiida.orm import CalcJobNode
-        from aiida.plugins.entry_point import format_entry_point_string
 
         process = self.get_calc_cls(entry_point_name)
         computer = self.get_or_create_computer(computer_name)
@@ -302,19 +317,21 @@ class AiidaTestApp(object):
         node.set_option('max_wallclock_seconds', 1800)
 
         if attributes:
-            node.set_attributes(attributes)
+            node.set_attributes(attributes)  # pylint: disable=no-member
 
         node.store()
 
-        retrieved.add_incoming(node,
-                               link_type=LinkType.CREATE,
-                               link_label='retrieved')
+        retrieved.add_incoming(
+            node,
+            link_type=LinkType.CREATE,
+            link_label='retrieved',
+        )
         retrieved.store()
 
         return node
 
     @contextmanager
-    def sandbox_folder(self):
+    def sandbox_folder(self):  # pylint: disable=no-self-use
         """AiiDA folder object context.
 
         Yields
@@ -322,7 +339,6 @@ class AiidaTestApp(object):
         aiida.common.folders.SandboxFolder
 
         """
-        from aiida.common.folders import SandboxFolder
 
         with SandboxFolder() as folder:
             yield folder
@@ -342,9 +358,6 @@ class AiidaTestApp(object):
         inputs: dict or None
 
         """
-        from aiida.engine.utils import instantiate_process
-        from aiida.manage.manager import get_manager
-        from aiida.plugins import CalculationFactory
 
         manager = get_manager()
         runner = manager.get_runner()

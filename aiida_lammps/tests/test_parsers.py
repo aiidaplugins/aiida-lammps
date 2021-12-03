@@ -1,3 +1,6 @@
+"""
+Tests to aiida-lammps parsers.
+"""
 from io import StringIO
 from textwrap import dedent
 
@@ -8,6 +11,7 @@ import pytest
 
 
 def get_log():
+    """Get the reference values for the log parser"""
     return dedent("""\
         units metal
         final_energy: 2.0
@@ -17,6 +21,7 @@ def get_log():
 
 
 def get_traj_force():
+    """Get the reference values for the trajectory parser"""
     return dedent("""\
         ITEM: TIMESTEP
         0
@@ -40,14 +45,16 @@ def get_traj_force():
     'plugin_name',
     ['lammps.force', 'lammps.optimize', 'lammps.md', 'lammps.md.multi'])
 def test_missing_log(db_test_app, plugin_name):
-
+    """Check if the log file is produced during calculation."""
     retrieved = FolderData()
 
     calc_node = db_test_app.generate_calcjob_node(plugin_name, retrieved)
     parser = ParserFactory(plugin_name)
     with db_test_app.sandbox_folder() as temp_path:
-        results, calcfunction = parser.parse_from_node(
-            calc_node, retrieved_temporary_folder=temp_path.abspath)
+        results, calcfunction = parser.parse_from_node(  # pylint: disable=unused-variable
+            calc_node,
+            retrieved_temporary_folder=temp_path.abspath,
+        )
 
     assert calcfunction.is_finished, calcfunction.exception
     assert calcfunction.is_failed, calcfunction.exit_status
@@ -59,7 +66,7 @@ def test_missing_log(db_test_app, plugin_name):
     'plugin_name',
     ['lammps.force', 'lammps.optimize', 'lammps.md', 'lammps.md.multi'])
 def test_missing_traj(db_test_app, plugin_name):
-
+    """Check if the trajectory file is produced during calculation."""
     retrieved = FolderData()
     retrieved.put_object_from_filelike(StringIO(get_log()), 'log.lammps')
     retrieved.put_object_from_filelike(StringIO(''), '_scheduler-stdout.txt')
@@ -68,8 +75,10 @@ def test_missing_traj(db_test_app, plugin_name):
     calc_node = db_test_app.generate_calcjob_node(plugin_name, retrieved)
     parser = ParserFactory(plugin_name)
     with db_test_app.sandbox_folder() as temp_path:
-        results, calcfunction = parser.parse_from_node(
-            calc_node, retrieved_temporary_folder=temp_path.abspath)
+        results, calcfunction = parser.parse_from_node(  # pylint: disable=unused-variable
+            calc_node,
+            retrieved_temporary_folder=temp_path.abspath,
+        )
 
     assert calcfunction.is_finished, calcfunction.exception
     assert calcfunction.is_failed, calcfunction.exit_status
@@ -81,7 +90,7 @@ def test_missing_traj(db_test_app, plugin_name):
     'plugin_name',
     ['lammps.force', 'lammps.optimize', 'lammps.md', 'lammps.md.multi'])
 def test_empty_log(db_test_app, plugin_name):
-
+    """Check if the lammps log is empty."""
     retrieved = FolderData()
     for filename in [
             'log.lammps',
@@ -97,8 +106,10 @@ def test_empty_log(db_test_app, plugin_name):
     with db_test_app.sandbox_folder() as temp_path:
         with temp_path.open('x-trajectory.lammpstrj', 'w'):
             pass
-        results, calcfunction = parser.parse_from_node(
-            calc_node, retrieved_temporary_folder=temp_path.abspath)
+        results, calcfunction = parser.parse_from_node(  # pylint: disable=unused-variable
+            calc_node,
+            retrieved_temporary_folder=temp_path.abspath,
+        )
 
     assert calcfunction.is_finished, calcfunction.exception
     assert calcfunction.is_failed, calcfunction.exit_status
@@ -110,7 +121,7 @@ def test_empty_log(db_test_app, plugin_name):
     'plugin_name',
     ['lammps.force', 'lammps.optimize', 'lammps.md', 'lammps.md.multi'])
 def test_empty_traj(db_test_app, plugin_name):
-
+    """Check if the lammps trajectory file is empty."""
     retrieved = FolderData()
     retrieved.put_object_from_filelike(StringIO(get_log()), 'log.lammps')
     for filename in [
@@ -125,8 +136,10 @@ def test_empty_traj(db_test_app, plugin_name):
     with db_test_app.sandbox_folder() as temp_path:
         with temp_path.open('x-trajectory.lammpstrj', 'w'):
             pass
-        results, calcfunction = parser.parse_from_node(
-            calc_node, retrieved_temporary_folder=temp_path.abspath)
+        results, calcfunction = parser.parse_from_node(  # pylint: disable=unused-variable
+            calc_node,
+            retrieved_temporary_folder=temp_path.abspath,
+        )
 
     assert calcfunction.is_finished, calcfunction.exception
     assert calcfunction.is_failed, calcfunction.exit_status
@@ -138,14 +151,24 @@ def test_empty_traj(db_test_app, plugin_name):
     'plugin_name',
     ['lammps.force', 'lammps.optimize', 'lammps.md', 'lammps.md.multi'])
 def test_run_error(db_test_app, plugin_name):
-
+    """Check if the parser runs without producing errors."""
     retrieved = FolderData()
-    retrieved.put_object_from_filelike(StringIO(get_log()), 'log.lammps')
-    retrieved.put_object_from_filelike(StringIO(get_traj_force()),
-                                       'x-trajectory.lammpstrj')
-    retrieved.put_object_from_filelike(StringIO('ERROR description'),
-                                       '_scheduler-stdout.txt')
-    retrieved.put_object_from_filelike(StringIO(''), '_scheduler-stderr.txt')
+    retrieved.put_object_from_filelike(
+        StringIO(get_log()),
+        'log.lammps',
+    )
+    retrieved.put_object_from_filelike(
+        StringIO(get_traj_force()),
+        'x-trajectory.lammpstrj',
+    )
+    retrieved.put_object_from_filelike(
+        StringIO('ERROR description'),
+        '_scheduler-stdout.txt',
+    )
+    retrieved.put_object_from_filelike(
+        StringIO(''),
+        '_scheduler-stderr.txt',
+    )
 
     calc_node = db_test_app.generate_calcjob_node(plugin_name, retrieved)
     parser = ParserFactory(plugin_name)
@@ -153,8 +176,10 @@ def test_run_error(db_test_app, plugin_name):
     with db_test_app.sandbox_folder() as temp_path:
         with temp_path.open('x-trajectory.lammpstrj', 'w') as handle:
             handle.write(get_traj_force())
-        results, calcfunction = parser.parse_from_node(
-            calc_node, retrieved_temporary_folder=temp_path.abspath)
+        results, calcfunction = parser.parse_from_node(  # pylint: disable=unused-variable
+            calc_node,
+            retrieved_temporary_folder=temp_path.abspath,
+        )
 
     print(get_calcjob_report(calc_node))
 

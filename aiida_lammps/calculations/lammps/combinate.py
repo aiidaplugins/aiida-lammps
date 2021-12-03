@@ -1,12 +1,10 @@
 """Combined MD and Phonopy calculation"""
 # Not working with Aiida 1.0
-# pylint: disable=no-name-in-module
+# pylint: disable=no-name-in-module, unspecified-encoding
 from aiida.common.exceptions import InputValidationError
-from aiida.orm import ArrayData, Dict
-from aiida_phonopy.common.raw_parsers import (
-    get_force_constants,
-    get_FORCE_SETS_txt,
-    get_poscar_txt,
+from aiida import orm
+from aiida_phonopy.common.raw_parsers import (  # pylint: disable=import-error
+    get_force_constants, get_FORCE_SETS_txt, get_poscar_txt,
 )
 import numpy as np
 
@@ -38,22 +36,34 @@ def generate_dynaphopy_input(
     :rtype: str
     """
     parameters = parameters_object.get_dict()
-    input_file = 'STRUCTURE FILE POSCAR\n{}\n\n'.format(poscar_name)
+    input_file = f'STRUCTURE FILE POSCAR\n{poscar_name}\n\n'
 
     if use_sets:
-        input_file += 'FORCE SETS\n{}\n\n'.format(force_sets_filename)
+        input_file += f'FORCE SETS\n{force_sets_filename}\n\n'
     else:
-        input_file += 'FORCE CONSTANTS\n{}\n\n'.format(force_constants_name)
+        input_file += f'FORCE CONSTANTS\n{force_constants_name}\n\n'
 
     input_file += 'PRIMITIVE MATRIX\n'
-    input_file += '{} {} {} \n'.format(*np.array(parameters['primitive'])[0])
-    input_file += '{} {} {} \n'.format(*np.array(parameters['primitive'])[1])
-    input_file += '{} {} {} \n'.format(*np.array(parameters['primitive'])[2])
+    input_file += f'{np.array(parameters["primitive"])[0, 0]} '
+    input_file += f'{np.array(parameters["primitive"])[1, 1]} '
+    input_file += f'{np.array(parameters["primitive"])[2, 2]} \n'
+    input_file += f'{np.array(parameters["primitive"])[0, 0]} '
+    input_file += f'{np.array(parameters["primitive"])[1, 1]} '
+    input_file += f'{np.array(parameters["primitive"])[2, 2]} \n'
+    input_file += f'{np.array(parameters["primitive"])[0, 0]} '
+    input_file += f'{np.array(parameters["primitive"])[1, 1]} '
+    input_file += f'{np.array(parameters["primitive"])[2, 2]} \n'
     input_file += '\n'
     input_file += 'SUPERCELL MATRIX PHONOPY\n'
-    input_file += '{} {} {} \n'.format(*np.array(parameters['supercell'])[0])
-    input_file += '{} {} {} \n'.format(*np.array(parameters['supercell'])[1])
-    input_file += '{} {} {} \n'.format(*np.array(parameters['supercell'])[2])
+    input_file += f'{np.array(parameters["supercell"])[0, 0]} '
+    input_file += f'{np.array(parameters["supercell"])[0, 1]} '
+    input_file += f'{np.array(parameters["supercell"])[0, 2]} \n'
+    input_file += f'{np.array(parameters["supercell"])[1, 0]} '
+    input_file += f'{np.array(parameters["supercell"])[1, 1]} '
+    input_file += f'{np.array(parameters["supercell"])[1, 2]} \n'
+    input_file += f'{np.array(parameters["supercell"])[2, 0]} '
+    input_file += f'{np.array(parameters["supercell"])[2, 1]} '
+    input_file += f'{np.array(parameters["supercell"])[2, 2]} \n'
     input_file += '\n'
 
     return input_file
@@ -81,15 +91,21 @@ class CombinateCalculation(BaseLammpsCalculation):
             valid_type=str,
             default='dynaphopy',
         )
-        spec.input('parameters_dynaphopy',
-                   valid_type=Dict,
-                   help='dynaphopy parameters')
-        spec.input('force_constants',
-                   valid_type=ArrayData,
-                   help='harmonic force constants')
-        spec.input('force_sets',
-                   valid_type=ArrayData,
-                   help='phonopy force sets')
+        spec.input(
+            'parameters_dynaphopy',
+            valid_type=orm.Dict,
+            help='dynaphopy parameters',
+        )
+        spec.input(
+            'force_constants',
+            valid_type=orm.ArrayData,
+            help='harmonic force constants',
+        )
+        spec.input(
+            'force_sets',
+            valid_type=orm.ArrayData,
+            help='phonopy force sets',
+        )
 
         # spec.input('settings', valid_type=str, default='lammps.optimize')
 
@@ -106,28 +122,26 @@ class CombinateCalculation(BaseLammpsCalculation):
         # pylint: disable=too-many-arguments, arguments-renamed
         random_number = np.random.randint(10000000)
 
-        lammps_input_file = 'units           {0}\n'.format(
-            potential_data.default_units)
+        lammps_input_file = f'units           {potential_data.default_units}\n'
         lammps_input_file += 'boundary        p p p\n'
         lammps_input_file += 'box tilt large\n'
-        lammps_input_file += 'atom_style      {0}\n'.format(
-            potential_data.atom_style)
-        lammps_input_file += 'read_data       {}\n'.format(structure_filename)
+        lammps_input_file += f'atom_style      {potential_data.atom_style}\n'
+        lammps_input_file += f'read_data       {structure_filename}\n'
 
         lammps_input_file += potential_data.get_input_lines(structure_data)
 
         lammps_input_file += 'neighbor        0.3 bin\n'
         lammps_input_file += 'neigh_modify    every 1 delay 0 check no\n'
 
-        lammps_input_file += (
-            'velocity        all create {0} {1} dist gaussian mom yes\n'.
-            format(parameter_data.dict.temperature, random_number))
-        lammps_input_file += 'velocity        all scale {}\n'.format(
-            parameter_data.dict.temperature)
+        lammps_input_file += 'velocity        all create '
+        lammps_input_file += f'{parameter_data.dict.temperature} {random_number} '
+        lammps_input_file += 'dist gaussian mom yes\n'
+        lammps_input_file += f'velocity        all scale {parameter_data.dict.temperature}\n'
 
-        lammps_input_file += 'fix             int all nvt temp {0} {0} {1}\n'.format(
-            parameter_data.dict.temperature,
-            parameter_data.dict.thermostat_variable)
+        lammps_input_file += 'fix             int all nvt temp '
+        lammps_input_file += f'{parameter_data.dict.temperature} '
+        lammps_input_file += f'{parameter_data.dict.temperature} '
+        lammps_input_file += f'{parameter_data.dict.thermostat_variable}\n'
 
         return lammps_input_file
 
@@ -168,7 +182,7 @@ class CombinateCalculation(BaseLammpsCalculation):
             )
 
         try:
-            parameters_data_dynaphopy = Dict.pop(
+            parameters_data_dynaphopy = orm.Dict.pop(
                 self.get_linkname('parameters_dynaphopy'))
         except KeyError as key_error:
             raise InputValidationError(
@@ -198,13 +212,13 @@ class CombinateCalculation(BaseLammpsCalculation):
             self._INPUT_FILE_NAME_DYNA,
             '--run_lammps',
             self._INPUT_FILE_NAME,
-            '{}'.format(total_time),
-            '{}'.format(time_step),
-            '{}'.format(equilibrium_time),
+            f'{total_time}',
+            f'{time_step}',
+            f'{equilibrium_time}',
             '--dim',
-            '{}'.format(md_supercell[0]),
-            '{}'.format(md_supercell[1]),
-            '{}'.format(md_supercell[2]),
+            f'{md_supercell[0]}',
+            f'{md_supercell[1]}',
+            f'{md_supercell[2]}',
             '--silent',
             '-sfc',
             self._OUTPUT_FORCE_CONSTANTS,
