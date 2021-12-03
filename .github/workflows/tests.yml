@@ -37,7 +37,7 @@ jobs:
       run: pip install wheel
     - name: Install AiiDA-LAMMPS
       run: |
-        pip install -e .[testing,pre-commit]
+        pip install -e .[testing, pre-commit]
         pip freeze
     - name: Run pre-commit
       run: pre-commit run --all-files || ( git diff; git status; exit 1; )
@@ -104,7 +104,7 @@ jobs:
 
     - name: Installation
       run: |
-        pip install -e .[testing, pre-commit]
+        pip install -e .[testing]
         reentry scan
 
     - name: Run pytest
