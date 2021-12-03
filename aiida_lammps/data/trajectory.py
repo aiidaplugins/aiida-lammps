@@ -47,7 +47,7 @@ class LammpsTrajectory(orm.Data):
         if fileobj is not None:
             if isinstance(fileobj, str):
                 with io.open(fileobj) as handle:
-                    self.set_from_fileobj(handle, aliases)
+                    self.set_from_fileobj(handle.read(), aliases)
             else:
                 self.set_from_fileobj(fileobj, aliases)
 
