@@ -35,7 +35,7 @@ jobs:
         pip --version
     - name: Install wheel
       run: pip install wheel
-    - name: Install AiiDA-VASP
+    - name: Install AiiDA-LAMMPS
       run: |
         pip install -e .[testing,pre-commit]
         pip freeze
