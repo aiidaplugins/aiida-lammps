@@ -1,5 +1,5 @@
 """Base dynaphopy calculation"""
-# pylint: disable=too-many-instance-attributes, abstract-method
+# pylint: disable=too-many-instance-attributes, abstract-method, super-with-arguments
 from aiida.common.datastructures import CalcInfo, CodeInfo
 from aiida.common.exceptions import InputValidationError
 from aiida.common.utils import classproperty

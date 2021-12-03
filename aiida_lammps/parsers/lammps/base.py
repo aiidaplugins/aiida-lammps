@@ -1,7 +1,4 @@
-"""[summary]
-
-:return: [description]
-:rtype: [type]
+"""Abstract Base Parser for LAMMPS, supplying common methods.
 """
 from collections import namedtuple
 from fnmatch import fnmatch
@@ -23,7 +20,7 @@ class LAMMPSBaseParser(Parser):
     """Abstract Base Parser for LAMMPS, supplying common methods."""
     def __init__(self, node):
         """Initialize the parser."""
-        # pylint: disable=useless-super-delegation
+        # pylint: disable=useless-super-delegation, super-with-arguments
         super(LAMMPSBaseParser, self).__init__(node)
 
     def get_parsing_resources(

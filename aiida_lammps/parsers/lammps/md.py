@@ -13,7 +13,7 @@ class MdParser(LAMMPSBaseParser):
     """Parser for LAMMPS MD calculations."""
     def __init__(self, node):
         """Initialize the instance of Lammps MD Parser."""
-        # pylint: disable=useless-super-delegation
+        # pylint: disable=useless-super-delegation, super-with-arguments
         super(MdParser, self).__init__(node)
 
     def parse(self, **kwargs):

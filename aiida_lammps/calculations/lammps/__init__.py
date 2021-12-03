@@ -1,5 +1,5 @@
 """Base LAMMPS calculation for AiiDA."""
-# pylint: disable=duplicate-code
+# pylint: disable=duplicate-code, super-with-arguments, duplicate-code
 import itertools
 import numpy as np
 from aiida.common import CalcInfo, CodeInfo

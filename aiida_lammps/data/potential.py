@@ -1,4 +1,5 @@
 """Store the empirical potential data"""
+# pylint: disable=too-many-ancestors
 from hashlib import md5
 from io import StringIO
 

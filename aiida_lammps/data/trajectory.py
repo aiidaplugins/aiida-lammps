@@ -4,6 +4,7 @@ Data structure for storing LAMMPS trajectories.
 The idea is that each of the steps of the simulation are stored as ZIP files
 which can then be easily accessed by the user.
 """
+# pylint: disable=too-many-ancestors
 import io
 import tempfile
 from zipfile import ZIP_DEFLATED, ZipFile

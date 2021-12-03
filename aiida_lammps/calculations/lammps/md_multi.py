@@ -1,5 +1,5 @@
 """Run a multi-stage molecular dynamic simulation."""
-# pylint: disable=fixme
+# pylint: disable=fixme, super-with-arguments
 from aiida.common.exceptions import InputValidationError
 from aiida.plugins import DataFactory
 

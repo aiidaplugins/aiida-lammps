@@ -1,6 +1,6 @@
 """Combined MD and Phonopy calculation"""
 # Not working with Aiida 1.0
-# pylint: disable=no-name-in-module
+# pylint: disable=no-name-in-module, super-with-arguments, duplicate-code
 import numpy as np
 from aiida.common.exceptions import InputValidationError
 from aiida import orm

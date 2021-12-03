@@ -1,5 +1,5 @@
 """Single stage MD calculation in LAMMPS."""
-# pylint: disable=fixme, useless-super-delegation
+# pylint: disable=fixme, useless-super-delegation, super-with-arguments, duplicate-code
 import numpy as np
 from aiida.common.exceptions import InputValidationError
 from aiida.plugins import DataFactory
@@ -45,7 +45,7 @@ class MdCalculation(BaseLammpsCalculation):
         system_filename,
         restart_filename,
     ):
-        # pylint: disable=too-many-locals, too-many-arguments¸ too-many-branches, too-many-statements
+        # pylint: disable=too-many-locals, too-many-arguments¸ too-many-branches, too-many-statements, duplicate-code
         pdict = parameter_data.get_dict()
         version_date = convert_date_string(
             pdict.get('lammps_version', '11 Aug 2017'))
