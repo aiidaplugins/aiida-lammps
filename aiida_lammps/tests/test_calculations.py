@@ -206,7 +206,7 @@ def test_input_creation(
     """
     pot_data = get_potential_data(potential_type)
     potential_data = DataFactory('lammps.potential')(
-        type=pot_data.type,
+        potential_type=pot_data.type,
         data=pot_data.data,
     )
     parameter_data = get_calc_parameters(
@@ -245,7 +245,7 @@ def test_force_submission(
     code = db_test_app.get_or_create_code(calc_plugin)
     pot_data = get_potential_data(potential_type)
     potential = DataFactory('lammps.potential')(
-        type=pot_data.type,
+        potential_type=pot_data.type,
         data=pot_data.data,
     )
     parameters = get_calc_parameters(
@@ -283,7 +283,7 @@ def test_optimize_submission(db_test_app, get_potential_data, potential_type):
     code = db_test_app.get_or_create_code(calc_plugin)
     pot_data = get_potential_data(potential_type)
     potential = DataFactory('lammps.potential')(
-        type=pot_data.type,
+        potential_type=pot_data.type,
         data=pot_data.data,
     )
     parameters = get_calc_parameters(
@@ -361,7 +361,7 @@ def test_force_process(
     code = db_test_app.get_or_create_code(calc_plugin)
     pot_data = get_potential_data(potential_type)
     potential = DataFactory('lammps.potential')(
-        type=pot_data.type,
+        potential_type=pot_data.type,
         data=pot_data.data,
     )
     parameters = get_calc_parameters(
@@ -419,7 +419,7 @@ def test_optimize_process(
     code = db_test_app.get_or_create_code(calc_plugin)
     pot_data = get_potential_data(potential_type)
     potential = DataFactory('lammps.potential')(
-        type=pot_data.type,
+        potential_type=pot_data.type,
         data=pot_data.data,
     )
     parameters = get_calc_parameters(
@@ -549,7 +549,7 @@ def test_md_multi_process(
     code = db_test_app.get_or_create_code(calc_plugin)
     pot_data = get_potential_data(potential_type)
     potential = DataFactory('lammps.potential')(
-        type=pot_data.type,
+        potential_type=pot_data.type,
         data=pot_data.data,
     )
     parameters = get_calc_parameters(
