@@ -23,8 +23,8 @@ class Tersoff(PotentialAbstract):
     def get_input_potential_lines(self):  # pylint: disable=arguments-differ
 
         lammps_input_text = 'pair_style      tersoff\n'
-        lammps_input_text += 'pair_coeff      * * {} {{kind_symbols}}\n'.format(
-            self.potential_fname)
+        lammps_input_text += f'pair_coeff      * * {self.potential_fname} '
+        lammps_input_text += '{kind_symbols}\n'
 
         return lammps_input_text
 

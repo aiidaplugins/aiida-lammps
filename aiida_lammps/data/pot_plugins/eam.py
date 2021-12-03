@@ -29,7 +29,7 @@ class EAM(PotentialAbstract):
 
         lammps_input_text = f'pair_style      eam/{self.data["type"]}\n'
         lammps_input_text += f'pair_coeff      * * {self.potential_fname} '
-        lammps_input_text += '{{kind_symbols}}\n'
+        lammps_input_text += '{kind_symbols}\n'
 
         return lammps_input_text
 

@@ -319,7 +319,7 @@ def test_md_submission(db_test_app, get_potential_data, potential_type):
     code = db_test_app.get_or_create_code(calc_plugin)
     pot_data = get_potential_data(potential_type)
     potential = DataFactory('lammps.potential')(
-        type=pot_data.type,
+        potential_type=pot_data.type,
         data=pot_data.data,
     )
     parameters = get_calc_parameters(
@@ -443,8 +443,7 @@ def test_optimize_process(
     if not calc_node.is_finished_ok:
         print(calc_node.attributes)
         print(get_calcjob_report(calc_node))
-        raise Exception('finished with exit message: {}'.format(
-            calc_node.exit_message))
+        raise Exception(f'finished with exit message: {calc_node.exit_message}')
 
     link_labels = calc_node.get_outgoing().all_link_labels()
     assert set(link_labels).issuperset(
@@ -486,7 +485,7 @@ def test_md_process(
     code = db_test_app.get_or_create_code(calc_plugin)
     pot_data = get_potential_data(potential_type)
     potential = DataFactory('lammps.potential')(type=pot_data.type,
-                                                data=pot_data.data)
+                                                data=pot_data.data,)
     version = get_lammps_version(code)
     version_year = version[-4:]
     parameters = get_calc_parameters(
@@ -510,8 +509,7 @@ def test_md_process(
     if not calc_node.is_finished_ok:
         print(calc_node.attributes)
         print(get_calcjob_report(calc_node))
-        raise Exception('finished with exit message: {}'.format(
-            calc_node.exit_message))
+        raise Exception(f'finished with exit message: {calc_node.exit_message}')
 
     link_labels = calc_node.get_outgoing().all_link_labels()
     assert set(link_labels).issuperset(
@@ -573,8 +571,7 @@ def test_md_multi_process(
     if not calc_node.is_finished_ok:
         print(calc_node.attributes)
         print(get_calcjob_report(calc_node))
-        raise Exception('finished with exit message: {}'.format(
-            calc_node.exit_message))
+        raise Exception(f'finished with exit message: {calc_node.exit_message}')
 
     link_labels = calc_node.get_outgoing().all_link_labels()
     assert set(link_labels).issuperset([

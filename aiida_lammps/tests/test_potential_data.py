@@ -27,7 +27,10 @@ def test_init(
 ):
     """Test that the potential can be generated"""
     potential = get_potential_data(potential_type)
-    node = EmpiricalPotential(potential_type=potential.type, data=potential.data)  # pylint: disable=no-value-for-parameter
+    node = EmpiricalPotential(
+        potential_type=potential.type,
+        data=potential.data,
+    )
     data_regression.check(node.attributes)
 
 
@@ -40,7 +43,10 @@ def test_potential_files(
 ):
     """Test that one can read the potential content."""
     potential = get_potential_data(potential_type)
-    node = EmpiricalPotential(potential_type=potential.type, data=potential.data)  # pylint: disable=no-value-for-parameter
+    node = EmpiricalPotential(
+        potential_type=potential.type,
+        data=potential.data,
+    )
     file_regression.check(node.get_object_content('potential.pot', 'r'))
 
 
@@ -56,5 +62,8 @@ def test_input_lines(
 ):
     """Test that one can get the potential lines for a given aiida-lammps potential"""
     potential = get_potential_data(potential_type)
-    node = EmpiricalPotential(potential_type=potential.type, data=potential.data)  # pylint: disable=no-value-for-parameter
+    node = EmpiricalPotential(
+        potential_type=potential.type,
+        data=potential.data,
+    )
     file_regression.check(node.get_input_lines())
