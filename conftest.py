@@ -228,7 +228,7 @@ PotentialData = namedtuple(
 
 @pytest.fixture(scope='function')
 def get_potential_data(get_structure_data):
-    """Get the potnetial information for different types of potentials.
+    """Get the potential information for different types of potentials.
 
     :param get_structure_data: Structure to be used in the simulation
     :type get_structure_data: orm.StructureData
@@ -341,3 +341,27 @@ def get_potential_data(get_structure_data):
         )
 
     return _get_potential_data
+
+
+@pytest.fixture(scope='function')
+def get_lammps_potential_data(get_structure_data):
+    """Get the potential information for different types of potentials.
+
+    :param get_structure_data: Structure to be used in the simulation
+    :type get_structure_data: orm.StructureData
+    """
+    def _get_lammps_potential_data(pkey):
+        """return data to create a potential,
+        and accompanying structure data and expected output data to test it with
+        """
+        if pkey == 'eam':
+            pair_style = 'eam'
+            filename = os.path.join(TEST_DIR, 'input_files', 'FeW_MO_737567242631_000.eam.alloy')
+            with io.open(filename) as handle:
+                potential_dict = {
+                    'type': 'fs',
+                    'file_contents': handle.readlines(),
+                    'element_names': ['Fe'],
+                }
+            structure = get_structure_data('Fe')
+            output_dict = {'initial_energy': -8.2441284, 'energy': -8.2448702}

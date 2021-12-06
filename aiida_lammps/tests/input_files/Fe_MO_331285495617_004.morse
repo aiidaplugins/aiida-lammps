@@ -1,0 +1,53 @@
+Fe
+6.65905e+00
+-4.17400e-01
+1.38850e+00
+2.84500e+00
+
+# Row 1: `rcut' cutoff value in Angstroms
+# Row 2: Morse `epsilon' value in eV
+# Row 3: Morse `C' value in 1/Angstroms
+# Row 4: Morse `Rzero' value in Angstroms
+# (See README for Pair_Morse_Shifted__MD_552566534109_001 for further details.)
+#
+# Parameters (epsilon, C, Rzero) for Fe taken from:
+#    L. A. Girifalco, V. G. Weizer, Phys. Rev., Vol 114, no 3, 1959, pp687--690
+#
+# The cutoff radius is computed so that
+#
+# phi(rcut)=tol*|phi(rmin)|,   (*)
+#
+# where phi(r) is the Morse potential, 'rcut' is the cutoff radius,
+# `rmin' is the radius at which phi(r) is a minimum, and
+# `tol' is a small number.  Here, (*) is solved numerically for `rcut'.
+#
+# `cutoff' in this file is for a "Low" tolerance of tol = 1.00000e-02.
+#
+
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the Common Development
+# and Distribution License Version 1.0 (the "License").
+#
+# You can obtain a copy of the license at
+# http://www.opensource.org/licenses/CDDL-1.0.  See the License for the
+# specific language governing permissions and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each file and
+# include the License file in a prominent location with the name LICENSE.CDDL.
+# If applicable, add the following below this CDDL HEADER, with the fields
+# enclosed by brackets "[]" replaced with your own identifying information:
+#
+# Portions Copyright (c) [yyyy] [name of copyright owner]. All rights reserved.
+#
+# CDDL HEADER END
+#
+
+#
+# Copyright (c) 2013, Regents of the University of Minnesota.
+# All rights reserved.
+#
+# Contributors:
+#    Ryan S. Elliott
+#

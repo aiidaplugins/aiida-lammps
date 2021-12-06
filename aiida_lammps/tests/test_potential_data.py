@@ -2,6 +2,7 @@
 
 import pytest
 from aiida_lammps.data.potential import EmpiricalPotential
+from aiida_lammps.data.lammps_potential import LammpsPotentialData
 
 
 def test_list_potentials():
@@ -67,3 +68,18 @@ def test_input_lines(
         data=potential.data,
     )
     file_regression.check(node.get_input_lines())
+
+
+@pytest.mark.parametrize(
+    'potential_type',
+    ['tersoff', 'eam', 'meam', 'morse'],
+)
+def test_lammps_potentials(
+    db_test_app,  # pylint: disable=unused-argument
+    get_lammps_potential_data,
+    potential_type,
+    file_regression,
+):
+
+    potential_file, potential_metadata = get_lammps_potential_data(potential_type)
+    node = LammpsPotentialData(source=potential_file, filename=potential_file, pair_style=potential_type,**potential_metadata,)
