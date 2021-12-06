@@ -124,10 +124,18 @@ class LammpsTrajectory(orm.Data):
             temp_handle.flush()
             temp_handle.seek(0)
 
-            self.put_object_from_filelike(
-                temp_handle,
-                self._trajectory_filename,
-            )
+            try:
+                self.put_object_from_filelike(
+                    temp_handle,
+                    self._trajectory_filename,
+                    mode="wb",
+                    encoding=None,
+                )
+            except TypeError:
+                self.put_object_from_filelike(
+                    temp_handle,
+                    self._trajectory_filename,
+                )
 
         self.put_object_from_filelike(
             io.StringIO(' '.join([str(t) for t in time_steps])),
