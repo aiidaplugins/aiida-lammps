@@ -55,7 +55,7 @@ trajectory__equilibrate:
   number_atoms: 12
   number_steps: 5
   timestep_filename: timesteps.txt
-  traj_filename: trajectory.zip
+  trajectory_filename: trajectory.zip
   zip_prefix: step-
 trajectory__thermalise:
   aliases: null
@@ -72,5 +72,5 @@ trajectory__thermalise:
   number_atoms: 12
   number_steps: 11
   timestep_filename: timesteps.txt
-  traj_filename: trajectory.zip
+  trajectory_filename: trajectory.zip
   zip_prefix: step-

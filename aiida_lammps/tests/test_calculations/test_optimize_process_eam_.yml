@@ -46,5 +46,5 @@ trajectory_data:
   - z
   number_atoms: 2
   timestep_filename: timesteps.txt
-  traj_filename: trajectory.zip
+  trajectory_filename: trajectory.zip
   zip_prefix: step-

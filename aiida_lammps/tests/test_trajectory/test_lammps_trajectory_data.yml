@@ -12,5 +12,5 @@ field_names:
 number_atoms: 12
 number_steps: 21
 timestep_filename: timesteps.txt
-traj_filename: trajectory.zip
+trajectory_filename: trajectory.zip
 zip_prefix: step-
