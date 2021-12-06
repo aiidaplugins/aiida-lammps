@@ -128,7 +128,7 @@ class LammpsTrajectory(orm.Data):
                 self.put_object_from_filelike(
                     temp_handle,
                     self._trajectory_filename,
-                    mode="wb",
+                    mode='wb',
                     encoding=None,
                 )
             except TypeError:
