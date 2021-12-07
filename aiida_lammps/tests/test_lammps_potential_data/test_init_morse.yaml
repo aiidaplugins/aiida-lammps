@@ -1,0 +1,4 @@
+md5: '3777ad3042df4a0629c2df8a478ba9ad'
+species: ['Fe']
+pair_style: 'morse'
+atom_style: 'atomic'

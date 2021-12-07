@@ -107,13 +107,13 @@ def get_or_create_code(entry_point, computer, executable, exec_path=None):
 
     try:
         code = Code.objects.get(  # pylint: disable=no-member
-            label='{}-{}-{}'.format(entry_point, executable, computer.label))
+            label=f'{entry_point}-{executable}-{computer.label}')
     except NotExistent:
         if exec_path is None:
             exec_path = get_path_to_executable(executable)
         code = Code(input_plugin_name=entry_point,
                     remote_computer_exec=[computer, exec_path])
-        code.label = '{}-{}-{}'.format(entry_point, executable, computer.label)
+        code.label = f'{entry_point}-{executable}-{computer.label}'
         code.store()
 
     return code

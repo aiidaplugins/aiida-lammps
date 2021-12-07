@@ -7,6 +7,7 @@ import io
 import os
 import shutil
 import tempfile
+import yaml
 import pytest
 import numpy as np
 from aiida.plugins import DataFactory
@@ -354,14 +355,87 @@ def get_lammps_potential_data(get_structure_data):
         """return data to create a potential,
         and accompanying structure data and expected output data to test it with
         """
+        output_dict = {}
         if pkey == 'eam':
-            pair_style = 'eam'
-            filename = os.path.join(TEST_DIR, 'input_files', 'FeW_MO_737567242631_000.eam.alloy')
-            with io.open(filename) as handle:
-                potential_dict = {
-                    'type': 'fs',
-                    'file_contents': handle.readlines(),
-                    'element_names': ['Fe'],
-                }
-            structure = get_structure_data('Fe')
-            output_dict = {'initial_energy': -8.2441284, 'energy': -8.2448702}
+            output_dict['filename'] = os.path.join(
+                'aiida_lammps/tests',
+                'input_files',
+                'FeW_MO_737567242631_000.eam.alloy',
+            )
+
+            filename_parameters = os.path.join(
+                'aiida_lammps/tests',
+                'input_files',
+                'FeW_MO_737567242631_000.eam.alloy.yaml',
+            )
+
+            with io.open(filename_parameters) as handle:
+                output_dict['parameters'] = yaml.load(handle, yaml.SafeLoader)
+
+            with io.open(output_dict['filename']) as handle:
+                output_dict['potential_data'] = handle.read()
+            output_dict['structure'] = get_structure_data('Fe')
+
+        if pkey == 'tersoff':
+            output_dict['filename'] = os.path.join(
+                'aiida_lammps/tests',
+                'input_files',
+                'Fe_MO_137964310702_004.tersoff',
+            )
+
+            filename_parameters = os.path.join(
+                'aiida_lammps/tests',
+                'input_files',
+                'Fe_MO_137964310702_004.tersoff.yaml',
+            )
+
+            with io.open(filename_parameters) as handle:
+                output_dict['parameters'] = yaml.load(handle, yaml.SafeLoader)
+
+            with io.open(output_dict['filename']) as handle:
+                output_dict['potential_data'] = handle.read()
+            output_dict['structure'] = get_structure_data('Fe')
+
+        if pkey == 'meam':
+            output_dict['filename'] = os.path.join(
+                'aiida_lammps/tests',
+                'input_files',
+                'Fe_MO_492310898779_001.meam',
+            )
+
+            filename_parameters = os.path.join(
+                'aiida_lammps/tests',
+                'input_files',
+                'Fe_MO_492310898779_001.meam.yaml',
+            )
+
+            with io.open(filename_parameters) as handle:
+                output_dict['parameters'] = yaml.load(handle, yaml.SafeLoader)
+
+            with io.open(output_dict['filename']) as handle:
+                output_dict['potential_data'] = handle.read()
+            output_dict['structure'] = get_structure_data('Fe')
+
+        if pkey == 'morse':
+            output_dict['filename'] = os.path.join(
+                'aiida_lammps/tests',
+                'input_files',
+                'Fe_MO_331285495617_004.morse',
+            )
+
+            filename_parameters = os.path.join(
+                'aiida_lammps/tests',
+                'input_files',
+                'Fe_MO_331285495617_004.morse.yaml',
+            )
+
+            with io.open(filename_parameters) as handle:
+                output_dict['parameters'] = yaml.load(handle, yaml.SafeLoader)
+
+            with io.open(output_dict['filename']) as handle:
+                output_dict['potential_data'] = handle.read()
+            output_dict['structure'] = get_structure_data('Fe')
+
+        return output_dict
+
+    return _get_lammps_potential_data

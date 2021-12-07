@@ -1,6 +1,11 @@
 """Test the functionality of the lammps potential data object"""
 
+import io
+import os
+
 import pytest
+import yaml
+from aiida_lammps.tests.utils import TEST_DIR
 from aiida_lammps.data.potential import EmpiricalPotential
 from aiida_lammps.data.lammps_potential import LammpsPotentialData
 
@@ -78,8 +83,32 @@ def test_lammps_potentials(
     db_test_app,  # pylint: disable=unused-argument
     get_lammps_potential_data,
     potential_type,
-    file_regression,
 ):
+    """Test the LAMMPS potential data type."""
 
-    potential_file, potential_metadata = get_lammps_potential_data(potential_type)
-    node = LammpsPotentialData(source=potential_file, filename=potential_file, pair_style=potential_type,**potential_metadata,)
+    potential_information = get_lammps_potential_data(potential_type)
+    node = LammpsPotentialData.get_or_create(
+        source=potential_information['filename'],
+        filename=potential_information['filename'],
+        **potential_information['parameters'],
+    )
+
+    reference_file = os.path.join(
+        TEST_DIR,
+        'test_lammps_potential_data',
+        f'test_init_{potential_type}.yaml',
+    )
+
+    with io.open(reference_file, 'r') as handler:
+        reference_values = yaml.load(handler, yaml.SafeLoader)
+
+    _attributes = ['md5', 'pair_style', 'species', 'atom_style']
+
+    for _attribute in _attributes:
+        _msg = f'attribute "{_attribute}" does not match between reference and current value'
+        assert reference_values[_attribute] == node.get_attribute(
+            _attribute), _msg
+
+    _msg = 'content of the files differ'
+    assert node.get_content().split(
+        '\n') == potential_information['potential_data'].split('\n'), _msg
