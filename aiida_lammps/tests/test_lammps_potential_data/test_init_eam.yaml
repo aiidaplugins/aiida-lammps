@@ -2,3 +2,4 @@ md5: '2d501fdaffce2501d97f6225e1f6b0a6'
 species: ['Fe', 'W']
 pair_style: 'eam'
 atom_style: 'atomic'
+default_units: 'metal'

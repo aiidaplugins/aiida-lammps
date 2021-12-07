@@ -1,0 +1,4 @@
+# ---- Start of Potential information ----
+pair_style eam 
+pair_coeff * * temp.pot Fe Fe
+# ---- End of Potential information ----

@@ -115,7 +115,8 @@ def write_potential_block(
     if default_potential[potential.pair_style].get('read_from_file'):
         potential_block += f'pair_coeff * * {potential_file} {" ".join(kind_symbols)}\n'
     if not default_potential[potential.pair_style].get('read_from_file'):
-        potential_block += f'pair_coeff {potential.get_content()}\n'
+        data = [line for line in potential.get_content().split('\n') if not line.startswith('#') and line]
+        potential_block += f'pair_coeff * * {" ".join(data)}\n'
 
     if 'neighbor' in parameters_potential:
         potential_block += f'neighbor {join_keywords(parameters_potential["neighbor"])}\n'
