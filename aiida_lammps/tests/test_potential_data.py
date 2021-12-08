@@ -87,8 +87,7 @@ def test_lammps_potentials_init(
 ):
     """Test the LAMMPS potential data type."""
 
-    potential_information = get_lammps_potential_data(
-        potential_type.replace('_', '/'))
+    potential_information = get_lammps_potential_data(potential_type)
     node = LammpsPotentialData.get_or_create(
         source=potential_information['filename'],
         filename=potential_information['filename'],
@@ -125,8 +124,7 @@ def test_lammps_potentials_files(
 ):
     """Test the LAMMPS potential data type."""
 
-    potential_information = get_lammps_potential_data(
-        potential_type.replace('_', '/'))
+    potential_information = get_lammps_potential_data(potential_type)
     node = LammpsPotentialData.get_or_create(
         source=potential_information['filename'],
         filename=potential_information['filename'],
@@ -149,8 +147,7 @@ def test_lammps_potentials_input_block(
 ):
     """Test the LAMMPS potential data type."""
 
-    potential_information = get_lammps_potential_data(
-        potential_type.replace('_', '/'))
+    potential_information = get_lammps_potential_data(potential_type)
     node = LammpsPotentialData.get_or_create(
         source=potential_information['filename'],
         filename=potential_information['filename'],

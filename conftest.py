@@ -356,7 +356,7 @@ def get_lammps_potential_data(get_structure_data):
         and accompanying structure data and expected output data to test it with
         """
         output_dict = {}
-        if pkey == 'eam':
+        if pkey == 'eam_alloy':
             output_dict['filename'] = os.path.join(
                 'aiida_lammps/tests',
                 'input_files',
