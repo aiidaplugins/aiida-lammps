@@ -1,6 +1,6 @@
 species: ["Fe", "W"]
 atom_style: "atomic"
-pair_style: "eam"
+pair_style: "eam/alloy"
 units: "metal"
 extra_tags:
         content_origin: "NIST IPRP (https://www.ctcms.nist.gov/potentials/Fe.html#Fe-W)"

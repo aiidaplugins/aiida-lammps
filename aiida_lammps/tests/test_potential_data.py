@@ -78,7 +78,7 @@ def test_input_lines(
 
 @pytest.mark.parametrize(
     'potential_type',
-    ['tersoff', 'eam', 'meam', 'morse'],
+    ['tersoff', 'eam_alloy', 'meam', 'morse'],
 )
 def test_lammps_potentials_init(
     db_test_app,  # pylint: disable=unused-argument
@@ -87,7 +87,8 @@ def test_lammps_potentials_init(
 ):
     """Test the LAMMPS potential data type."""
 
-    potential_information = get_lammps_potential_data(potential_type)
+    potential_information = get_lammps_potential_data(
+        potential_type.replace('_', '/'))
     node = LammpsPotentialData.get_or_create(
         source=potential_information['filename'],
         filename=potential_information['filename'],
@@ -115,7 +116,7 @@ def test_lammps_potentials_init(
 
 @pytest.mark.parametrize(
     'potential_type',
-    ['tersoff', 'eam', 'meam', 'morse'],
+    ['tersoff', 'eam_alloy', 'meam', 'morse'],
 )
 def test_lammps_potentials_files(
     db_test_app,  # pylint: disable=unused-argument
@@ -124,7 +125,8 @@ def test_lammps_potentials_files(
 ):
     """Test the LAMMPS potential data type."""
 
-    potential_information = get_lammps_potential_data(potential_type)
+    potential_information = get_lammps_potential_data(
+        potential_type.replace('_', '/'))
     node = LammpsPotentialData.get_or_create(
         source=potential_information['filename'],
         filename=potential_information['filename'],
@@ -138,7 +140,7 @@ def test_lammps_potentials_files(
 
 @pytest.mark.parametrize(
     'potential_type',
-    ['tersoff', 'eam', 'meam', 'morse'],
+    ['tersoff', 'eam_alloy', 'meam', 'morse'],
 )
 def test_lammps_potentials_input_block(
     db_test_app,  # pylint: disable=unused-argument
@@ -147,7 +149,8 @@ def test_lammps_potentials_input_block(
 ):
     """Test the LAMMPS potential data type."""
 
-    potential_information = get_lammps_potential_data(potential_type)
+    potential_information = get_lammps_potential_data(
+        potential_type.replace('_', '/'))
     node = LammpsPotentialData.get_or_create(
         source=potential_information['filename'],
         filename=potential_information['filename'],
