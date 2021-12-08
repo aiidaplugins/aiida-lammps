@@ -1,4 +1,4 @@
-# ---- Start of Potential information ----
+#-------------------------Start of Potential information-------------------------#
 pair_style tersoff 
-pair_coeff * * temp.pot Fe Fe
-# ---- End of Potential information ----
+pair_coeff * * temp.pot Fe
+#--------------------------End of Potential information--------------------------#
