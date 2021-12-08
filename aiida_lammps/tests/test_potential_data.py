@@ -8,7 +8,7 @@ import yaml
 from aiida_lammps.tests.utils import TEST_DIR
 from aiida_lammps.data.potential import EmpiricalPotential
 from aiida_lammps.data.lammps_potential import LammpsPotentialData
-import aiida_lammps.common.input_generator as input_generator
+from aiida_lammps.common import input_generator
 
 
 def test_list_potentials():

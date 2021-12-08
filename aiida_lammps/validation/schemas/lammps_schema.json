@@ -456,7 +456,7 @@
                 "printing_rate":{
                     "type": "integer"
                 },
-                "thermo_print":{
+                "thermo_printing":{
                     "propertyNames":{
                         "enum":[
                             "step",

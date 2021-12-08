@@ -115,7 +115,10 @@ def write_potential_block(
     if default_potential[potential.pair_style].get('read_from_file'):
         potential_block += f'pair_coeff * * {potential_file} {" ".join(kind_symbols)}\n'
     if not default_potential[potential.pair_style].get('read_from_file'):
-        data = [line for line in potential.get_content().split('\n') if not line.startswith('#') and line]
+        data = [
+            line for line in potential.get_content().split('\n')
+            if not line.startswith('#') and line
+        ]
         potential_block += f'pair_coeff * * {" ".join(data)}\n'
 
     if 'neighbor' in parameters_potential:
@@ -245,9 +248,10 @@ def write_md_block(parameters_md: dict) -> str:
     )
 
     md_block = '# ---- Start of the MD information ----\n'
-    md_block += f'fix {parameters_md["integration"].get("style", "nve")}{integration_options}\n'
+    _key = parameters_md['integration'].get('style', 'nve')
+    md_block += f'fix {generate_id_tag(_key, "all")} all {_key}{integration_options}\n'
     if 'velocity' in parameters_md:
-        md_block += f'{generate_velocity_string(parameters_velocity=parameters_md["velocity"])}\n'
+        md_block += f'{generate_velocity_string(parameters_velocity=parameters_md["velocity"])}'
     md_block += 'reset_timestep 0\n'
     if parameters_md.get('run_style', 'verlet') == 'rspa':
         md_block += f'run_style {parameters_md.get("run_style", "verlet")} '
@@ -278,7 +282,7 @@ def generate_velocity_string(parameters_velocity: dict) -> str:
         if 'create' in entry:
             options += f'velocity {entry.get("group", "all")} create'
             options += f' {entry["create"].get("temp")}'
-            options += f' {entry["create"].get("seed", np.random.randint(9e9))} {_options}\n'
+            options += f' {entry["create"].get("seed", np.random.randint(1e4))} {_options}\n'
         if 'set' in entry:
             options += f'velocity {entry.get("group", "all")} set'
             options += f' {entry["set"].get("vx", "NULL")}'
@@ -317,7 +321,8 @@ def generate_velocity_options(options_velocity: dict) -> str:
 
     velocity_option = ''
     for _option in _options:
-        velocity_option += f' {_option} {options_velocity[_option]} '
+        if _option in options_velocity:
+            velocity_option += f' {_option} {options_velocity[_option]} '
     return velocity_option
 
 
@@ -608,9 +613,11 @@ def write_thermo_block(
         fixed_thermo = [
             key for key, value in computes_printing.items() if value
         ]
+        if 'step' not in fixed_thermo:
+            fixed_thermo = ['step'] + fixed_thermo
 
     thermo_block = '# ---- Start of the Thermo information ----\n'
-    thermo_block += f'thermo_style {" ".join(fixed_thermo)} {" ".join(computes_list)}\n'
+    thermo_block += f'thermo_style custom {" ".join(fixed_thermo)} {" ".join(computes_list)}\n'
     thermo_block += f'thermo {parameters_thermo.get("printing_rate", 1000)}\n'
     thermo_block += '# ---- End of the Thermo information ----\n'
 
