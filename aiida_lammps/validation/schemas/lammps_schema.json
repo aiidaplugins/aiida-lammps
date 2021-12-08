@@ -137,7 +137,7 @@
                                         "type": "integer"
                                     }
                                 },
-                                "required": ["temp", "seed"]
+                                "required": ["temp"]
                             },
                             "set": {
                                 "type": "object",
@@ -197,60 +197,60 @@
                             "group": {
                                 "type": "string"
                             }
-                        }
-                    },
-                    "oneOf": [
-                        {
-                            "required": [
-                                "create"
-                            ],
-                            "not": {
-                                "required": [
-                                    "set", "scale", "ramp", "zero"
-                                ]
-                            }
                         },
-                        {
-                            "required": [
-                                "set"
-                            ],
-                            "not": {
+                        "oneOf": [
+                            {
                                 "required": [
-                                    "create", "scale", "ramp", "zero"
-                                ]
-                            }
-                        },
-                        {
-                            "required": [
-                                "scale"
-                            ],
-                            "not": {
+                                    "create"
+                                ],
+                                "not": {
+                                    "required": [
+                                        "set", "scale", "ramp", "zero"
+                                    ]
+                                }
+                            },
+                            {
                                 "required": [
-                                    "create", "set", "ramp", "zero"
-                                ]
-                            }
-                        },
-                        {
-                            "required": [
-                                "ramp"
-                            ],
-                            "not": {
+                                    "set"
+                                ],
+                                "not": {
+                                    "required": [
+                                        "create", "scale", "ramp", "zero"
+                                    ]
+                                }
+                            },
+                            {
                                 "required": [
-                                    "create", "scale", "set", "zero"
-                                ]
-                            }
-                        },
-                        {
-                            "required": [
-                                "zero"
-                            ],
-                            "not": {
+                                    "scale"
+                                ],
+                                "not": {
+                                    "required": [
+                                        "create", "set", "ramp", "zero"
+                                    ]
+                                }
+                            },
+                            {
                                 "required": [
-                                    "create", "scale", "ramp", "set"
-                                ]
+                                    "ramp"
+                                ],
+                                "not": {
+                                    "required": [
+                                        "create", "scale", "set", "zero"
+                                    ]
+                                }
+                            },
+                            {
+                                "required": [
+                                    "zero"
+                                ],
+                                "not": {
+                                    "required": [
+                                        "create", "scale", "ramp", "set"
+                                    ]
+                                }
                             }
-                        }
-                    ]
+                        ]
+                    }
                 },
                 "integration": {
                     "type": "object",

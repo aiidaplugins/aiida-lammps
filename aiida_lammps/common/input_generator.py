@@ -18,6 +18,7 @@ import jsonschema
 import numpy as np
 from aiida import orm
 from aiida_lammps.data.lammps_potential import LammpsPotentialData
+from aiida_lammps.common.utils import flatten
 
 
 def validate_input_parameters(parameters: dict = None):
@@ -67,14 +68,16 @@ def write_control_block(parameters_control: dict) -> str:
     }
 
     _time = default_timestep[parameters_control.get('units', 'si')]
-    control_block = '# ---- Start of the Control information ----\n'
+    control_block = '#' + 'Start of the Control information'.center(
+        80, '-') + '#\n'
     control_block += 'clear\n'
     control_block += f'units {parameters_control.get("units", "si")}\n'
     control_block += f'newton {parameters_control.get("newton", "on")}\n'
     if 'processors' in parameters_control:
         control_block += f'processors {join_keywords(parameters_control["processors"])}\n'
     control_block += f'timestep {parameters_control.get("timestep", _time)}\n'
-    control_block += '# ---- End of the Control information ----\n'
+    control_block += '#' + 'End of the Control information'.center(80,
+                                                                   '-') + '#\n'
     return control_block
 
 
@@ -108,7 +111,8 @@ def write_potential_block(
 
     kind_symbols = [kind.symbol for kind in structure.kinds]
 
-    potential_block = '# ---- Start of Potential information ----\n'
+    potential_block = '#' + 'Start of Potential information'.center(
+        80, '-') + '#\n'
     potential_block += f'pair_style {potential.pair_style}'
     potential_block += f' {" ".join(parameters_potential.get("potential_style_options", [""]))}\n'
 
@@ -126,7 +130,8 @@ def write_potential_block(
     if 'neighbor_modify' in parameters_potential:
         potential_block += 'neigh_modify'
         potential_block += f' {join_keywords(parameters_potential["neighbor_modify"])}\n'
-    potential_block += '# ---- End of Potential information ----\n'
+    potential_block += '#' + 'End of Potential information'.center(80,
+                                                                   '-') + '#\n'
     return potential_block
 
 
@@ -165,7 +170,8 @@ def write_structure_block(
         if site.kind_name not in kind_name_id_map:
             kind_name_id_map[site.kind_name] = len(kind_name_id_map) + 1
 
-    structure_block = '# ---- Start of the Structure information ----\n'
+    structure_block = '#' + 'Start of the Structure information'.center(
+        80, '-') + '#\n'
     structure_block += f'box tilt {parameters_structure.get("box_tilt", "small")}\n'
 
     structure_block += f'dimension {structure.get_dimensionality()["dim"]}\n'
@@ -192,7 +198,8 @@ def write_structure_block(
             group_names.append(_group['name'])
     if restart_file is not None:
         structure_block += f'read_restart {restart_file} {parameters_structure["remap"]}'
-    structure_block += '# ---- End of the Structure information ----\n'
+    structure_block += '#' + 'End of the Structure information'.center(
+        80, '-') + '#\n'
 
     return structure_block, group_names
 
@@ -212,13 +219,15 @@ def write_minimize_block(parameters_minimize: dict) -> str:
     :rtype: str
     """
 
-    minimize_block = '# ---- Start of the Minimization information ----\n'
+    minimize_block = '#' + 'Start of the Minimization information'.center(
+        80, '-') + '#\n'
     minimize_block += f'min_style {parameters_minimize.get("style", "cg")}\n'
     minimize_block += f'minimize {parameters_minimize.get("energy_tolerance", 1e-4)}'
     minimize_block += f' {parameters_minimize.get("force_tolerance", 1e-4)}'
     minimize_block += f' {parameters_minimize.get("max_iterations", 1000)}'
     minimize_block += f' {parameters_minimize.get("max_evaluations", 1000)}\n'
-    minimize_block += '# ---- End of the Minimization information ----\n'
+    minimize_block += '#' + 'End of the Minimization information'.center(
+        80, '-') + '#\n'
 
     return minimize_block
 
@@ -247,7 +256,7 @@ def write_md_block(parameters_md: dict) -> str:
         integration_parameters=parameters_md['integration'].get('constraints'),
     )
 
-    md_block = '# ---- Start of the MD information ----\n'
+    md_block = '#' + 'Start of the MD information'.center(80, '-') + '#\n'
     _key = parameters_md['integration'].get('style', 'nve')
     md_block += f'fix {generate_id_tag(_key, "all")} all {_key}{integration_options}\n'
     if 'velocity' in parameters_md:
@@ -259,9 +268,47 @@ def write_md_block(parameters_md: dict) -> str:
     else:
         md_block += f'run_style {parameters_md.get("run_style", "verlet")}\n'
     md_block += f'run {parameters_md.get("max_number_steps", 100)}\n'
-    md_block += '# ---- End of the MD information ----\n'
+    md_block += '#' + 'End of the MD information'.center(80, '-') + '#\n'
 
     return md_block
+
+
+def write_final_variables_block(
+    fixed_thermo: list,
+    final_file: str = 'aiida_lammps.yaml',
+) -> str:
+    """
+    Generate the block to print the final values of the compute variables.
+
+    This takes all the global computes and other thermo values evaluated in
+    the simulation and appends them to a final yaml file for recovery.
+
+    :param fixed_thermo: list of thermo values (including computes)
+    :type fixed_thermo: list
+    :return: input block with the final variables of the calculation.
+    :rtype: str
+    """
+
+    _variables = []
+
+    variables_block = '#' + 'Start of the Final Variables information'.center(
+        80, '-') + '#\n'
+
+    for _thermo in fixed_thermo:
+        _variables.append(_thermo.replace('[', '_').replace(']', ''))
+        variables_block += f'variable final_{_variables[-1]} equal {_thermo}\n'
+    variables_block += '#' + 'End of the Final Variables information'.center(
+        80, '-') + '#\n'
+
+    variables_block += '#' + 'Start of the Printing Final Variables information'.center(
+        80, '-') + '#\n'
+    variables_block += f'print "#Final results" file {final_file}\n'
+    for variable in _variables:
+        variables_block += f'print "final_{variable}: ${{final_{variable}}}" append {final_file}\n'
+    variables_block += '#' + 'End of the Printing Final Variables information'.center(
+        80, '-') + '#\n'
+
+    return variables_block
 
 
 def generate_velocity_string(parameters_velocity: dict) -> str:
@@ -457,7 +504,7 @@ def write_fix_block(
     if group_names is None:
         group_names = []
 
-    fix_block = '# ---- Start of the Fix information ----\n'
+    fix_block = '#' + 'Start of the Fix information'.center(80, '-') + '#\n'
     for key, value in parameters_fix.items():
         for entry in value:
             _group = entry.get('group', 'all')
@@ -467,7 +514,7 @@ def write_fix_block(
                 )
             fix_block += f'fix {generate_id_tag(key, _group)} {_group} {key} '
             fix_block += f'{join_keywords(entry["type"])}\n'
-    fix_block += '# ---- End of the Fix information ----\n'
+    fix_block += '#' + 'End of the Fix information'.center(80, '-') + '#\n'
     return fix_block
 
 
@@ -495,7 +542,8 @@ def write_compute_block(
     if group_names is None:
         group_names = []
 
-    compute_block = '# ---- Start of the Compute information ----\n'
+    compute_block = '#' + 'Start of the Compute information'.center(
+        80, '-') + '#\n'
     for key, value in parameters_compute.items():
         for entry in value:
             _group = entry.get('group', 'all')
@@ -504,7 +552,8 @@ def write_compute_block(
                     f'group name "{_group}" is not the defined groups')
             compute_block += f'compute {generate_id_tag(key, _group)} {_group} {key} '
             compute_block += f'{join_keywords(entry["type"])}\n'
-    compute_block += '# ---- End of the Compute information ----\n'
+    compute_block += '#' + 'End of the Compute information'.center(80,
+                                                                   '-') + '#\n'
     return compute_block
 
 
@@ -554,12 +603,12 @@ def write_dump_block(
                         calculation_type='compute',
                     ))
 
-    dump_block = '# ---- Start of the Dump information ----\n'
+    dump_block = '#' + 'Start of the Dump information'.center(80, '-') + '#\n'
     dump_block += f'dump aiida all custom {parameters_dump.get("dump_rate", 10)} '
     dump_block += f'{trajectory_filename} id type element x y z '
     dump_block += f'{"q " if atom_style=="charge" else ""}'
     dump_block += f'{" ".join(computes_list)}\n'
-    dump_block += '# ---- End of the Dump information ----\n'
+    dump_block += '#' + 'End of the Dump information'.center(80, '-') + '#\n'
 
     return dump_block
 
@@ -567,7 +616,7 @@ def write_dump_block(
 def write_thermo_block(
     parameters_thermo: dict,
     parameters_compute: dict = None,
-) -> str:
+) -> Union[str, list]:
     """Generate the block with the thermo command.
 
     This will take all the global computes which were generated during the calculation
@@ -578,9 +627,11 @@ def write_thermo_block(
     :type parameters_thermo: dict
     :param parameters_compute: computes that will be applied to the calculation
     :type parameters_compute: dict
-    :return: block with the thermo options for the calculation.
-    :rtype: str
+    :return: block with the thermo options for the calculation, list of thermo printing variables
+    :rtype: Union[str, list]
     """
+
+    printing_variables = []
 
     _file = os.path.join(
         os.path.dirname(os.path.abspath(__file__)),
@@ -615,13 +666,59 @@ def write_thermo_block(
         ]
         if 'step' not in fixed_thermo:
             fixed_thermo = ['step'] + fixed_thermo
+        if 'etotal' not in fixed_thermo:
+            fixed_thermo = fixed_thermo + ['etotal']
 
-    thermo_block = '# ---- Start of the Thermo information ----\n'
+    if fixed_thermo.index('step') != 0:
+        fixed_thermo.remove('step')
+        fixed_thermo = ['step'] + fixed_thermo
+
+    thermo_block = '#' + 'Start of the Thermo information'.center(80,
+                                                                  '-') + '#\n'
     thermo_block += f'thermo_style custom {" ".join(fixed_thermo)} {" ".join(computes_list)}\n'
     thermo_block += f'thermo {parameters_thermo.get("printing_rate", 1000)}\n'
-    thermo_block += '# ---- End of the Thermo information ----\n'
+    thermo_block += '#' + 'End of the Thermo information'.center(80,
+                                                                 '-') + '#\n'
 
-    return thermo_block
+    printing_variables = fixed_thermo + list(
+        flatten([compute.split() for compute in computes_list]))
+
+    return thermo_block, printing_variables
+
+
+def write_restart_block(restart_filename: str) -> str:
+    """Generate the block to write the restart file.
+
+    :param restart_filename: Name of the LAMMPS restart file
+    :type restart_filename: str
+    :return: string block indicating the printing of a restart file.
+    :rtype: str
+    """
+
+    restart_block = '#' + 'Start of the write restart information'.center(
+        80, '-') + '#\n'
+    restart_block += f'write_restart {restart_filename}\n'
+    restart_block += '#' + 'End of the write restart information'.center(
+        80, '-') + '#\n'
+
+    return restart_block
+
+
+def write_read_restart_block(restart_filename: str) -> str:
+    """Generate the block to read the restart file.
+
+    :param restart_filename: Name of the LAMMPS restart file
+    :type restart_filename: str
+    :return: string block indicating the reading of a restart file.
+    :rtype: str
+    """
+
+    read_restart_block = '#' + 'Start of the read restart information'.center(
+        80, '-') + '#\n'
+    read_restart_block += f'read_restart {restart_filename}\n'
+    read_restart_block += '#' + 'End of the read restart information'.center(
+        80, '-') + '#\n'
+    return read_restart_block
 
 
 def generate_printing_string(

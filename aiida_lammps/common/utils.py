@@ -1,12 +1,23 @@
-"""[summary]
-
-:raises KeyError: [description]
-:return: [description]
-:rtype: [type]
-"""
+"""Utility functions for the handling of the input files"""
+from collections.abc import Iterable
 from datetime import datetime
-
 from dateutil.parser import parse as get_date
+
+
+def flatten(full_list: list) -> list:
+    """Flattens a list of list into a flat list.
+
+    :param full_list: list of lists to be flattened
+    :type full_list: list
+    :yield: flattened list
+    :rtype: list
+    """
+    for element in full_list:
+        if isinstance(element,
+                      Iterable) and not isinstance(element, (str, bytes)):
+            yield from flatten(element)
+        else:
+            yield element
 
 
 def convert_date_string(string):
