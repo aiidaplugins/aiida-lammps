@@ -7,7 +7,8 @@ import pytest
 from aiida_lammps.tests.utils import TEST_DIR
 
 from aiida_lammps.data.lammps_potential import LammpsPotentialData
-import aiida_lammps.common.input_generator as input_generator
+from aiida_lammps.common import input_generator
+
 
 @pytest.mark.parametrize(
     'potential_type',
@@ -23,48 +24,79 @@ def test_input_generate(
     structure_type,
 ):
     """Test the generation of the input file"""
+    # pylint: disable=too-many-locals
 
     # Dictionary with parameters for controlling aiida-lammps
     parameters = {
         'control': {
-            'units':'metal',
+            'units': 'metal',
             'timestep': 1e-5,
         },
-        'compute':{
-            'pe/atom': [{'type':[{'keyword':" ", 'value':" "}], "group":'all'}],
-            'ke/atom': [{'type':[{'keyword':" ", 'value':" "}], "group":'all'}],
-            'stress/atom': [{'type':['NULL'], "group":'all'}],
-            'pressure': [{'type':['thermo_temp'], 'group':'all'}],
+        'compute': {
+            'pe/atom': [{
+                'type': [{
+                    'keyword': ' ',
+                    'value': ' '
+                }],
+                'group': 'all'
+            }],
+            'ke/atom': [{
+                'type': [{
+                    'keyword': ' ',
+                    'value': ' '
+                }],
+                'group': 'all'
+            }],
+            'stress/atom': [{
+                'type': ['NULL'],
+                'group': 'all'
+            }],
+            'pressure': [{
+                'type': ['thermo_temp'],
+                'group': 'all'
+            }],
         },
-        'md':{
-            'integration':{
+        'md': {
+            'integration': {
                 'style': 'npt',
                 'constraints': {
-                    'temp':[300,300,100],
+                    'temp': [300, 300, 100],
                     'iso': [0.0, 0.0, 1000.0],
                 }
             },
             'max_number_steps': 5000,
-            'velocity': [{'create':{'temp': 300}, 'group':'all'}]
+            'velocity': [{
+                'create': {
+                    'temp': 300
+                },
+                'group': 'all'
+            }]
         },
-        'fix':{
-            'box/relax': [{"type":['iso', 0.0, 'vmax', 0.001], 'group':'all'}]
+        'fix': {
+            'box/relax': [{
+                'type': ['iso', 0.0, 'vmax', 0.001],
+                'group': 'all'
+            }]
         },
-        'structure': {'atom_style': 'atomic'},
+        'structure': {
+            'atom_style': 'atomic'
+        },
         'potential': {},
-        'thermo':{
+        'thermo': {
             'printing_rate': 100,
-            'thermo_printing':{
-                'step':True,
-                'pe':True,
+            'thermo_printing': {
+                'step': True,
+                'pe': True,
                 'ke': True,
                 'press': True,
                 'pxx': True,
                 'pyy': True,
                 'pzz': True,
-                }
-            },
-        'dump': {'dump_rate': 1000}
+            }
+        },
+        'dump': {
+            'dump_rate': 1000
+        }
     }
 
     input_generator.validate_input_parameters(parameters)
@@ -78,8 +110,10 @@ def test_input_generate(
         **potential_information['parameters'],
     )
     # Generate the input blocks
-    control_block = input_generator.write_control_block(parameters_control=parameters['control'])
-    compute_block = input_generator.write_compute_block(parameters_compute=parameters['compute'])
+    control_block = input_generator.write_control_block(
+        parameters_control=parameters['control'])
+    compute_block = input_generator.write_compute_block(
+        parameters_compute=parameters['compute'])
     thermo_block, fixed_thermo = input_generator.write_thermo_block(
         parameters_thermo=parameters['thermo'],
         parameters_compute=parameters['compute'],
@@ -106,8 +140,10 @@ def test_input_generate(
         trajectory_filename='temp.dump',
         atom_style='atom',
     )
-    restart_block = input_generator.write_restart_block(restart_filename='restart.aiida')
-    final_block = input_generator.write_final_variables_block(fixed_thermo=fixed_thermo)
+    restart_block = input_generator.write_restart_block(
+        restart_filename='restart.aiida')
+    final_block = input_generator.write_final_variables_block(
+        fixed_thermo=fixed_thermo)
     # Printing the potential
     input_file = control_block+structure_block+potential_block+fix_block+\
         compute_block+thermo_block+dump_block+md_block+final_block+restart_block
@@ -120,5 +156,5 @@ def test_input_generate(
 
     with io.open(reference_file, 'r') as handler:
         reference_value = handler.read()
-    
+
     assert input_file == reference_value, 'the content of the files differ'
