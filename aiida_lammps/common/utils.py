@@ -4,6 +4,18 @@ from datetime import datetime
 from dateutil.parser import parse as get_date
 
 
+def generate_header(value: str) -> str:
+    """
+    Generate the header for the blocks.
+
+    :param value: string indicating the input block
+    :type value: str
+    :return: header/footer for the input block
+    :rtype: str
+    """
+    return '#' + value.center(80, '-') + '#\n'
+
+
 def flatten(full_list: list) -> list:
     """Flattens a list of list into a flat list.
 

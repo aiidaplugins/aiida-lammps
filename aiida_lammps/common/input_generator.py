@@ -18,7 +18,7 @@ import jsonschema
 import numpy as np
 from aiida import orm
 from aiida_lammps.data.lammps_potential import LammpsPotentialData
-from aiida_lammps.common.utils import flatten
+from aiida_lammps.common.utils import flatten, generate_header
 
 
 def generate_input_file(
@@ -123,6 +123,7 @@ def generate_input_file(
         parameters_compute=parameters.get('compute', {}),
         trajectory_filename=trajectory_filename,
         atom_style=potential.atom_style,
+        kind_symbols=[kind.symbol for kind in structure.kinds],
     )
     # Generate the restart input block
     restart_block = write_restart_block(restart_filename=restart_filename)
@@ -182,16 +183,14 @@ def write_control_block(parameters_control: dict) -> str:
     }
 
     _time = default_timestep[parameters_control.get('units', 'si')]
-    control_block = '#' + 'Start of the Control information'.center(
-        80, '-') + '#\n'
+    control_block = generate_header('Start of the Control information')
     control_block += 'clear\n'
     control_block += f'units {parameters_control.get("units", "si")}\n'
     control_block += f'newton {parameters_control.get("newton", "on")}\n'
     if 'processors' in parameters_control:
         control_block += f'processors {join_keywords(parameters_control["processors"])}\n'
     control_block += f'timestep {parameters_control.get("timestep", _time)}\n'
-    control_block += '#' + 'End of the Control information'.center(80,
-                                                                   '-') + '#\n'
+    control_block += generate_header('End of the Control information')
     return control_block
 
 
@@ -225,8 +224,7 @@ def write_potential_block(
 
     kind_symbols = np.unique([kind.symbol for kind in structure.kinds])
 
-    potential_block = '#' + 'Start of Potential information'.center(
-        80, '-') + '#\n'
+    potential_block = generate_header('Start of Potential information')
     potential_block += f'pair_style {potential.pair_style}'
     potential_block += f' {" ".join(parameters_potential.get("potential_style_options", [""]))}\n'
 
@@ -244,8 +242,7 @@ def write_potential_block(
     if 'neighbor_modify' in parameters_potential:
         potential_block += 'neigh_modify'
         potential_block += f' {join_keywords(parameters_potential["neighbor_modify"])}\n'
-    potential_block += '#' + 'End of Potential information'.center(80,
-                                                                   '-') + '#\n'
+    potential_block += generate_header('End of Potential information')
     return potential_block
 
 
@@ -284,8 +281,7 @@ def write_structure_block(
         if site.kind_name not in kind_name_id_map:
             kind_name_id_map[site.kind_name] = len(kind_name_id_map) + 1
 
-    structure_block = '#' + 'Start of the Structure information'.center(
-        80, '-') + '#\n'
+    structure_block = generate_header('Start of the Structure information')
     structure_block += f'box tilt {parameters_structure.get("box_tilt", "small")}\n'
 
     structure_block += f'dimension {structure.get_dimensionality()["dim"]}\n'
@@ -312,8 +308,7 @@ def write_structure_block(
             group_names.append(_group['name'])
     if restart_file is not None:
         structure_block += f'read_restart {restart_file} {parameters_structure["remap"]}'
-    structure_block += '#' + 'End of the Structure information'.center(
-        80, '-') + '#\n'
+    structure_block += generate_header('End of the Structure information')
 
     return structure_block, group_names
 
@@ -333,15 +328,13 @@ def write_minimize_block(parameters_minimize: dict) -> str:
     :rtype: str
     """
 
-    minimize_block = '#' + 'Start of the Minimization information'.center(
-        80, '-') + '#\n'
+    minimize_block = generate_header('Start of the Minimization information')
     minimize_block += f'min_style {parameters_minimize.get("style", "cg")}\n'
     minimize_block += f'minimize {parameters_minimize.get("energy_tolerance", 1e-4)}'
     minimize_block += f' {parameters_minimize.get("force_tolerance", 1e-4)}'
     minimize_block += f' {parameters_minimize.get("max_iterations", 1000)}'
     minimize_block += f' {parameters_minimize.get("max_evaluations", 1000)}\n'
-    minimize_block += '#' + 'End of the Minimization information'.center(
-        80, '-') + '#\n'
+    minimize_block += generate_header('End of the Minimization information')
 
     return minimize_block
 
@@ -370,7 +363,7 @@ def write_md_block(parameters_md: dict) -> str:
         integration_parameters=parameters_md['integration'].get('constraints'),
     )
 
-    md_block = '#' + 'Start of the MD information'.center(80, '-') + '#\n'
+    md_block = generate_header('Start of the MD information')
     _key = parameters_md['integration'].get('style', 'nve')
     md_block += f'fix {generate_id_tag(_key, "all")} all {_key}{integration_options}\n'
     if 'velocity' in parameters_md:
@@ -382,7 +375,7 @@ def write_md_block(parameters_md: dict) -> str:
     else:
         md_block += f'run_style {parameters_md.get("run_style", "verlet")}\n'
     md_block += f'run {parameters_md.get("max_number_steps", 100)}\n'
-    md_block += '#' + 'End of the MD information'.center(80, '-') + '#\n'
+    md_block += generate_header('End of the MD information')
 
     return md_block
 
@@ -405,22 +398,22 @@ def write_final_variables_block(
 
     _variables = []
 
-    variables_block = '#' + 'Start of the Final Variables information'.center(
-        80, '-') + '#\n'
+    variables_block = generate_header(
+        'Start of the Final Variables information')
 
     for _thermo in fixed_thermo:
         _variables.append(_thermo.replace('[', '_').replace(']', ''))
         variables_block += f'variable final_{_variables[-1]} equal {_thermo}\n'
-    variables_block += '#' + 'End of the Final Variables information'.center(
-        80, '-') + '#\n'
+    variables_block += generate_header(
+        'End of the Final Variables information')
 
-    variables_block += '#' + 'Start of the Printing Final Variables information'.center(
-        80, '-') + '#\n'
+    variables_block += generate_header(
+        'Start of the Printing Final Variables information')
     variables_block += f'print "#Final results" file {final_file}\n'
     for variable in _variables:
         variables_block += f'print "final_{variable}: ${{final_{variable}}}" append {final_file}\n'
-    variables_block += '#' + 'End of the Printing Final Variables information'.center(
-        80, '-') + '#\n'
+    variables_block += generate_header(
+        'End of the Printing Final Variables information')
 
     return variables_block
 
@@ -618,7 +611,7 @@ def write_fix_block(
     if group_names is None:
         group_names = []
 
-    fix_block = '#' + 'Start of the Fix information'.center(80, '-') + '#\n'
+    fix_block = generate_header('Start of the Fix information')
     for key, value in parameters_fix.items():
         for entry in value:
             _group = entry.get('group', 'all')
@@ -628,7 +621,7 @@ def write_fix_block(
                 )
             fix_block += f'fix {generate_id_tag(key, _group)} {_group} {key} '
             fix_block += f'{join_keywords(entry["type"])}\n'
-    fix_block += '#' + 'End of the Fix information'.center(80, '-') + '#\n'
+    fix_block += generate_header('End of the Fix information')
     return fix_block
 
 
@@ -656,8 +649,7 @@ def write_compute_block(
     if group_names is None:
         group_names = []
 
-    compute_block = '#' + 'Start of the Compute information'.center(
-        80, '-') + '#\n'
+    compute_block = generate_header('Start of the Compute information')
     for key, value in parameters_compute.items():
         for entry in value:
             _group = entry.get('group', 'all')
@@ -666,8 +658,7 @@ def write_compute_block(
                     f'group name "{_group}" is not the defined groups')
             compute_block += f'compute {generate_id_tag(key, _group)} {_group} {key} '
             compute_block += f'{join_keywords(entry["type"])}\n'
-    compute_block += '#' + 'End of the Compute information'.center(80,
-                                                                   '-') + '#\n'
+    compute_block += generate_header('End of the Compute information')
     return compute_block
 
 
@@ -676,6 +667,7 @@ def write_dump_block(
     trajectory_filename: str,
     atom_style: str,
     parameters_compute: dict = None,
+    kind_symbols: list = None,
 ) -> str:
     """Generate the block with dumps commands.
 
@@ -717,12 +709,19 @@ def write_dump_block(
                         calculation_type='compute',
                     ))
 
-    dump_block = '#' + 'Start of the Dump information'.center(80, '-') + '#\n'
+    num_double = len(list(flatten([compute.split() for compute in computes_list])))
+    num_double += 3
+    if atom_style == 'charge':
+        num_double += 1
+    dump_block = generate_header('Start of the Dump information')
     dump_block += f'dump aiida all custom {parameters_dump.get("dump_rate", 10)} '
     dump_block += f'{trajectory_filename} id type element x y z '
     dump_block += f'{"q " if atom_style=="charge" else ""}'
     dump_block += f'{" ".join(computes_list)}\n'
-    dump_block += '#' + 'End of the Dump information'.center(80, '-') + '#\n'
+    dump_block += 'dump_modify aiida sort id\n'
+    dump_block += f'dump_modify aiida element {" ".join(kind_symbols)}\n'
+    dump_block += f'dump_modify aiida format line "%6d %4d %4s {" ".join(["%16.10f"]*num_double)}"\n'
+    dump_block += generate_header('End of the Dump information')
 
     return dump_block
 
@@ -787,12 +786,10 @@ def write_thermo_block(
         fixed_thermo.remove('step')
         fixed_thermo = ['step'] + fixed_thermo
 
-    thermo_block = '#' + 'Start of the Thermo information'.center(80,
-                                                                  '-') + '#\n'
+    thermo_block = generate_header('Start of the Thermo information')
     thermo_block += f'thermo_style custom {" ".join(fixed_thermo)} {" ".join(computes_list)}\n'
     thermo_block += f'thermo {parameters_thermo.get("printing_rate", 1000)}\n'
-    thermo_block += '#' + 'End of the Thermo information'.center(80,
-                                                                 '-') + '#\n'
+    thermo_block += generate_header('End of the Thermo information')
 
     printing_variables = fixed_thermo + list(
         flatten([compute.split() for compute in computes_list]))
@@ -809,11 +806,9 @@ def write_restart_block(restart_filename: str) -> str:
     :rtype: str
     """
 
-    restart_block = '#' + 'Start of the write restart information'.center(
-        80, '-') + '#\n'
+    restart_block = generate_header('Start of the write restart information')
     restart_block += f'write_restart {restart_filename}\n'
-    restart_block += '#' + 'End of the write restart information'.center(
-        80, '-') + '#\n'
+    restart_block += generate_header('End of the write restart information')
 
     return restart_block
 
@@ -827,11 +822,11 @@ def write_read_restart_block(restart_filename: str) -> str:
     :rtype: str
     """
 
-    read_restart_block = '#' + 'Start of the read restart information'.center(
-        80, '-') + '#\n'
+    read_restart_block = generate_header(
+        'Start of the read restart information')
     read_restart_block += f'read_restart {restart_filename}\n'
-    read_restart_block += '#' + 'End of the read restart information'.center(
-        80, '-') + '#\n'
+    read_restart_block += generate_header(
+        'End of the read restart information')
     return read_restart_block
 
 

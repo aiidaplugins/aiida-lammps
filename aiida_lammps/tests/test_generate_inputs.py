@@ -103,7 +103,6 @@ def test_input_generate_md(
         potential_filename='potential.dat',
         structure_filename='structure.dat',
     )
-    print(input_file)
     reference_file = os.path.join(
         TEST_DIR,
         'test_generate_inputs',

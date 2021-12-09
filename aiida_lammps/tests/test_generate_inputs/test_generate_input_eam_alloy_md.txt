@@ -30,6 +30,9 @@ thermo 100
 #-------------------------End of the Thermo information--------------------------#
 #-------------------------Start of the Dump information--------------------------#
 dump aiida all custom 1000 temp.dump id type element x y z c_ke_atom_all_aiida c_pe_atom_all_aiida c_stress_atom_all_aiida[1] c_stress_atom_all_aiida[2] c_stress_atom_all_aiida[3] c_stress_atom_all_aiida[4] c_stress_atom_all_aiida[5] c_stress_atom_all_aiida[6]
+dump_modify aiida sort id
+dump_modify aiida element Fe Fe
+dump_modify aiida format line "%6d %4d %4s %16.10f %16.10f %16.10f %16.10f %16.10f %16.10f %16.10f %16.10f %16.10f %16.10f %16.10f"
 #--------------------------End of the Dump information---------------------------#
 #--------------------------Start of the MD information---------------------------#
 fix npt_all_aiida all npt temp 300 300 100  iso 0.0 0.0 1000.0 
