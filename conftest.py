@@ -1,5 +1,5 @@
 """
-initialise a text database and profile
+initialise a test database and profile
 """
 # pylint: disable=fixme, redefined-outer-name
 from collections import namedtuple
@@ -240,8 +240,12 @@ def get_potential_data(get_structure_data):
         """
         if pkey == 'eam':
             pair_style = 'eam'
-            with io.open(os.path.join(TEST_DIR, 'input_files',
-                                      'Fe_mm.eam.fs')) as handle:
+            filename = os.path.join(
+                TEST_DIR,
+                'input_files',
+                'Fe_mm.eam.fs',
+            )
+            with io.open(filename) as handle:
                 potential_dict = {
                     'type': 'fs',
                     'file_contents': handle.readlines(),
@@ -305,13 +309,20 @@ def get_potential_data(get_structure_data):
         elif pkey == 'reaxff':
 
             pair_style = 'reaxff'
-            with io.open(
-                    os.path.join(TEST_DIR, 'input_files',
-                                 'FeCrOSCH.reaxff')) as handle:
+            filename = os.path.join(
+                TEST_DIR,
+                'input_files',
+                'FeCrOSCH.reaxff',
+            )
+            with io.open(filename) as handle:
                 potential_dict = read_lammps_format(
-                    handle.read().splitlines(), tolerances={'hbonddist': 7.0})
-                potential_dict = filter_by_species(potential_dict,
-                                                   ['Fe core', 'S core'])
+                    handle.read().splitlines(),
+                    tolerances={'hbonddist': 7.0},
+                )
+                potential_dict = filter_by_species(
+                    potential_dict,
+                    ['Fe core', 'S core'],
+                )
                 for name in [
                         'anglemin', 'angleprod', 'hbondmin', 'torsionprod'
                 ]:

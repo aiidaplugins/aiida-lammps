@@ -31,10 +31,12 @@ thermo 100
 #-------------------------Start of the Dump information--------------------------#
 dump aiida all custom 1000 temp.dump id type element x y z c_ke_atom_all_aiida c_pe_atom_all_aiida c_stress_atom_all_aiida[1] c_stress_atom_all_aiida[2] c_stress_atom_all_aiida[3] c_stress_atom_all_aiida[4] c_stress_atom_all_aiida[5] c_stress_atom_all_aiida[6]
 #--------------------------End of the Dump information---------------------------#
-#---------------------Start of the Minimization information----------------------#
-min_style cg
-minimize 0.0001 0.0001 1000 1000
-#----------------------End of the Minimization information-----------------------#
+#--------------------------Start of the MD information---------------------------#
+fix npt_all_aiida all npt temp 300 300 100  iso 0.0 0.0 1000.0 
+reset_timestep 0
+run_style verlet
+run 100
+#---------------------------End of the MD information----------------------------#
 #--------------------Start of the Final Variables information--------------------#
 variable final_step equal step
 variable final_ke equal ke

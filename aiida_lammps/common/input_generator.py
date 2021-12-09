@@ -21,6 +21,120 @@ from aiida_lammps.data.lammps_potential import LammpsPotentialData
 from aiida_lammps.common.utils import flatten
 
 
+def generate_input_file(
+    parameters: dict,
+    potential: LammpsPotentialData,
+    structure: orm.StructureData,
+    trajectory_filename: str = 'aiida_lampps.trajectory.dump',
+    restart_filename: str = 'restart.aiida',
+    potential_filename: str = 'potential.dat',
+    structure_filename: str = 'structure.dat',
+    read_restart_filename: str = None,
+) -> str:
+    """
+    Generate the text for the lammps input file.
+
+    It takes the parameters and other inputs needed to generate the lammps input
+    file. All the required input blocks are always written, whilst some such as
+    the compute and fixes block are only written if required.
+
+    .. note:: If the ``read_restart_filename`` is provided the ``read_data``
+        command is used to overwrite the structure and set the velocity and
+        other parameters from a previous calculation.
+
+    :param parameters: calculation paramters used to control the LAMMPS calculation
+    :type parameters: dict
+    :param potential: potential used during the LAMMPS calculation
+    :type potential: LammpsPotentialData
+    :param structure: structure used during the LAMMPS calculation
+    :type structure: orm.StructureData
+    :param trajectory_filename: filename used to write the trajectory information,
+        defaults to 'aiida_lampps.trajectory.dump'
+    :type trajectory_filename: str, optional
+    :param restart_filename: filename used to write the restart information,
+        defaults to 'restart.aiida'
+    :type restart_filename: str, optional
+    :param potential_filename: filename used to read the potential,
+        defaults to 'potential.dat'
+    :type potential_filename: str, optional
+    :param structure_filename: filename used to read the structure,
+        defaults to 'structure.dat'
+    :type structure_filename: str, optional
+    :param read_restart_filename: filename used to read the restart information,
+        defaults to None
+    :type read_restart_filename: str, optional
+    :return: contents of the lammps input file.
+    :rtype: str
+    """
+    # pylint: disable=too-many-locals, too-many-arguments
+
+    # Validate the inputs
+    validate_input_parameters(parameters)
+
+    # Generate the control input block
+    control_block = write_control_block(
+        parameters_control=parameters.get('control', {}))
+    # Generate the compute input block
+    if 'compute' in parameters:
+        compute_block = write_compute_block(
+            parameters_compute=parameters.get('compute', {}))
+    else:
+        compute_block = ''
+    # Generate the thermo input block
+    thermo_block, fixed_thermo = write_thermo_block(
+        parameters_thermo=parameters.get('thermo', {}),
+        parameters_compute=parameters.get('compute', {}),
+    )
+    # Generate the minimization input block
+    if 'minimize' in parameters:
+        run_block = write_minimize_block(
+            parameters_minimize=parameters.get('minimize', {}))
+    # Generate the md input block
+    if 'md' in parameters:
+        run_block = write_md_block(parameters_md=parameters.get('md', {}))
+    # Generate the structure input block
+    structure_block, group_lists = write_structure_block(
+        parameters_structure=parameters.get('structure', {}),
+        structure=structure,
+        structure_filename=structure_filename,
+    )
+    # Append the read restart to the structure block
+    if read_restart_filename is not None:
+        structure_block += write_read_restart_block(
+            restart_filename=read_restart_filename)
+    # Generate the fix input block
+    if 'fix' in parameters:
+        fix_block = write_fix_block(
+            parameters_fix=parameters.get('fix', {}),
+            group_names=group_lists,
+        )
+    else:
+        fix_block = ''
+    # Generate the potential input block
+    potential_block = write_potential_block(
+        parameters_potential=parameters.get('potential', {}),
+        potential_file=potential_filename,
+        potential=potential,
+        structure=structure,
+    )
+    # Generate the dump input block
+    dump_block = write_dump_block(
+        parameters_dump=parameters.get('dump', {}),
+        parameters_compute=parameters.get('compute', {}),
+        trajectory_filename=trajectory_filename,
+        atom_style=potential.atom_style,
+    )
+    # Generate the restart input block
+    restart_block = write_restart_block(restart_filename=restart_filename)
+    # Generate the final variables input block
+    final_block = write_final_variables_block(fixed_thermo=fixed_thermo)
+    # Printing the potential
+    input_file = control_block+structure_block+potential_block+fix_block+\
+        compute_block+thermo_block+dump_block+run_block+final_block+\
+        restart_block
+    return input_file
+
+
 def validate_input_parameters(parameters: dict = None):
     """
     Validate the input parameters and compares them against a schema.
