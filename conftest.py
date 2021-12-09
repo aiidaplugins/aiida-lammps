@@ -10,7 +10,7 @@ import tempfile
 import yaml
 import pytest
 import numpy as np
-from aiida.plugins import DataFactory
+from aiida import orm
 from aiida_lammps.tests.utils import TEST_DIR, AiidaTestApp
 from aiida_lammps.common.reaxff_convert import (
     filter_by_species,
@@ -210,7 +210,7 @@ def get_structure_data():
             raise ValueError(f'Unknown structure key: {pkey}')
 
         # create structure
-        structure = DataFactory('structure')(cell=cell)
+        structure = orm.StructureData(cell=cell)
         for position, symbol, name in zip(positions, symbols, names):
             if fractional:
                 position = np.dot(position, cell).tolist()
