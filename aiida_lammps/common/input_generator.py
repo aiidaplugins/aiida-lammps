@@ -26,9 +26,10 @@ def generate_input_file(
     potential: LammpsPotentialData,
     structure: orm.StructureData,
     trajectory_filename: str = 'aiida_lampps.trajectory.dump',
-    restart_filename: str = 'restart.aiida',
+    restart_filename: str = 'lammps.restart',
     potential_filename: str = 'potential.dat',
     structure_filename: str = 'structure.dat',
+    variables_filename: str = 'aiida_lammps.yaml',
     read_restart_filename: str = None,
 ) -> str:
     """
@@ -60,6 +61,9 @@ def generate_input_file(
     :param structure_filename: filename used to read the structure,
         defaults to 'structure.dat'
     :type structure_filename: str, optional
+    :param variables_filename: filename used to store the final variables,
+        defaults to 'aiida_lammps.yaml'
+    :type variables_filename: str, optional
     :param read_restart_filename: filename used to read the restart information,
         defaults to None
     :type read_restart_filename: str, optional
@@ -128,7 +132,10 @@ def generate_input_file(
     # Generate the restart input block
     restart_block = write_restart_block(restart_filename=restart_filename)
     # Generate the final variables input block
-    final_block = write_final_variables_block(fixed_thermo=fixed_thermo)
+    final_block = write_final_variables_block(
+        fixed_thermo=fixed_thermo,
+        final_file=variables_filename,
+    )
     # Printing the potential
     input_file = control_block+structure_block+potential_block+fix_block+\
         compute_block+thermo_block+dump_block+run_block+final_block+\
