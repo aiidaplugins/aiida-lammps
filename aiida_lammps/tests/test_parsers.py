@@ -1,13 +1,16 @@
 """
 Tests to aiida-lammps parsers.
 """
-from io import StringIO
 from textwrap import dedent
+import io
+import os
 import pytest
-
+import yaml
 from aiida.cmdline.utils.common import get_calcjob_report
 from aiida.orm import FolderData
 from aiida.plugins import ParserFactory
+from aiida_lammps.tests.utils import TEST_DIR
+from aiida_lammps.common.raw_parsers import parse_logfile, parse_final_data
 
 
 def get_log():
@@ -68,9 +71,11 @@ def test_missing_log(db_test_app, plugin_name):
 def test_missing_traj(db_test_app, plugin_name):
     """Check if the trajectory file is produced during calculation."""
     retrieved = FolderData()
-    retrieved.put_object_from_filelike(StringIO(get_log()), 'log.lammps')
-    retrieved.put_object_from_filelike(StringIO(''), '_scheduler-stdout.txt')
-    retrieved.put_object_from_filelike(StringIO(''), '_scheduler-stderr.txt')
+    retrieved.put_object_from_filelike(io.StringIO(get_log()), 'log.lammps')
+    retrieved.put_object_from_filelike(io.StringIO(''),
+                                       '_scheduler-stdout.txt')
+    retrieved.put_object_from_filelike(io.StringIO(''),
+                                       '_scheduler-stderr.txt')
 
     calc_node = db_test_app.generate_calcjob_node(plugin_name, retrieved)
     parser = ParserFactory(plugin_name)
@@ -98,7 +103,7 @@ def test_empty_log(db_test_app, plugin_name):
             '_scheduler-stdout.txt',
             '_scheduler-stderr.txt',
     ]:
-        retrieved.put_object_from_filelike(StringIO(''), filename)
+        retrieved.put_object_from_filelike(io.StringIO(''), filename)
 
     calc_node = db_test_app.generate_calcjob_node(plugin_name, retrieved)
     parser = ParserFactory(plugin_name)
@@ -123,13 +128,13 @@ def test_empty_log(db_test_app, plugin_name):
 def test_empty_traj(db_test_app, plugin_name):
     """Check if the lammps trajectory file is empty."""
     retrieved = FolderData()
-    retrieved.put_object_from_filelike(StringIO(get_log()), 'log.lammps')
+    retrieved.put_object_from_filelike(io.StringIO(get_log()), 'log.lammps')
     for filename in [
             'trajectory.lammpstrj',
             '_scheduler-stdout.txt',
             '_scheduler-stderr.txt',
     ]:
-        retrieved.put_object_from_filelike(StringIO(''), filename)
+        retrieved.put_object_from_filelike(io.StringIO(''), filename)
 
     calc_node = db_test_app.generate_calcjob_node(plugin_name, retrieved)
     parser = ParserFactory(plugin_name)
@@ -154,19 +159,19 @@ def test_run_error(db_test_app, plugin_name):
     """Check if the parser runs without producing errors."""
     retrieved = FolderData()
     retrieved.put_object_from_filelike(
-        StringIO(get_log()),
+        io.StringIO(get_log()),
         'log.lammps',
     )
     retrieved.put_object_from_filelike(
-        StringIO(get_traj_force()),
+        io.StringIO(get_traj_force()),
         'x-trajectory.lammpstrj',
     )
     retrieved.put_object_from_filelike(
-        StringIO('ERROR description'),
+        io.StringIO('ERROR description'),
         '_scheduler-stdout.txt',
     )
     retrieved.put_object_from_filelike(
-        StringIO(''),
+        io.StringIO(''),
         '_scheduler-stderr.txt',
     )
 
@@ -187,3 +192,48 @@ def test_run_error(db_test_app, plugin_name):
     assert calcfunction.is_failed, calcfunction.exit_status
     assert (calcfunction.exit_status ==
             calc_node.process_class.exit_codes.ERROR_LAMMPS_RUN.status)
+
+
+def test_parser_log():
+    """
+    Test the parser for the ``log.lammps`` file.
+    """
+    filename = os.path.join(
+        TEST_DIR,
+        'input_files',
+        'parsers',
+        'log.lammps',
+    )
+
+    parsed_data = parse_logfile(filename=filename)
+
+    reference_filename = os.path.join(
+        TEST_DIR,
+        'test_raw_parsers',
+        'test_parse_log.yaml',
+    )
+
+    with io.open(reference_filename) as handle:
+        reference_data = yaml.load(handle, Loader=yaml.Loader)
+
+    assert parsed_data == reference_data, 'content of "log.lammps" differs from reference'
+
+
+def test_parse_final_variables():
+    """
+    Test the parser for the final variables
+    """
+    filename = os.path.join(
+        TEST_DIR,
+        'input_files',
+        'parsers',
+        'aiida_lammps.yaml',
+    )
+
+    parsed_data = parse_final_data(filename=filename)
+
+    assert isinstance(parsed_data,
+                      dict), 'the parsed data is not of the correct format'
+
+    assert 'final_step' in parsed_data, 'no step information present'
+    assert 'final_etotal' in parsed_data, 'no total energy information present'

@@ -1,0 +1,16 @@
+#Final results
+final_step: 5000
+final_pe: -17.5141924945569
+final_ke: 0.0636082860772328
+final_press: -61353.82560727
+final_pxx: -57340.4525179122
+final_pyy: -63702.6536853082
+final_pzz: -63018.3706185898
+final_etotal: -17.4505842084796
+final_c_pressure_all_aiida: -61353.82560727
+final_c_pressure_all_aiida_1: -57340.4525179122
+final_c_pressure_all_aiida_2: -63702.6536853082
+final_c_pressure_all_aiida_3: -63018.3706185898
+final_c_pressure_all_aiida_4: -1602.11196923013
+final_c_pressure_all_aiida_5: -3438.00514080948
+final_c_pressure_all_aiida_6: 873.607919841187

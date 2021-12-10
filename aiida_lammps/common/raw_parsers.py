@@ -22,6 +22,7 @@ def parse_logfile(filename: str = 'log.lammps') -> Union[dict, dict]:
     :return: dictionary with the time dependent data, dictionary with the global data
     :rtype: Union[dict, dict]
     """
+    # pylint: disable=too-many-branches
 
     try:
         with io.open(filename, 'r') as handler:
@@ -39,14 +40,33 @@ def parse_logfile(filename: str = 'log.lammps') -> Union[dict, dict]:
     perf_regex = re.compile(
         r'Performance\:\s(.+)\sns\/day,\s(.+)\shours\/ns\,\s(.+)\stimesteps\/s\s*'
     )
+
     for index, line in enumerate(data):
         if perf_regex.match(line):
             _, _, step_sec = perf_regex.match(line).groups()
             global_parsed_data['steps_per_second'] = float(step_sec)
+        if 'binsize' in line:
+            global_parsed_data['binsize'] = ast.literal_eval(
+                line.split()[2].replace(',', ''))
+            global_parsed_data['bins'] = [
+                ast.literal_eval(entry) for entry in line.split()[5:]
+            ]
+        if 'ghost atom cutoff' in line:
+            global_parsed_data['ghost_atom_cutoff'] = ast.literal_eval(
+                line.split()[-1])
+        if 'master list distance cutoff' in line:
+            global_parsed_data[
+                'master_list_distance_cutoff'] = ast.literal_eval(
+                    line.split()[-1])
+        if 'max neighbors/atom' in line:
+            global_parsed_data['max_neighbors_atom'] = ast.literal_eval(
+                line.split()[2].replace(',', ''))
         if 'units' in line:
             global_parsed_data['units_style'] = line.split()[1]
         if 'Total wall time:' in line:
             global_parsed_data['total_wall_time'] = line.split()[-1]
+        if 'bin:' in line:
+            global_parsed_data['bin'] = line.split()[-1]
         if line.startswith('Step'):
             header_line_position = index
             header_line = line.split()
