@@ -685,7 +685,7 @@ def write_dump_block(
     :return: block with the dump options for the calculation
     :rtype: str
     """
-
+    # pylint: disable=too-many-locals
     _file = os.path.join(
         os.path.dirname(os.path.abspath(__file__)),
         'variables_types.json',
@@ -709,7 +709,8 @@ def write_dump_block(
                         calculation_type='compute',
                     ))
 
-    num_double = len(list(flatten([compute.split() for compute in computes_list])))
+    num_double = len(
+        list(flatten([compute.split() for compute in computes_list])))
     num_double += 3
     if atom_style == 'charge':
         num_double += 1
@@ -720,7 +721,8 @@ def write_dump_block(
     dump_block += f'{" ".join(computes_list)}\n'
     dump_block += 'dump_modify aiida sort id\n'
     dump_block += f'dump_modify aiida element {" ".join(kind_symbols)}\n'
-    dump_block += f'dump_modify aiida format line "%6d %4d %4s {" ".join(["%16.10f"]*num_double)}"\n'
+    dump_block += 'dump_modify aiida format line '
+    dump_block += f'"%6d %4d %4s {" ".join(["%16.10f"]*num_double)}"\n'
     dump_block += generate_header('End of the Dump information')
 
     return dump_block
