@@ -18,6 +18,7 @@ repos:
       - id: check-yaml
       - id: check-json
       - id: check-added-large-files
+        args: ['--maxkb=1000']
       - id: double-quote-string-fixer
       - id: forbid-new-submodules
 

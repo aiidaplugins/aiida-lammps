@@ -31,6 +31,7 @@
   "include_package_data": true,
   "entry_points": {
     "aiida.calculations": [
+      "lammps.base = aiida_lammps.calculations.lammps.base:BaseLammpsCalculation",
       "lammps.combinate = aiida_lammps.calculations.lammps.combinate:CombinateCalculation",
       "lammps.force = aiida_lammps.calculations.lammps.force:ForceCalculation",
       "lammps.md = aiida_lammps.calculations.lammps.md:MdCalculation",
