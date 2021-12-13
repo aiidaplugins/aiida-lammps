@@ -1,5 +1,10 @@
 """
-Base ``LAMMPS`` calculation for AiiDA.
+A basic plugin for performing calculations in ``LAMMPS`` using aiida.
+
+The plugin will take the input parameters validate them against a schema
+and then use them to generate the ``LAMMPS`` input file. The input file
+is generated depending on the parameters provided, the type of potential,
+the input structure and whether or not a restart file is provided.
 """
 from aiida import orm
 from aiida.engine import CalcJob
@@ -12,6 +17,11 @@ from aiida_lammps.common.input_generator import generate_input_file
 class BaseLammpsCalculation(CalcJob):
     """
     A basic plugin for performing calculations in ``LAMMPS`` using aiida.
+
+    The plugin will take the input parameters validate them against a schema
+    and then use them to generate the ``LAMMPS`` input file. The input file
+    is generated depending on the parameters provided, the type of potential,
+    the input structure and whether or not a restart file is provided.
     """
 
     _INPUT_FILENAME = 'input.in'
@@ -23,9 +33,6 @@ class BaseLammpsCalculation(CalcJob):
     _DEFAULT_RESTART_FILENAME = 'lammps.restart'
     _DEFAULT_POTENTIAL_FILENAME = 'potential.dat'
     _DEFAULT_READ_RESTART_FILENAME = 'aiida_lammps.restart'
-
-    _cmdline_params = ('-in', _INPUT_FILENAME)
-    _stdout_name = None
 
     @classmethod
     def define(cls, spec):
@@ -162,33 +169,51 @@ class BaseLammpsCalculation(CalcJob):
         )
 
     def prepare_for_submission(self, folder):
+        """
+        Create the input files from the input nodes passed to this instance of the `CalcJob`.
+        """
         # pylint: disable=too-many-locals
-        # Setup structure
+
+        # Generate the content of the structure file based on the input
+        # structure
         structure_filecontent, _ = generate_lammps_structure(
             self.inputs.structure,
             self.inputs.potential.atom_style,
         )
 
+        # Get the name of the structure file and write it to the remote folder
         _structure_filename = self.inputs.metadata.options.structure_filename
 
         with folder.open(_structure_filename, 'w') as handle:
             handle.write(structure_filecontent)
 
+        # Get the parameters dictionary so that they can be used for creating
+        # the input file
         _parameters = self.inputs.parameters.get_dict()
 
+        # Get the name of the trajectory file
         _trajectory_filename = self.inputs.metadata.options.restart_filename
 
+        # Get the name of the variables file
         _variables_filename = self.inputs.metadata.options.variables_filename
 
+        # Get the name of the restart file
         _restart_filename = self.inputs.metadata.options.restart_filename
 
+        # Get the name of the output file
         _output_filename = self.inputs.metadata.options.output_filename
 
+        # If there is a restartfile set its name to the input variables and
+        # write it in the remote folder
         if 'input_restartfile' in self.inputs:
-            _read_restart_filename = self.inputs.input_restartfile
+            _read_restart_filename = self._DEFAULT_READ_RESTART_FILENAME
+            with folder.open(_read_restart_filename, 'wb') as handle:
+                handle.write(self.inputs.input_restartfile.get_content())
         else:
             _read_restart_filename = None
 
+        # Write the input file content. This function will also check the
+        # sanity of the passed paremters when comparing it to a schema
         input_filecontent = generate_input_file(
             potential=self.inputs.potential,
             structure=self.inputs.strutcure,
@@ -199,28 +224,37 @@ class BaseLammpsCalculation(CalcJob):
             read_restart_filename=_read_restart_filename,
         )
 
+        # Get the name of the input file, and write it to the remote folder
         _input_filename = self.inputs.metadata.options.input_filename
 
         with folder.open(_input_filename, 'w') as handle:
             handle.write(input_filecontent)
 
+        # Write the potential to the remote folder
         with folder.open(self._DEFAULT_POTENTIAL_FILENAME, 'w') as handle:
             handle.write(self.inputs.potential.get_content())
 
         codeinfo = datastructures.CodeInfo()
-        codeinfo.cmdline_params = []
+        # Command line variables to ensure that the input file from LAMMPS can
+        # be read
+        codeinfo.cmdline_params = ['-in', _input_filename]
+        # Set the code uuid
         codeinfo.code_uuid = self.inputs.code.uuid
+        # Set the name of the stdout
         codeinfo.stdout_name = _output_filename
+        # Set whether or not one is running with MPI
         codeinfo.withmpi = self.inputs.metadata.options.withmpi
 
+        # Generate the datastructure for the calculation information
         calcinfo = datastructures.CalcInfo()
         calcinfo.uuid = str(self.uuid)
-        # Retrieve by default the output file and the xml file
+        # Set the files that must be retrieved
         calcinfo.retrieve_list = []
         calcinfo.retrieve_list.append(_output_filename)
         calcinfo.retrieve_list.append(_restart_filename)
         calcinfo.retrieve_list.append(_variables_filename)
         calcinfo.retrieve_list.append(_trajectory_filename)
+        # Set the information of the code into the calculation datastructure
         calcinfo.codes_info = [codeinfo]
 
         return calcinfo
