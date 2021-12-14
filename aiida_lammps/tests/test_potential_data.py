@@ -156,7 +156,7 @@ def test_lammps_potentials_input_block(
 
     potential_block = input_generator.write_potential_block(
         parameters_potential={},
-        potential_file='temp.pot',
+        potential_file='potential.dat',
         potential=node,
         structure=potential_information['structure'],
     )

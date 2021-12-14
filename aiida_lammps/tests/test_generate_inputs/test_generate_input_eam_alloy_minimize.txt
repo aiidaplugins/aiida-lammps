@@ -13,7 +13,7 @@ read_data structure.dat
 #------------------------End of the Structure information------------------------#
 #-------------------------Start of Potential information-------------------------#
 pair_style eam/alloy 
-pair_coeff * * potential.dat Fe
+pair_coeff * * potential.dat Fe Fe
 #--------------------------End of Potential information--------------------------#
 #--------------------------Start of the Fix information--------------------------#
 fix box_relax_all_aiida all box/relax iso 0.0 vmax 0.001
