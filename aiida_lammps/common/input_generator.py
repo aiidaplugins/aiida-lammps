@@ -229,7 +229,7 @@ def write_potential_block(
 
     default_potential = LammpsPotentialData.default_potential_info
 
-    kind_symbols = np.unique([kind.symbol for kind in structure.kinds])
+    kind_symbols = [kind.symbol for kind in structure.kinds]
 
     potential_block = generate_header('Start of Potential information')
     potential_block += f'pair_style {potential.pair_style}'

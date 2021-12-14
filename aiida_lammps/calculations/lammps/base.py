@@ -12,6 +12,7 @@ from aiida.common import datastructures
 from aiida_lammps.data.lammps_potential import LammpsPotentialData
 from aiida_lammps.common.generate_structure import generate_lammps_structure
 from aiida_lammps.common.input_generator import generate_input_file
+from aiida_lammps.data.trajectory import LammpsTrajectory
 
 
 class BaseLammpsCalculation(CalcJob):
@@ -27,12 +28,15 @@ class BaseLammpsCalculation(CalcJob):
     _INPUT_FILENAME = 'input.in'
     _STRUCTURE_FILENAME = 'structure.dat'
 
-    _DEFAULT_OUTPUT_FILENAME = 'log.lammps'
+    _DEFAULT_LOGFILE_FILENAME = 'log.lammps'
+    _DEFAULT_OUTPUT_FILENAME = 'lammps_output'
     _DEFAULT_TRAJECTORY_FILENAME = 'aiida_lampps.trajectory.dump'
     _DEFAULT_VARIABLES_FILENAME = 'aiida_lammps.yaml'
     _DEFAULT_RESTART_FILENAME = 'lammps.restart'
     _DEFAULT_POTENTIAL_FILENAME = 'potential.dat'
     _DEFAULT_READ_RESTART_FILENAME = 'aiida_lammps.restart'
+
+    _DEFAULT_PARSER = 'lammps.base'
 
     @classmethod
     def define(cls, spec):
@@ -78,6 +82,11 @@ class BaseLammpsCalculation(CalcJob):
             default=cls._DEFAULT_OUTPUT_FILENAME,
         )
         spec.input(
+            'metadata.options.logfile_filename',
+            valid_type=str,
+            default=cls._DEFAULT_LOGFILE_FILENAME,
+        )
+        spec.input(
             'metadata.options.variables_filename',
             valid_type=str,
             default=cls._DEFAULT_VARIABLES_FILENAME,
@@ -92,6 +101,11 @@ class BaseLammpsCalculation(CalcJob):
             valid_type=str,
             default=cls._DEFAULT_RESTART_FILENAME,
         )
+        spec.input(
+            'metadata.options.parser_name',
+            valid_type=str,
+            default=cls._DEFAULT_PARSER,
+        )
         spec.output(
             'results',
             valid_type=orm.Dict,
@@ -100,13 +114,13 @@ class BaseLammpsCalculation(CalcJob):
         )
         spec.output(
             'trajectories',
-            valid_type=LammpsPotentialData,
+            valid_type=LammpsTrajectory,
             required=True,
             help='The data extracted from the lammps trajectory file',
         )
         spec.output(
             'time_dependent_computes',
-            valid_types=orm.Dict,
+            valid_type=orm.Dict,
             required=True,
             help=
             'The data with the time dependent computes parsed from the lammps.log',
@@ -132,19 +146,19 @@ class BaseLammpsCalculation(CalcJob):
         spec.exit_code(
             351,
             'ERROR_LOG_FILE_MISSING',
-            mesage='the file with the lammps log was not found',
+            message='the file with the lammps log was not found',
             invalidates_cache=True,
         )
         spec.exit_code(
             352,
             'ERROR_FINAL_VARIABLE_FILE_MISSING',
-            mesage='the file with the final variables was not found',
+            message='the file with the final variables was not found',
             invalidates_cache=True,
         )
         spec.exit_code(
             353,
             'ERROR_TRAJECTORY_FILE_MISSING',
-            mesage='the file with the trajectories was not found',
+            message='the file with the trajectories was not found',
             invalidates_cache=True,
         )
         spec.exit_code(
@@ -192,7 +206,7 @@ class BaseLammpsCalculation(CalcJob):
         _parameters = self.inputs.parameters.get_dict()
 
         # Get the name of the trajectory file
-        _trajectory_filename = self.inputs.metadata.options.restart_filename
+        _trajectory_filename = self.inputs.metadata.options.trajectory_filename
 
         # Get the name of the variables file
         _variables_filename = self.inputs.metadata.options.variables_filename
@@ -202,6 +216,9 @@ class BaseLammpsCalculation(CalcJob):
 
         # Get the name of the output file
         _output_filename = self.inputs.metadata.options.output_filename
+
+        # Get the name of the logfile file
+        _logfile_filename = self.inputs.metadata.options.logfile_filename
 
         # If there is a restartfile set its name to the input variables and
         # write it in the remote folder
@@ -216,7 +233,7 @@ class BaseLammpsCalculation(CalcJob):
         # sanity of the passed paremters when comparing it to a schema
         input_filecontent = generate_input_file(
             potential=self.inputs.potential,
-            structure=self.inputs.strutcure,
+            structure=self.inputs.structure,
             parameters=_parameters,
             restart_filename=_restart_filename,
             trajectory_filename=_trajectory_filename,
@@ -237,7 +254,9 @@ class BaseLammpsCalculation(CalcJob):
         codeinfo = datastructures.CodeInfo()
         # Command line variables to ensure that the input file from LAMMPS can
         # be read
-        codeinfo.cmdline_params = ['-in', _input_filename]
+        codeinfo.cmdline_params = [
+            '-in', _input_filename, '-log', _logfile_filename
+        ]
         # Set the code uuid
         codeinfo.code_uuid = self.inputs.code.uuid
         # Set the name of the stdout
@@ -251,6 +270,7 @@ class BaseLammpsCalculation(CalcJob):
         # Set the files that must be retrieved
         calcinfo.retrieve_list = []
         calcinfo.retrieve_list.append(_output_filename)
+        calcinfo.retrieve_list.append(_logfile_filename)
         calcinfo.retrieve_list.append(_restart_filename)
         calcinfo.retrieve_list.append(_variables_filename)
         calcinfo.retrieve_list.append(_trajectory_filename)

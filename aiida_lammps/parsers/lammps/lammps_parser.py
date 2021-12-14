@@ -8,7 +8,7 @@ from aiida import orm
 from aiida.common import exceptions
 from aiida.parsers.parser import Parser
 from aiida_lammps.common.raw_parsers import parse_final_data, parse_logfile
-from aiida_lammps.data.lammps_potential import LammpsPotentialData
+from aiida_lammps.data.trajectory import LammpsTrajectory
 
 
 class LAMMPSBaseParser(Parser):
@@ -42,22 +42,24 @@ class LAMMPSBaseParser(Parser):
         list_of_files = out_folder.list_object_names()
 
         # check log file
-        if self.node.get_option('output_filename') not in list_of_files:
+        if self.node.get_option('logfile_filename') not in list_of_files:
             return self.exit_codes.ERROR_LOG_FILE_MISSING
-        parsed_data = parse_logfile(
-            filename=self.node.get_option('output_filename'))
+        filename = self.node.get_option('logfile_filename')
+        parsed_data = parse_logfile(file_contents=self.node.outputs.retrieved.
+                                    get_object_content(filename))
         if parsed_data is None:
             return self.exit_codes.ERROR_PARSING_LOGFILE
         global_data = parsed_data['global']
         arrays = parsed_data['time_dependent']
 
         # check final variable file
-        if self.node.get_option(
-                'final_variable_filename') not in list_of_files:
+        if self.node.get_option('variables_filename') not in list_of_files:
             return self.exit_codes.ERROR_FINAL_VARIABLE_FILE_MISSING
 
+        filename = self.node.get_option('variables_filename')
         final_variables = parse_final_data(
-            filename=self.node.get_option('final_variable_filename'))
+            file_contents=self.node.outputs.retrieved.get_object_content(
+                filename))
         if final_variables is None:
             return self.exit_codes.ERROR_PARSING_FINAL_VARIABLES
 
@@ -76,9 +78,12 @@ class LAMMPSBaseParser(Parser):
         if self.node.get_option('trajectory_filename') not in list_of_files:
             return self.exit_codes.ERROR_TRAJECTORY_FILE_MISSING
         # Gather the lammps trajectory data
-        lammps_trajectory = LammpsPotentialData(
-            self.node.get_option('trajectory_filename'))
+        filename = self.node.get_option('trajectory_filename')
+        with self.node.outputs.retrieved.open(filename) as handle:
+            lammps_trajectory = LammpsTrajectory(handle)
         self.out('trajectories', lammps_trajectory)
+
+        self.out('structure', lammps_trajectory.get_step_structure(-1))
 
         # check stdout
         if self.node.get_option('scheduler_stdout') not in list_of_files:

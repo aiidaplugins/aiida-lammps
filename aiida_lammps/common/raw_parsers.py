@@ -9,7 +9,8 @@ import yaml
 import numpy as np
 
 
-def parse_logfile(filename: str = 'log.lammps') -> Union[dict, dict]:
+def parse_logfile(filename: str = None,
+                  file_contents: str = None) -> Union[dict, dict]:
     """
     Parse the log.lammps file.
 
@@ -17,19 +18,29 @@ def parse_logfile(filename: str = 'log.lammps') -> Union[dict, dict]:
     stores it as a dictionary. It will also gather single quantities and stores
     them into a different dictionary.
 
-    :param filename: name of the lammps log file, defaults to 'log.lammps'
+    :param filename: name of the lammps log file, defaults to None
     :type filename: str, optional
+    :param file_contents: contents of the lammps log file, defaults to None
+    :type file_contents: str, optional
     :return: dictionary with the time dependent data, dictionary with the global data
     :rtype: Union[dict, dict]
     """
-    # pylint: disable=too-many-branches
+    # pylint: disable=too-many-branches, too-many-locals
 
-    try:
-        with io.open(filename, 'r') as handler:
-            data = handler.read()
-            data = data.split('\n')
-    except (IOError, OSError):
+    if filename is None and file_contents is None:
         return None
+
+    if filename is not None:
+
+        try:
+            with io.open(filename, 'r') as handler:
+                data = handler.read()
+                data = data.split('\n')
+        except (IOError, OSError):
+            return None
+
+    if file_contents is not None:
+        data = file_contents.split('\n')
 
     header_line_position = -1
     header_line = ''
@@ -81,7 +92,7 @@ def parse_logfile(filename: str = 'log.lammps') -> Union[dict, dict]:
     return {'time_dependent': parsed_data, 'global': global_parsed_data}
 
 
-def parse_final_data(filename: str = 'aiida_lammps.yaml') -> dict:
+def parse_final_data(filename: str = None, file_contents: str = None) -> dict:
     """
     Read the yaml file with the global final data.
 
@@ -89,16 +100,25 @@ def parse_final_data(filename: str = 'aiida_lammps.yaml') -> dict:
     file which is then read and stored as a dictionary.
 
     :param filename: name of the yaml file where the variables are stored,
-        defaults to 'aiida_lammps.yaml'
+        defaults to None
     :type filename: str, optional
+    :param file_contents: contents of the yaml file where the variables are stored,
+        defaults to None
+    :type file_contents: str, optional
     :return: dictionary with the final compute variables
     :rtype: dict
     """
-    try:
-        with io.open(filename, 'r') as handle:
-            data = yaml.load(handle, Loader=yaml.Loader)
-    except (IOError, OSError):
-        data = None
+
+    if filename is None and file_contents is None:
+        return None
+    if filename is not None:
+        try:
+            with io.open(filename, 'r') as handle:
+                data = yaml.load(handle, Loader=yaml.Loader)
+        except (IOError, OSError):
+            data = None
+    if file_contents is not None:
+        data = yaml.load(file_contents)
     return data
 
 
