@@ -352,24 +352,16 @@ def atom_info_commands(
 ):
     """Create commands to output required atom variables to a file.
 
-    Parameters
-    ----------
-    variables : list[str]
-    kind_symbols : list[str]
-        atom symbols per type
-    atom_style : str
-        style of atoms e.g. charge
-    dump_rate : int
-    filename : str
-    version_date : timedate
-    dump_name : str
-    append : bool
-        Dump snapshots to the end of the dump file (if it exists).
+    :param variables: list[str]
+    :param kind_symbols: list[str] atom symbols per type
+    :param atom_style: str style of atoms e.g. charge
+    :param dump_rate: int
+    :param filename: str
+    :param version_date: timedate
+    :param dump_name: str
+    :param append: bool Dump snapshots to the end of the dump file (if it exists).
 
-    Returns
-    -------
-    list[str]
-
+    :return: list[str]
     """
     # pylint: disable=too-many-arguments, too-many-locals, too-many-branches, unused-argument
     commands, computes, fixes = [], [], []

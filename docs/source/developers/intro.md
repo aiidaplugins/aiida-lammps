@@ -1,6 +1,6 @@
 # Developer Guide
 
-This is a guide for internal develoment of `aiida-lammps`
+This is a guide for internal development of `aiida-lammps`
 
 ## Coding Style Requirements
 

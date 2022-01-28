@@ -4,6 +4,7 @@ Base parser for LAMMPS calculations.
 It takes care of parsing the log.lammps file, the trajectory file and the
 yaml file with the final value of the variables printed in the ``thermo_style``.
 """
+import numpy as np
 from aiida import orm
 from aiida.common import exceptions
 from aiida.parsers.parser import Parser
@@ -32,7 +33,7 @@ class LAMMPSBaseParser(Parser):
         yaml file with the final value of the variables printed in the
         ``thermo_style``.
         """
-        # pylint: disable=too-many-return-statements
+        # pylint: disable=too-many-return-statements, too-many-locals
 
         try:
             out_folder = self.retrieved
@@ -70,8 +71,14 @@ class LAMMPSBaseParser(Parser):
         # Expose the results from the log.lammps outputs
         self.out('results', results)
 
-        # Get the time-dependent outputs exposed as a dictionary
-        time_dependent_computes = orm.Dict(dict=arrays)
+        # Get the time-dependent outputs exposed as an ArrayData
+
+        time_dependent_computes = orm.ArrayData()
+
+        for key, value in arrays.items():
+            _data = [val if val is not None else np.nan for val in value]
+            time_dependent_computes.set_array(key, np.array(_data))
+
         self.out('time_dependent_computes', time_dependent_computes)
 
         # check trajectory file

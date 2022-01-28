@@ -1,7 +1,9 @@
 # see https://github.com/executablebooks/sphinx-external-toc
 root: index
 entries:
+- file: users/get_started
 - file: users/example
 - file: developers/intro
+- file: reference/apidoc/aiida_lammps.rst
 - url: https://github.com/aiidaplugins/aiida-lammps
   title: "GitHub Repository"

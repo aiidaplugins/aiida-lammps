@@ -18,13 +18,8 @@ class PotentialAbstract(abc.ABC):
     def get_external_content(self):
         """Return the mapping of external filenames to content.
 
-        Parameters
-        ----------
-        data : dict
-
-        Returns
-        -------
-        None or dict
+        :param data: dict
+        :return: None or dict
 
         """
         # pylint: disable=unnecessary-pass
@@ -34,16 +29,10 @@ class PotentialAbstract(abc.ABC):
     def get_input_potential_lines(self, kind_elements=None):
         """Return the potential section of the main input file.
 
-        Parameters
-        ----------
-        data : dict
-        kind_elements : None or list[str]
-        potential_filename : str
+        :param kind_elements: None or list[str]
+        :param potential_filename: str
 
-        Returns
-        -------
-        str
-
+        :return: str
         """
         # pylint: disable=unnecessary-pass
         pass

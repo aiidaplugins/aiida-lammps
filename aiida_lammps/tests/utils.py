@@ -68,16 +68,10 @@ def get_path_to_executable(executable):
 def get_or_create_local_computer(work_directory, name='localhost'):
     """Retrieve or setup a local computer
 
-    Parameters
-    ----------
-    work_directory : str
-        path to a local directory for running computations in
-    name : str
-        name of the computer
+    :param work_directory: str path to a local directory for running computations in
+    :param name: str name of the computer
 
-    Returns
-    -------
-    aiida.orm.computers.Computer
+    :return: aiida.orm.computers.Computer
 
     """
 
@@ -171,14 +165,10 @@ class AiidaTestApp(object):
     def __init__(self, work_directory, executable_map, environment=None):
         """a class providing methods for testing purposes
 
-        Parameters
-        ----------
-        work_directory : str
-            path to a local work directory (used when creating computers)
-        executable_map : dict
-            mapping of computation entry points to the executable name
-        environment : None or aiida.manage.fixtures.FixtureManager
-            manager of a temporary AiiDA environment
+        :param work_directory: str path to a local work directory (used when creating computers)
+        :param executable_map: dict mapping of computation entry points to the executable name
+        :param environment: None or aiida.manage.fixtures.FixtureManager manager
+            of a temporary AiiDA environment
 
         """
         self._environment = environment
@@ -230,15 +220,9 @@ class AiidaTestApp(object):
     def get_parser_cls(entry_point_name):
         """load a parser class
 
-        Parameters
-        ----------
-        entry_point_name : str
-            entry point name of the parser class
+        :param entry_point_name: str entry point name of the parser class
 
-        Returns
-        -------
-        aiida.parsers.parser.Parser
-
+        :return: aiida.parsers.parser.Parser
         """
 
         return ParserFactory(entry_point_name)
@@ -247,15 +231,9 @@ class AiidaTestApp(object):
     def get_data_node(entry_point_name, **kwargs):
         """load a data node instance
 
-        Parameters
-        ----------
-        entry_point_name : str
-            entry point name of the data node class
+        :param entry_point_name: str entry point name of the data node class
 
-        Returns
-        -------
-        aiida.orm.nodes.data.Data
-
+        :return: aiida.orm.nodes.data.Data
         """
 
         return DataFactory(entry_point_name)(**kwargs)
@@ -264,10 +242,7 @@ class AiidaTestApp(object):
     def get_calc_cls(entry_point_name):
         """load a data node class
 
-        Parameters
-        ----------
-        entry_point_name : str
-            entry point name of the data node class
+        :param entry_point_name: str entry point name of the data node class
 
         """
 
@@ -282,22 +257,12 @@ class AiidaTestApp(object):
     ):
         """Fixture to generate a mock `CalcJobNode` for testing parsers.
 
-        Parameters
-        ----------
-        entry_point_name : str
-            entry point name of the calculation class
-        retrieved : aiida.orm.FolderData
-            containing the file(s) to be parsed
-        computer_name : str
-            used to get or create a ``Computer``, by default 'localhost'
-        attributes : None or dict
-            any additional attributes to set on the node
+        :param entry_point_name: str entry point name of the calculation class
+        :param retrieved: aiida.orm.FolderData containing the file(s) to be parsed
+        :param computer_name: str used to get or create a ``Computer``, by default 'localhost'
+        :param attributes: None or dict any additional attributes to set on the node
 
-        Returns
-        -------
-        aiida.orm.CalcJobNode
-            instance with the `retrieved` node linked as outgoing
-
+        :return: aiida.orm.CalcJobNode instance with the `retrieved` node linked as outgoing
         """
 
         process = self.get_calc_cls(entry_point_name)
@@ -334,10 +299,7 @@ class AiidaTestApp(object):
     def sandbox_folder(self):  # pylint: disable=no-self-use
         """AiiDA folder object context.
 
-        Yields
-        ------
-        aiida.common.folders.SandboxFolder
-
+        :return: aiida.common.folders.SandboxFolder
         """
 
         with SandboxFolder() as folder:
@@ -351,12 +313,9 @@ class AiidaTestApp(object):
         and `prepare_for_submission` is called to populate the supplied folder,
         with raw inputs.
 
-        Parameters
-        ----------
-        entry_point_name: str
-        folder: aiida.common.folders.Folder
-        inputs: dict or None
-
+        :param entry_point_name: str
+        :param folder: aiida.common.folders.Folder
+        :param inputs: dict or None
         """
 
         manager = get_manager()

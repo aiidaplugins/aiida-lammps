@@ -120,7 +120,7 @@ class BaseLammpsCalculation(CalcJob):
         )
         spec.output(
             'time_dependent_computes',
-            valid_type=orm.Dict,
+            valid_type=orm.ArrayData,
             required=True,
             help=
             'The data with the time dependent computes parsed from the lammps.log',

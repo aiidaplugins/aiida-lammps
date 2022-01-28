@@ -208,28 +208,21 @@ def split_numbers(string):
 
 
 def read_lammps_format(lines, tolerances=None):
-    """Read a reaxff file, in lammps format, to a standardised potential dictionary.
+    """Read a reaxff file, in lammps format, to a standardized potential dictionary.
 
-    Parameters
-    ----------
-    lines : list[str]
-    tolerances : dict or None
-        tolerances to set, that are not specified in the file.
+    :param lines: list[str]
+    :param tolerances: dict or None tolerances to set, that are not specified in the file.
 
-    Returns
-    -------
-    dict
+    :return: dict
 
-    Notes
-    -----
-    Default tolerances:
+    .. note::
+        Default tolerances:
 
-    - anglemin: 0.001
-    - angleprod: 0.001
-    - hbondmin: 0.01
-    - hbonddist: 7.5
-    - torsionprod: 1e-05
-
+        - anglemin: 0.001
+        - angleprod: 0.001
+        - hbondmin: 0.01
+        - hbonddist: 7.5
+        - torsionprod: 1e-05
     """
     # pylint: disable=too-many-locals, too-many-branches, too-many-statements
     output = {
@@ -414,7 +407,7 @@ def format_lammps_value(value):
 
 
 def write_lammps_format(data):
-    """Write a reaxff file, in lammps format, from a standardised potential dictionary."""
+    """Write a reaxff file, in lammps format, from a standardized potential dictionary."""
     # pylint: disable=too-many-branches, too-many-statements
     # validate dictionary
     validate_against_schema(data, 'reaxff.schema.json')
@@ -576,24 +569,13 @@ def write_lammps_format(data):
 def filter_by_species(data, species):
     """filter a potential dict by a subset of species
 
-    Parameters
-    ----------
-    data : dict
-        a potential or fitting dict
-    species : list[str]
-        the species to filter by
+    :param data: dict a potential or fitting dict
+    :param species: list[str] the species to filter by
 
-    Returns
-    -------
-    dict
-        data filtered by species and with all species index keys re-indexed
+    :raturn: dict data filtered by species and with all species index keys re-indexed
 
-    Raises
-    ------
-    KeyError
-        if the data does not adhere to the potential or fitting jsonschema
-    AssertionError
-        if the filter set is not a subset of the available species
+    :raises KeyError: if the data does not adhere to the potential or fitting jsonschema
+    :raises AssertionError: if the filter set is not a subset of the available species
 
     """
     species = sorted(list(set(species)))

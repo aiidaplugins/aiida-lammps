@@ -17,14 +17,9 @@ def load_schema(name):
     If the name is an absolute path, it will be used as is, otherwise
     it will be loaded as resource from the internal json schema module.
 
-    Parameters
-    ----------
-    name: str
+    :param name: str
 
-    Returns
-    -------
-    dict
-
+    :return: dict
     """
     if os.path.isabs(name):
         with io.open(name) as jfile:
@@ -38,16 +33,9 @@ def load_schema(name):
 def load_validator(schema):
     """Create a validator for a schema.
 
-    Parameters
-    ----------
-    schema : str or dict
-        schema or path to schema
+    :param schema: str or dict schema or path to schema
 
-    Returns
-    -------
-    jsonschema.IValidator
-        the validator to use
-
+    :return: jsonschema.IValidator the validator to use
     """
     if isinstance(schema, str):
         schema = load_schema(schema)
@@ -70,25 +58,13 @@ def load_validator(schema):
 def validate_against_schema(data, schema):
     """Validate json-type data against a schema.
 
-    Parameters
-    ----------
-    data: dict
-    schema: dict or str
-        schema, name of schema resource, or absolute path to a schema
+    :param data: dict
+    :param schema: dict or str schema, name of schema resource, or absolute path to a schema
 
-    Raises
-    ------
-    jsonschema.exceptions.SchemaError
-        if the schema is invalid
-    jsonschema.exceptions.ValidationError
-        if the instance is invalid
+    :raises jsonschema.exceptions.SchemaError: if the schema is invalid
+    :raises jsonschema.exceptions.ValidationError: if the instance is invalid
 
-    Returns
-    -------
-    bool
-        return True if validated
-
-
+    :return: return True if validated
     """
     validator = load_validator(schema)
     # validator.validate(data)

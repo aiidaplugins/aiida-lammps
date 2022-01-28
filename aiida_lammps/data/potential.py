@@ -36,12 +36,9 @@ class EmpiricalPotential(Data):
     def __init__(self, potential_type, data=None, **kwargs):
         """Empirical potential data, used to create LAMMPS input files.
 
-        Parameters
-        ----------
-        type: str
-            the type of potential (should map to a `lammps.potential` entry point)
-        data: dict
-            data required to create the potential file and input lines
+        :param potential_type: the type of potential
+            (should map to a `lammps.potential` entry point)
+        :param data: dict data required to create the potential file and input lines
 
         """
         super().__init__(**kwargs)

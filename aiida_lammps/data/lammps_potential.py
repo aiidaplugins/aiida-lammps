@@ -113,7 +113,8 @@ class LammpsPotentialData(orm.SinglefileData):
         units: str = None,
         extra_tags: dict = None,
     ):
-        """Get lammps potential data node from database or create a new one.
+        """
+        Get lammps potential data node from database or create a new one.
 
         This will check if there is a potential data node with matching md5
         checksum and use that or create a new one if not existent.
@@ -178,6 +179,7 @@ class LammpsPotentialData(orm.SinglefileData):
     @staticmethod
     def is_readable_byte_stream(stream) -> bool:
         """Return if object is a readable filelike object in binary mode or stream of bytes.
+
         :param stream: the object to analyse.
         :returns: True if ``stream`` appears to be a readable filelike object
             in binary mode, False otherwise.
@@ -191,10 +193,12 @@ class LammpsPotentialData(orm.SinglefileData):
         cls, source: typing.Union[str, pathlib.Path, typing.BinaryIO]
     ) -> typing.BinaryIO:
         """Validate the ``source`` representing a file on disk or a byte stream.
+
         .. note:: if the ``source`` is a valid file on disk, its content is
             read and returned as a stream of bytes.
+
         :raises TypeError: if the source is not a ``str``, ``pathlib.Path``
-        instance or binary stream.
+            instance or binary stream.
         :raises FileNotFoundError: if the source is a filepath but does not exist.
         """
         if not isinstance(
@@ -214,6 +218,7 @@ class LammpsPotentialData(orm.SinglefileData):
 
     def validate_md5(self, md5: str):
         """Validate that the md5 checksum matches that of the currently stored file.
+
         :param value: the md5 checksum.
         :raises ValueError: if the md5 does not match that of the currently stored file.
         """
@@ -282,6 +287,7 @@ class LammpsPotentialData(orm.SinglefileData):
     @classmethod
     def validate_element(cls, element: str):
         """Validate the given element symbol.
+
         :param element: the symbol of the element following the IUPAC naming standard.
         :raises ValueError: if the element symbol is invalid.
         """
@@ -317,6 +323,7 @@ class LammpsPotentialData(orm.SinglefileData):
         correspond to the ones accepted by the class. It will also check that
         the type of the entries are of the appropriate python type. If the
         entries can take only a subset of values they are checked against them.
+
         :param extra_tags: dictionary with the extra tags that can be used to tag the potential
         :type extra_tags: dict
         :raises ValueError: If the type of the entry does not matches the expected
