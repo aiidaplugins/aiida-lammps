@@ -22,7 +22,7 @@ class LAMMPSBaseParser(Parser):
     """
     def __init__(self, node):
         """Initialize the parser"""
-        # pylint: disable=useless-super-delegation, super-with-arguments
+        # pylint: disable=useless-super-delegation
         super(LAMMPSBaseParser, self).__init__(node)
 
     def parse(self, **kwargs):

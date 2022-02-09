@@ -36,7 +36,7 @@ repos:
         name: pylint
         entry: pylint
         types: [python]
-        args: ['-d duplicate-code']
+        args: ['-d duplicate-code', '-d bad-continuation']
         language: system
         exclude: |
           (?x)(

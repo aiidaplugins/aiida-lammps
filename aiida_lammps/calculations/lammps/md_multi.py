@@ -1,5 +1,5 @@
 """Run a multi-stage molecular dynamic simulation."""
-# pylint: disable=fixme, super-with-arguments
+# pylint: disable=fixme
 from aiida.common.exceptions import InputValidationError
 from aiida.plugins import DataFactory
 
@@ -386,12 +386,12 @@ def atom_info_commands(
         # work out which variables need to be computed
         avar_props = [
             v for v in ave_variables
-            if not any([v.startswith(s) for s in ['c_', 'f_', 'v_']])  # pylint: disable=use-a-generator
+            if not any([v.startswith(s) for s in ['c_', 'f_', 'v_']])
         ]
         avar_names = []
         c_at_vars = 1
         for ave_var in ave_variables:
-            if any([ave_var.startswith(s) for s in ['c_', 'f_', 'v_']]):  # pylint: disable=use-a-generator
+            if any([ave_var.startswith(s) for s in ['c_', 'f_', 'v_']]):
                 avar_names.append(ave_var)
             else:
                 if len(avar_props) > 1:

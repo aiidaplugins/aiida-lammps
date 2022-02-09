@@ -1,5 +1,5 @@
 """Single point calculation of the energy in LAMMPS."""
-# pylint: disable=fixme, duplicate-code, useless-super-delegation, super-with-arguments
+# pylint: disable=fixme, duplicate-code, useless-super-delegation
 from aiida.plugins import DataFactory
 
 from aiida_lammps.calculations.lammps import BaseLammpsCalculation

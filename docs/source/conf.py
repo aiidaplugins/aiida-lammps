@@ -7,8 +7,8 @@ or directly: `sphinx-build -n -W --keep-going docs/source docs/_build`
 import os
 import sys
 import subprocess
-from aiida_lammps import __version__
 from aiida.manage.configuration import load_documentation_profile
+from aiida_lammps import __version__
 
 # -- AiiDA-related setup --------------------------------------------------
 

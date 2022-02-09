@@ -1,5 +1,5 @@
 """Single stage MD calculation in LAMMPS."""
-# pylint: disable=fixme, useless-super-delegation, super-with-arguments, duplicate-code
+# pylint: disable=fixme, useless-super-delegation, duplicate-code
 import numpy as np
 from aiida.common.exceptions import InputValidationError
 from aiida.plugins import DataFactory

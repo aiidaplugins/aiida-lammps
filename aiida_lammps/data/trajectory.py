@@ -134,6 +134,8 @@ class LammpsTrajectory(orm.Data):
                 self.put_object_from_filelike(
                     temp_handle,
                     self._trajectory_filename,
+                    mode='wb',
+                    encoding=None,
                 )
             else:
                 self.put_object_from_filelike(
