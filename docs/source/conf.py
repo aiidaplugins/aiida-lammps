@@ -8,6 +8,14 @@ import os
 import sys
 import subprocess
 from aiida_lammps import __version__
+from aiida.manage.configuration import load_documentation_profile
+
+# -- AiiDA-related setup --------------------------------------------------
+
+# Load the dummy profile even if we are running locally, this way the
+# documentation will succeed even if the current
+# default profile of the AiiDA installation does not use a Django backend.
+load_documentation_profile()
 
 PROJECT = 'AiiDA LAMMPS'
 COPYRIGHT = '2021, AiiDA Team'
@@ -24,6 +32,16 @@ extensions = [
     'sphinx.ext.doctest',
     'sphinx.ext.viewcode',
     'sphinx.ext.coverage',
+    'sphinx.ext.mathjax',
+    'sphinx.ext.ifconfig',
+    'sphinx.ext.todo',
+    'IPython.sphinxext.ipython_console_highlighting',
+    'IPython.sphinxext.ipython_directive',
+    'aiida.sphinxext',
+    'sphinx_panels',
+    'sphinx_copybutton',
+    'sphinxext.rediraffe',
+    'notfound.extension',
 ]
 
 intersphinx_mapping = {
@@ -38,9 +56,9 @@ intersphinx_mapping = {
     'pymatgen': ('https://pymatgen.org/', None),
 }
 
-HTML_THEME = 'furo'
-HTML_TITLE = f'v{__version__}'
-HTML_LOGO = 'static/logo.png'
+html_theme = 'furo'  # pylint: disable=invalid-name
+html_title = f'v{__version__}'  # pylint: disable=invalid-name
+html_logo = 'static/logo.png'  # pylint: disable=invalid-name
 html_theme_options = {
     'announcement': 'This documentation is in development!',
 }
@@ -98,3 +116,12 @@ def setup(app):
     """Run the apidoc."""
     if os.environ.get('RUN_APIDOC', None) != 'False':
         app.connect('builder-inited', run_apidoc)
+
+
+# We should ignore any python built-in exception, for instance
+# Warnings to ignore when using the -n (nitpicky) option
+with open('nitpick-exceptions', 'r') as handle:
+    nitpick_ignore = [
+        tuple(line.strip().split(None, 1)) for line in handle.readlines()
+        if line.strip() and not line.startswith('#')
+    ]

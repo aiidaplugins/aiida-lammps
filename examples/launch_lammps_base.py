@@ -66,10 +66,21 @@ def generate_potential() -> LammpsPotentialData:
             'data_method':
             'unknown',
             'description':
-            "This Fe EAM potential parameter file is from the NIST repository, \"Fe_2.eam.fs\" as of the March 9, 2009 update. It is similar to \"Fe_mm.eam.fs\" in the LAMMPS distribution dated 2007-06-11, but gives different results for very small interatomic distances (The LAMMPS potential is in fact the deprecated potential referred to in the March 9, 2009 update on the NIST repository). The file header includes a note from the NIST contributor: \"The potential was taken from v9_4_bcc (in C:\\SIMULATION.MD\\Fe\\Results\\ab_initio+Interstitials)\"",
+            """This Fe EAM potential parameter file is from the NIST repository,
+            \"Fe_2.eam.fs\" as of the March 9, 2009 update.
+            It is similar to \"Fe_mm.eam.fs\" in the LAMMPS distribution dated 2007-06-11,
+            but gives different results for very small interatomic distances
+            (The LAMMPS potential is in fact the deprecated potential referred to in the March 9,
+            2009 update on the NIST repository).
+            The file header includes a note from the NIST contributor:
+            \"The potential was taken from v9_4_bcc (in C:\\SIMULATION.MD\\Fe\\Results\\ab_initio+Interstitials)\"
+            """,
             'developer': ['Ronald E. Miller'],
             'disclaimer':
-            'According to the developer Giovanni Bonny (as reported by the NIST IPRP), this potential was not stiffened and cannot be used in its present form for collision cascades.',
+            """According to the developer Giovanni Bonny
+            (as reported by the NIST IPRP), this potential was not stiffened and cannot
+            be used in its present form for collision cascades.
+            """,
             'properties':
             None,
             'publication_year':
@@ -97,7 +108,6 @@ def generate_potential() -> LammpsPotentialData:
 
     potential = LammpsPotentialData.get_or_create(
         source='Fe_2.eam.fs',
-        filename='Fe_2.eam.fs',
         **potential_parameters,
     )
 
@@ -146,8 +156,7 @@ if __name__ == '__main__':
 
     STRUCTURE = generate_structure()
     POTENTIAL = generate_potential()
-    CODE = orm.load_code(
-        'lammps_base-19Jul2019-intel-19.0.4-openmpi-4.0.1@moggie')
+    CODE = orm.load_code('my_lammps_code')
     OPTIONS = AttributeDict()
     OPTIONS.resources = AttributeDict()
     # Total number of mpi processes

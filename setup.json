@@ -18,7 +18,7 @@
   ],
   "python_requires": ">=3.6",
   "install_requires": [
-    "aiida-core>=1.4.0,<2.0.0",
+    "aiida-core[atomic-tools]>=1.4.0,<2.0.0",
     "psycopg2-binary<2.9",
     "ase>=3.12.0,<4.0.0",
     "importlib_resources",
@@ -70,13 +70,7 @@
       "pytest-regressions"
     ],
     "pre-commit": [
-      "mypy==0.910",
-      "packaging==20.3",
-      "pre-commit~=2.2",
-      "pylint~=2.6.0",
-      "pylint-aiida~=0.1.1",
-      "pylint-django",
-      "sqlalchemy2-stubs"
+      "aiida-core[pre-commit]>=1.4.0,<2.0.0"
     ],
     "docs": [
       "myst-parser~=0.15.0",

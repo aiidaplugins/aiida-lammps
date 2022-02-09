@@ -119,7 +119,7 @@ class CombinateCalculation(BaseLammpsCalculation):
         system_filename,
         restart_filename,
     ):
-        # pylint: disable=too-many-arguments, arguments-differ
+        # pylint: disable=too-many-arguments, arguments-differ, arguments-renamed
         random_number = np.random.randint(10000000)
 
         lammps_input_file = f'units           {potential_data.default_units}\n'

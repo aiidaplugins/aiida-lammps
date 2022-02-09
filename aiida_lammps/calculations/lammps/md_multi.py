@@ -386,12 +386,12 @@ def atom_info_commands(
         # work out which variables need to be computed
         avar_props = [
             v for v in ave_variables
-            if not any([v.startswith(s) for s in ['c_', 'f_', 'v_']])
+            if not any([v.startswith(s) for s in ['c_', 'f_', 'v_']])  # pylint: disable=use-a-generator
         ]
         avar_names = []
         c_at_vars = 1
         for ave_var in ave_variables:
-            if any([ave_var.startswith(s) for s in ['c_', 'f_', 'v_']]):
+            if any([ave_var.startswith(s) for s in ['c_', 'f_', 'v_']]):  # pylint: disable=use-a-generator
                 avar_names.append(ave_var)
             else:
                 if len(avar_props) > 1:

@@ -320,26 +320,26 @@ class BaseLammpsCalculation(CalcJob):
     ):
         """Generate the main input file for the lammps simulation.
 
-        :param parameter_data: [description]
+        :param parameter_data: Data needed to describe the simulation
         :type parameter_data: [type]
-        :param potential_data: [description]
+        :param potential_data: Data that describes the potential
         :type potential_data: [type]
-        :param kind_symbols: [description]
+        :param kind_symbols: Symbols of the atoms present in the simulation box
         :type kind_symbols: [type]
-        :param structure_filename: [description]
+        :param structure_filename: Name of the structure file
         :type structure_filename: [type]
-        :param trajectory_filename: [description]
+        :param trajectory_filename: Name of the trajectory file
         :type trajectory_filename: [type]
-        :param system_filename: [description]
+        :param system_filename: Name of the system file
         :type system_filename: [type]
-        :param restart_filename: [description]
+        :param restart_filename: Name of the restart file
         :type restart_filename: [type]
         :raises NotImplementedError: [description]
         """
         # pylint: disable=no-self-use, too-many-arguments, unused-argument, duplicate-code, arguments-differ
         raise NotImplementedError
 
-    def prepare_for_submission(self, tempfolder):  # pylint: disable=arguments-differ
+    def prepare_for_submission(self, tempfolder):  # pylint: disable=arguments-differ, arguments-renamed
         """Create the input files from the input nodes passed to this instance of the `CalcJob`.
 
         :param tempfolder: an `aiida.common.folders.Folder` to temporarily write files on disk

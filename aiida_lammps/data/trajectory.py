@@ -7,6 +7,7 @@ which can then be easily accessed by the user.
 # pylint: disable=too-many-ancestors
 import io
 import tempfile
+import pathlib
 from zipfile import ZIP_DEFLATED, ZipFile
 
 from aiida import orm
@@ -124,21 +125,24 @@ class LammpsTrajectory(orm.Data):
             temp_handle.flush()
             temp_handle.seek(0)
 
-            try:
+            if isinstance(temp_handle, (str, pathlib.Path)):
+                is_filelike = False
+            else:
+                is_filelike = True
+
+            if is_filelike:
                 self.put_object_from_filelike(
                     temp_handle,
                     self._trajectory_filename,
-                    mode='wb',
-                    encoding=None,
                 )
-            except TypeError:
+            else:
                 self.put_object_from_filelike(
                     temp_handle,
                     self._trajectory_filename,
                 )
 
         self.put_object_from_filelike(
-            io.StringIO(' '.join([str(t) for t in time_steps])),
+            io.StringIO(' '.join([str(entry) for entry in time_steps])),
             self._timestep_filename,
         )
 
