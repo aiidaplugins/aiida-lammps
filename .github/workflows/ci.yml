@@ -2,9 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [develop, refactoring]
-    tags:
-      - 'v*'
+    branches: [master, develop]
   pull_request:
 
 jobs:
