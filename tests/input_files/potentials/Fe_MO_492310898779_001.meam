@@ -1,0 +1,11 @@
+# (1) Fe
+rc = 4.000000 
+delr = 0.25658351
+ialloy = 1
+nn2(1,1) = 1
+emb_lin_neg = 1
+bkgd_dyn = 0
+augt1 = 0
+repuls(1,1) = 0.000000 
+Cmin(1,1,1) = 0.160000 
+Cmax(1,1,1) = 2.800000 

@@ -1,7 +1,8 @@
 """Module for parsing REAXFF input files.
 
-Note: this module is copied directly from aiida-crystal17 v0.10.0b5
+.. note:: this module is copied directly from aiida-crystal17 v0.10.0b5
 """
+# pylint: disable=fixme
 import copy
 import re
 
@@ -51,7 +52,8 @@ KEYS_GLOBAL = (
     "reaxff3_coa3",
 )
 
-# TODO some variables lammps sets as global are actually species dependant in GULP, how to handle these?
+# TODO some variables lammps sets as global are actually species dependant
+# in GULP, how to handle these?
 
 KEYS_1BODY = (
     "reaxff1_radii1",
@@ -205,29 +207,23 @@ def split_numbers(string):
 
 
 def read_lammps_format(lines, tolerances=None):
-    """Read a reaxff file, in lammps format, to a standardised potential dictionary.
+    """Read a reaxff file, in lammps format, to a standardized potential dictionary.
 
-    Parameters
-    ----------
-    lines : list[str]
-    tolerances : dict or None
-        tolerances to set, that are not specified in the file.
+    :param lines: list[str]
+    :param tolerances: dict or None tolerances to set, that are not specified in the file.
 
-    Returns
-    -------
-    dict
+    :return: dict
 
-    Notes
-    -----
-    Default tolerances:
+    .. note::
+        Default tolerances:
 
-    - anglemin: 0.001
-    - angleprod: 0.001
-    - hbondmin: 0.01
-    - hbonddist: 7.5
-    - torsionprod: 1e-05
-
+        - anglemin: 0.001
+        - angleprod: 0.001
+        - hbondmin: 0.01
+        - hbonddist: 7.5
+        - torsionprod: 1e-05
     """
+    # pylint: disable=too-many-locals, too-many-branches, too-many-statements
     output = {
         "description": lines[0],
         "global": {},
@@ -260,7 +256,7 @@ def read_lammps_format(lines, tolerances=None):
     num_species = int(lines[lineno].split()[0])
     lineno += 3
     idx = 1
-    for i in range(num_species):
+    for _ in range(num_species):
         lineno += 1
         symbol, values = lines[lineno].split(None, 1)
         if symbol == "X":
@@ -280,7 +276,9 @@ def read_lammps_format(lines, tolerances=None):
                 "{1} != {2}".format(symbol, len(values), len(KEYS_1BODY))
             )
 
-        key_map = {k: v for k, v in zip(KEYS_1BODY, values)}
+        key_map = {
+            k: v for k, v in zip(KEYS_1BODY, values)
+        }  # pylint: disable=unnecessary-comprehension
         key_map["reaxff1_lonepair1"] = 0.5 * (
             key_map["reaxff1_valence3"] - key_map["reaxff1_valence1"]
         )
@@ -304,7 +302,12 @@ def read_lammps_format(lines, tolerances=None):
                 "{1} != {2}".format(key_name, len(values), len(KEYS_2BODY_BONDS))
             )
 
-        output["2body"][key_name] = {k: v for k, v in zip(KEYS_2BODY_BONDS, values)}
+        output["2body"][key_name] = {
+            k: v
+            for k, v in zip(
+                KEYS_2BODY_BONDS, values
+            )  # pylint: disable=unnecessary-comprehension
+        }
 
     # two-body off-diagonal parameters
     num_lines = int(lines[lineno].split()[0])
@@ -326,7 +329,7 @@ def read_lammps_format(lines, tolerances=None):
 
         output["2body"].setdefault(key_name, {}).update(
             {k: v for k, v in zip(KEYS_2BODY_OFFDIAG, values)}
-        )
+        )  # pylint: disable=unnecessary-comprehension
 
     # three-body angle parameters
     num_lines = int(lines[lineno].split()[0])
@@ -349,7 +352,7 @@ def read_lammps_format(lines, tolerances=None):
 
         output["3body"].setdefault(key_name, {}).update(
             {k: v for k, v in zip(KEYS_3BODY_ANGLES, values)}
-        )
+        )  # pylint: disable=unnecessary-comprehension
 
     # four-body torsion parameters
     num_lines = int(lines[lineno].split()[0])
@@ -375,7 +378,7 @@ def read_lammps_format(lines, tolerances=None):
 
         output["4body"].setdefault(key_name, {}).update(
             {k: v for k, v in zip(KEYS_4BODY_TORSION, values)}
-        )
+        )  # pylint: disable=unnecessary-comprehension
 
     # three-body h-bond parameters
     num_lines = int(lines[lineno].split()[0])
@@ -398,17 +401,25 @@ def read_lammps_format(lines, tolerances=None):
 
         output["3body"].setdefault(key_name, {}).update(
             {k: v for k, v in zip(KEYS_3BODY_HBOND, values)}
-        )
+        )  # pylint: disable=unnecessary-comprehension
 
     return output
 
 
 def format_lammps_value(value):
+    """Set format for lammps value
+
+    :param value: value to be formatted
+    :type value: float
+    :return: formatter value
+    :rtype: str
+    """
     return "{:.4f}".format(value)
 
 
 def write_lammps_format(data):
-    """Write a reaxff file, in lammps format, from a standardised potential dictionary."""
+    """Write a reaxff file, in lammps format, from a standardized potential dictionary."""
+    # pylint: disable=too-many-branches, too-many-statements
     # validate dictionary
     validate_against_schema(data, "reaxff.schema.json")
 
@@ -610,24 +621,13 @@ def write_lammps_format(data):
 def filter_by_species(data, species):
     """filter a potential dict by a subset of species
 
-    Parameters
-    ----------
-    data : dict
-        a potential or fitting dict
-    species : list[str]
-        the species to filter by
+    :param data: dict a potential or fitting dict
+    :param species: list[str] the species to filter by
 
-    Returns
-    -------
-    dict
-        data filtered by species and with all species index keys re-indexed
+    :raturn: dict data filtered by species and with all species index keys re-indexed
 
-    Raises
-    ------
-    KeyError
-        if the data does not adhere to the potential or fitting jsonschema
-    AssertionError
-        if the filter set is not a subset of the available species
+    :raises KeyError: if the data does not adhere to the potential or fitting jsonschema
+    :raises AssertionError: if the filter set is not a subset of the available species
 
     """
     species = sorted(list(set(species)))
@@ -639,7 +639,9 @@ def filter_by_species(data, species):
             )
         )
     data = copy.deepcopy(data)
-    indices = set([str(i) for i, s in enumerate(data["species"]) if s in species])
+    indices = set(  # pylint: disable=consider-using-set-comprehension
+        [str(i) for i, s in enumerate(data["species"]) if s in species]
+    )
 
     def convert_indices(key):
         return INDEX_SEP.join(

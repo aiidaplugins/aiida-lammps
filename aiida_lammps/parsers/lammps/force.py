@@ -1,7 +1,7 @@
+"""Parser for LAMMPS single point energy calculation."""
 from aiida.orm import ArrayData, Dict
 import numpy as np
 
-from aiida_lammps.common.parse_trajectory import TRAJ_BLOCK  # noqa: F401
 from aiida_lammps.common.parse_trajectory import iter_trajectories
 from aiida_lammps.common.raw_parsers import get_units_dict
 from aiida_lammps.parsers.lammps.base import LAMMPSBaseParser
@@ -12,6 +12,7 @@ class ForceParser(LAMMPSBaseParser):
 
     def __init__(self, node):
         """Initialize the instance of Force Lammps Parser."""
+        # pylint: disable=useless-super-delegation
         super(ForceParser, self).__init__(node)
 
     def parse(self, **kwargs):
@@ -60,8 +61,19 @@ class ForceParser(LAMMPSBaseParser):
 
         if not log_data.get("found_end", False):
             return self.exit_codes.ERROR_RUN_INCOMPLETE
+        return None
 
-    def parse_traj_file(self, trajectory_filename):
+    def parse_traj_file(self, trajectory_filename: str) -> ArrayData:
+        """Parse the trajectory file.
+
+        :param trajectory_filename: trajectory file for the single point calculation
+        :type trajectory_filename: str
+        :raises IOError: if the file is empty
+        :raises IOError: if the file has multiple steps instead of only one
+        :raises IOError: if a required field is not found
+        :return: array with the forces and charges (if present) for the calculation
+        :rtype: orm.ArrayData
+        """
         with self.retrieved.open(trajectory_filename, "r") as handle:
             traj_steps = list(iter_trajectories(handle))
         if not traj_steps:
@@ -69,13 +81,11 @@ class ForceParser(LAMMPSBaseParser):
         if len(traj_steps) > 1:
             raise IOError("trajectory file has multiple steps (expecting only one)")
 
-        traj_step = traj_steps[0]  # type: TRAJ_BLOCK
+        traj_step = traj_steps[0]
 
         for field in ["fx", "fy", "fz"]:
             if field not in traj_step.atom_fields:
-                raise IOError(
-                    "trajectory file does not contain fields {}".format(field)
-                )
+                raise IOError(f"trajectory file does not contain fields {field}")
 
         array_data = ArrayData()
 

@@ -1,0 +1,17 @@
+py:class collections.namedtuple
+py:class list of str
+py:class optional
+py:class namedtuple
+py:class numpy.array
+py:class np.array
+py:class State
+py:class EVENT_CALLBACK_TYPE
+py:class orm.ArrayData
+py:class orm.Dict
+py:class orm.ProcessNode
+py:class orm.StructureData
+py:class utils.AttributesFrozendict
+py:exc jsonschema.exceptions.ValidationError
+py:exc jsonschema.exceptions.SchemaError
+py:exc InputValidationError
+py:class aiida_lammps.common.parse_trajectory.TRAJ_BLOCK

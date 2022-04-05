@@ -1,3 +1,5 @@
+"""Store the empirical potential data"""
+# pylint: disable=too-many-ancestors
 from hashlib import md5
 from io import StringIO
 
@@ -15,34 +17,39 @@ class EmpiricalPotential(Data):
 
     @classmethod
     def list_types(cls):
+        """Get the types of potentials supported by the plugin.
+
+        :return: potential types
+        :rtype: list
+        """
         return get_entry_point_names(cls.entry_name)
 
     @classmethod
     def load_type(cls, entry_name):
+        """Load the entry point for a given potential type.
+
+        :param entry_name: name of the entry point
+        :type entry_name: str
+        """
         return load_entry_point(cls.entry_name, entry_name)
 
-    def __init__(self, type, data=None, **kwargs):
+    def __init__(self, potential_type, data=None, **kwargs):
         """Empirical potential data, used to create LAMMPS input files.
 
-        Parameters
-        ----------
-        type: str
-            the type of potential (should map to a `lammps.potential` entry point)
-        data: dict
-            data required to create the potential file and input lines
+        :param potential_type: the type of potential
+            (should map to a `lammps.potential` entry point)
+        :param data: dict data required to create the potential file and input lines
 
         """
-        super(EmpiricalPotential, self).__init__(**kwargs)
-        self.set_data(type, data)
+        super().__init__(**kwargs)
+        self.set_data(potential_type, data)
 
     def set_data(self, potential_type, data=None):
         """Store the potential type (e.g. Tersoff, EAM, LJ, ..)."""
         if potential_type is None:
-            raise ValueError("'potential_type' must be provided")
+            raise ValueError('"potential_type" must be provided')
         if potential_type not in self.list_types():
-            raise ValueError(
-                "'potential_type' must be in: {}".format(self.list_types())
-            )
+            raise ValueError(f'"potential_type" must be in: {self.list_types()}')
         pot_class = self.load_type(potential_type)(data or {})
 
         atom_style = pot_class.atom_style
@@ -72,7 +79,7 @@ class EmpiricalPotential(Data):
         external_files = []
         for fname, content in external_contents.items():
             self.set_attribute(
-                "md5|{}".format(fname.replace(".", "_")),
+                f'md5|{fname.replace(".", "_")}',
                 md5(content.encode("utf-8")).hexdigest(),
             )
             self.put_object_from_filelike(StringIO(content), fname)

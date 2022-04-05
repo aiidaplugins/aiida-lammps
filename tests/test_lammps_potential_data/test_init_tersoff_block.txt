@@ -1,0 +1,4 @@
+#-------------------------Start of Potential information-------------------------#
+pair_style tersoff 
+pair_coeff * * potential.dat Fe Fe
+#--------------------------End of Potential information--------------------------#

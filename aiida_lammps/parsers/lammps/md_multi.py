@@ -1,3 +1,4 @@
+"""Parser for LAMMPS MDMulti calculations."""
 import io
 import os
 import re
@@ -16,10 +17,12 @@ class MdMultiParser(LAMMPSBaseParser):
 
     def __init__(self, node):
         """Initialize the instance of Lammps MD Parser."""
+        # pylint: disable=useless-super-delegation
         super(MdMultiParser, self).__init__(node)
 
     def parse(self, **kwargs):
         """Parse the retrieved folder and store results."""
+        # pylint: disable= too-many-locals, too-many-branches, too-many-statements, too-many-return-statements
         # retrieve resources
         resources = self.get_parsing_resources(kwargs, traj_in_temp=True)
         if resources.exit_code is not None:
@@ -42,7 +45,7 @@ class MdMultiParser(LAMMPSBaseParser):
                     for traj_path in resources.traj_paths
                 }
                 self.out("trajectory", trajectories)
-            except Exception as err:
+            except Exception as err:  # pylint: disable=broad-except
                 traceback.print_exc()
                 self.logger.error(str(err))
                 traj_error = self.exit_codes.ERROR_TRAJ_PARSING
@@ -87,7 +90,7 @@ class MdMultiParser(LAMMPSBaseParser):
                 ):
                     sys_data.set_array(names[i], col)
                 arrays[stage_name] = sys_data
-            except Exception:
+            except Exception:  # pylint: disable=broad-except
                 traceback.print_exc()
                 sys_data_error = self.exit_codes.ERROR_INFO_PARSING
         if arrays:
@@ -120,3 +123,4 @@ class MdMultiParser(LAMMPSBaseParser):
 
         if not log_data.get("found_end", False):
             return self.exit_codes.ERROR_RUN_INCOMPLETE
+        return None

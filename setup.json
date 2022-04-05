@@ -18,7 +18,7 @@
   ],
   "python_requires": ">=3.6",
   "install_requires": [
-    "aiida-core>=1.4.0,<2.0.0",
+    "aiida-core[atomic-tools]>=1.4.0,<2.0.0",
     "psycopg2-binary<2.9",
     "ase>=3.12.0,<4.0.0",
     "importlib_resources",
@@ -31,22 +31,23 @@
   "include_package_data": true,
   "entry_points": {
     "aiida.calculations": [
+      "lammps.base = aiida_lammps.calculations.lammps.base:BaseLammpsCalculation",
       "lammps.combinate = aiida_lammps.calculations.lammps.combinate:CombinateCalculation",
       "lammps.force = aiida_lammps.calculations.lammps.force:ForceCalculation",
       "lammps.md = aiida_lammps.calculations.lammps.md:MdCalculation",
       "lammps.md.multi = aiida_lammps.calculations.lammps.md_multi:MdMultiCalculation",
-      "lammps.optimize = aiida_lammps.calculations.lammps.optimize:OptimizeCalculation",
-      "dynaphopy = aiida_lammps.calculations.dynaphopy: DynaphopyCalculation"
+      "lammps.optimize = aiida_lammps.calculations.lammps.optimize:OptimizeCalculation"
     ],
     "aiida.parsers": [
+      "lammps.base = aiida_lammps.parsers.lammps.lammps_parser:LAMMPSBaseParser",
       "lammps.force = aiida_lammps.parsers.lammps.force:ForceParser",
       "lammps.md = aiida_lammps.parsers.lammps.md:MdParser",
       "lammps.md.multi = aiida_lammps.parsers.lammps.md_multi:MdMultiParser",
-      "lammps.optimize = aiida_lammps.parsers.lammps.optimize:OptimizeParser",
-      "dynaphopy = aiida_lammps.parsers.dynaphopy: DynaphopyParser"
+      "lammps.optimize = aiida_lammps.parsers.lammps.optimize:OptimizeParser"
     ],
     "aiida.data": [
       "lammps.potential = aiida_lammps.data.potential:EmpiricalPotential",
+      "lammps.lammps_potential = aiida_lammps.data.lammps_potential:LammpsPotentialData",
       "lammps.trajectory = aiida_lammps.data.trajectory:LammpsTrajectory"
     ],
     "lammps.potentials": [
@@ -66,16 +67,14 @@
       "pytest-timeout",
       "pytest-regressions"
     ],
-    "code_style": [
-      "pre-commit~=2.6"
+    "pre-commit": [
+      "aiida-core[pre-commit]>=1.4.0,<2.0.0"
     ],
     "docs": [
       "myst-parser~=0.15.0",
       "sphinx-external-toc",
+      "sphinx-copybutton",
       "furo"
-    ],
-    "phonopy": [
-      "dynaphopy"
     ]
   }
 }

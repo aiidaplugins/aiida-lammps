@@ -1,0 +1,30 @@
+species: ["Fe"]
+atom_style: "atomic"
+pair_style: "tersoff"
+units: "metal"
+extra_tags:
+        content_origin: Null
+        content_other_locations: Null
+        data_method: "unknown"
+        description: "Tersoff-style three-body potential for bcc and fcc iron by Müller, Erhart, and Albe." 
+        developer: ["Michael Müller", "Paul Erhart", "Karsten Albe"]
+        disclaimer: Null 
+        properties: Null
+        publication_year: 2021
+        source_citations: [
+                {
+                        "author": "Michael M{\\\"u}ller and Paul Erhart and Karsten Albe",
+                        "doi": "10.1088/0953-8984/19/32/326220",
+                        "journal": "Journal of Physics: Condensed Matter",
+                        "number": "32",
+                        "pages": "326220",
+                        "recordkey": "MO_137964310702_004a",
+                        "recordprimary": "recordprimary",
+                        "recordtype": "article",
+                        "title": "Analytic bond-order potential for bcc and fcc iron---comparison with established embedded-atom method potentials",
+                        "volume": "19",
+                        "year": "2007",
+                }
+        ]
+        title: "Tersoff-style three-body potential for bcc and fcc Fe developed by Müller, Erhart, and Albe (2007) v004"
+

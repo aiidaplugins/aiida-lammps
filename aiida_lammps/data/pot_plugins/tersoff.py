@@ -1,3 +1,4 @@
+"""Class for creation of Tersoff potential inputs."""
 from aiida_lammps.data.pot_plugins.base_plugin import PotentialAbstract
 
 
@@ -8,6 +9,7 @@ class Tersoff(PotentialAbstract):
 
     def validate_data(self, data):
         """Validate the input data."""
+        # pylint: disable=unnecessary-pass
         pass
 
     def get_external_content(self):
@@ -16,16 +18,15 @@ class Tersoff(PotentialAbstract):
             "(please check citation in the original file)\n"
         )
         for key in sorted(self.data.keys()):
-            potential_file += "{}    {}\n".format(key, self.data[key])
+            potential_file += f"{key}    {self.data[key]}\n"
 
         return {self.potential_fname: potential_file}
 
-    def get_input_potential_lines(self):
+    def get_input_potential_lines(self):  # pylint: disable=arguments-differ
 
         lammps_input_text = "pair_style      tersoff\n"
-        lammps_input_text += "pair_coeff      * * {} {{kind_symbols}}\n".format(
-            self.potential_fname
-        )
+        lammps_input_text += f"pair_coeff      * * {self.potential_fname} "
+        lammps_input_text += "{kind_symbols}\n"
 
         return lammps_input_text
 

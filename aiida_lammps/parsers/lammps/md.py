@@ -1,3 +1,4 @@
+"""Parser for LAMMPS MD calculations."""
 import traceback
 
 from aiida.orm import ArrayData, Dict
@@ -13,10 +14,12 @@ class MdParser(LAMMPSBaseParser):
 
     def __init__(self, node):
         """Initialize the instance of Lammps MD Parser."""
+        # pylint: disable=useless-super-delegation
         super(MdParser, self).__init__(node)
 
     def parse(self, **kwargs):
         """Parse the retrieved folder and store results."""
+        # pylint: disable=too-many-locals, too-many-branches, too-many-return-statements
         # retrieve resources
         resources = self.get_parsing_resources(kwargs, traj_in_temp=True)
         if resources.exit_code is not None:
@@ -34,7 +37,7 @@ class MdParser(LAMMPSBaseParser):
             try:
                 trajectory_data = LammpsTrajectory(resources.traj_paths[0])
                 self.out("trajectory_data", trajectory_data)
-            except Exception as err:
+            except Exception as err:  # pylint: disable=broad-except
                 traceback.print_exc()
                 self.logger.error(str(err))
                 traj_error = self.exit_codes.ERROR_TRAJ_PARSING
@@ -72,7 +75,7 @@ class MdParser(LAMMPSBaseParser):
                     np.loadtxt(resources.sys_paths[0], skiprows=1, unpack=True, ndmin=2)
                 ):
                     sys_data.set_array(names[i], col)
-            except Exception:
+            except Exception:  # pylint: disable=broad-except
                 traceback.print_exc()
                 sys_data_error = self.exit_codes.ERROR_INFO_PARSING
             sys_data.set_attribute("units_style", output_data.get("units_style", None))
@@ -89,3 +92,4 @@ class MdParser(LAMMPSBaseParser):
 
         if not log_data.get("found_end", False):
             return self.exit_codes.ERROR_RUN_INCOMPLETE
+        return None

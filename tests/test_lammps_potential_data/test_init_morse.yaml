@@ -1,0 +1,5 @@
+md5: '47f9ce87c408caba2ca537e174eb32e9'
+species: ['Fe']
+pair_style: 'morse'
+atom_style: 'atomic'
+default_units: 'metal'

@@ -1,0 +1,16 @@
+aliases: null
+compression_method: 8
+elements:
+- Fe
+- S
+field_names:
+- element
+- q
+- x
+- y
+- z
+number_atoms: 12
+number_steps: 21
+timestep_filename: timesteps.txt
+trajectory_filename: trajectory.zip
+zip_prefix: step-

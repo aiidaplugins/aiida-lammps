@@ -1,0 +1,53 @@
+results:
+  distance_units: Angstroms
+  energy: -1030.4
+  energy_units: Kcal/mole
+  errors: []
+  final_variables:
+    c_reax_1_: -1748.4
+    etotal: -1030.4
+    temp: 0.0
+  force_units: Kcal/mole-Angstrom
+  parser_class: OptimizeParser
+  stress_units: atmospheres
+  units_style: real
+structure:
+  kind_names:
+  - Fe
+  - S
+trajectory_data:
+  aliases:
+    forces:
+    - fx
+    - fy
+    - fz
+    stresses:
+    - c_stpa[1]
+    - c_stpa[2]
+    - c_stpa[3]
+    - c_stpa[4]
+    - c_stpa[5]
+    - c_stpa[6]
+  compression_method: 8
+  elements:
+  - Fe
+  - S
+  field_names:
+  - c_stpa[1]
+  - c_stpa[2]
+  - c_stpa[3]
+  - c_stpa[4]
+  - c_stpa[5]
+  - c_stpa[6]
+  - element
+  - fx
+  - fy
+  - fz
+  - q
+  - x
+  - y
+  - z
+  number_atoms: 12
+  timestep_filename: timesteps.txt
+  trajectory_filename: trajectory.zip
+  zip_prefix: step-

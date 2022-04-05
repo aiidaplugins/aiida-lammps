@@ -1,0 +1,5 @@
+md5: '518b18551d1d9fb7307455fa1ba089d8'
+species: ['Fe']
+pair_style: 'meam'
+atom_style: 'atomic'
+default_units: 'metal'

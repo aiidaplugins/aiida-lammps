@@ -1,6 +1,35 @@
+"""Utility functions for the handling of the input files"""
+from collections.abc import Iterable
 from datetime import datetime
 
 from dateutil.parser import parse as get_date
+
+
+def generate_header(value: str) -> str:
+    """
+    Generate the header for the blocks.
+
+    :param value: string indicating the input block
+    :type value: str
+    :return: header/footer for the input block
+    :rtype: str
+    """
+    return "#" + value.center(80, "-") + "#\n"
+
+
+def flatten(full_list: list) -> list:
+    """Flattens a list of list into a flat list.
+
+    :param full_list: list of lists to be flattened
+    :type full_list: list
+    :yield: flattened list
+    :rtype: list
+    """
+    for element in full_list:
+        if isinstance(element, Iterable) and not isinstance(element, (str, bytes)):
+            yield from flatten(element)
+        else:
+            yield element
 
 
 def convert_date_string(string):
@@ -37,7 +66,7 @@ def join_keywords(dct, ignore=None):
     ignore = [] if not ignore else ignore
     return " ".join(
         [
-            "{0} {1}".format(k, _convert_values(dct[k]))
+            f"{k} {_convert_values(dct[k])}"
             for k in sorted(dct.keys())
             if k not in ignore
         ]
@@ -50,8 +79,7 @@ def get_path(dct, path, default=None, raise_error=True):
     for i, key in enumerate(path):
         if not isinstance(subdct, dict) or key not in subdct:
             if raise_error:
-                raise KeyError("path does not exist in dct: {}".format(path[0 : i + 1]))
-            else:
-                return default
+                raise KeyError(f"path does not exist in dct: {path[0:i + 1]}")
+            return default
         subdct = subdct[key]
     return subdct

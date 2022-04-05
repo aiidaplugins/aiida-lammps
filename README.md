@@ -11,10 +11,6 @@ This plugin contains 4 code types:
 - `lammps.forces`: Atomic single-point forces calculation
 - `lammps.optimize`: Crystal structure optimization
 - `lammps.md`: Molecular dynamics calculation
-- `lammps.combinate`: DynaPhoPy calculation using LAMMPS MD trajectory (currently untested)
-
-Note: `lammps.combinate` requires `aiida-phonopy` (https://github.com/abelcarreras/aiida-phonopy)
-plugin to work, DynaPhoPy can be found in: https://github.com/abelcarreras/aiida-phonopy
 
 - [AiiDA LAMMPS plugin](#aiida-lammps-plugin)
   - [Installation](#installation)
@@ -53,9 +49,9 @@ and there are many test examples in **/aiida_lammps/tests/test_calculations**.
 ### Code Setup
 
 ```python
-from aiida_lammps.tests.utils import (
+from tests.utils import (
     get_or_create_local_computer, get_or_create_code)
-from aiida_lammps.tests.utils import lammps_version
+from tests.utils import lammps_version
 
 computer_local = get_or_create_local_computer('work_directory', 'localhost')
 code_lammps_force = get_or_create_code('lammps.force', computer_local, 'lammps')

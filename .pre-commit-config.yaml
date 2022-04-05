@@ -3,14 +3,14 @@
 
 exclude: >
     (?x)^(
-      aiida_lammps/tests/input_files/.*|
-      aiida_lammps/tests/.*txt
+      tests/input_files/.*|
+      tests/.*txt
     )$
 
 repos:
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v3.2.0
+    rev: v4.1.0
     hooks:
     - id: check-json
     - id: check-yaml
@@ -18,27 +18,23 @@ repos:
     - id: trailing-whitespace
 
   - repo: https://github.com/timothycrosley/isort
-    rev: 5.5.3
+    rev: 5.10.1
     hooks:
     - id: isort
 
   - repo: https://github.com/psf/black
-    rev: 20.8b1
+    rev: 22.3.0
     hooks:
     - id: black
 
   - repo: https://gitlab.com/pycqa/flake8
-    rev: 3.8.3
+    rev: 3.9.2
     hooks:
     - id: flake8
       # additional_dependencies:
       # - flake8-bugbear==20.1.4
       # - flake8-builtins==1.5.3
       # - flake8-comprehensions==3.2.3
-      exclude: >
-        (?x)^(
-          aiida_lammps/calculations/dynaphopy.py
-        )$
 
   - repo: local
     hooks:

@@ -13,30 +13,13 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python
-      uses: actions/setup-python@v1
-      with:
-        python-version: 3.8
-      id: cache-pip
-    - uses: actions/cache@v1
-      with:
-        path: ~/.cache/pip
-        key: pip-${{ matrix.python-version }}-tests-${{ hashFiles('**/setup.json') }}
-        restore-keys:
-                    pip-${{ matrix.python-version }}-tests
-    - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: ${{ matrix.python }}
+        python-version: 3.8
     - name: Upgrade pip
-      run: |
-        pip install --upgrade pip
-        pip --version
-    - name: Install wheel
-      run: pip install wheel
+      run: pip install --upgrade pip
     - name: Install AiiDA-LAMMPS
-      run: |
-        pip install -e .[testing,pre-commit]
-        pip freeze
+      run: pip install pre-commit
     - name: Run pre-commit
       run: pre-commit run --all-files || ( git diff; git status; exit 1; )
 

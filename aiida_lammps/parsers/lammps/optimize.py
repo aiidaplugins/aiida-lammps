@@ -1,3 +1,8 @@
+"""[summary]
+
+:return: [description]
+:rtype: [type]
+"""
 import traceback
 
 from aiida.orm import Dict
@@ -12,6 +17,7 @@ class OptimizeParser(LAMMPSBaseParser):
 
     def __init__(self, node):
         """Initialize the instance of Optimize Lammps Parser."""
+        # pylint: disable=useless-super-delegation
         super(OptimizeParser, self).__init__(node)
 
     def parse(self, **kwargs):
@@ -32,7 +38,7 @@ class OptimizeParser(LAMMPSBaseParser):
                 trajectory_data = LammpsTrajectory(
                     resources.traj_paths[0],
                     aliases={
-                        "stresses": ["c_stpa[{}]".format(i + 1) for i in range(6)],
+                        "stresses": [f"c_stpa[{i+1}]" for i in range(6)],
                         "forces": ["fx", "fy", "fz"],
                     },
                 )
@@ -43,7 +49,7 @@ class OptimizeParser(LAMMPSBaseParser):
                         -1, original_structure=self.node.inputs.structure
                     ),
                 )
-            except Exception as err:
+            except Exception as err:  # pylint: disable=broad-except
                 traceback.print_exc()
                 self.logger.error(str(err))
                 traj_error = self.exit_codes.ERROR_TRAJ_PARSING
@@ -73,3 +79,4 @@ class OptimizeParser(LAMMPSBaseParser):
 
         if not log_data.get("found_end", False):
             return self.exit_codes.ERROR_RUN_INCOMPLETE
+        return None

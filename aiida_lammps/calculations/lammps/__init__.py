@@ -1,3 +1,8 @@
+"""Base LAMMPS calculation for AiiDA."""
+# pylint: disable=duplicate-code, duplicate-code
+import itertools
+
+from aiida import orm
 from aiida.common import CalcInfo, CodeInfo
 from aiida.common.exceptions import ValidationError
 from aiida.engine import CalcJob
@@ -9,9 +14,19 @@ from aiida_lammps.common.generate_structure import generate_lammps_structure
 from aiida_lammps.data.potential import EmpiricalPotential
 
 
-def get_supercell(structure, supercell_shape):
-    import itertools
+def get_supercell(
+    structure: orm.StructureData,
+    supercell_shape: orm.Dict,
+) -> orm.StructureData:
+    """Generate a supercell from a given StructureData
 
+    :param structure: original structure that will be used to generate the supercell
+    :type structure: orm.StructureData
+    :param supercell_shape: dictionary with the supercell information
+    :type supercell_shape: orm.Dict
+    :return: generated supercell
+    :rtype: orm.StructureData
+    """
     symbols = np.array([site.kind_name for site in structure.sites])
     positions = np.array([site.position for site in structure.sites])
     cell = np.array(structure.cell)
@@ -21,16 +36,22 @@ def get_supercell(structure, supercell_shape):
 
     supercell = StructureData(cell=supercell_array)
     for k in range(positions.shape[0]):
-        for r in itertools.product(*[range(i) for i in supercell_shape[::-1]]):
-            position = positions[k, :] + np.dot(np.array(r[::-1]), cell)
+        for entry in itertools.product(*[range(i) for i in supercell_shape[::-1]]):
+            position = positions[k, :] + np.dot(np.array(entry[::-1]), cell)
             symbol = symbols[k]
             supercell.append_atom(position=position, symbols=symbol)
 
     return supercell
 
 
-def get_force_constants(force_constants):
+def get_force_constants(force_constants: orm.ArrayData) -> str:
+    """Get the force constants in text format
 
+    :param force_constants: Array with the information needed for the force constants
+    :type force_constants: orm.ArrayData
+    :return: force constants in text
+    :rtype: str
+    """
     force_constants = force_constants.get_array("force_constants")
 
     fc_shape = force_constants.shape
@@ -44,10 +65,17 @@ def get_force_constants(force_constants):
     return fc_txt
 
 
-def structure_to_poscar(structure):
+def structure_to_poscar(structure: orm.StructureData) -> str:
+    """Write the structure into a POSCAR
 
+    :param structure: structure used for the simulation
+    :type structure: orm.StructureData
+    :return: POSCAR format for the structure
+    :rtype: str
+    """
     atom_type_unique = np.unique(
-        [site.kind_name for site in structure.sites], return_index=True
+        [site.kind_name for site in structure.sites],
+        return_index=True,
     )[1]
     labels = np.diff(np.append(atom_type_unique, [len(structure.sites)]))
 
@@ -55,33 +83,16 @@ def structure_to_poscar(structure):
     poscar += "\n1.0\n"
     cell = structure.cell
     for row in cell:
-        poscar += "{0: 22.16f} {1: 22.16f} {2: 22.16f}\n".format(*row)
+        poscar += f"{row[0]: 22.16f} {row[1]: 22.16f} {row[2]: 22.16f}\n"
     poscar += " ".join(np.unique([site.kind_name for site in structure.sites])) + "\n"
     poscar += " ".join(np.array(labels, dtype=str)) + "\n"
     poscar += "Cartesian\n"
     for site in structure.sites:
-        poscar += "{0: 22.16f} {1: 22.16f} {2: 22.16f}\n".format(*site.position)
+        poscar += f"{site.position[0]: 22.16f} "
+        poscar += f"{site.position[1]: 22.16f} "
+        poscar += f"{site.position[2]: 22.16f}\n"
 
     return poscar
-
-
-def parameters_to_input_file(parameters_object):
-
-    parameters = parameters_object.get_dict()
-    input_file = "STRUCTURE FILE POSCAR\nPOSCAR\n\n"
-    input_file += "FORCE CONSTANTS\nFORCE_CONSTANTS\n\n"
-    input_file += "PRIMITIVE MATRIX\n"
-    input_file += ("{} {} {} \n").format(*np.array(parameters["primitive"])[0])
-    input_file += ("{} {} {} \n").format(*np.array(parameters["primitive"])[1])
-    input_file += ("{} {} {} \n").format(*np.array(parameters["primitive"])[2])
-    input_file += "\n"
-    input_file += "SUPERCELL MATRIX PHONOPY\n"
-    input_file += ("{} {} {} \n").format(*np.array(parameters["supercell"])[0])
-    input_file += ("{} {} {} \n").format(*np.array(parameters["supercell"])[1])
-    input_file += ("{} {} {} \n").format(*np.array(parameters["supercell"])[2])
-    input_file += "\n"
-
-    return input_file
 
 
 class BaseLammpsCalculation(CalcJob):
@@ -105,9 +116,22 @@ class BaseLammpsCalculation(CalcJob):
     @classmethod
     def define(cls, spec):
         super(BaseLammpsCalculation, cls).define(spec)
-        spec.input("structure", valid_type=StructureData, help="the structure")
-        spec.input("potential", valid_type=EmpiricalPotential, help="lammps potential")
-        spec.input("parameters", valid_type=Dict, help="the parameters", required=False)
+        spec.input(
+            "structure",
+            valid_type=StructureData,
+            help="the structure",
+        )
+        spec.input(
+            "potential",
+            valid_type=EmpiricalPotential,
+            help="lammps potential",
+        )
+        spec.input(
+            "parameters",
+            valid_type=Dict,
+            help="the parameters",
+            required=False,
+        )
         spec.input(
             "metadata.options.cell_transform_filename",
             valid_type=str,
@@ -142,7 +166,8 @@ class BaseLammpsCalculation(CalcJob):
         )
         spec.default_output_node = "results"
 
-        # Unrecoverable errors: resources like the retrieved folder or its expected contents are missing
+        # Unrecoverable errors: resources like the retrieved folder or
+        # its expected contents are missing
         spec.exit_code(
             200,
             "ERROR_NO_RETRIEVED_FOLDER",
@@ -174,7 +199,8 @@ class BaseLammpsCalculation(CalcJob):
             message="the stderr output file was not found",
         )
 
-        # Unrecoverable errors: required retrieved files could not be read, parsed or are otherwise incomplete
+        # Unrecoverable errors: required retrieved files could not be read,
+        # parsed or are otherwise incomplete
         spec.exit_code(
             300,
             "ERROR_LOG_PARSING",
@@ -211,13 +237,39 @@ class BaseLammpsCalculation(CalcJob):
         )
 
     @staticmethod
-    def validate_parameters(param_data, potential_object):
+    def validate_parameters(param_data, potential_object) -> bool:
+        """Validate the input parameters against a schema.
+
+        :param param_data: input parameters to be checked
+        :type param_data: [type]
+        :param potential_object: LAMMPS potential object
+        :type potential_object: [type]
+        :return: whether or not the input parameters are valid
+        :rtype: bool
+        """
+        # pylint: disable=unused-argument
         return True
 
-    def prepare_extra_files(self, tempfolder, potential_object):
+    def prepare_extra_files(self, tempfolder, potential_object) -> bool:
+        """Check if extra files need to be prepared for the calculation
+
+        :param tempfolder: temporary folder for the calculation files
+        :type tempfolder: [type]
+        :param potential_object: LAMMPS potential
+        :type potential_object: [type]
+        :return: whether or not extra files need to be prepared for the calculation
+        :rtype: bool
+        """
+        # pylint: disable=no-self-use, unused-argument
         return True
 
-    def get_retrieve_lists(self):
+    def get_retrieve_lists(self) -> list:
+        """Get the list of files to be retrieved.
+
+        :return: list of files that should be retrieved
+        :rtype: list
+        """
+        # pylint: disable=no-self-use
         return [], []
 
     @staticmethod
@@ -230,14 +282,34 @@ class BaseLammpsCalculation(CalcJob):
         system_filename,
         restart_filename,
     ):
+        """Generate the main input file for the lammps simulation.
+
+        :param parameter_data: Data needed to describe the simulation
+        :type parameter_data: [type]
+        :param potential_data: Data that describes the potential
+        :type potential_data: [type]
+        :param kind_symbols: Symbols of the atoms present in the simulation box
+        :type kind_symbols: [type]
+        :param structure_filename: Name of the structure file
+        :type structure_filename: [type]
+        :param trajectory_filename: Name of the trajectory file
+        :type trajectory_filename: [type]
+        :param system_filename: Name of the system file
+        :type system_filename: [type]
+        :param restart_filename: Name of the restart file
+        :type restart_filename: [type]
+        :raises NotImplementedError: [description]
+        """
+        # pylint: disable=no-self-use, too-many-arguments, unused-argument, duplicate-code, arguments-differ
         raise NotImplementedError
 
-    def prepare_for_submission(self, tempfolder):
+    def prepare_for_submission(self, tempfolder):  # pylint: disable=arguments-differ
         """Create the input files from the input nodes passed to this instance of the `CalcJob`.
 
         :param tempfolder: an `aiida.common.folders.Folder` to temporarily write files on disk
         :return: `aiida.common.CalcInfo` instance
         """
+        # pylint: disable=too-many-locals
         # assert that the potential and structure have the same kind elements
         if self.inputs.potential.allowed_element_names is not None and not set(
             k.symbol for k in self.inputs.structure.kinds

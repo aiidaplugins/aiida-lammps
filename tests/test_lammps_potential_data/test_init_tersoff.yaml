@@ -1,0 +1,5 @@
+md5: 'bde68b23ba1012c8b03ce068d0018514'
+species: ['Fe']
+pair_style: 'tersoff'
+atom_style: 'atomic'
+default_units: 'metal'

@@ -1,0 +1,1031 @@
+{
+    "id": "#root",
+    "title": "LAMMPS AiiDA Run Parameters",
+    "description": "AiiDA dictionary with the structure that will be transformed into a LAMMPS input",
+    "type": "object",
+    "propertyNames": {
+        "enum": [
+            "control",
+            "potential",
+            "structure",
+            "compute",
+            "minimize",
+            "md",
+            "fix",
+            "thermo",
+            "dump"
+        ]
+    },
+    "control": {
+        "type": "object",
+        "properties": {
+            "units": {
+                "type": "string",
+                "propertyNames": {
+                    "enum": [
+                        "si",
+                        "metal",
+                        "lj",
+                        "real",
+                        "cgs",
+                        "electron",
+                        "micro",
+                        "nano"
+                    ]
+                }
+            },
+            "newton": {
+                "type": "string",
+                "propertyNames": {
+                    "enum": ["on", "off"]
+                }
+            },
+            "processors": {
+                "type": "string"
+            },
+            "timestep": {
+                "type": "number"
+            }
+        }
+    },
+    "potential": {
+        "type": "object",
+        "properties": {
+            "potential_style_options": {
+                "type": "array"
+            },
+            "neighbor": {
+                "type": "array"
+            },
+            "neighbor_modify": {
+                "type": "array"
+            }
+        }
+    },
+    "structure": {
+        "type": "object",
+        "properties": {
+            "atom_style": {
+                "type": "string",
+                "propertyNames": {
+                    "enum": [
+                        "angle",
+                        "atomic",
+                        "body",
+                        "bond",
+                        "charge",
+                        "dipole",
+                        "dpd",
+                        "edpd",
+                        "electron",
+                        "ellipsoid",
+                        "full",
+                        "line",
+                        "mdpd",
+                        "molecular",
+                        "oxdna",
+                        "peri",
+                        "smd",
+                        "sph",
+                        "sphere",
+                        "spin",
+                        "tdpd",
+                        "tri",
+                        "template",
+                        "hybrid"
+                    ]
+                }
+            },
+            "box_tilt": {
+                "type": "string",
+                "propertyNames": {
+                    "enum": ["small", "large"]
+                }
+            }
+        }
+    },
+    "properties": {
+        "compute": {
+            "$ref": "#/definitions/computes"
+        },
+        "md": {
+            "type": "object",
+            "required": ["integration"],
+            "properties": {
+                "run_style": {
+                    "type": "string",
+                    "enum": ["verlet", "verlet/split", "respa"]
+                },
+                "rspa_options": {
+                    "type": "array"
+                },
+                "max_number_steps": {
+                    "type": "integer"
+                },
+                "velocity": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "create": {
+                                "type": "object",
+                                "properties": {
+                                    "temp": {
+                                        "type":"number"
+                                    },
+                                    "seed": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "required": ["temp"]
+                            },
+                            "set": {
+                                "type": "object",
+                                "properties": {
+                                    "vx": {
+                                        "type": "number"
+                                    },
+                                    "vy": {
+                                        "type": "number"
+                                    },
+                                    "vz": {
+                                        "type": "number"
+                                    }
+                                }
+                            },
+                            "scale": {
+                                "type": "number"
+                            },
+                            "ramp": {
+                                "type": "object",
+                                "properties": {
+                                    "vdim": {
+                                        "type": "string",
+                                        "enum": ["vx", "vy", "vz"]
+                                    },
+                                    "vlo": {
+                                        "type": "number"
+                                    },
+                                    "vhi": {
+                                        "type": "number"
+                                    },
+                                    "dim": {
+                                        "type": "string",
+                                        "enum": ["x", "y", "z"]
+                                    },
+                                    "clo": {
+                                        "type": "number"
+                                    },
+                                    "chi": {
+                                        "type": "number"
+                                    }
+                                }
+                            },
+                            "zero": {
+                                "type": "string",
+                                "enum": ["linear", "angular"]
+                            },
+                            "dist": {"type": "string", "enum": ["uniform", "gaussian"]},
+                            "sum": {"type": "string", "enum": ["yes", "no"]},
+                            "mom": {"type": "string", "enum": ["yes", "no"]},
+                            "rot": {"type": "string", "enum": ["yes", "no"]},
+                            "temp": {"type": "string"},
+                            "bias": {"type": "string", "enum": ["yes", "no"]},
+                            "loop": {"type": "string", "enum": ["all", "local", "geom"]},
+                            "rigid": {"type": "string"},
+                            "units": {"type": "string", "enum": ["box", "lattice"]},
+                            "group": {
+                                "type": "string"
+                            }
+                        },
+                        "oneOf": [
+                            {
+                                "required": [
+                                    "create"
+                                ],
+                                "not": {
+                                    "required": [
+                                        "set", "scale", "ramp", "zero"
+                                    ]
+                                }
+                            },
+                            {
+                                "required": [
+                                    "set"
+                                ],
+                                "not": {
+                                    "required": [
+                                        "create", "scale", "ramp", "zero"
+                                    ]
+                                }
+                            },
+                            {
+                                "required": [
+                                    "scale"
+                                ],
+                                "not": {
+                                    "required": [
+                                        "create", "set", "ramp", "zero"
+                                    ]
+                                }
+                            },
+                            {
+                                "required": [
+                                    "ramp"
+                                ],
+                                "not": {
+                                    "required": [
+                                        "create", "scale", "set", "zero"
+                                    ]
+                                }
+                            },
+                            {
+                                "required": [
+                                    "zero"
+                                ],
+                                "not": {
+                                    "required": [
+                                        "create", "scale", "ramp", "set"
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                },
+                "integration": {
+                    "type": "object",
+                    "properties": {
+                        "style": {
+                            "type": "string",
+                            "enum": [
+                                "nph",
+                                "nph/asphere",
+                                "nph/body",
+                                "nph/eff",
+                                "nph/sphere",
+                                "nphug",
+                                "npt",
+                                "npt/asphere",
+                                "npt/body",
+                                "npt/cauchy",
+                                "npt/eff",
+                                "npt/sphere",
+                                "npt/uef",
+                                "nve",
+                                "nve/asphere",
+                                "nve/ashphere/noforce",
+                                "nve/awpmd",
+                                "nve/body",
+                                "nve/dot",
+                                "nve/dotc/langevin",
+                                "nve/eff",
+                                "nve/limit",
+                                "nve/line",
+                                "nve/manifold/rattle",
+                                "nve/noforce",
+                                "nve/sphere",
+                                "nve/spin",
+                                "nve/tri",
+                                "nvk",
+                                "nvt",
+                                "nvt/asphere",
+                                "nvt/body",
+                                "nvt/eff",
+                                "nvt/manifold/rattle",
+                                "nvt/sllod",
+                                "nvt/sllod/eff",
+                                "nvt/sphere",
+                                "nvt/uef"
+                            ]
+                        },
+                        "constraints": {
+                            "type": "object",
+                            "properties": {
+                                "temp": {
+                                    "$ref" : "#/definitions/int_constraint"
+                                },
+                                "iso": {
+                                    "$ref" : "#/definitions/int_constraint"
+                                },
+                                "tri": {
+                                    "$ref" : "#/definitions/int_constraint"
+                                },
+                                "aniso": {
+                                    "$ref" : "#/definitions/int_constraint"
+                                },
+                                "x": {
+                                    "$ref" : "#/definitions/int_constraint"
+                                },
+                                "y": {
+                                    "$ref" : "#/definitions/int_constraint"
+                                },
+                                "z": {
+                                    "$ref" : "#/definitions/int_constraint"
+                                },
+                                "xy": {
+                                    "$ref" : "#/definitions/int_constraint"
+                                },
+                                "xz": {
+                                    "$ref" : "#/definitions/int_constraint"
+                                },
+                                "yz": {
+                                    "$ref" : "#/definitions/int_constraint"
+                                },
+                                "couple": {
+                                    "type": "string",
+                                    "enum": ["none", "xyz", "xy", "yz", "xz"]
+                                },
+                                "tchain": {
+                                    "type": "integer"
+                                },
+                                "pchain": {
+                                    "type": "integer"
+                                },
+                                "mtk": {
+                                    "type": "string",
+                                    "enum": ["yes", "no"]
+                                },
+                                "tloop": {
+                                    "type": "integer"
+                                },
+                                "ploop": {
+                                    "type": "integer"
+                                },
+                                "nreset": {
+                                    "type": "integer"
+                                },
+                                "drag": {
+                                    "type": "number"
+                                },
+                                "ptemp": {
+                                    "type": "number"
+                                },
+                                "dilate": {
+                                    "type": "string"
+                                },
+                                "scalexy": {
+                                    "type": "string",
+                                    "enum": ["yes", "no"]
+                                },
+                                "scalexz": {
+                                    "type": "string",
+                                    "enum": ["yes", "no"]
+                                },
+                                "scaleyz": {
+                                    "type": "string",
+                                    "enum": ["yes", "no"]
+                                },
+                                "flip": {
+                                    "type": "string",
+                                    "enum": ["yes", "no"]
+                                },
+                                "fixedpoint": {
+                                    "type": "string",
+                                    "enum": ["x", "y", "z"]
+                                },
+                                "update": {
+                                    "type": "string",
+                                    "enum": ["dipole", "dipole/dlm"]
+                                },
+                                "ext": {
+                                    "type": "string",
+                                    "enum": ["x", "y", "z", "xy", "yz", "xz"]
+                                },
+                                "erate": {
+                                    "type": "array",
+                                    "minItems": 2,
+                                    "maxItems": 2,
+                                    "items": [
+                                        {
+                                            "description" : "strain rates in the x direction",
+                                            "type": "number"
+                                        },
+                                        {
+                                            "description": "strain rates in the y direction",
+                                            "type": "number"
+                                        }
+                                    ]
+                                },
+                                "seed": {
+                                    "type": "integer"
+                                },
+                                "angmom": {
+                                    "type": "integer"
+                                },
+                                "xmax": {
+                                    "type": "number"
+                                }
+                            }
+                        }
+                    },
+                    "required": ["style", "constraints"]
+                }
+            }
+        },
+        "minimize": {
+            "type": "object",
+            "properties": {
+                "style": {
+                    "type": "string"
+                },
+                "energy_tolerance": {
+                    "type": "number"
+                },
+                "force_tolerance": {
+                    "type": "number"
+                },
+                "max_iterations": {
+                    "type": "integer"
+                },
+                "max_evaluations": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dump": {
+            "type": "object",
+            "properties": {
+                "dump_rate": {
+                    "type": "integer"
+                }
+            }
+        },
+        "thermo": {
+            "type": "object",
+            "properties": {
+                "printing_rate":{
+                    "type": "integer"
+                },
+                "thermo_printing":{
+                    "propertyNames":{
+                        "enum":[
+                            "step",
+                            "elapsed",
+                            "elaplong",
+                            "dt",
+                            "time",
+                            "cpu",
+                            "tpcpu",
+                            "spcpu",
+                            "cpuremain",
+                            "part",
+                            "timeremain",
+                            "atoms",
+                            "temp",
+                            "press",
+                            "pe",
+                            "ke",
+                            "etotal",
+                            "evdwl",
+                            "ecoul",
+                            "epair",
+                            "ebond",
+                            "eangle",
+                            "edihed",
+                            "eimp",
+                            "emol",
+                            "elong",
+                            "etail",
+                            "enthalpy",
+                            "ecouple",
+                            "econserve",
+                            "vol",
+                            "density",
+                            "lx",
+                            "ly",
+                            "lz",
+                            "xlo",
+                            "xhi",
+                            "ylo",
+                            "yhi",
+                            "zlo",
+                            "zhi",
+                            "xy",
+                            "xz",
+                            "yz",
+                            "xlat",
+                            "ylat",
+                            "zlat",
+                            "bonds",
+                            "angles",
+                            "dihedrals",
+                            "impropers",
+                            "pxx",
+                            "pyy",
+                            "pzz",
+                            "pxy",
+                            "pxz",
+                            "pyz",
+                            "fmax",
+                            "fnorm",
+                            "nbuild",
+                            "ndanger",
+                            "cella",
+                            "cellb",
+                            "cellc",
+                            "cellalpha",
+                            "cellbeta",
+                            "cellgamma"
+                        ],
+                        "patternProperties": {
+                            "^": {
+                                "type": "boolean"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "oneOf": [
+        {
+            "required": [
+                "md"
+            ],
+            "not": {
+                "required": [
+                    "minimize"
+                ]
+            }
+        },
+        {
+            "required": [
+                "minimize"
+            ],
+            "not": {
+                "required": [
+                    "md"
+                ]
+            }
+        }
+    ],
+    "if": {
+        "required": [
+            "minimize"
+        ]
+    },
+    "then": {
+        "properties": {
+            "fix": {
+                "$ref": "#/definitions/fixes_minimize"
+            }
+        }
+    },
+    "else": {
+        "properties": {
+            "fix": {
+                "$ref": "#/definitions/fixes"
+            }
+        }
+    },
+    "definitions": {
+        "computes": {
+            "id": "#compute",
+            "description": "Dictionary containing the different computation that will be performed in a group of atoms. From https://docs.lammps.org/compute.html",
+            "type": "object",
+            "propertyNames": {
+                "enum": [
+                    "ackland/atom",
+                    "adf",
+                    "aggregate/atom",
+                    "angle",
+                    "angle/local",
+                    "angmom/chunk",
+                    "basal/atom",
+                    "body/local",
+                    "bond",
+                    "bond/local",
+                    "centro/atom",
+                    "centroid/stress/atom",
+                    "chunk/atom",
+                    "chunk/spread/atom",
+                    "cluster/atom",
+                    "cna/atom",
+                    "cnp/atom",
+                    "com",
+                    "com/chunk",
+                    "contact/atom",
+                    "coord/atom",
+                    "damage/atom",
+                    "dihedral",
+                    "dihedral/local",
+                    "dilatation/atom",
+                    "dipole",
+                    "dipole/chunk",
+                    "displace/atom",
+                    "dpd",
+                    "dpd/atom",
+                    "edpd/temp/atom",
+                    "efield/atom",
+                    "entropy/atom",
+                    "erotate/asphere",
+                    "erotate/rigid",
+                    "erotate/sphere",
+                    "erotate/sphere/atom",
+                    "event/displace",
+                    "fabric",
+                    "fep",
+                    "force/tally",
+                    "fragment/atom",
+                    "global/atom",
+                    "group/group",
+                    "gyration",
+                    "gyration/chunk",
+                    "gyration/shape",
+                    "gyration/shape/chunk",
+                    "heat/flux",
+                    "heat/flux/tally",
+                    "heat/flux/virial/tally",
+                    "hexorder/atom",
+                    "hma",
+                    "improper",
+                    "improper/local",
+                    "inertia/chunk",
+                    "ke",
+                    "ke/atom",
+                    "ke/atom/eff",
+                    "ke/eff",
+                    "ke/rigid",
+                    "mliap",
+                    "momentum",
+                    "msd",
+                    "msd/chunk",
+                    "msd/nongauss",
+                    "omega/chunk",
+                    "orientorder/atom",
+                    "pair",
+                    "pair/local",
+                    "pe",
+                    "pe/atom",
+                    "mesont",
+                    "pe/mol/tally",
+                    "pe/tally",
+                    "plasticity/atom",
+                    "pressure",
+                    "pressure/cylinder",
+                    "pressure/uef",
+                    "property/atom",
+                    "property/chunk",
+                    "property/local",
+                    "ptm/atom",
+                    "rdf",
+                    "reduce",
+                    "reduce/chunk",
+                    "reduce/region",
+                    "rigid/local",
+                    "saed",
+                    "slice",
+                    "smd/contact/radius",
+                    "smd/damage",
+                    "smd/hourglass/error",
+                    "smd/internal/energy",
+                    "smd/plastic/strain",
+                    "smd/plastic/strain/rate",
+                    "smd/rho",
+                    "smd/tlsph/defgrad",
+                    "smd/tlsph/dt",
+                    "smd/tlsph/num/neighs",
+                    "smd/tlsph/shape",
+                    "smd/tlsph/strain",
+                    "smd/tlsph/strain/rate",
+                    "smd/tlsph/stress",
+                    "smd/triangle/vertices",
+                    "smd/ulsph/effm",
+                    "smd/ulsph/num/neighs",
+                    "smd/ulsph/strain",
+                    "smd/ulsph/strain/rate",
+                    "smd/ulsph/stress",
+                    "smd/vol",
+                    "snap",
+                    "sna/atom",
+                    "snad/atom",
+                    "snav/atom",
+                    "sph/e/atom",
+                    "sph/rho/atom",
+                    "sph/t/atom",
+                    "spin",
+                    "stress/atom",
+                    "stress/mop",
+                    "stress/mop/profile",
+                    "stress/tally",
+                    "tdpd/cc/atom",
+                    "temp",
+                    "temp/asphere",
+                    "temp/body",
+                    "temp/chunk",
+                    "temp/com",
+                    "temp/cs",
+                    "temp/deform",
+                    "temp/deform/eff",
+                    "temp/drude",
+                    "temp/eff",
+                    "temp/partial",
+                    "temp/profile",
+                    "temp/ramp",
+                    "temp/region",
+                    "temp/region/eff",
+                    "temp/rotate",
+                    "temp/sphere",
+                    "temp/uef",
+                    "ti",
+                    "torque/chunk",
+                    "vacf",
+                    "vcm/chunk",
+                    "viscosity/cos",
+                    "voronoi/atom",
+                    "xrd"
+                ]
+            },
+            "patternProperties": {
+                "^": {
+                    "$ref": "#/definitions/children"
+                }
+            }
+        },
+        "fixes_minimize": {
+            "id": "#fix_minimize",
+            "description": "Dictionary containing the different fixes that will be performed in a group of atoms (only those for the minimization step). A 'fix' is any operation that is applied to the system during timestepping or minimization. From https://docs.lammps.org/minimize.html",
+            "type": "object",
+            "propertyNames": {
+                "enum": [
+                    "addforce",
+                    "addtorque",
+                    "box/relax",
+                    "efield",
+                    "enforce2d",
+                    "indent",
+                    "lineforce",
+                    "planeforce",
+                    "setforce",
+                    "spring",
+                    "spring/self",
+                    "viscous",
+                    "wall",
+                    "wall/region"
+                ]
+            },
+            "patternProperties": {
+                "^": {
+                    "$ref": "#/definitions/children"
+                }
+            }
+        },
+        "fixes": {
+            "id": "#fix",
+            "description": "Dictionary containing the different fixes that will be performed in a group of atoms. A 'fix' is any operation that is applied to the system during timestepping or minimization. From https://docs.lammps.org/fix.html",
+            "type": "object",
+            "propertyNames": {
+                "enum": [
+                    "accelerate/cos",
+                    "acks2/reaxff",
+                    "adapt",
+                    "adapt/fep",
+                    "addforce",
+                    "addtorque",
+                    "append/atoms",
+                    "atc",
+                    "atom/swap",
+                    "ave/atom",
+                    "ave/chunk",
+                    "ave/correlate",
+                    "ave/correlate/long",
+                    "ave/histo",
+                    "ave/histo/weight",
+                    "ave/time",
+                    "aveforce",
+                    "balance",
+                    "brownian",
+                    "brownian/asphere",
+                    "brownian/sphere",
+                    "bocs",
+                    "bond/break",
+                    "bond/create",
+                    "bond/create/angle",
+                    "bond/react",
+                    "bond/swap",
+                    "box/relax",
+                    "charge/regulation",
+                    "client/md",
+                    "cmap",
+                    "colvars",
+                    "controller",
+                    "deform",
+                    "deposit",
+                    "dpd/energy",
+                    "drag",
+                    "drude",
+                    "drude/transform/direct",
+                    "drude/transform/inverse",
+                    "dt/reset",
+                    "edpd/source",
+                    "efield",
+                    "ehex",
+                    "electron/stopping",
+                    "electron/stopping/fit",
+                    "enforce2d",
+                    "eos/cv",
+                    "eos/table",
+                    "eos/table/rx",
+                    "evaporate",
+                    "external",
+                    "ffl",
+                    "filter/corotate",
+                    "flow/gauss",
+                    "freeze",
+                    "gcmc",
+                    "gld",
+                    "gle",
+                    "gravity",
+                    "grem",
+                    "halt",
+                    "heat",
+                    "hyper/global",
+                    "hyper/local",
+                    "imd",
+                    "indent",
+                    "ipi",
+                    "langevin",
+                    "langevin/drude",
+                    "langevin/eff",
+                    "langevin/spin",
+                    "latte",
+                    "lb/fluid",
+                    "lb/momentum",
+                    "lb/pc",
+                    "lb/rigid/pc/sphere",
+                    "lb/viscous",
+                    "lineforce",
+                    "manifoldforce",
+                    "mdi/engine",
+                    "meso/move",
+                    "mol/swap",
+                    "momentum",
+                    "momentum/chunk",
+                    "move",
+                    "mscg",
+                    "msst",
+                    "mvv/dpd",
+                    "mvv/edpd",
+                    "mvv/tdpd",
+                    "neb",
+                    "neb/spin",
+                    "nphug",
+                    "numdiff",
+                    "oneway",
+                    "orient/bcc",
+                    "orient/fcc",
+                    "orient/eco",
+                    "pafi",
+                    "pair/tracker",
+                    "phonon",
+                    "pimd",
+                    "planeforce",
+                    "plumed",
+                    "poems",
+                    "polarize/bem/gmres",
+                    "polarize/bem/icc",
+                    "polarize/functional",
+                    "pour",
+                    "precession/spin",
+                    "press/berendsen",
+                    "print",
+                    "propel/self",
+                    "property/atom",
+                    "python/invoke",
+                    "python/move",
+                    "qbmsst",
+                    "qeq/comb",
+                    "qeq/dynamic",
+                    "qeq/fire",
+                    "qeq/point",
+                    "qeq/reaxff",
+                    "qeq/shielded",
+                    "qeq/slater",
+                    "qmmm",
+                    "qtb",
+                    "rattle",
+                    "reaxff/bonds",
+                    "reaxff/species",
+                    "recenter",
+                    "restrain",
+                    "rhok",
+                    "rigid",
+                    "rigid/meso",
+                    "rigid/nph",
+                    "rigid/nph/small",
+                    "rigid/npt",
+                    "rigid/npt/small",
+                    "rigid/nve",
+                    "rigid/nve/small",
+                    "rigid/nvt",
+                    "rigid/nvt/small",
+                    "rigid/small",
+                    "rx",
+                    "saed/vtk",
+                    "setforce",
+                    "setforce/spin",
+                    "shake",
+                    "shardlow",
+                    "smd",
+                    "smd/adjust_dt",
+                    "smd/integrate_tlsph",
+                    "smd/integrate_ulsph",
+                    "smd/move_tri_surf",
+                    "smd/setvel",
+                    "smd/wall_surface",
+                    "sph",
+                    "sph/stationary",
+                    "spring",
+                    "spring/chunk",
+                    "spring/rg",
+                    "spring/self",
+                    "srd",
+                    "store/force",
+                    "store/state",
+                    "tdpd/source",
+                    "temp/berendsen",
+                    "temp/csld",
+                    "temp/csvr",
+                    "temp/rescale",
+                    "temp/rescale/eff",
+                    "tfmc",
+                    "tgnvt/drude",
+                    "tgnpt/drude",
+                    "thermal/conductivity",
+                    "ti/spring",
+                    "tmd",
+                    "ttm",
+                    "ttm/grid",
+                    "ttm/mod",
+                    "tune/kspace",
+                    "vector",
+                    "viscosity",
+                    "viscous",
+                    "wall/body/polygon",
+                    "wall/body/polyhedron",
+                    "wall/colloid",
+                    "wall/ees",
+                    "wall/gran",
+                    "wall/gran/region",
+                    "wall/harmonic",
+                    "wall/lj1043",
+                    "wall/lj126",
+                    "wall/lj93",
+                    "wall/morse",
+                    "wall/piston",
+                    "wall/reflect",
+                    "wall/reflect/stochastic",
+                    "wall/region",
+                    "wall/region/ees",
+                    "wall/srd",
+                    "widom"
+                ]
+            },
+            "patternProperties": {
+                "^": {
+                    "$ref": "#/definitions/children"
+                }
+            }
+        },
+        "int_constraint": {
+            "description": "Define an integration constraint, for e.g. temperature, pressure, etc",
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "items": [
+                {
+                    "description": "external value at start of run",
+                    "type": "number"
+                },
+                {
+                    "description": "external value at end of run",
+                    "type": "number"
+                },
+                {
+                    "description": "damping parameter (time units)",
+                    "type": "number",
+                    "minimum": 0
+                }
+            ]
+        },
+        "children": {
+            "id": "#children",
+            "description": "schema for the entries related to the compute and fixes",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "array"
+                    },
+                    "group": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "type"
+                ]
+            }
+        }
+    }
+}
