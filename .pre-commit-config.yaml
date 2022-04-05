@@ -35,10 +35,6 @@ repos:
       # - flake8-bugbear==20.1.4
       # - flake8-builtins==1.5.3
       # - flake8-comprehensions==3.2.3
-      exclude: >
-        (?x)^(
-          aiida_lammps/calculations/dynaphopy.py
-        )$
 
   - repo: local
     hooks:

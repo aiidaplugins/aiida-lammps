@@ -95,43 +95,6 @@ def structure_to_poscar(structure: orm.StructureData) -> str:
     return poscar
 
 
-def parameters_to_input_file(parameters_object: dict) -> str:
-    """Write input file for dynaphopy from the input parameters.
-
-    :param parameters_object: input parameters for the dynaphopy calculation
-    :type parameters_object: dict
-    :return: input file in string format for dynaphopy
-    :rtype: str
-    """
-    parameters = parameters_object.get_dict()
-    input_file = "STRUCTURE FILE POSCAR\nPOSCAR\n\n"
-    input_file += "FORCE CONSTANTS\nFORCE_CONSTANTS\n\n"
-    input_file += "PRIMITIVE MATRIX\n"
-    input_file += f'{np.array(parameters["primitive"])[0, 0]} '
-    input_file += f'{np.array(parameters["primitive"])[0, 1]} '
-    input_file += f'{np.array(parameters["primitive"])[0, 2]} \n'
-    input_file += f'{np.array(parameters["primitive"])[1, 0]} '
-    input_file += f'{np.array(parameters["primitive"])[1, 1]} '
-    input_file += f'{np.array(parameters["primitive"])[1, 2]} \n'
-    input_file += f'{np.array(parameters["primitive"])[2, 0]} '
-    input_file += f'{np.array(parameters["primitive"])[2, 1]} '
-    input_file += f'{np.array(parameters["primitive"])[2, 2]} \n'
-    input_file += "\n"
-    input_file += "SUPERCELL MATRIX PHONOPY\n"
-    input_file += f'{np.array(parameters["supercell"])[0, 0]} '
-    input_file += f'{np.array(parameters["supercell"])[0, 1]} '
-    input_file += f'{np.array(parameters["supercell"])[0, 2]} \n'
-    input_file += f'{np.array(parameters["supercell"])[1, 0]} '
-    input_file += f'{np.array(parameters["supercell"])[1, 1]} '
-    input_file += f'{np.array(parameters["supercell"])[1, 2]} \n'
-    input_file += f'{np.array(parameters["supercell"])[2, 0]} '
-    input_file += f'{np.array(parameters["supercell"])[2, 1]} '
-    input_file += f'{np.array(parameters["supercell"])[2, 2]} \n'
-    input_file += "\n"
-
-    return input_file
-
-
 class BaseLammpsCalculation(CalcJob):
     """
     A basic plugin for calculating force constants using Lammps.
