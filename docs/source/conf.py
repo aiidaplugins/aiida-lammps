@@ -47,6 +47,8 @@ intersphinx_mapping = {
     "pymatgen": ("https://pymatgen.org/", None),
 }
 
+suppress_warnings = ["etoc.toctree"]
+
 html_theme = "furo"  # pylint: disable=invalid-name
 html_title = f"v{__version__}"  # pylint: disable=invalid-name
 html_logo = "static/logo.png"  # pylint: disable=invalid-name

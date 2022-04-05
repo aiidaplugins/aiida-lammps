@@ -578,7 +578,7 @@ class LammpsPotentialData(orm.SinglefileData):
         corresponding to primary published work(s) describing the KIM Item.
 
         :return: the citation where the potential was originally published.
-        :rtype: typing.Union[str, list].
+        :rtype: typing.Union[str, list]
         """
         return self.get_attribute("source_citations")
 
