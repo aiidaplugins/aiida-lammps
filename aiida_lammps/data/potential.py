@@ -12,8 +12,8 @@ class EmpiricalPotential(Data):
     Store the empirical potential data
     """
 
-    entry_name = 'lammps.potentials'
-    pot_lines_fname = 'potential_lines.txt'
+    entry_name = "lammps.potentials"
+    pot_lines_fname = "potential_lines.txt"
 
     @classmethod
     def list_types(cls):
@@ -49,8 +49,7 @@ class EmpiricalPotential(Data):
         if potential_type is None:
             raise ValueError('"potential_type" must be provided')
         if potential_type not in self.list_types():
-            raise ValueError(
-                f'"potential_type" must be in: {self.list_types()}')
+            raise ValueError(f'"potential_type" must be in: {self.list_types()}')
         pot_class = self.load_type(potential_type)(data or {})
 
         atom_style = pot_class.atom_style
@@ -60,31 +59,32 @@ class EmpiricalPotential(Data):
         external_contents = pot_class.get_external_content() or {}
         pot_lines = pot_class.get_input_potential_lines()
 
-        self.set_attribute('potential_type', potential_type)
-        self.set_attribute('atom_style', atom_style)
-        self.set_attribute('default_units', default_units)
+        self.set_attribute("potential_type", potential_type)
+        self.set_attribute("atom_style", atom_style)
+        self.set_attribute("default_units", default_units)
         self.set_attribute(
-            'allowed_element_names',
+            "allowed_element_names",
             sorted(allowed_element_names)
-            if allowed_element_names else allowed_element_names,
+            if allowed_element_names
+            else allowed_element_names,
         )
 
         # store potential section of main input file
-        self.set_attribute('md5|input_lines',
-                           md5(pot_lines.encode('utf-8')).hexdigest())
-        self.put_object_from_filelike(StringIO(pot_lines),
-                                      self.pot_lines_fname)
+        self.set_attribute(
+            "md5|input_lines", md5(pot_lines.encode("utf-8")).hexdigest()
+        )
+        self.put_object_from_filelike(StringIO(pot_lines), self.pot_lines_fname)
 
         # store external files required by the potential
         external_files = []
         for fname, content in external_contents.items():
             self.set_attribute(
                 f'md5|{fname.replace(".", "_")}',
-                md5(content.encode('utf-8')).hexdigest(),
+                md5(content.encode("utf-8")).hexdigest(),
             )
             self.put_object_from_filelike(StringIO(content), fname)
             external_files.append(fname)
-        self.set_attribute('external_files', sorted(external_files))
+        self.set_attribute("external_files", sorted(external_files))
 
         # delete any previously stored files that are no longer required
         for fname in self.list_object_names():
@@ -94,22 +94,22 @@ class EmpiricalPotential(Data):
     @property
     def potential_type(self):
         """Return lammps atom style."""
-        return self.get_attribute('potential_type')
+        return self.get_attribute("potential_type")
 
     @property
     def atom_style(self):
         """Return lammps atom style."""
-        return self.get_attribute('atom_style')
+        return self.get_attribute("atom_style")
 
     @property
     def default_units(self):
         """Return lammps default units."""
-        return self.get_attribute('default_units')
+        return self.get_attribute("default_units")
 
     @property
     def allowed_element_names(self):
         """Return available atomic symbols."""
-        return self.get_attribute('allowed_element_names')
+        return self.get_attribute("allowed_element_names")
 
     def get_input_lines(self, kind_symbols=None):
         """Return the command(s) required to setup the potential.
@@ -128,14 +128,14 @@ class EmpiricalPotential(Data):
              pair_coeff      * *  S Cr
 
         """
-        content = self.get_object_content(self.pot_lines_fname, 'r')
+        content = self.get_object_content(self.pot_lines_fname, "r")
         if kind_symbols:
-            content = content.replace('{kind_symbols}', ' '.join(kind_symbols))
+            content = content.replace("{kind_symbols}", " ".join(kind_symbols))
         return content
 
     def get_external_files(self):
         """Return the mapping of external filenames to content."""
         fmap = {}
-        for fname in self.get_attribute('external_files'):
-            fmap[fname] = self.get_object_content(fname, 'r')
+        for fname in self.get_attribute("external_files"):
+            fmap[fname] = self.get_object_content(fname, "r")
         return fmap

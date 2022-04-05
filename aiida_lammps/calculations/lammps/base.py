@@ -7,11 +7,12 @@ is generated depending on the parameters provided, the type of potential,
 the input structure and whether or not a restart file is provided.
 """
 from aiida import orm
-from aiida.engine import CalcJob
 from aiida.common import datastructures
-from aiida_lammps.data.lammps_potential import LammpsPotentialData
+from aiida.engine import CalcJob
+
 from aiida_lammps.common.generate_structure import generate_lammps_structure
 from aiida_lammps.common.input_generator import generate_input_file
+from aiida_lammps.data.lammps_potential import LammpsPotentialData
 from aiida_lammps.data.trajectory import LammpsTrajectory
 
 
@@ -25,161 +26,159 @@ class BaseLammpsCalculation(CalcJob):
     the input structure and whether or not a restart file is provided.
     """
 
-    _INPUT_FILENAME = 'input.in'
-    _STRUCTURE_FILENAME = 'structure.dat'
+    _INPUT_FILENAME = "input.in"
+    _STRUCTURE_FILENAME = "structure.dat"
 
-    _DEFAULT_LOGFILE_FILENAME = 'log.lammps'
-    _DEFAULT_OUTPUT_FILENAME = 'lammps_output'
-    _DEFAULT_TRAJECTORY_FILENAME = 'aiida_lampps.trajectory.dump'
-    _DEFAULT_VARIABLES_FILENAME = 'aiida_lammps.yaml'
-    _DEFAULT_RESTART_FILENAME = 'lammps.restart'
-    _DEFAULT_POTENTIAL_FILENAME = 'potential.dat'
-    _DEFAULT_READ_RESTART_FILENAME = 'aiida_lammps.restart'
+    _DEFAULT_LOGFILE_FILENAME = "log.lammps"
+    _DEFAULT_OUTPUT_FILENAME = "lammps_output"
+    _DEFAULT_TRAJECTORY_FILENAME = "aiida_lampps.trajectory.dump"
+    _DEFAULT_VARIABLES_FILENAME = "aiida_lammps.yaml"
+    _DEFAULT_RESTART_FILENAME = "lammps.restart"
+    _DEFAULT_POTENTIAL_FILENAME = "potential.dat"
+    _DEFAULT_READ_RESTART_FILENAME = "aiida_lammps.restart"
 
-    _DEFAULT_PARSER = 'lammps.base'
+    _DEFAULT_PARSER = "lammps.base"
 
     @classmethod
     def define(cls, spec):
         super(BaseLammpsCalculation, cls).define(spec)
         spec.input(
-            'structure',
+            "structure",
             valid_type=orm.StructureData,
             required=True,
-            help='Structure used in the ``LAMMPS`` calculation',
+            help="Structure used in the ``LAMMPS`` calculation",
         )
         spec.input(
-            'potential',
+            "potential",
             valid_type=LammpsPotentialData,
             required=True,
-            help='Potential used in the ``LAMMPS`` calculation',
+            help="Potential used in the ``LAMMPS`` calculation",
         )
         spec.input(
-            'parameters',
+            "parameters",
             valid_type=orm.Dict,
             required=True,
-            help='Parameters that control the ``LAMMPS`` calculation',
+            help="Parameters that control the ``LAMMPS`` calculation",
         )
         spec.input(
-            'input_restartfile',
+            "input_restartfile",
             valid_type=orm.SinglefileData,
             required=False,
-            help=
-            'Input restartfile to continue from a previous ``LAMMPS`` calculation'
+            help="Input restartfile to continue from a previous ``LAMMPS`` calculation",
         )
         spec.input(
-            'metadata.options.input_filename',
+            "metadata.options.input_filename",
             valid_type=str,
             default=cls._INPUT_FILENAME,
         )
         spec.input(
-            'metadata.options.structure_filename',
+            "metadata.options.structure_filename",
             valid_type=str,
             default=cls._STRUCTURE_FILENAME,
         )
         spec.input(
-            'metadata.options.output_filename',
+            "metadata.options.output_filename",
             valid_type=str,
             default=cls._DEFAULT_OUTPUT_FILENAME,
         )
         spec.input(
-            'metadata.options.logfile_filename',
+            "metadata.options.logfile_filename",
             valid_type=str,
             default=cls._DEFAULT_LOGFILE_FILENAME,
         )
         spec.input(
-            'metadata.options.variables_filename',
+            "metadata.options.variables_filename",
             valid_type=str,
             default=cls._DEFAULT_VARIABLES_FILENAME,
         )
         spec.input(
-            'metadata.options.trajectory_filename',
+            "metadata.options.trajectory_filename",
             valid_type=str,
             default=cls._DEFAULT_TRAJECTORY_FILENAME,
         )
         spec.input(
-            'metadata.options.restart_filename',
+            "metadata.options.restart_filename",
             valid_type=str,
             default=cls._DEFAULT_RESTART_FILENAME,
         )
         spec.input(
-            'metadata.options.parser_name',
+            "metadata.options.parser_name",
             valid_type=str,
             default=cls._DEFAULT_PARSER,
         )
         spec.output(
-            'results',
+            "results",
             valid_type=orm.Dict,
             required=True,
-            help='The data extracted from the lammps log file',
+            help="The data extracted from the lammps log file",
         )
         spec.output(
-            'trajectories',
+            "trajectories",
             valid_type=LammpsTrajectory,
             required=True,
-            help='The data extracted from the lammps trajectory file',
+            help="The data extracted from the lammps trajectory file",
         )
         spec.output(
-            'time_dependent_computes',
+            "time_dependent_computes",
             valid_type=orm.ArrayData,
             required=True,
-            help=
-            'The data with the time dependent computes parsed from the lammps.log',
+            help="The data with the time dependent computes parsed from the lammps.log",
         )
         spec.output(
-            'restartfile',
+            "restartfile",
             valid_type=orm.SinglefileData,
             required=True,
-            help='The restartfile of a ``LAMMPS`` calculation',
+            help="The restartfile of a ``LAMMPS`` calculation",
         )
         spec.output(
-            'structure',
+            "structure",
             valid_type=orm.StructureData,
             required=False,
-            help='The output structure.',
+            help="The output structure.",
         )
         spec.exit_code(
             350,
-            'ERROR_NO_RETRIEVED_FOLDER',
-            message='the retrieved folder data node could not be accessed.',
+            "ERROR_NO_RETRIEVED_FOLDER",
+            message="the retrieved folder data node could not be accessed.",
             invalidates_cache=True,
         )
         spec.exit_code(
             351,
-            'ERROR_LOG_FILE_MISSING',
-            message='the file with the lammps log was not found',
+            "ERROR_LOG_FILE_MISSING",
+            message="the file with the lammps log was not found",
             invalidates_cache=True,
         )
         spec.exit_code(
             352,
-            'ERROR_FINAL_VARIABLE_FILE_MISSING',
-            message='the file with the final variables was not found',
+            "ERROR_FINAL_VARIABLE_FILE_MISSING",
+            message="the file with the final variables was not found",
             invalidates_cache=True,
         )
         spec.exit_code(
             353,
-            'ERROR_TRAJECTORY_FILE_MISSING',
-            message='the file with the trajectories was not found',
+            "ERROR_TRAJECTORY_FILE_MISSING",
+            message="the file with the trajectories was not found",
             invalidates_cache=True,
         )
         spec.exit_code(
             354,
-            'ERROR_STDOUT_FILE_MISSING',
-            message='the stdout output file was not found',
+            "ERROR_STDOUT_FILE_MISSING",
+            message="the stdout output file was not found",
         )
         spec.exit_code(
             355,
-            'ERROR_STDERR_FILE_MISSING',
-            message='the stderr output file was not found',
+            "ERROR_STDERR_FILE_MISSING",
+            message="the stderr output file was not found",
         )
         spec.exit_code(
             1001,
-            'ERROR_PARSING_LOGFILE',
-            message='error parsing the log file has failed.',
+            "ERROR_PARSING_LOGFILE",
+            message="error parsing the log file has failed.",
         )
         spec.exit_code(
             1002,
-            'ERROR_PARSING_FINAL_VARIABLES',
-            message='error parsing the final variable file has failed.',
+            "ERROR_PARSING_FINAL_VARIABLES",
+            message="error parsing the final variable file has failed.",
         )
 
     def prepare_for_submission(self, folder):
@@ -198,7 +197,7 @@ class BaseLammpsCalculation(CalcJob):
         # Get the name of the structure file and write it to the remote folder
         _structure_filename = self.inputs.metadata.options.structure_filename
 
-        with folder.open(_structure_filename, 'w') as handle:
+        with folder.open(_structure_filename, "w") as handle:
             handle.write(structure_filecontent)
 
         # Get the parameters dictionary so that they can be used for creating
@@ -222,9 +221,9 @@ class BaseLammpsCalculation(CalcJob):
 
         # If there is a restartfile set its name to the input variables and
         # write it in the remote folder
-        if 'input_restartfile' in self.inputs:
+        if "input_restartfile" in self.inputs:
             _read_restart_filename = self._DEFAULT_READ_RESTART_FILENAME
-            with folder.open(_read_restart_filename, 'wb') as handle:
+            with folder.open(_read_restart_filename, "wb") as handle:
                 handle.write(self.inputs.input_restartfile.get_content())
         else:
             _read_restart_filename = None
@@ -244,19 +243,17 @@ class BaseLammpsCalculation(CalcJob):
         # Get the name of the input file, and write it to the remote folder
         _input_filename = self.inputs.metadata.options.input_filename
 
-        with folder.open(_input_filename, 'w') as handle:
+        with folder.open(_input_filename, "w") as handle:
             handle.write(input_filecontent)
 
         # Write the potential to the remote folder
-        with folder.open(self._DEFAULT_POTENTIAL_FILENAME, 'w') as handle:
+        with folder.open(self._DEFAULT_POTENTIAL_FILENAME, "w") as handle:
             handle.write(self.inputs.potential.get_content())
 
         codeinfo = datastructures.CodeInfo()
         # Command line variables to ensure that the input file from LAMMPS can
         # be read
-        codeinfo.cmdline_params = [
-            '-in', _input_filename, '-log', _logfile_filename
-        ]
+        codeinfo.cmdline_params = ["-in", _input_filename, "-log", _logfile_filename]
         # Set the code uuid
         codeinfo.code_uuid = self.inputs.code.uuid
         # Set the name of the stdout

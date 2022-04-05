@@ -1,6 +1,6 @@
 """General utility functions for aiida-lammps"""
-from packaging import version
 from aiida import __version__ as aiida_version_
+from packaging import version
 
 
 def aiida_version():

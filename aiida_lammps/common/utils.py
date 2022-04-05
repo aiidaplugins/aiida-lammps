@@ -1,6 +1,7 @@
 """Utility functions for the handling of the input files"""
 from collections.abc import Iterable
 from datetime import datetime
+
 from dateutil.parser import parse as get_date
 
 
@@ -13,7 +14,7 @@ def generate_header(value: str) -> str:
     :return: header/footer for the input block
     :rtype: str
     """
-    return '#' + value.center(80, '-') + '#\n'
+    return "#" + value.center(80, "-") + "#\n"
 
 
 def flatten(full_list: list) -> list:
@@ -25,8 +26,7 @@ def flatten(full_list: list) -> list:
     :rtype: list
     """
     for element in full_list:
-        if isinstance(element,
-                      Iterable) and not isinstance(element, (str, bytes)):
+        if isinstance(element, Iterable) and not isinstance(element, (str, bytes)):
             yield from flatten(element)
         else:
             yield element
@@ -47,14 +47,14 @@ def convert_to_str(value):
     """convert True/False to yes/no and all values to strings"""
     if isinstance(value, bool):
         if value:
-            return 'yes'
-        return 'no'
+            return "yes"
+        return "no"
     return str(value)
 
 
 def _convert_values(value):
     if isinstance(value, (tuple, list)):
-        return ' '.join([convert_to_str(v) for v in value])
+        return " ".join([convert_to_str(v) for v in value])
     return convert_to_str(value)
 
 
@@ -64,10 +64,13 @@ def join_keywords(dct, ignore=None):
     value can be a single value or a list/tuple of values
     """
     ignore = [] if not ignore else ignore
-    return ' '.join([
-        f'{k} {_convert_values(dct[k])}' for k in sorted(dct.keys())
-        if k not in ignore
-    ])
+    return " ".join(
+        [
+            f"{k} {_convert_values(dct[k])}"
+            for k in sorted(dct.keys())
+            if k not in ignore
+        ]
+    )
 
 
 def get_path(dct, path, default=None, raise_error=True):
@@ -76,7 +79,7 @@ def get_path(dct, path, default=None, raise_error=True):
     for i, key in enumerate(path):
         if not isinstance(subdct, dict) or key not in subdct:
             if raise_error:
-                raise KeyError(f'path does not exist in dct: {path[0:i + 1]}')
+                raise KeyError(f"path does not exist in dct: {path[0:i + 1]}")
             return default
         subdct = subdct[key]
     return subdct

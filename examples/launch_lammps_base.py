@@ -1,11 +1,12 @@
 """
 Sets up an example for the calculation of bcc Fe using ``aiida-lammps``.
 """
-import numpy as np
 from aiida import orm
+from aiida.common.extendeddicts import AttributeDict
 from aiida.engine import submit
 from aiida.plugins import CalculationFactory
-from aiida.common.extendeddicts import AttributeDict
+import numpy as np
+
 from aiida_lammps.data.lammps_potential import LammpsPotentialData
 
 
@@ -31,8 +32,8 @@ def generate_structure() -> orm.StructureData:
     ]
     fractional = True
 
-    symbols = ['Fe', 'Fe']
-    names = ['Fe1', 'Fe2']
+    symbols = ["Fe", "Fe"]
+    names = ["Fe1", "Fe2"]
 
     structure = orm.StructureData(cell=cell)
     for position, symbol, name in zip(positions, symbols, names):
@@ -54,19 +55,15 @@ def generate_potential() -> LammpsPotentialData:
     """
 
     potential_parameters = {
-        'species': ['Fe'],
-        'atom_style': 'atomic',
-        'pair_style': 'eam/fs',
-        'units': 'metal',
-        'extra_tags': {
-            'content_origin':
-            'NIST IPRP: https: // www.ctcms.nist.gov/potentials/Fe.html',
-            'content_other_locations':
-            None,
-            'data_method':
-            'unknown',
-            'description':
-            """This Fe EAM potential parameter file is from the NIST repository,
+        "species": ["Fe"],
+        "atom_style": "atomic",
+        "pair_style": "eam/fs",
+        "units": "metal",
+        "extra_tags": {
+            "content_origin": "NIST IPRP: https: // www.ctcms.nist.gov/potentials/Fe.html",
+            "content_other_locations": None,
+            "data_method": "unknown",
+            "description": """This Fe EAM potential parameter file is from the NIST repository,
             \"Fe_2.eam.fs\" as of the March 9, 2009 update.
             It is similar to \"Fe_mm.eam.fs\" in the LAMMPS distribution dated 2007-06-11,
             but gives different results for very small interatomic distances
@@ -75,39 +72,35 @@ def generate_potential() -> LammpsPotentialData:
             The file header includes a note from the NIST contributor:
             \"The potential was taken from v9_4_bcc (in C:\\SIMULATION.MD\\Fe\\Results\\ab_initio+Interstitials)\"
             """,
-            'developer': ['Ronald E. Miller'],
-            'disclaimer':
-            """According to the developer Giovanni Bonny
+            "developer": ["Ronald E. Miller"],
+            "disclaimer": """According to the developer Giovanni Bonny
             (as reported by the NIST IPRP), this potential was not stiffened and cannot
             be used in its present form for collision cascades.
             """,
-            'properties':
-            None,
-            'publication_year':
-            2018,
-            'source_citations': [{
-                'abstract': None,
-                'author':
-                'Mendelev, MI and Han, S and Srolovitz, DJ and Ackland, GJ and Sun, DY and Asta, M',
-                'doi': '10.1080/14786430310001613264',
-                'journal': '{Phil. Mag.}',
-                'number': '{35}',
-                'pages': '{3977-3994}',
-                'recordkey': 'MO_546673549085_000a',
-                'recordprimary': 'recordprimary',
-                'recordtype': 'article',
-                'title':
-                '{Development of new interatomic potentials appropriate for crystalline and liquid iron}',
-                'volume': '{83}',
-                'year': '{2003}'
-            }],
-            'title':
-            'EAM potential (LAMMPS cubic hermite tabulation) for Fe developed by Mendelev et al. (2003) v000'
-        }
+            "properties": None,
+            "publication_year": 2018,
+            "source_citations": [
+                {
+                    "abstract": None,
+                    "author": "Mendelev, MI and Han, S and Srolovitz, DJ and Ackland, GJ and Sun, DY and Asta, M",
+                    "doi": "10.1080/14786430310001613264",
+                    "journal": "{Phil. Mag.}",
+                    "number": "{35}",
+                    "pages": "{3977-3994}",
+                    "recordkey": "MO_546673549085_000a",
+                    "recordprimary": "recordprimary",
+                    "recordtype": "article",
+                    "title": "{Development of new interatomic potentials appropriate for crystalline and liquid iron}",
+                    "volume": "{83}",
+                    "year": "{2003}",
+                }
+            ],
+            "title": "EAM potential (LAMMPS cubic hermite tabulation) for Fe developed by Mendelev et al. (2003) v000",
+        },
     }
 
     potential = LammpsPotentialData.get_or_create(
-        source='Fe_2.eam.fs',
+        source="Fe_2.eam.fs",
         **potential_parameters,
     )
 
@@ -138,7 +131,7 @@ def main(
     :rtype: orm.Node
     """
 
-    calculation = CalculationFactory('lammps.base')
+    calculation = CalculationFactory("lammps.base")
 
     builder = calculation.get_builder()
     builder.code = code
@@ -152,83 +145,60 @@ def main(
     return node
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     STRUCTURE = generate_structure()
     POTENTIAL = generate_potential()
-    CODE = orm.load_code('my_lammps_code')
+    CODE = orm.load_code("my_lammps_code")
     OPTIONS = AttributeDict()
     OPTIONS.resources = AttributeDict()
     # Total number of mpi processes
     OPTIONS.resources.tot_num_mpiprocs = 2
     # Name of the parallel environment
-    OPTIONS.resources.parallel_env = 'mpi'
+    OPTIONS.resources.parallel_env = "mpi"
     # Maximum allowed execution time in seconds
     OPTIONS.max_wallclock_seconds = 18000
     # Whether to run in parallel
     OPTIONS.withmpi = True
     # Set the slot type for the calculation
-    OPTIONS.custom_scheduler_commands = '#$ -l slot_type=execute\n#$ -l exclusive=true'
+    OPTIONS.custom_scheduler_commands = "#$ -l slot_type=execute\n#$ -l exclusive=true"
 
     _parameters = AttributeDict()
     _parameters.control = AttributeDict()
-    _parameters.control.units = 'metal'
+    _parameters.control.units = "metal"
     _parameters.control.timestep = 1e-5
     _parameters.compute = {
-        'pe/atom': [{
-            'type': [{
-                'keyword': ' ',
-                'value': ' '
-            }],
-            'group': 'all'
-        }],
-        'ke/atom': [{
-            'type': [{
-                'keyword': ' ',
-                'value': ' '
-            }],
-            'group': 'all'
-        }],
-        'stress/atom': [{
-            'type': ['NULL'],
-            'group': 'all'
-        }],
-        'pressure': [{
-            'type': ['thermo_temp'],
-            'group': 'all'
-        }],
+        "pe/atom": [{"type": [{"keyword": " ", "value": " "}], "group": "all"}],
+        "ke/atom": [{"type": [{"keyword": " ", "value": " "}], "group": "all"}],
+        "stress/atom": [{"type": ["NULL"], "group": "all"}],
+        "pressure": [{"type": ["thermo_temp"], "group": "all"}],
     }
     _parameters.md = {
-        'integration': {
-            'style': 'npt',
-            'constraints': {
-                'temp': [300, 300, 100],
-                'iso': [0.0, 0.0, 1000.0],
-            }
-        },
-        'max_number_steps': 5000,
-        'velocity': [{
-            'create': {
-                'temp': 300
+        "integration": {
+            "style": "npt",
+            "constraints": {
+                "temp": [300, 300, 100],
+                "iso": [0.0, 0.0, 1000.0],
             },
-            'group': 'all'
-        }]
+        },
+        "max_number_steps": 5000,
+        "velocity": [{"create": {"temp": 300}, "group": "all"}],
     }
-    _parameters.structure = {'atom_style': 'atomic'}
+    _parameters.structure = {"atom_style": "atomic"}
     _parameters.potential = {}
     _parameters.thermo = {
-        'printing_rate': 100,
-        'thermo_printing': {
-            'step': True,
-            'pe': True,
-            'ke': True,
-            'press': True,
-            'pxx': True,
-            'pyy': True,
-            'pzz': True,
-        }
+        "printing_rate": 100,
+        "thermo_printing": {
+            "step": True,
+            "pe": True,
+            "ke": True,
+            "press": True,
+            "pxx": True,
+            "pyy": True,
+            "pzz": True,
+        },
     }
-    _parameters.dump = {'dump_rate': 1000}
+    _parameters.dump = {"dump_rate": 1000}
 
     PARAMETERS = orm.Dict(dict=_parameters)
 
@@ -240,4 +210,4 @@ if __name__ == '__main__':
         code=CODE,
     )
 
-    print(f'Calculation node: {submission_node}')
+    print(f"Calculation node: {submission_node}")

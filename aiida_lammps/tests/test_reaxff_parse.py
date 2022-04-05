@@ -3,7 +3,8 @@ from textwrap import dedent
 
 from aiida_lammps.common.reaxff_convert import read_lammps_format, write_lammps_format
 
-lammps_file1 = dedent("""\
+lammps_file1 = dedent(
+    """\
         Reactive MD-force field: Cr/O/Fe/S/C/H force field 2014
         39 ! Number of general parameters
         50.0000 ! Overcoordination 1
@@ -296,9 +297,11 @@ lammps_file1 = dedent("""\
         3 2 5 2.5000 -1.0000 1.4500 19.5000
         5 2 3 2.5000 -1.0000 1.4500 19.5000
         5 2 5 2.5000 -2.0000 1.4500 19.5000
-        """)
+        """
+)
 
-lammps_file2 = dedent("""\
+lammps_file2 = dedent(
+    """\
     Reactive MD-force field c/h/o combustion force field
     39       ! Number of general parameters
     50.0000 !p(boc1)
@@ -422,7 +425,8 @@ lammps_file2 = dedent("""\
     0  3  3  0   0.5511  25.4150   1.1330  -5.1903  -1.0000   0.0000   0.0000
     1    ! Nr of hydrogen bonds. at1;at2;at3;r(hb);p(hb1);p(hb2);p(hb3)
     3  2  3   1.9682  -4.4628   1.7976   3.0000
-    """)
+    """
+)
 
 
 def test_read_lammps_format(data_regression):

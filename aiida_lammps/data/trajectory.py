@@ -6,8 +6,8 @@ which can then be easily accessed by the user.
 """
 # pylint: disable=too-many-ancestors
 import io
-import tempfile
 import pathlib
+import tempfile
 from zipfile import ZIP_DEFLATED, ZipFile
 
 from aiida import orm
@@ -28,9 +28,9 @@ class LammpsTrajectory(orm.Data):
 
     """
 
-    _zip_prefix = 'step-'
-    _trajectory_filename = 'trajectory.zip'
-    _timestep_filename = 'timesteps.txt'
+    _zip_prefix = "step-"
+    _trajectory_filename = "trajectory.zip"
+    _timestep_filename = "timesteps.txt"
     _compression_method = ZIP_DEFLATED
 
     def __init__(self, fileobj=None, aliases=None, **kwargs):
@@ -56,8 +56,8 @@ class LammpsTrajectory(orm.Data):
         """Validate that a trajectory has been set, before storing."""
 
         super()._validate()
-        if self.get_attribute('number_steps', None) is None:
-            raise ValidationError('trajectory has not yet been set')
+        if self.get_attribute("number_steps", None) is None:
+            raise ValidationError("trajectory has not yet been set")
 
     def set_from_fileobj(self, fileobj, aliases=None):
         """Store a lammps trajectory file.
@@ -81,17 +81,16 @@ class LammpsTrajectory(orm.Data):
         self.reset_attributes({})
 
         if not (aliases is None or isinstance(aliases, dict)):
-            raise ValueError('aliases must be None or dict')
+            raise ValueError("aliases must be None or dict")
 
         # Write the zip to a temporary file, and then add it to the node repository
         with tempfile.NamedTemporaryFile() as temp_handle:
             with ZipFile(
-                    temp_handle,
-                    'w',
-                    self._compression_method,
+                temp_handle,
+                "w",
+                self._compression_method,
             ) as zip_file:
-                for step_id, trajectory_step in enumerate(
-                        iter_trajectories(fileobj)):
+                for step_id, trajectory_step in enumerate(iter_trajectories(fileobj)):
 
                     # extract data to store in attributes
                     time_steps.append(trajectory_step.timestep)
@@ -99,26 +98,26 @@ class LammpsTrajectory(orm.Data):
                         number_atoms = trajectory_step.natoms
                     elif trajectory_step.natoms != number_atoms:
                         raise IOError(
-                            f'step {step_id} contains different number of'
-                            f' atoms: {trajectory_step.natoms}')
+                            f"step {step_id} contains different number of"
+                            f" atoms: {trajectory_step.natoms}"
+                        )
                     if field_names is None:
                         field_names = list(trajectory_step.atom_fields.keys())
-                    elif field_names != list(
-                            trajectory_step.atom_fields.keys()):
+                    elif field_names != list(trajectory_step.atom_fields.keys()):
                         raise IOError(
-                            f'step {step_id} contains different field names:'
-                            f' {list(trajectory_step.atom_fields.keys())}')
-                    if 'element' in trajectory_step.atom_fields:
-                        elements.update(trajectory_step.atom_fields['element'])
+                            f"step {step_id} contains different field names:"
+                            f" {list(trajectory_step.atom_fields.keys())}"
+                        )
+                    if "element" in trajectory_step.atom_fields:
+                        elements.update(trajectory_step.atom_fields["element"])
 
                     # save content
-                    content = '\n'.join(trajectory_step.lines)
-                    zip_name = f'{self._zip_prefix}{step_id}'
+                    content = "\n".join(trajectory_step.lines)
+                    zip_name = f"{self._zip_prefix}{step_id}"
                     zip_file.writestr(zip_name, content)
 
             if not time_steps:
-                raise IOError(
-                    'The trajectory file does not contain any timesteps')
+                raise IOError("The trajectory file does not contain any timesteps")
 
             # Flush and rewind the temporary handle,
             # otherwise the command to store it in the repo will write an empty file
@@ -134,7 +133,7 @@ class LammpsTrajectory(orm.Data):
                 self.put_object_from_filelike(
                     temp_handle,
                     self._trajectory_filename,
-                    mode='wb',
+                    mode="wb",
                     encoding=None,
                 )
             else:
@@ -144,19 +143,19 @@ class LammpsTrajectory(orm.Data):
                 )
 
         self.put_object_from_filelike(
-            io.StringIO(' '.join([str(entry) for entry in time_steps])),
+            io.StringIO(" ".join([str(entry) for entry in time_steps])),
             self._timestep_filename,
         )
 
-        self.set_attribute('number_steps', len(time_steps))
-        self.set_attribute('number_atoms', number_atoms)
-        self.set_attribute('field_names', list(sorted(field_names)))
-        self.set_attribute('trajectory_filename', self._trajectory_filename)
-        self.set_attribute('timestep_filename', self._timestep_filename)
-        self.set_attribute('zip_prefix', self._zip_prefix)
-        self.set_attribute('compression_method', self._compression_method)
-        self.set_attribute('aliases', aliases)
-        self.set_attribute('elements', list(sorted(elements)))
+        self.set_attribute("number_steps", len(time_steps))
+        self.set_attribute("number_atoms", number_atoms)
+        self.set_attribute("field_names", list(sorted(field_names)))
+        self.set_attribute("trajectory_filename", self._trajectory_filename)
+        self.set_attribute("timestep_filename", self._timestep_filename)
+        self.set_attribute("zip_prefix", self._zip_prefix)
+        self.set_attribute("compression_method", self._compression_method)
+        self.set_attribute("aliases", aliases)
+        self.set_attribute("elements", list(sorted(elements)))
 
     @property
     def number_steps(self):
@@ -165,7 +164,7 @@ class LammpsTrajectory(orm.Data):
         :return: number of steps stored in the data
         :rtype: int
         """
-        return self.get_attribute('number_steps')
+        return self.get_attribute("number_steps")
 
     @property
     def time_steps(self):
@@ -174,7 +173,7 @@ class LammpsTrajectory(orm.Data):
         :return: time steps stored in the data.
         :rtype: list
         """
-        with self.open(self.get_attribute('timestep_filename'), 'r') as handle:
+        with self.open(self.get_attribute("timestep_filename"), "r") as handle:
             output = [int(i) for i in handle.readline().split()]
         return output
 
@@ -185,7 +184,7 @@ class LammpsTrajectory(orm.Data):
         :return: number of atoms in the simulation box
         :rtype: int
         """
-        return self.get_attribute('number_atoms')
+        return self.get_attribute("number_atoms")
 
     @property
     def field_names(self):
@@ -194,7 +193,7 @@ class LammpsTrajectory(orm.Data):
         :return: list of field names as written to file.
         :rtype: list
         """
-        return self.get_attribute('field_names')
+        return self.get_attribute("field_names")
 
     @property
     def aliases(self):
@@ -203,24 +202,24 @@ class LammpsTrajectory(orm.Data):
         :return: mapping of one or more lammps variables.
         :rtype: list
         """
-        return self.get_attribute('aliases')
+        return self.get_attribute("aliases")
 
     def get_step_string(self, step_idx):
         """Return the content string, for a specific trajectory step."""
         step_idx = list(range(self.number_steps))[step_idx]
         zip_name = f'{self.get_attribute("zip_prefix")}{step_idx}'
         with self.open(
-                self.get_attribute('trajectory_filename'),
-                mode='rb',
+            self.get_attribute("trajectory_filename"),
+            mode="rb",
         ) as handle:
             with ZipFile(
-                    handle,
-                    'r',
-                    self.get_attribute('compression_method'),
+                handle,
+                "r",
+                self.get_attribute("compression_method"),
             ) as zip_file:
-                with zip_file.open(zip_name, 'r') as step_file:
+                with zip_file.open(zip_name, "r") as step_file:
                     content = step_file.read()
-        return content.decode('utf8')
+        return content.decode("utf8")
 
     def get_step_data(self, step_idx):
         """Return parsed data, for a specific trajectory step."""
@@ -235,13 +234,13 @@ class LammpsTrajectory(orm.Data):
             steps = range(0, self.number_steps, steps)
 
         with self.open(
-                self.get_attribute('trajectory_filename'),
-                mode='rb',
+            self.get_attribute("trajectory_filename"),
+            mode="rb",
         ) as handle:
             with ZipFile(
-                    handle,
-                    'r',
-                    self.get_attribute('compression_method'),
+                handle,
+                "r",
+                self.get_attribute("compression_method"),
             ) as zip_file:
                 for step_idx in steps:
                     zip_name = f'{self.get_attribute("zip_prefix")}{step_idx}'
@@ -252,8 +251,8 @@ class LammpsTrajectory(orm.Data):
     def get_step_structure(
         self,
         step_idx: int,
-        symbol_field: str = 'element',
-        position_fields: tuple = ('x', 'y', 'z'),
+        symbol_field: str = "element",
+        position_fields: tuple = ("x", "y", "z"),
         original_structure: orm.StructureData = None,
     ) -> orm.StructureData:
         """Return a StructureData object, for a specific trajectory step.
@@ -289,4 +288,4 @@ class LammpsTrajectory(orm.Data):
         """
         for string in self.iter_step_strings(steps=steps):
             handle.write(string)
-            handle.write(b'\n')
+            handle.write(b"\n")

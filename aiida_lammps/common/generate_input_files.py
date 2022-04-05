@@ -38,21 +38,20 @@ def get_trajectory_txt(trajectory) -> str:
     zlo_bound = 0
     zhi_bound = zhi
 
-    ind = trajectory.get_array('steps')
-    lammps_data_file = ''
+    ind = trajectory.get_array("steps")
+    lammps_data_file = ""
     for i, position_step in enumerate(trajectory.get_positions()):
-        lammps_data_file += 'ITEM: TIMESTEP\n'
-        lammps_data_file += f'{ind[i]}\n'
-        lammps_data_file += 'ITEM: NUMBER OF ATOMS\n'
-        lammps_data_file += f'{len(position_step)}\n'
-        lammps_data_file += 'ITEM: BOX BOUNDS xy xz yz pp pp pp\n'
-        lammps_data_file += f'{xlo_bound:20.10f} {xhi_bound:20.10f} {xy_box:20.10f}\n'
-        lammps_data_file += f'{ylo_bound:20.10f} {yhi_bound:20.10f} {yz_box:20.10f}\n'
-        lammps_data_file += f'{zlo_bound:20.10f} {zhi_bound:20.10f} {yz_box:20.10f}\n'
-        lammps_data_file += 'ITEM: ATOMS x y z\n'
+        lammps_data_file += "ITEM: TIMESTEP\n"
+        lammps_data_file += f"{ind[i]}\n"
+        lammps_data_file += "ITEM: NUMBER OF ATOMS\n"
+        lammps_data_file += f"{len(position_step)}\n"
+        lammps_data_file += "ITEM: BOX BOUNDS xy xz yz pp pp pp\n"
+        lammps_data_file += f"{xlo_bound:20.10f} {xhi_bound:20.10f} {xy_box:20.10f}\n"
+        lammps_data_file += f"{ylo_bound:20.10f} {yhi_bound:20.10f} {yz_box:20.10f}\n"
+        lammps_data_file += f"{zlo_bound:20.10f} {zhi_bound:20.10f} {yz_box:20.10f}\n"
+        lammps_data_file += "ITEM: ATOMS x y z\n"
         for position in position_step:
-            lammps_data_file += '{0:20.10f} {1:20.10f} {2:20.10f}\n'.format(
-                *position)
+            lammps_data_file += "{0:20.10f} {1:20.10f} {2:20.10f}\n".format(*position)
     return lammps_data_file
 
 
@@ -65,9 +64,9 @@ def parameters_to_input_file(parameters_object: dict) -> str:
     :rtype: str
     """
     parameters = parameters_object.get_dict()
-    input_file = 'STRUCTURE FILE POSCAR\nPOSCAR\n\n'
-    input_file += 'FORCE CONSTANTS\nFORCE_CONSTANTS\n\n'
-    input_file += 'PRIMITIVE MATRIX\n'
+    input_file = "STRUCTURE FILE POSCAR\nPOSCAR\n\n"
+    input_file += "FORCE CONSTANTS\nFORCE_CONSTANTS\n\n"
+    input_file += "PRIMITIVE MATRIX\n"
     input_file += f'{np.array(parameters["primitive"])[0, 0]} '
     input_file += f'{np.array(parameters["primitive"])[0, 1]} '
     input_file += f'{np.array(parameters["primitive"])[0, 2]} \n'
@@ -77,8 +76,8 @@ def parameters_to_input_file(parameters_object: dict) -> str:
     input_file += f'{np.array(parameters["primitive"])[2, 0]} '
     input_file += f'{np.array(parameters["primitive"])[2, 1]} '
     input_file += f'{np.array(parameters["primitive"])[2, 2]} \n'
-    input_file += '\n'
-    input_file += 'SUPERCELL MATRIX PHONOPY\n'
+    input_file += "\n"
+    input_file += "SUPERCELL MATRIX PHONOPY\n"
     input_file += f'{np.array(parameters["supercell"])[0, 0]} '
     input_file += f'{np.array(parameters["supercell"])[0, 1]} '
     input_file += f'{np.array(parameters["supercell"])[0, 2]} \n'
@@ -88,6 +87,6 @@ def parameters_to_input_file(parameters_object: dict) -> str:
     input_file += f'{np.array(parameters["supercell"])[2, 0]} '
     input_file += f'{np.array(parameters["supercell"])[2, 1]} '
     input_file += f'{np.array(parameters["supercell"])[2, 2]} \n'
-    input_file += '\n'
+    input_file += "\n"
 
     return input_file

@@ -14,6 +14,7 @@ from aiida_lammps.parsers.lammps.base import LAMMPSBaseParser
 
 class OptimizeParser(LAMMPSBaseParser):
     """Parser for LAMMPS optimization calculation."""
+
     def __init__(self, node):
         """Initialize the instance of Optimize Lammps Parser."""
         # pylint: disable=useless-super-delegation
@@ -37,15 +38,16 @@ class OptimizeParser(LAMMPSBaseParser):
                 trajectory_data = LammpsTrajectory(
                     resources.traj_paths[0],
                     aliases={
-                        'stresses': [f'c_stpa[{i+1}]' for i in range(6)],
-                        'forces': ['fx', 'fy', 'fz'],
+                        "stresses": [f"c_stpa[{i+1}]" for i in range(6)],
+                        "forces": ["fx", "fy", "fz"],
                     },
                 )
-                self.out('trajectory_data', trajectory_data)
+                self.out("trajectory_data", trajectory_data)
                 self.out(
-                    'structure',
+                    "structure",
                     trajectory_data.get_step_structure(
-                        -1, original_structure=self.node.inputs.structure),
+                        -1, original_structure=self.node.inputs.structure
+                    ),
                 )
             except Exception as err:  # pylint: disable=broad-except
                 traceback.print_exc()
@@ -53,27 +55,28 @@ class OptimizeParser(LAMMPSBaseParser):
                 traj_error = self.exit_codes.ERROR_TRAJ_PARSING
 
         # save results into node
-        output_data = log_data['data']
-        if 'units_style' in output_data:
+        output_data = log_data["data"]
+        if "units_style" in output_data:
             output_data.update(
                 get_units_dict(
-                    output_data['units_style'],
-                    ['energy', 'force', 'distance', 'pressure'],
-                ))
-            output_data['stress_units'] = output_data.pop('pressure_units')
+                    output_data["units_style"],
+                    ["energy", "force", "distance", "pressure"],
+                )
+            )
+            output_data["stress_units"] = output_data.pop("pressure_units")
         else:
-            self.logger.warning('units missing in log')
+            self.logger.warning("units missing in log")
         self.add_warnings_and_errors(output_data)
         self.add_standard_info(output_data)
         parameters_data = Dict(dict=output_data)
-        self.out('results', parameters_data)
+        self.out("results", parameters_data)
 
-        if output_data['errors']:
+        if output_data["errors"]:
             return self.exit_codes.ERROR_LAMMPS_RUN
 
         if traj_error:
             return traj_error
 
-        if not log_data.get('found_end', False):
+        if not log_data.get("found_end", False):
             return self.exit_codes.ERROR_RUN_INCOMPLETE
         return None

@@ -2,12 +2,13 @@
 """
 # pylint: disable=fixme
 from collections import namedtuple
-import numpy as np
+
 from aiida import orm
+import numpy as np
 
 TrajectoryBlock = namedtuple(
-    'TRAJ_BLOCK',
-    ['lines', 'timestep', 'natoms', 'cell', 'pbc', 'atom_fields'])
+    "TRAJ_BLOCK", ["lines", "timestep", "natoms", "cell", "pbc", "atom_fields"]
+)
 
 
 def iter_step_lines(file_obj):
@@ -21,7 +22,7 @@ def iter_step_lines(file_obj):
     step_content = None
     init_line = 0
     for i, line in enumerate(file_obj):
-        if 'ITEM: TIMESTEP' in line:
+        if "ITEM: TIMESTEP" in line:
             if step_content is not None:
                 yield init_line, step_content
             init_line = i + 1
@@ -47,17 +48,15 @@ def parse_step(lines, initial_line=0) -> namedtuple:
     :rtype: namedtuple
     """
     # pylint: disable=too-many-locals
-    if 'ITEM: TIMESTEP' not in lines[0]:
-        raise IOError(f'expected line {initial_line} to be TIMESTEP')
-    if 'ITEM: NUMBER OF ATOMS' not in lines[2]:
-        raise IOError(
-            f'expected line {initial_line + 2} to be NUMBER OF ATOMS')
-    if 'ITEM: BOX BOUNDS xy xz yz' not in lines[4]:
-        raise IOError(
-            f'expected line {initial_line + 4} to be BOX BOUNDS xy xz yz')
+    if "ITEM: TIMESTEP" not in lines[0]:
+        raise IOError(f"expected line {initial_line} to be TIMESTEP")
+    if "ITEM: NUMBER OF ATOMS" not in lines[2]:
+        raise IOError(f"expected line {initial_line + 2} to be NUMBER OF ATOMS")
+    if "ITEM: BOX BOUNDS xy xz yz" not in lines[4]:
+        raise IOError(f"expected line {initial_line + 4} to be BOX BOUNDS xy xz yz")
         # TODO handle case when xy xz yz not present -> orthogonal box
-    if 'ITEM: ATOMS' not in lines[8]:
-        raise IOError(f'expected line {initial_line + 8} to be ATOMS')
+    if "ITEM: ATOMS" not in lines[8]:
+        raise IOError(f"expected line {initial_line + 8} to be ATOMS")
     timestep = int(lines[1])
     number_of_atoms = int(lines[3])
 
@@ -81,21 +80,19 @@ def parse_step(lines, initial_line=0) -> namedtuple:
     zlo = bounds[2, 0]
     zhi = bounds[2, 1]
 
-    super_cell = np.array([
-        [xhi - xlo, box_xy, box_xz],
-        [0.0, yhi - ylo, box_yz],
-        [0.0, 0.0, zhi - zlo],
-    ])
+    super_cell = np.array(
+        [
+            [xhi - xlo, box_xy, box_xz],
+            [0.0, yhi - ylo, box_yz],
+            [0.0, 0.0, zhi - zlo],
+        ]
+    )
     cell = super_cell.T
     field_names = lines[8].split()[2:]
     fields = []
     for i in range(number_of_atoms):
         fields.append(lines[9 + i].split())
-    atom_fields = {
-        n: v.tolist()
-        for n, v in zip(field_names,
-                        np.array(fields).T)
-    }
+    atom_fields = {n: v.tolist() for n, v in zip(field_names, np.array(fields).T)}
 
     return TrajectoryBlock(
         lines,
@@ -115,8 +112,8 @@ def iter_trajectories(file_obj):
 
 def create_structure(
     trajectory_block: namedtuple,
-    symbol_field: str = 'element',
-    position_fields: tuple = ('x', 'y', 'z'),
+    symbol_field: str = "element",
+    position_fields: tuple = ("x", "y", "z"),
     original_structure: orm.StructureData = None,
 ) -> orm.StructureData:
     """Generate a structure from the atomic positions at a given step.
@@ -139,17 +136,15 @@ def create_structure(
     """
     symbols = trajectory_block.atom_fields[symbol_field]
     positions = np.array(
-        [trajectory_block.atom_fields[f] for f in position_fields],
-        dtype=float).T
+        [trajectory_block.atom_fields[f] for f in position_fields], dtype=float
+    ).T
 
     if original_structure is not None:
         kind_names = original_structure.get_site_kindnames()
-        kind_symbols = [
-            original_structure.get_kind(n).symbol for n in kind_names
-        ]
+        kind_symbols = [original_structure.get_kind(n).symbol for n in kind_names]
         if symbols != kind_symbols:
             raise ValueError(
-                f'original_structure has different symbols:: {kind_symbols} != {symbols}'
+                f"original_structure has different symbols:: {kind_symbols} != {symbols}"
             )
         structure = original_structure.clone()
         structure.reset_cell(trajectory_block.cell)
@@ -159,12 +154,12 @@ def create_structure(
 
     boundary_conditions = []
     for pbc in trajectory_block.pbc:
-        if pbc == 'pp':
+        if pbc == "pp":
             boundary_conditions.append(True)
-        elif pbc == 'ff':
+        elif pbc == "ff":
             boundary_conditions.append(False)
         else:
-            raise NotImplementedError(f'pbc = {trajectory_block.pbc}')
+            raise NotImplementedError(f"pbc = {trajectory_block.pbc}")
 
     structure = orm.StructureData(
         cell=trajectory_block.cell,

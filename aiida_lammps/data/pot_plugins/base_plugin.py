@@ -4,6 +4,7 @@ import abc
 
 class PotentialAbstract(abc.ABC):
     """Abstract class for potential plugins."""
+
     def __init__(self, data):
         self.validate_data(data)
         self.data = data

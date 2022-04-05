@@ -7,45 +7,44 @@ import io
 import os
 import shutil
 import tempfile
-import yaml
-import pytest
-import numpy as np
-from aiida import orm
-from aiida_lammps.tests.utils import TEST_DIR, AiidaTestApp
-from aiida_lammps.common.reaxff_convert import (
-    filter_by_species,
-    read_lammps_format,
-)
 
-pytest_plugins = ['aiida.manage.tests.pytest_fixtures']
+from aiida import orm
+import numpy as np
+import pytest
+import yaml
+
+from aiida_lammps.common.reaxff_convert import filter_by_species, read_lammps_format
+from aiida_lammps.tests.utils import TEST_DIR, AiidaTestApp
+
+pytest_plugins = ["aiida.manage.tests.pytest_fixtures"]
 
 
 def pytest_addoption(parser):
     """Define pytest command-line."""
-    group = parser.getgroup('aiida_lammps')
+    group = parser.getgroup("aiida_lammps")
 
     group.addoption(
-        '--lammps-workdir',
-        dest='lammps_workdir',
+        "--lammps-workdir",
+        dest="lammps_workdir",
         default=None,
         help=(
-            'Specify a work directory path for aiida calcjob execution. '
-            'If not specified, '
-            'a temporary directory is used and deleted after tests execution.'
+            "Specify a work directory path for aiida calcjob execution. "
+            "If not specified, "
+            "a temporary directory is used and deleted after tests execution."
         ),
     )
     group.addoption(
-        '--lammps-exec',
-        dest='lammps_exec',
+        "--lammps-exec",
+        dest="lammps_exec",
         default=None,
-        help=('Specify a the lammps executable to run (default: lammps).'),
+        help=("Specify a the lammps executable to run (default: lammps)."),
     )
 
 
 def get_work_directory(config):
     """Return the aiida work directory to use."""
-    if config.getoption('lammps_workdir') is not None:
-        return config.getoption('lammps_workdir')
+    if config.getoption("lammps_workdir") is not None:
+        return config.getoption("lammps_workdir")
     return None
 
 
@@ -53,20 +52,20 @@ def pytest_report_header(config):
     """Add header information for pytest execution."""
     return [
         f'LAMMPS Executable: {shutil.which(config.getoption("lammps_exec") or "lammps")}',
-        f'LAMMPS Work Directory: {config.getoption("lammps_workdir") or "<TEMP>"}'
+        f'LAMMPS Work Directory: {config.getoption("lammps_workdir") or "<TEMP>"}',
     ]
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def db_test_app(aiida_profile, pytestconfig):
     """Clear the database after each test."""
-    exec_name = pytestconfig.getoption('lammps_exec') or 'lammps'
+    exec_name = pytestconfig.getoption("lammps_exec") or "lammps"
     executables = {
-        'lammps.md': exec_name,
-        'lammps.md.multi': exec_name,
-        'lammps.optimize': exec_name,
-        'lammps.force': exec_name,
-        'lammps.combinate': exec_name,
+        "lammps.md": exec_name,
+        "lammps.md.multi": exec_name,
+        "lammps.optimize": exec_name,
+        "lammps.force": exec_name,
+        "lammps.combinate": exec_name,
     }
 
     test_workdir = get_work_directory(pytestconfig)
@@ -82,12 +81,13 @@ def db_test_app(aiida_profile, pytestconfig):
         shutil.rmtree(work_directory)
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def get_structure_data():
     """get the structure data for the simulation."""
+
     def _get_structure_data(pkey):
         """return test structure data"""
-        if pkey == 'Fe':
+        if pkey == "Fe":
 
             cell = [
                 [2.848116, 0.000000, 0.000000],
@@ -101,10 +101,10 @@ def get_structure_data():
             ]
             fractional = True
 
-            symbols = ['Fe', 'Fe']
-            names = ['Fe1', 'Fe2']
+            symbols = ["Fe", "Fe"]
+            names = ["Fe1", "Fe2"]
 
-        elif pkey == 'Ar':
+        elif pkey == "Ar":
 
             cell = [
                 [3.987594, 0.000000, 0.000000],
@@ -112,7 +112,7 @@ def get_structure_data():
                 [0.000000, 0.000000, 6.538394],
             ]
 
-            symbols = names = ['Ar'] * 2
+            symbols = names = ["Ar"] * 2
 
             positions = [
                 (0.33333, 0.66666, 0.25000),
@@ -120,7 +120,7 @@ def get_structure_data():
             ]
             fractional = True
 
-        elif pkey == 'GaN':
+        elif pkey == "GaN":
 
             cell = [
                 [3.1900000572, 0, 0],
@@ -136,9 +136,9 @@ def get_structure_data():
             ]
             fractional = True
 
-            symbols = names = ['Ga', 'Ga', 'N', 'N']
+            symbols = names = ["Ga", "Ga", "N", "N"]
 
-        elif pkey == 'pyrite':
+        elif pkey == "pyrite":
 
             cell = [
                 [5.38, 0.000000, 0.000000],
@@ -162,16 +162,15 @@ def get_structure_data():
             ]
             fractional = True
 
-            symbols = names = ['Fe'] * 4 + ['S'] * 8
+            symbols = names = ["Fe"] * 4 + ["S"] * 8
 
-        elif pkey == 'fes_cubic-zincblende':
+        elif pkey == "fes_cubic-zincblende":
             cell = [[2.71, -2.71, 0.0], [2.71, 0.0, 2.71], [0.0, -2.71, 2.71]]
-            symbols = names = ['Fe', 'S']
+            symbols = names = ["Fe", "S"]
             positions = [[0, 0, 0], [4.065, -4.065, 4.065]]
             fractional = False
-        elif pkey == 'greigite':
-            cell = [[0.0, 4.938, 4.938], [4.938, 0.0, 4.938],
-                    [4.938, 4.938, 0.0]]
+        elif pkey == "greigite":
+            cell = [[0.0, 4.938, 4.938], [4.938, 0.0, 4.938], [4.938, 4.938, 0.0]]
             positions = [
                 (1.2345, 1.2345, 1.2345),
                 (8.6415, 8.6415, 8.6415),
@@ -190,24 +189,24 @@ def get_structure_data():
             ]
             fractional = False
             symbols = names = [
-                'Fe',
-                'Fe',
-                'Fe',
-                'Fe',
-                'Fe',
-                'Fe',
-                'S',
-                'S',
-                'S',
-                'S',
-                'S',
-                'S',
-                'S',
-                'S',
+                "Fe",
+                "Fe",
+                "Fe",
+                "Fe",
+                "Fe",
+                "Fe",
+                "S",
+                "S",
+                "S",
+                "S",
+                "S",
+                "S",
+                "S",
+                "S",
             ]
 
         else:
-            raise ValueError(f'Unknown structure key: {pkey}')
+            raise ValueError(f"Unknown structure key: {pkey}")
 
         # create structure
         structure = orm.StructureData(cell=cell)
@@ -222,123 +221,114 @@ def get_structure_data():
 
 
 PotentialData = namedtuple(
-    'PotentialTestData',
-    ['type', 'data', 'structure', 'output'],
+    "PotentialTestData",
+    ["type", "data", "structure", "output"],
 )
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def get_potential_data(get_structure_data):
     """Get the potential information for different types of potentials.
 
     :param get_structure_data: Structure to be used in the simulation
     :type get_structure_data: orm.StructureData
     """
+
     def _get_potential_data(pkey):
         """return data to create a potential,
         and accompanying structure data and expected output data to test it with
         """
-        if pkey == 'eam':
-            pair_style = 'eam'
+        if pkey == "eam":
+            pair_style = "eam"
             filename = os.path.join(
                 TEST_DIR,
-                'input_files',
-                'potentials',
-                'Fe_mm.eam.fs',
+                "input_files",
+                "potentials",
+                "Fe_mm.eam.fs",
             )
             with io.open(filename) as handle:
                 potential_dict = {
-                    'type': 'fs',
-                    'file_contents': handle.readlines(),
-                    'element_names': ['Fe'],
+                    "type": "fs",
+                    "file_contents": handle.readlines(),
+                    "element_names": ["Fe"],
                 }
-            structure = get_structure_data('Fe')
-            output_dict = {'initial_energy': -8.2441284, 'energy': -8.2448702}
+            structure = get_structure_data("Fe")
+            output_dict = {"initial_energy": -8.2441284, "energy": -8.2448702}
 
-        elif pkey == 'lennard-jones':
+        elif pkey == "lennard-jones":
 
-            structure = get_structure_data('Ar')
+            structure = get_structure_data("Ar")
 
             # Example LJ parameters for Argon. These may not be accurate at all
-            pair_style = 'lennard_jones'
+            pair_style = "lennard_jones"
             potential_dict = {
-                '1  1': '0.01029   3.4    3.5',
+                "1  1": "0.01029   3.4    3.5",
             }
 
             output_dict = {
-                'initial_energy': 0.0,
-                'energy': 0.0,  # TODO should LJ energy be 0?
+                "initial_energy": 0.0,
+                "energy": 0.0,  # TODO should LJ energy be 0?
             }
 
-        elif pkey == 'tersoff':
+        elif pkey == "tersoff":
 
-            structure = get_structure_data('GaN')
+            structure = get_structure_data("GaN")
 
             potential_dict = {
-                'Ga Ga Ga':
-                '1.0 0.007874 1.846 1.918000 0.75000 -0.301300 '+\
-                    '1.0 1.0 1.44970 410.132 2.87 0.15 1.60916 535.199',
-                'N  N  N':
-                '1.0 0.766120 0.000 0.178493 0.20172 -0.045238 '+\
-                    '1.0 1.0 2.38426 423.769 2.20 0.20 3.55779 1044.77',
-                'Ga Ga N':
-                '1.0 0.001632 0.000 65.20700 2.82100 -0.518000 '+\
-                    '1.0 0.0 0.00000 0.00000 2.90 0.20 0.00000 0.00000',
-                'Ga N  N':
-                '1.0 0.001632 0.000 65.20700 2.82100 -0.518000 '+\
-                    '1.0 1.0 2.63906 3864.27 2.90 0.20 2.93516 6136.44',
-                'N  Ga Ga':
-                '1.0 0.001632 0.000 65.20700 2.82100 -0.518000 '+\
-                    '1.0 1.0 2.63906 3864.27 2.90 0.20 2.93516 6136.44',
-                'N  Ga N ':
-                '1.0 0.766120 0.000 0.178493 0.20172 -0.045238 '+\
-                    '1.0 0.0 0.00000 0.00000 2.20 0.20 0.00000 0.00000',
-                'N  N  Ga':
-                '1.0 0.001632 0.000 65.20700 2.82100 -0.518000 '+\
-                    '1.0 0.0 0.00000 0.00000 2.90 0.20 0.00000 0.00000',
-                'Ga N  Ga':
-                '1.0 0.007874 1.846 1.918000 0.75000 -0.301300 '+\
-                    '1.0 0.0 0.00000 0.00000 2.87 0.15 0.00000 0.00000',
+                "Ga Ga Ga": "1.0 0.007874 1.846 1.918000 0.75000 -0.301300 "
+                + "1.0 1.0 1.44970 410.132 2.87 0.15 1.60916 535.199",
+                "N  N  N": "1.0 0.766120 0.000 0.178493 0.20172 -0.045238 "
+                + "1.0 1.0 2.38426 423.769 2.20 0.20 3.55779 1044.77",
+                "Ga Ga N": "1.0 0.001632 0.000 65.20700 2.82100 -0.518000 "
+                + "1.0 0.0 0.00000 0.00000 2.90 0.20 0.00000 0.00000",
+                "Ga N  N": "1.0 0.001632 0.000 65.20700 2.82100 -0.518000 "
+                + "1.0 1.0 2.63906 3864.27 2.90 0.20 2.93516 6136.44",
+                "N  Ga Ga": "1.0 0.001632 0.000 65.20700 2.82100 -0.518000 "
+                + "1.0 1.0 2.63906 3864.27 2.90 0.20 2.93516 6136.44",
+                "N  Ga N ": "1.0 0.766120 0.000 0.178493 0.20172 -0.045238 "
+                + "1.0 0.0 0.00000 0.00000 2.20 0.20 0.00000 0.00000",
+                "N  N  Ga": "1.0 0.001632 0.000 65.20700 2.82100 -0.518000 "
+                + "1.0 0.0 0.00000 0.00000 2.90 0.20 0.00000 0.00000",
+                "Ga N  Ga": "1.0 0.007874 1.846 1.918000 0.75000 -0.301300 "
+                + "1.0 0.0 0.00000 0.00000 2.87 0.15 0.00000 0.00000",
             }
 
-            pair_style = 'tersoff'
+            pair_style = "tersoff"
 
-            output_dict = {'initial_energy': -18.109886, 'energy': -18.110852}
+            output_dict = {"initial_energy": -18.109886, "energy": -18.110852}
 
-        elif pkey == 'reaxff':
+        elif pkey == "reaxff":
 
-            pair_style = 'reaxff'
+            pair_style = "reaxff"
             filename = os.path.join(
                 TEST_DIR,
-                'input_files',
-                'potentials',
-                'FeCrOSCH.reaxff',
+                "input_files",
+                "potentials",
+                "FeCrOSCH.reaxff",
             )
             with io.open(filename) as handle:
                 potential_dict = read_lammps_format(
                     handle.read().splitlines(),
-                    tolerances={'hbonddist': 7.0},
+                    tolerances={"hbonddist": 7.0},
                 )
                 potential_dict = filter_by_species(
                     potential_dict,
-                    ['Fe core', 'S core'],
+                    ["Fe core", "S core"],
                 )
-                for name in [
-                        'anglemin', 'angleprod', 'hbondmin', 'torsionprod'
-                ]:
-                    potential_dict['global'].pop(name)
-                potential_dict['control'] = {'safezone': 1.6}
+                for name in ["anglemin", "angleprod", "hbondmin", "torsionprod"]:
+                    potential_dict["global"].pop(name)
+                potential_dict["control"] = {"safezone": 1.6}
 
-            structure = get_structure_data('pyrite')
+            structure = get_structure_data("pyrite")
 
             output_dict = {
-                'initial_energy': -1027.9739,
-                'energy': -1030.3543,
-                'units': 'real',
+                "initial_energy": -1027.9739,
+                "energy": -1030.3543,
+                "units": "real",
             }
 
         else:
-            raise ValueError(f'Unknown potential key: {pkey}')
+            raise ValueError(f"Unknown potential key: {pkey}")
 
         return PotentialData(
             pair_style,
@@ -350,105 +340,106 @@ def get_potential_data(get_structure_data):
     return _get_potential_data
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def get_lammps_potential_data(get_structure_data):
     """Get the potential information for different types of potentials.
 
     :param get_structure_data: Structure to be used in the simulation
     :type get_structure_data: orm.StructureData
     """
+
     def _get_lammps_potential_data(pkey):
         """return data to create a potential,
         and accompanying structure data and expected output data to test it with
         """
         output_dict = {}
-        if pkey == 'eam_alloy':
-            output_dict['filename'] = os.path.join(
-                'aiida_lammps/tests',
-                'input_files',
-                'potentials',
-                'FeW_MO_737567242631_000.eam.alloy',
+        if pkey == "eam_alloy":
+            output_dict["filename"] = os.path.join(
+                "aiida_lammps/tests",
+                "input_files",
+                "potentials",
+                "FeW_MO_737567242631_000.eam.alloy",
             )
 
             filename_parameters = os.path.join(
-                'aiida_lammps/tests',
-                'input_files',
-                'parameters',
-                'FeW_MO_737567242631_000.eam.alloy.yaml',
+                "aiida_lammps/tests",
+                "input_files",
+                "parameters",
+                "FeW_MO_737567242631_000.eam.alloy.yaml",
             )
 
             with io.open(filename_parameters) as handle:
-                output_dict['parameters'] = yaml.load(handle, yaml.SafeLoader)
+                output_dict["parameters"] = yaml.load(handle, yaml.SafeLoader)
 
-            with io.open(output_dict['filename']) as handle:
-                output_dict['potential_data'] = handle.read()
-            output_dict['structure'] = get_structure_data('Fe')
+            with io.open(output_dict["filename"]) as handle:
+                output_dict["potential_data"] = handle.read()
+            output_dict["structure"] = get_structure_data("Fe")
 
-        if pkey == 'tersoff':
-            output_dict['filename'] = os.path.join(
-                'aiida_lammps/tests',
-                'input_files',
-                'potentials',
-                'Fe_MO_137964310702_004.tersoff',
+        if pkey == "tersoff":
+            output_dict["filename"] = os.path.join(
+                "aiida_lammps/tests",
+                "input_files",
+                "potentials",
+                "Fe_MO_137964310702_004.tersoff",
             )
 
             filename_parameters = os.path.join(
-                'aiida_lammps/tests',
-                'input_files',
-                'parameters',
-                'Fe_MO_137964310702_004.tersoff.yaml',
+                "aiida_lammps/tests",
+                "input_files",
+                "parameters",
+                "Fe_MO_137964310702_004.tersoff.yaml",
             )
 
             with io.open(filename_parameters) as handle:
-                output_dict['parameters'] = yaml.load(handle, yaml.SafeLoader)
+                output_dict["parameters"] = yaml.load(handle, yaml.SafeLoader)
 
-            with io.open(output_dict['filename']) as handle:
-                output_dict['potential_data'] = handle.read()
-            output_dict['structure'] = get_structure_data('Fe')
+            with io.open(output_dict["filename"]) as handle:
+                output_dict["potential_data"] = handle.read()
+            output_dict["structure"] = get_structure_data("Fe")
 
-        if pkey == 'meam':
-            output_dict['filename'] = os.path.join(
-                'aiida_lammps/tests',
-                'input_files',
-                'potentials',
-                'Fe_MO_492310898779_001.meam',
+        if pkey == "meam":
+            output_dict["filename"] = os.path.join(
+                "aiida_lammps/tests",
+                "input_files",
+                "potentials",
+                "Fe_MO_492310898779_001.meam",
             )
 
             filename_parameters = os.path.join(
-                'aiida_lammps/tests',
-                'input_files',
-                'parameters',
-                'Fe_MO_492310898779_001.meam.yaml',
+                "aiida_lammps/tests",
+                "input_files",
+                "parameters",
+                "Fe_MO_492310898779_001.meam.yaml",
             )
 
             with io.open(filename_parameters) as handle:
-                output_dict['parameters'] = yaml.load(handle, yaml.SafeLoader)
+                output_dict["parameters"] = yaml.load(handle, yaml.SafeLoader)
 
-            with io.open(output_dict['filename']) as handle:
-                output_dict['potential_data'] = handle.read()
-            output_dict['structure'] = get_structure_data('Fe')
+            with io.open(output_dict["filename"]) as handle:
+                output_dict["potential_data"] = handle.read()
+            output_dict["structure"] = get_structure_data("Fe")
 
-        if pkey == 'morse':
-            output_dict['filename'] = os.path.join(
-                'aiida_lammps/tests',
-                'input_files',
-                'potentials',
-                'Fe_MO_331285495617_004.morse',
+        if pkey == "morse":
+            output_dict["filename"] = os.path.join(
+                "aiida_lammps/tests",
+                "input_files",
+                "potentials",
+                "Fe_MO_331285495617_004.morse",
             )
 
             filename_parameters = os.path.join(
-                'aiida_lammps/tests',
-                'input_files',
-                'parameters',
-                'Fe_MO_331285495617_004.morse.yaml',
+                "aiida_lammps/tests",
+                "input_files",
+                "parameters",
+                "Fe_MO_331285495617_004.morse.yaml",
             )
 
             with io.open(filename_parameters) as handle:
-                output_dict['parameters'] = yaml.load(handle, yaml.SafeLoader)
+                output_dict["parameters"] = yaml.load(handle, yaml.SafeLoader)
 
-            with io.open(output_dict['filename']) as handle:
-                output_dict['potential_data'] = handle.read()
-            output_dict['structure'] = get_structure_data('Fe')
+            with io.open(output_dict["filename"]) as handle:
+                output_dict["potential_data"] = handle.read()
+            output_dict["structure"] = get_structure_data("Fe")
 
         return output_dict
 

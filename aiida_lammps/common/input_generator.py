@@ -11,25 +11,27 @@ fixes block is never called, on the other hand the control block is always
 called since it is necessary for the functioning of LAMMPS.
 """
 from builtins import ValueError
+import json
 import os
 from typing import Union
-import json
+
+from aiida import orm
 import jsonschema
 import numpy as np
-from aiida import orm
-from aiida_lammps.data.lammps_potential import LammpsPotentialData
+
 from aiida_lammps.common.utils import flatten, generate_header
+from aiida_lammps.data.lammps_potential import LammpsPotentialData
 
 
 def generate_input_file(
     parameters: dict,
     potential: LammpsPotentialData,
     structure: orm.StructureData,
-    trajectory_filename: str = 'aiida_lampps.trajectory.dump',
-    restart_filename: str = 'lammps.restart',
-    potential_filename: str = 'potential.dat',
-    structure_filename: str = 'structure.dat',
-    variables_filename: str = 'aiida_lammps.yaml',
+    trajectory_filename: str = "aiida_lampps.trajectory.dump",
+    restart_filename: str = "lammps.restart",
+    potential_filename: str = "potential.dat",
+    structure_filename: str = "structure.dat",
+    variables_filename: str = "aiida_lammps.yaml",
     read_restart_filename: str = None,
 ) -> str:
     """
@@ -77,54 +79,58 @@ def generate_input_file(
 
     # Generate the control input block
     control_block = write_control_block(
-        parameters_control=parameters.get('control', {}))
+        parameters_control=parameters.get("control", {})
+    )
     # Generate the compute input block
-    if 'compute' in parameters:
+    if "compute" in parameters:
         compute_block = write_compute_block(
-            parameters_compute=parameters.get('compute', {}))
+            parameters_compute=parameters.get("compute", {})
+        )
     else:
-        compute_block = ''
+        compute_block = ""
     # Generate the thermo input block
     thermo_block, fixed_thermo = write_thermo_block(
-        parameters_thermo=parameters.get('thermo', {}),
-        parameters_compute=parameters.get('compute', {}),
+        parameters_thermo=parameters.get("thermo", {}),
+        parameters_compute=parameters.get("compute", {}),
     )
     # Generate the minimization input block
-    if 'minimize' in parameters:
+    if "minimize" in parameters:
         run_block = write_minimize_block(
-            parameters_minimize=parameters.get('minimize', {}))
+            parameters_minimize=parameters.get("minimize", {})
+        )
     # Generate the md input block
-    if 'md' in parameters:
-        run_block = write_md_block(parameters_md=parameters.get('md', {}))
+    if "md" in parameters:
+        run_block = write_md_block(parameters_md=parameters.get("md", {}))
     # Generate the structure input block
     structure_block, group_lists = write_structure_block(
-        parameters_structure=parameters.get('structure', {}),
+        parameters_structure=parameters.get("structure", {}),
         structure=structure,
         structure_filename=structure_filename,
     )
     # Append the read restart to the structure block
     if read_restart_filename is not None:
         structure_block += write_read_restart_block(
-            restart_filename=read_restart_filename)
+            restart_filename=read_restart_filename
+        )
     # Generate the fix input block
-    if 'fix' in parameters:
+    if "fix" in parameters:
         fix_block = write_fix_block(
-            parameters_fix=parameters.get('fix', {}),
+            parameters_fix=parameters.get("fix", {}),
             group_names=group_lists,
         )
     else:
-        fix_block = ''
+        fix_block = ""
     # Generate the potential input block
     potential_block = write_potential_block(
-        parameters_potential=parameters.get('potential', {}),
+        parameters_potential=parameters.get("potential", {}),
         potential_file=potential_filename,
         potential=potential,
         structure=structure,
     )
     # Generate the dump input block
     dump_block = write_dump_block(
-        parameters_dump=parameters.get('dump', {}),
-        parameters_compute=parameters.get('compute', {}),
+        parameters_dump=parameters.get("dump", {}),
+        parameters_compute=parameters.get("compute", {}),
         trajectory_filename=trajectory_filename,
         atom_style=potential.atom_style,
         kind_symbols=[kind.symbol for kind in structure.kinds],
@@ -137,9 +143,18 @@ def generate_input_file(
         final_file=variables_filename,
     )
     # Printing the potential
-    input_file = control_block+structure_block+potential_block+fix_block+\
-        compute_block+thermo_block+dump_block+run_block+final_block+\
-        restart_block
+    input_file = (
+        control_block
+        + structure_block
+        + potential_block
+        + fix_block
+        + compute_block
+        + thermo_block
+        + dump_block
+        + run_block
+        + final_block
+        + restart_block
+    )
     return input_file
 
 
@@ -155,8 +170,8 @@ def validate_input_parameters(parameters: dict = None):
     """
     _file = os.path.join(
         os.path.dirname(os.path.abspath(__file__)),
-        '..',
-        'validation/schemas/lammps_schema.json',
+        "..",
+        "validation/schemas/lammps_schema.json",
     )
 
     with open(_file) as handler:
@@ -179,25 +194,27 @@ def write_control_block(parameters_control: dict) -> str:
     """
 
     default_timestep = {
-        'si': 1.0e-8,
-        'lj': 5.0e-3,
-        'real': 1.0,
-        'metal': 1.0e-3,
-        'cgs': 1.0e-8,
-        'electron': 1.0e-3,
-        'micro': 2.0,
-        'nano': 4.5e-4,
+        "si": 1.0e-8,
+        "lj": 5.0e-3,
+        "real": 1.0,
+        "metal": 1.0e-3,
+        "cgs": 1.0e-8,
+        "electron": 1.0e-3,
+        "micro": 2.0,
+        "nano": 4.5e-4,
     }
 
-    _time = default_timestep[parameters_control.get('units', 'si')]
-    control_block = generate_header('Start of the Control information')
-    control_block += 'clear\n'
+    _time = default_timestep[parameters_control.get("units", "si")]
+    control_block = generate_header("Start of the Control information")
+    control_block += "clear\n"
     control_block += f'units {parameters_control.get("units", "si")}\n'
     control_block += f'newton {parameters_control.get("newton", "on")}\n'
-    if 'processors' in parameters_control:
-        control_block += f'processors {join_keywords(parameters_control["processors"])}\n'
+    if "processors" in parameters_control:
+        control_block += (
+            f'processors {join_keywords(parameters_control["processors"])}\n'
+        )
     control_block += f'timestep {parameters_control.get("timestep", _time)}\n'
-    control_block += generate_header('End of the Control information')
+    control_block += generate_header("End of the Control information")
     return control_block
 
 
@@ -231,25 +248,32 @@ def write_potential_block(
 
     kind_symbols = [kind.symbol for kind in structure.kinds]
 
-    potential_block = generate_header('Start of Potential information')
-    potential_block += f'pair_style {potential.pair_style}'
-    potential_block += f' {" ".join(parameters_potential.get("potential_style_options", [""]))}\n'
+    potential_block = generate_header("Start of Potential information")
+    potential_block += f"pair_style {potential.pair_style}"
+    potential_block += (
+        f' {" ".join(parameters_potential.get("potential_style_options", [""]))}\n'
+    )
 
-    if default_potential[potential.pair_style].get('read_from_file'):
+    if default_potential[potential.pair_style].get("read_from_file"):
         potential_block += f'pair_coeff * * {potential_file} {" ".join(kind_symbols)}\n'
-    if not default_potential[potential.pair_style].get('read_from_file'):
+    if not default_potential[potential.pair_style].get("read_from_file"):
         data = [
-            line for line in potential.get_content().split('\n')
-            if not line.startswith('#') and line
+            line
+            for line in potential.get_content().split("\n")
+            if not line.startswith("#") and line
         ]
         potential_block += f'pair_coeff * * {" ".join(data)}\n'
 
-    if 'neighbor' in parameters_potential:
-        potential_block += f'neighbor {join_keywords(parameters_potential["neighbor"])}\n'
-    if 'neighbor_modify' in parameters_potential:
-        potential_block += 'neigh_modify'
-        potential_block += f' {join_keywords(parameters_potential["neighbor_modify"])}\n'
-    potential_block += generate_header('End of Potential information')
+    if "neighbor" in parameters_potential:
+        potential_block += (
+            f'neighbor {join_keywords(parameters_potential["neighbor"])}\n'
+        )
+    if "neighbor_modify" in parameters_potential:
+        potential_block += "neigh_modify"
+        potential_block += (
+            f' {join_keywords(parameters_potential["neighbor_modify"])}\n'
+        )
+    potential_block += generate_header("End of Potential information")
     return potential_block
 
 
@@ -288,34 +312,37 @@ def write_structure_block(
         if site.kind_name not in kind_name_id_map:
             kind_name_id_map[site.kind_name] = len(kind_name_id_map) + 1
 
-    structure_block = generate_header('Start of the Structure information')
+    structure_block = generate_header("Start of the Structure information")
     structure_block += f'box tilt {parameters_structure.get("box_tilt", "small")}\n'
 
     structure_block += f'dimension {structure.get_dimensionality()["dim"]}\n'
-    structure_block += 'boundary '
-    for _bound in ['pbc1', 'pbc2', 'pbc3']:
+    structure_block += "boundary "
+    for _bound in ["pbc1", "pbc2", "pbc3"]:
         structure_block += f'{"p" if structure.attributes[_bound] else "f"} '
-    structure_block += '\n'
+    structure_block += "\n"
     structure_block += f'atom_style {parameters_structure["atom_style"]}\n'
-    structure_block += f'read_data {structure_filename}\n'
+    structure_block += f"read_data {structure_filename}\n"
     # Set the groups which will be used for the calculations
-    if 'groups' in parameters_structure:
-        for _group in parameters_structure['group']:
+    if "groups" in parameters_structure:
+        for _group in parameters_structure["group"]:
             # Check if the given type name corresponds to the ones assigned to the atom types
-            if 'type' in _group['args']:
+            if "type" in _group["args"]:
 
-                _subset = _group['args'][_group['args'].index('type') + 1:]
+                _subset = _group["args"][_group["args"].index("type") + 1 :]
 
-                if not all(kind in kind_name_id_map.values()
-                           for kind in _subset):
-                    raise ValueError('atom type not defined')
+                if not all(kind in kind_name_id_map.values() for kind in _subset):
+                    raise ValueError("atom type not defined")
             # Set the current group
-            structure_block += f'group {_group["name"]} {join_keywords(_group["args"])}\n'
+            structure_block += (
+                f'group {_group["name"]} {join_keywords(_group["args"])}\n'
+            )
             # Store the name of the group for later usage
-            group_names.append(_group['name'])
+            group_names.append(_group["name"])
     if restart_file is not None:
-        structure_block += f'read_restart {restart_file} {parameters_structure["remap"]}'
-    structure_block += generate_header('End of the Structure information')
+        structure_block += (
+            f'read_restart {restart_file} {parameters_structure["remap"]}'
+        )
+    structure_block += generate_header("End of the Structure information")
 
     return structure_block, group_names
 
@@ -335,13 +362,13 @@ def write_minimize_block(parameters_minimize: dict) -> str:
     :rtype: str
     """
 
-    minimize_block = generate_header('Start of the Minimization information')
+    minimize_block = generate_header("Start of the Minimization information")
     minimize_block += f'min_style {parameters_minimize.get("style", "cg")}\n'
     minimize_block += f'minimize {parameters_minimize.get("energy_tolerance", 1e-4)}'
     minimize_block += f' {parameters_minimize.get("force_tolerance", 1e-4)}'
     minimize_block += f' {parameters_minimize.get("max_iterations", 1000)}'
     minimize_block += f' {parameters_minimize.get("max_evaluations", 1000)}\n'
-    minimize_block += generate_header('End of the Minimization information')
+    minimize_block += generate_header("End of the Minimization information")
 
     return minimize_block
 
@@ -366,30 +393,32 @@ def write_md_block(parameters_md: dict) -> str:
     """
 
     integration_options = generate_integration_options(
-        style=parameters_md['integration'].get('style', 'nve'),
-        integration_parameters=parameters_md['integration'].get('constraints'),
+        style=parameters_md["integration"].get("style", "nve"),
+        integration_parameters=parameters_md["integration"].get("constraints"),
     )
 
-    md_block = generate_header('Start of the MD information')
-    _key = parameters_md['integration'].get('style', 'nve')
+    md_block = generate_header("Start of the MD information")
+    _key = parameters_md["integration"].get("style", "nve")
     md_block += f'fix {generate_id_tag(_key, "all")} all {_key}{integration_options}\n'
-    if 'velocity' in parameters_md:
-        md_block += f'{generate_velocity_string(parameters_velocity=parameters_md["velocity"])}'
-    md_block += 'reset_timestep 0\n'
-    if parameters_md.get('run_style', 'verlet') == 'rspa':
+    if "velocity" in parameters_md:
+        md_block += (
+            f'{generate_velocity_string(parameters_velocity=parameters_md["velocity"])}'
+        )
+    md_block += "reset_timestep 0\n"
+    if parameters_md.get("run_style", "verlet") == "rspa":
         md_block += f'run_style {parameters_md.get("run_style", "verlet")} '
         md_block += f'{join_keywords(parameters_md["rspa_options"])}\n'
     else:
         md_block += f'run_style {parameters_md.get("run_style", "verlet")}\n'
     md_block += f'run {parameters_md.get("max_number_steps", 100)}\n'
-    md_block += generate_header('End of the MD information')
+    md_block += generate_header("End of the MD information")
 
     return md_block
 
 
 def write_final_variables_block(
     fixed_thermo: list,
-    final_file: str = 'aiida_lammps.yaml',
+    final_file: str = "aiida_lammps.yaml",
 ) -> str:
     """
     Generate the block to print the final values of the compute variables.
@@ -405,22 +434,24 @@ def write_final_variables_block(
 
     _variables = []
 
-    variables_block = generate_header(
-        'Start of the Final Variables information')
+    variables_block = generate_header("Start of the Final Variables information")
 
     for _thermo in fixed_thermo:
-        _variables.append(_thermo.replace('[', '_').replace(']', ''))
-        variables_block += f'variable final_{_variables[-1]} equal {_thermo}\n'
-    variables_block += generate_header(
-        'End of the Final Variables information')
+        _variables.append(_thermo.replace("[", "_").replace("]", ""))
+        variables_block += f"variable final_{_variables[-1]} equal {_thermo}\n"
+    variables_block += generate_header("End of the Final Variables information")
 
     variables_block += generate_header(
-        'Start of the Printing Final Variables information')
+        "Start of the Printing Final Variables information"
+    )
     variables_block += f'print "#Final results" file {final_file}\n'
     for variable in _variables:
-        variables_block += f'print "final_{variable}: ${{final_{variable}}}" append {final_file}\n'
+        variables_block += (
+            f'print "final_{variable}: ${{final_{variable}}}" append {final_file}\n'
+        )
     variables_block += generate_header(
-        'End of the Printing Final Variables information')
+        "End of the Printing Final Variables information"
+    )
 
     return variables_block
 
@@ -437,27 +468,31 @@ def generate_velocity_string(parameters_velocity: dict) -> str:
     :return: string with the velocity options
     :rtype: str
     """
-    options = ''
+    options = ""
     for entry in parameters_velocity:
         _options = generate_velocity_options(entry)
-        if 'create' in entry:
+        if "create" in entry:
             options += f'velocity {entry.get("group", "all")} create'
             options += f' {entry["create"].get("temp")}'
-            options += f' {entry["create"].get("seed", np.random.randint(1e4))} {_options}\n'
-        if 'set' in entry:
+            options += (
+                f' {entry["create"].get("seed", np.random.randint(1e4))} {_options}\n'
+            )
+        if "set" in entry:
             options += f'velocity {entry.get("group", "all")} set'
             options += f' {entry["set"].get("vx", "NULL")}'
             options += f' {entry["set"].get("vy", "NULL")}'
             options += f' {entry["set"].get("vz", "NULL")} {_options}\n'
-        if 'scale' in entry:
+        if "scale" in entry:
             options += f'velocity {entry.get("group", "all")} scale'
             options += f' {entry["scale"]} {_options}\n'
-        if 'ramp' in entry:
+        if "ramp" in entry:
             options += f'velocity {entry.get("group", "all")} ramp'
             options += f' {entry["ramp"].get("vdim")} {entry["ramp"].get("vlo")}'
             options += f' {entry["ramp"].get("vhi")} {entry["ramp"].get("dim")}'
-            options += f' {entry["ramp"].get("clo")} {entry["ramp"].get("chi")} {_options}\n'
-        if 'zero' in entry:
+            options += (
+                f' {entry["ramp"].get("clo")} {entry["ramp"].get("chi")} {_options}\n'
+            )
+        if "zero" in entry:
             options += f'velocity {entry.get("group", "all")} zero'
             options += f' {entry["zero"]} {_options}\n'
     return options
@@ -475,15 +510,12 @@ def generate_velocity_options(options_velocity: dict) -> str:
     :return: string with the velocity options
     :rtype: str
     """
-    _options = [
-        'dist', 'sum', 'mom'
-        'rot', 'temp', 'bias', 'loop', 'rigid', 'units'
-    ]
+    _options = ["dist", "sum", "mom" "rot", "temp", "bias", "loop", "rigid", "units"]
 
-    velocity_option = ''
+    velocity_option = ""
     for _option in _options:
         if _option in options_velocity:
-            velocity_option += f' {_option} {options_velocity[_option]} '
+            velocity_option += f" {_option} {options_velocity[_option]} "
     return velocity_option
 
 
@@ -507,54 +539,73 @@ def generate_integration_options(
     """
 
     temperature_dependent = [
-        'nvt',
-        'nvt/asphere',
-        'nvt/body',
-        'nvt/eff',
-        'nvt/manifold/rattle',
-        'nvt/sllod',
-        'nvt/sllod/eff',
-        'nvt/sphere',
-        'nvt/uef',
-        'nphug',
-        'npt',
-        'npt/asphere',
-        'npt/body',
-        'npt/cauchy',
-        'npt/eff',
-        'npt/sphere',
-        'npt/uef',
+        "nvt",
+        "nvt/asphere",
+        "nvt/body",
+        "nvt/eff",
+        "nvt/manifold/rattle",
+        "nvt/sllod",
+        "nvt/sllod/eff",
+        "nvt/sphere",
+        "nvt/uef",
+        "nphug",
+        "npt",
+        "npt/asphere",
+        "npt/body",
+        "npt/cauchy",
+        "npt/eff",
+        "npt/sphere",
+        "npt/uef",
     ]
 
     pressure_dependent = [
-        'nph',
-        'nph/asphere',
-        'nph/body',
-        'nph/eff',
-        'nph/sphere',
-        'nphug',
-        'npt',
-        'npt/asphere',
-        'npt/body',
-        'npt/cauchy',
-        'npt/eff',
-        'npt/sphere',
-        'npt/uef',
+        "nph",
+        "nph/asphere",
+        "nph/body",
+        "nph/eff",
+        "nph/sphere",
+        "nphug",
+        "npt",
+        "npt/asphere",
+        "npt/body",
+        "npt/cauchy",
+        "npt/eff",
+        "npt/sphere",
+        "npt/uef",
     ]
 
-    uef_dependent = ['npt/uef', 'nvt/uef']
+    uef_dependent = ["npt/uef", "nvt/uef"]
 
-    temperature_options = ['temp', 'tchain', 'tloop', 'drag']
+    temperature_options = ["temp", "tchain", "tloop", "drag"]
 
     pressure_options = [
-        'ani', 'iso', 'tri', 'x', 'y', 'z', 'xy', 'xz', 'yz', 'couple',
-        'pchain', 'mtk', 'ploop', 'nreset', 'drag', 'dilate', 'scaleyz',
-        'scalexz', 'scalexy', 'flip', 'fixedpoint', 'update'
+        "ani",
+        "iso",
+        "tri",
+        "x",
+        "y",
+        "z",
+        "xy",
+        "xz",
+        "yz",
+        "couple",
+        "pchain",
+        "mtk",
+        "ploop",
+        "nreset",
+        "drag",
+        "dilate",
+        "scaleyz",
+        "scalexz",
+        "scalexy",
+        "flip",
+        "fixedpoint",
+        "update",
     ]
 
-    uef_options = ['ext', 'erotate']
+    uef_options = ["ext", "erotate"]
 
-    options = ''
+    options = ""
 
     # Set the options that depend on the temperature
     if style in temperature_dependent:
@@ -578,10 +629,10 @@ def generate_integration_options(
                 _value = [str(val) for val in _value]
                 options += f' {_option} {" ".join(_value) if isinstance(_value, list) else _value} '
     # Set the options that depend on the 'nve/limit' parameters
-    if style in ['nve/limit']:
+    if style in ["nve/limit"]:
         options += f' {integration_parameters.get("xmax", 0.1)} '
     # Set the options that depend on the 'langevin' parameters
-    if style in ['nve/dotc/langevin']:
+    if style in ["nve/dotc/langevin"]:
         options += f' {integration_parameters.get("temp")}'
         options += f' {integration_parameters.get("seed")}'
         options += f' angmom {integration_parameters.get("angmom")}'
@@ -618,17 +669,17 @@ def write_fix_block(
     if group_names is None:
         group_names = []
 
-    fix_block = generate_header('Start of the Fix information')
+    fix_block = generate_header("Start of the Fix information")
     for key, value in parameters_fix.items():
         for entry in value:
-            _group = entry.get('group', 'all')
-            if _group not in group_names + ['all']:
+            _group = entry.get("group", "all")
+            if _group not in group_names + ["all"]:
                 raise ValueError(
                     f'group name "{_group}" is not the defined groups {group_names + ["all"]}'
                 )
-            fix_block += f'fix {generate_id_tag(key, _group)} {_group} {key} '
+            fix_block += f"fix {generate_id_tag(key, _group)} {_group} {key} "
             fix_block += f'{join_keywords(entry["type"])}\n'
-    fix_block += generate_header('End of the Fix information')
+    fix_block += generate_header("End of the Fix information")
     return fix_block
 
 
@@ -656,16 +707,15 @@ def write_compute_block(
     if group_names is None:
         group_names = []
 
-    compute_block = generate_header('Start of the Compute information')
+    compute_block = generate_header("Start of the Compute information")
     for key, value in parameters_compute.items():
         for entry in value:
-            _group = entry.get('group', 'all')
-            if _group not in group_names + ['all']:
-                raise ValueError(
-                    f'group name "{_group}" is not the defined groups')
-            compute_block += f'compute {generate_id_tag(key, _group)} {_group} {key} '
+            _group = entry.get("group", "all")
+            if _group not in group_names + ["all"]:
+                raise ValueError(f'group name "{_group}" is not the defined groups')
+            compute_block += f"compute {generate_id_tag(key, _group)} {_group} {key} "
             compute_block += f'{join_keywords(entry["type"])}\n'
-    compute_block += generate_header('End of the Compute information')
+    compute_block += generate_header("End of the Compute information")
     return compute_block
 
 
@@ -695,42 +745,42 @@ def write_dump_block(
     # pylint: disable=too-many-locals
     _file = os.path.join(
         os.path.dirname(os.path.abspath(__file__)),
-        'variables_types.json',
+        "variables_types.json",
     )
 
-    with open(_file, 'r') as handler:
-        _compute_variables = json.load(handler)['computes']
+    with open(_file, "r") as handler:
+        _compute_variables = json.load(handler)["computes"]
 
     computes_list = []
 
     for key, value in parameters_compute.items():
         for entry in value:
-            _locality = _compute_variables[key]['locality']
-            _printable = _compute_variables[key]['printable']
+            _locality = _compute_variables[key]["locality"]
+            _printable = _compute_variables[key]["printable"]
 
-            if _locality == 'local' and _printable:
+            if _locality == "local" and _printable:
                 computes_list.append(
                     generate_printing_string(
                         name=key,
-                        group=entry['group'],
-                        calculation_type='compute',
-                    ))
+                        group=entry["group"],
+                        calculation_type="compute",
+                    )
+                )
 
-    num_double = len(
-        list(flatten([compute.split() for compute in computes_list])))
+    num_double = len(list(flatten([compute.split() for compute in computes_list])))
     num_double += 3
-    if atom_style == 'charge':
+    if atom_style == "charge":
         num_double += 1
-    dump_block = generate_header('Start of the Dump information')
+    dump_block = generate_header("Start of the Dump information")
     dump_block += f'dump aiida all custom {parameters_dump.get("dump_rate", 10)} '
-    dump_block += f'{trajectory_filename} id type element x y z '
+    dump_block += f"{trajectory_filename} id type element x y z "
     dump_block += f'{"q " if atom_style=="charge" else ""}'
     dump_block += f'{" ".join(computes_list)}\n'
-    dump_block += 'dump_modify aiida sort id\n'
+    dump_block += "dump_modify aiida sort id\n"
     dump_block += f'dump_modify aiida element {" ".join(kind_symbols)}\n'
-    dump_block += 'dump_modify aiida format line '
+    dump_block += "dump_modify aiida format line "
     dump_block += f'"%6d %4d %4s {" ".join(["%16.10f"]*num_double)}"\n'
-    dump_block += generate_header('End of the Dump information')
+    dump_block += generate_header("End of the Dump information")
 
     return dump_block
 
@@ -757,51 +807,53 @@ def write_thermo_block(
 
     _file = os.path.join(
         os.path.dirname(os.path.abspath(__file__)),
-        'variables_types.json',
+        "variables_types.json",
     )
 
-    with open(_file, 'r') as handler:
-        _compute_variables = json.load(handler)['computes']
+    with open(_file, "r") as handler:
+        _compute_variables = json.load(handler)["computes"]
 
     computes_list = []
 
     for key, value in parameters_compute.items():
         for entry in value:
-            _locality = _compute_variables[key]['locality']
-            _printable = _compute_variables[key]['printable']
+            _locality = _compute_variables[key]["locality"]
+            _printable = _compute_variables[key]["printable"]
 
-            if _locality == 'global' and _printable:
+            if _locality == "global" and _printable:
                 computes_list.append(
                     generate_printing_string(
                         name=key,
-                        group=entry['group'],
-                        calculation_type='compute',
-                    ))
+                        group=entry["group"],
+                        calculation_type="compute",
+                    )
+                )
 
-    computes_printing = parameters_thermo.get('thermo_printing', None)
+    computes_printing = parameters_thermo.get("thermo_printing", None)
 
     if computes_printing is None or not computes_printing:
-        fixed_thermo = ['step', 'temp', 'epair', 'emol', 'etotal', 'press']
+        fixed_thermo = ["step", "temp", "epair", "emol", "etotal", "press"]
     else:
-        fixed_thermo = [
-            key for key, value in computes_printing.items() if value
-        ]
-        if 'step' not in fixed_thermo:
-            fixed_thermo = ['step'] + fixed_thermo
-        if 'etotal' not in fixed_thermo:
-            fixed_thermo = fixed_thermo + ['etotal']
+        fixed_thermo = [key for key, value in computes_printing.items() if value]
+        if "step" not in fixed_thermo:
+            fixed_thermo = ["step"] + fixed_thermo
+        if "etotal" not in fixed_thermo:
+            fixed_thermo = fixed_thermo + ["etotal"]
 
-    if fixed_thermo.index('step') != 0:
-        fixed_thermo.remove('step')
-        fixed_thermo = ['step'] + fixed_thermo
+    if fixed_thermo.index("step") != 0:
+        fixed_thermo.remove("step")
+        fixed_thermo = ["step"] + fixed_thermo
 
-    thermo_block = generate_header('Start of the Thermo information')
-    thermo_block += f'thermo_style custom {" ".join(fixed_thermo)} {" ".join(computes_list)}\n'
+    thermo_block = generate_header("Start of the Thermo information")
+    thermo_block += (
+        f'thermo_style custom {" ".join(fixed_thermo)} {" ".join(computes_list)}\n'
+    )
     thermo_block += f'thermo {parameters_thermo.get("printing_rate", 1000)}\n'
-    thermo_block += generate_header('End of the Thermo information')
+    thermo_block += generate_header("End of the Thermo information")
 
     printing_variables = fixed_thermo + list(
-        flatten([compute.split() for compute in computes_list]))
+        flatten([compute.split() for compute in computes_list])
+    )
 
     return thermo_block, printing_variables
 
@@ -815,9 +867,9 @@ def write_restart_block(restart_filename: str) -> str:
     :rtype: str
     """
 
-    restart_block = generate_header('Start of the write restart information')
-    restart_block += f'write_restart {restart_filename}\n'
-    restart_block += generate_header('End of the write restart information')
+    restart_block = generate_header("Start of the write restart information")
+    restart_block += f"write_restart {restart_filename}\n"
+    restart_block += generate_header("End of the write restart information")
 
     return restart_block
 
@@ -831,11 +883,9 @@ def write_read_restart_block(restart_filename: str) -> str:
     :rtype: str
     """
 
-    read_restart_block = generate_header(
-        'Start of the read restart information')
-    read_restart_block += f'read_restart {restart_filename}\n'
-    read_restart_block += generate_header(
-        'End of the read restart information')
+    read_restart_block = generate_header("Start of the read restart information")
+    read_restart_block += f"read_restart {restart_filename}\n"
+    read_restart_block += generate_header("End of the read restart information")
     return read_restart_block
 
 
@@ -860,47 +910,45 @@ def generate_printing_string(
     :rtype: str
     """
 
-    if calculation_type == 'compute':
-        prefactor = 'c'
-    if calculation_type == 'fix':
-        prefactor = 'f'
+    if calculation_type == "compute":
+        prefactor = "c"
+    if calculation_type == "fix":
+        prefactor = "f"
 
     _file = os.path.join(
         os.path.dirname(os.path.abspath(__file__)),
-        'variables_types.json',
+        "variables_types.json",
     )
 
-    with open(_file, 'r') as handler:
-        _compute_variables = json.load(handler)['computes']
+    with open(_file, "r") as handler:
+        _compute_variables = json.load(handler)["computes"]
 
-    _type = _compute_variables[name]['type']
-    _size = _compute_variables[name]['size']
+    _type = _compute_variables[name]["type"]
+    _size = _compute_variables[name]["size"]
 
     _string = []
 
-    if _type == 'vector' and _size > 0:
+    if _type == "vector" and _size > 0:
         for index in range(1, _size + 1):
-            _string.append(
-                f'{prefactor}_{generate_id_tag(name, group)}[{index}]')
-    elif _type == 'vector' and _size == 0:
-        _string.append(f'{prefactor}_{generate_id_tag(name, group)}[*]')
+            _string.append(f"{prefactor}_{generate_id_tag(name, group)}[{index}]")
+    elif _type == "vector" and _size == 0:
+        _string.append(f"{prefactor}_{generate_id_tag(name, group)}[*]")
 
-    if _type == 'mixed' and _size > 0:
-        _string.append(f'{prefactor}_{generate_id_tag(name, group)}')
+    if _type == "mixed" and _size > 0:
+        _string.append(f"{prefactor}_{generate_id_tag(name, group)}")
         for index in range(1, _size + 1):
-            _string.append(
-                f'{prefactor}_{generate_id_tag(name, group)}[{index}]')
-    elif _type == 'mixed' and _size == 0:
-        _string.append(f'{prefactor}_{generate_id_tag(name, group)}')
-        _string.append(f'{prefactor}_{generate_id_tag(name, group)}[*]')
+            _string.append(f"{prefactor}_{generate_id_tag(name, group)}[{index}]")
+    elif _type == "mixed" and _size == 0:
+        _string.append(f"{prefactor}_{generate_id_tag(name, group)}")
+        _string.append(f"{prefactor}_{generate_id_tag(name, group)}[*]")
 
-    if _type == 'scalar':
-        _string.append(f'{prefactor}_{generate_id_tag(name, group)}')
+    if _type == "scalar":
+        _string.append(f"{prefactor}_{generate_id_tag(name, group)}")
 
-    if _type == 'array':
-        _string.append(f'{prefactor}_{generate_id_tag(name, group)}')
+    if _type == "array":
+        _string.append(f"{prefactor}_{generate_id_tag(name, group)}")
 
-    return ' '.join(_string)
+    return " ".join(_string)
 
 
 def generate_id_tag(name: str = None, group: str = None) -> str:
@@ -940,7 +988,11 @@ def join_keywords(value: list) -> str:
     :rtype: str
     """
 
-    return ' '.join([
-        f"{entry['keyword']} {entry['value']}"
-        if isinstance(entry, dict) else f'{entry}' for entry in value
-    ])
+    return " ".join(
+        [
+            f"{entry['keyword']} {entry['value']}"
+            if isinstance(entry, dict)
+            else f"{entry}"
+            for entry in value
+        ]
+    )
