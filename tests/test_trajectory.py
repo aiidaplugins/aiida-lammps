@@ -4,7 +4,7 @@ import os
 
 from aiida_lammps.common.parse_trajectory import create_structure, iter_trajectories
 from aiida_lammps.data.trajectory import LammpsTrajectory
-from aiida_lammps.tests.utils import TEST_DIR, recursive_round
+from .utils import TEST_DIR, recursive_round
 
 
 def test_iter_trajectories(data_regression):

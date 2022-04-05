@@ -49,9 +49,9 @@ and there are many test examples in **/aiida_lammps/tests/test_calculations**.
 ### Code Setup
 
 ```python
-from aiida_lammps.tests.utils import (
+from tests.utils import (
     get_or_create_local_computer, get_or_create_code)
-from aiida_lammps.tests.utils import lammps_version
+from tests.utils import lammps_version
 
 computer_local = get_or_create_local_computer('work_directory', 'localhost')
 code_lammps_force = get_or_create_code('lammps.force', computer_local, 'lammps')

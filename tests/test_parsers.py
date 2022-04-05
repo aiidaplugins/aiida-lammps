@@ -12,7 +12,7 @@ import pytest
 import yaml
 
 from aiida_lammps.common.raw_parsers import parse_final_data, parse_logfile
-from aiida_lammps.tests.utils import TEST_DIR
+from .utils import TEST_DIR
 
 
 def get_log():

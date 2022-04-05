@@ -73,6 +73,7 @@
     "docs": [
       "myst-parser~=0.15.0",
       "sphinx-external-toc",
+      "sphinx-copybutton",
       "furo"
     ]
   }

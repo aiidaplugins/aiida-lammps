@@ -5,7 +5,7 @@ from aiida.orm import Dict
 from aiida.plugins import CalculationFactory, DataFactory
 import pytest
 
-import aiida_lammps.tests.utils as tests
+from . import utils as tests
 
 
 def get_lammps_version(code):

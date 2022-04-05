@@ -31,19 +31,8 @@ extensions = [
     "sphinx_external_toc",
     "sphinx.ext.intersphinx",
     "sphinx.ext.autodoc",
-    "sphinx.ext.doctest",
     "sphinx.ext.viewcode",
-    "sphinx.ext.coverage",
-    "sphinx.ext.mathjax",
-    "sphinx.ext.ifconfig",
-    "sphinx.ext.todo",
-    "IPython.sphinxext.ipython_console_highlighting",
-    "IPython.sphinxext.ipython_directive",
-    "aiida.sphinxext",
-    "sphinx_panels",
     "sphinx_copybutton",
-    "sphinxext.rediraffe",
-    "notfound.extension",
 ]
 
 intersphinx_mapping = {
@@ -123,6 +112,7 @@ def setup(app):
 
 # We should ignore any python built-in exception, for instance
 # Warnings to ignore when using the -n (nitpicky) option
+nitpicky = True
 with open("nitpick-exceptions", "r") as handle:
     nitpick_ignore = [
         tuple(line.strip().split(None, 1))

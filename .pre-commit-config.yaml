@@ -3,8 +3,8 @@
 
 exclude: >
     (?x)^(
-      aiida_lammps/tests/input_files/.*|
-      aiida_lammps/tests/.*txt
+      tests/input_files/.*|
+      tests/.*txt
     )$
 
 repos:

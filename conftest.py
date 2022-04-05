@@ -1,7 +1,6 @@
 """
 initialise a test database and profile
 """
-# pylint: disable=fixme, redefined-outer-name
 from collections import namedtuple
 import io
 import os
@@ -14,7 +13,7 @@ import pytest
 import yaml
 
 from aiida_lammps.common.reaxff_convert import filter_by_species, read_lammps_format
-from aiida_lammps.tests.utils import TEST_DIR, AiidaTestApp
+from tests.utils import TEST_DIR, AiidaTestApp
 
 pytest_plugins = ["aiida.manage.tests.pytest_fixtures"]
 
@@ -355,14 +354,14 @@ def get_lammps_potential_data(get_structure_data):
         output_dict = {}
         if pkey == "eam_alloy":
             output_dict["filename"] = os.path.join(
-                "aiida_lammps/tests",
+                "tests",
                 "input_files",
                 "potentials",
                 "FeW_MO_737567242631_000.eam.alloy",
             )
 
             filename_parameters = os.path.join(
-                "aiida_lammps/tests",
+                "tests",
                 "input_files",
                 "parameters",
                 "FeW_MO_737567242631_000.eam.alloy.yaml",
@@ -377,14 +376,14 @@ def get_lammps_potential_data(get_structure_data):
 
         if pkey == "tersoff":
             output_dict["filename"] = os.path.join(
-                "aiida_lammps/tests",
+                "tests",
                 "input_files",
                 "potentials",
                 "Fe_MO_137964310702_004.tersoff",
             )
 
             filename_parameters = os.path.join(
-                "aiida_lammps/tests",
+                "tests",
                 "input_files",
                 "parameters",
                 "Fe_MO_137964310702_004.tersoff.yaml",
@@ -399,14 +398,14 @@ def get_lammps_potential_data(get_structure_data):
 
         if pkey == "meam":
             output_dict["filename"] = os.path.join(
-                "aiida_lammps/tests",
+                "tests",
                 "input_files",
                 "potentials",
                 "Fe_MO_492310898779_001.meam",
             )
 
             filename_parameters = os.path.join(
-                "aiida_lammps/tests",
+                "tests",
                 "input_files",
                 "parameters",
                 "Fe_MO_492310898779_001.meam.yaml",
@@ -421,14 +420,14 @@ def get_lammps_potential_data(get_structure_data):
 
         if pkey == "morse":
             output_dict["filename"] = os.path.join(
-                "aiida_lammps/tests",
+                "tests",
                 "input_files",
                 "potentials",
                 "Fe_MO_331285495617_004.morse",
             )
 
             filename_parameters = os.path.join(
-                "aiida_lammps/tests",
+                "tests",
                 "input_files",
                 "parameters",
                 "Fe_MO_331285495617_004.morse.yaml",

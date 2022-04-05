@@ -8,7 +8,7 @@ import yaml
 
 from aiida_lammps.common import input_generator
 from aiida_lammps.data.lammps_potential import LammpsPotentialData
-from aiida_lammps.tests.utils import TEST_DIR
+from .utils import TEST_DIR
 
 
 @pytest.mark.parametrize(
