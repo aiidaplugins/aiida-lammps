@@ -1,6 +1,93 @@
 [build-system]
-# Minimum requirements for the build system to execute.
-requires = ["setuptools", "wheel", "reentry>=1.3.0"]
+requires = ["flit_core >=3.4,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "aiida-lammps"
+dynamic = ["version", "description"]
+authors = [{name = "Chris Sewell", email = "chrisj_sewell@hotmail.com"}, {name = "Jonathon Chico"}]
+readme = "README.md"
+license = {file = "LICENSE"}
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Topic :: Scientific/Engineering :: Chemistry",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Framework :: AiiDA"
+]
+keywords = ["aiida", "workflows", "lammps"]
+requires-python = ">=3.7"
+dependencies = [
+    "aiida-core[atomic-tools]>=1.4.0,<2.0.0",
+    "psycopg2-binary<2.9",
+    "ase>=3.12.0,<4.0.0",
+    "importlib_resources",
+    "jsonschema",
+    "numpy",
+    "packaging",
+    "python-dateutil"
+]
+
+[project.urls]
+Documentation = "https://aiida-lammps.readthedocs.io"
+Source = "https://github.com/aiidaplugins/aiida-lammps"
+
+[project.optional-dependencies]
+testing = [
+    "attrs>=17.4.0",
+    "pgtest",
+    "pytest",
+    "pytest-cov",
+    "coverage",
+    "pytest-timeout",
+    "pytest-regressions"
+]
+docs = [
+    "myst-parser~=0.15.0",
+    "sphinx-external-toc",
+    "sphinx-copybutton",
+    "furo"
+]
+
+[project.entry-points."aiida.calculations"]
+"lammps.base" = "aiida_lammps.calculations.lammps.base:BaseLammpsCalculation"
+"lammps.combinate" = "aiida_lammps.calculations.lammps.combinate:CombinateCalculation"
+"lammps.force" = "aiida_lammps.calculations.lammps.force:ForceCalculation"
+"lammps.md" = "aiida_lammps.calculations.lammps.md:MdCalculation"
+"lammps.md.multi" = "aiida_lammps.calculations.lammps.md_multi:MdMultiCalculation"
+"lammps.optimize" = "aiida_lammps.calculations.lammps.optimize:OptimizeCalculation"
+
+[project.entry-points."aiida.parsers"]
+"lammps.base" = "aiida_lammps.parsers.lammps.lammps_parser:LAMMPSBaseParser"
+"lammps.force" = "aiida_lammps.parsers.lammps.force:ForceParser"
+"lammps.md" = "aiida_lammps.parsers.lammps.md:MdParser"
+"lammps.md.multi" = "aiida_lammps.parsers.lammps.md_multi:MdMultiParser"
+"lammps.optimize" = "aiida_lammps.parsers.lammps.optimize:OptimizeParser"
+
+[project.entry-points."aiida.data"]
+"lammps.potential" = "aiida_lammps.data.potential:EmpiricalPotential"
+"lammps.lammps_potential" = "aiida_lammps.data.lammps_potential:LammpsPotentialData"
+"lammps.trajectory" = "aiida_lammps.data.trajectory:LammpsTrajectory"
+
+[project.entry-points."lammps.potentials"]
+"eam" = "aiida_lammps.data.pot_plugins.eam:EAM"
+"lennard_jones" = "aiida_lammps.data.pot_plugins.lennard_jones:LennardJones"
+"reaxff" = "aiida_lammps.data.pot_plugins.reaxff:Reaxff"
+"tersoff" = "aiida_lammps.data.pot_plugins.tersoff:Tersoff"
+
+[tool.flit.module]
+name = "aiida_lammps"
+
+[tool.flit.sdist]
+exclude = [
+    "docs/",
+    "tests/",
+]
 
 [tool.isort]
 skip = ["venv"]

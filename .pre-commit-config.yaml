@@ -35,21 +35,3 @@ repos:
       # - flake8-bugbear==20.1.4
       # - flake8-builtins==1.5.3
       # - flake8-comprehensions==3.2.3
-
-  - repo: local
-    hooks:
-    - id: version-number
-      name: Check version numbers
-      entry: python ./.pre-commit/check_version.py version
-      language: python
-      files: >-
-        (?x)^(
-          setup.json|
-          .pre-commit/check_version.py|
-          aiida_lammps/__init__.py
-        )$
-      pass_filenames: false
-      additional_dependencies:
-        - click
-
-    # TODO could also add check-manifest
