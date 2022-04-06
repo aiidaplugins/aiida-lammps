@@ -1,6 +1,4 @@
 """Test the functionality of the lammps potential data object"""
-
-import io
 import os
 
 import pytest
@@ -102,7 +100,7 @@ def test_lammps_potentials_init(
         f"test_init_{potential_type}.yaml",
     )
 
-    with io.open(reference_file, "r") as handler:
+    with open(reference_file) as handler:
         reference_values = yaml.load(handler, yaml.SafeLoader)
 
     _attributes = ["md5", "pair_style", "species", "atom_style", "default_units"]
@@ -167,7 +165,7 @@ def test_lammps_potentials_input_block(
         f"test_init_{potential_type}_block.txt",
     )
 
-    with io.open(reference_file, "r") as handler:
+    with open(reference_file) as handler:
         reference_value = handler.read()
 
     assert potential_block == reference_value, "content of the potential blocks differ"

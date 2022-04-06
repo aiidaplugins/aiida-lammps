@@ -1,5 +1,4 @@
 """Tests for the aiida-lammps trajectory data type"""
-import io
 import os
 
 from aiida_lammps.common.parse_trajectory import create_structure, iter_trajectories
@@ -11,7 +10,7 @@ def test_iter_trajectories(data_regression):
     """Test that one can iterate over the trajectory steps"""
     path = os.path.join(TEST_DIR, "input_files", "trajectory.lammpstrj")
     output = []
-    with io.open(path) as handle:
+    with open(path) as handle:
         for tstep in iter_trajectories(handle):
             dct = dict(tstep._asdict())
             dct.pop("cell")
@@ -25,7 +24,7 @@ def test_create_structure(
 ):  # pylint: disable=unused-argument
     """Test that one can create an structure from a trajectory step"""
     path = os.path.join(TEST_DIR, "input_files", "trajectory.lammpstrj")
-    with io.open(path) as handle:
+    with open(path) as handle:
         traj_block = next(iter_trajectories(handle))
 
     structure = create_structure(traj_block)

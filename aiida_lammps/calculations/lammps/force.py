@@ -12,7 +12,7 @@ class ForceCalculation(BaseLammpsCalculation):
 
     @classmethod
     def define(cls, spec):
-        super(ForceCalculation, cls).define(spec)
+        super().define(spec)
 
         spec.input(
             "metadata.options.parser_name",

@@ -1,5 +1,4 @@
 """Parser for LAMMPS MDMulti calculations."""
-import io
 import os
 import re
 import traceback
@@ -18,7 +17,7 @@ class MdMultiParser(LAMMPSBaseParser):
     def __init__(self, node):
         """Initialize the instance of Lammps MD Parser."""
         # pylint: disable=useless-super-delegation
-        super(MdMultiParser, self).__init__(node)
+        super().__init__(node)
 
     def parse(self, **kwargs):
         """Parse the retrieved folder and store results."""
@@ -107,7 +106,7 @@ class MdMultiParser(LAMMPSBaseParser):
                     restart_map[stage] = (int(step), rpath)
 
         for stage, (step, rpath) in restart_map.items():
-            with io.open(rpath, "rb") as handle:
+            with open(rpath, "rb") as handle:
                 self.retrieved.put_object_from_filelike(
                     handle, os.path.basename(rpath), "wb", force=True
                 )

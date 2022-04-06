@@ -41,7 +41,7 @@ class BaseLammpsCalculation(CalcJob):
 
     @classmethod
     def define(cls, spec):
-        super(BaseLammpsCalculation, cls).define(spec)
+        super().define(spec)
         spec.input(
             "structure",
             valid_type=orm.StructureData,

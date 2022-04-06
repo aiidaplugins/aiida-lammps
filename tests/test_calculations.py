@@ -354,7 +354,7 @@ def test_force_process(
     if not calc_node.is_finished_ok:
         print(calc_node.attributes)
         print(get_calcjob_report(calc_node))
-        raise Exception("finished with exit message: {}".format(calc_node.exit_message))
+        raise Exception(f"finished with exit message: {calc_node.exit_message}")
 
     link_labels = calc_node.get_outgoing().all_link_labels()
     assert set(link_labels).issuperset(["results", "arrays"])

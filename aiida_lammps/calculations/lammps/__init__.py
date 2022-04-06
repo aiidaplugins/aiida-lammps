@@ -115,7 +115,7 @@ class BaseLammpsCalculation(CalcJob):
 
     @classmethod
     def define(cls, spec):
-        super(BaseLammpsCalculation, cls).define(spec)
+        super().define(spec)
         spec.input(
             "structure",
             valid_type=StructureData,
@@ -311,9 +311,9 @@ class BaseLammpsCalculation(CalcJob):
         """
         # pylint: disable=too-many-locals
         # assert that the potential and structure have the same kind elements
-        if self.inputs.potential.allowed_element_names is not None and not set(
+        if self.inputs.potential.allowed_element_names is not None and not {
             k.symbol for k in self.inputs.structure.kinds
-        ).issubset(self.inputs.potential.allowed_element_names):
+        }.issubset(self.inputs.potential.allowed_element_names):
             raise ValidationError(
                 "the structure and potential are not compatible (different kind elements)"
             )

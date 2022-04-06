@@ -13,7 +13,7 @@ class MdMultiCalculation(BaseLammpsCalculation):
 
     @classmethod
     def define(cls, spec):
-        super(MdMultiCalculation, cls).define(spec)
+        super().define(spec)
 
         spec.input(
             "metadata.options.parser_name",
@@ -144,7 +144,7 @@ class MdMultiCalculation(BaseLammpsCalculation):
                     atom_style=potential_data.atom_style,
                     dump_rate=output_atom_dict.get("dump_rate", 0),
                     average_rate=output_atom_dict.get("average_rate", 1),
-                    filename="{}-{}".format(stage_name, trajectory_filename),
+                    filename=f"{stage_name}-{trajectory_filename}",
                     version_date=version_date,
                     dump_name="atom_info",
                 )
@@ -161,7 +161,7 @@ class MdMultiCalculation(BaseLammpsCalculation):
                     variables=output_sys_dict.get("variables", []),
                     ave_variables=output_sys_dict.get("ave_variables", []),
                     dump_rate=output_sys_dict.get("dump_rate", 0),
-                    filename="{}-{}".format(stage_name, system_filename),
+                    filename=f"{stage_name}-{system_filename}",
                     fix_name="sys_info",
                     average_rate=output_sys_dict.get("average_rate", 1),
                 )
@@ -275,10 +275,10 @@ def sys_print_commands(
         commands.append(f"variable {var_alias} equal {var}")
 
     commands.append(
-        'fix {0} all print {1} "{2}" {3} {4} {5} screen no'.format(
+        'fix {} all print {} "{}" {} {} {} screen no'.format(
             fix_name,
             dump_rate,
-            " ".join(["${{{0}}}".format(v) for v in var_aliases]),
+            " ".join([f"${{{v}}}" for v in var_aliases]),
             'title "{}"'.format(" ".join(var_aliases)) if print_header else "",
             "append" if append else "file",
             filename,
@@ -338,8 +338,8 @@ def sys_ave_commands(
             nevery=nevery,  # compute variables every n steps
             nfreq=dump_rate,  # nfreq is the dump rate and must be a multiple of nevery
             nrepeat=nrep,  # average is over nrepeat quantities, nrepeat*nevery <= nfreq
-            variables=" ".join(["v_{0}".format(v) for v in var_aliases]),
-            non_ave=" ".join(["off {0}".format(i + 1) for i in range(len(variables))]),
+            variables=" ".join([f"v_{v}" for v in var_aliases]),
+            non_ave=" ".join([f"off {i + 1}" for i in range(len(variables))]),
             header=" ".join(var_aliases),
             filename=filename,
         )
@@ -431,8 +431,8 @@ def atom_info_commands(
         # set the averages as variables, just so the dump names are decipherable
         for i, ave_var in enumerate(ave_variables):
             commands.append(
-                "variable ave_{0} atom f_at_means{1}".format(
-                    ave_var, "[{}]".format(i + 1) if len(ave_variables) > 1 else ""
+                "variable ave_{} atom f_at_means{}".format(
+                    ave_var, f"[{i + 1}]" if len(ave_variables) > 1 else ""
                 )
             )
 

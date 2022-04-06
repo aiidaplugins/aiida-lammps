@@ -242,7 +242,7 @@ def test_parser_log():
         "test_parse_log.yaml",
     )
 
-    with io.open(reference_filename) as handle:
+    with open(reference_filename) as handle:
         reference_data = yaml.load(handle, Loader=yaml.Loader)
 
     assert (

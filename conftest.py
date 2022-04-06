@@ -2,7 +2,6 @@
 initialise a test database and profile
 """
 from collections import namedtuple
-import io
 import os
 import shutil
 import tempfile
@@ -245,7 +244,7 @@ def get_potential_data(get_structure_data):
                 "potentials",
                 "Fe_mm.eam.fs",
             )
-            with io.open(filename) as handle:
+            with open(filename) as handle:
                 potential_dict = {
                     "type": "fs",
                     "file_contents": handle.readlines(),
@@ -305,7 +304,7 @@ def get_potential_data(get_structure_data):
                 "potentials",
                 "FeCrOSCH.reaxff",
             )
-            with io.open(filename) as handle:
+            with open(filename) as handle:
                 potential_dict = read_lammps_format(
                     handle.read().splitlines(),
                     tolerances={"hbonddist": 7.0},
@@ -367,10 +366,10 @@ def get_lammps_potential_data(get_structure_data):
                 "FeW_MO_737567242631_000.eam.alloy.yaml",
             )
 
-            with io.open(filename_parameters) as handle:
+            with open(filename_parameters) as handle:
                 output_dict["parameters"] = yaml.load(handle, yaml.SafeLoader)
 
-            with io.open(output_dict["filename"]) as handle:
+            with open(output_dict["filename"]) as handle:
                 output_dict["potential_data"] = handle.read()
             output_dict["structure"] = get_structure_data("Fe")
 
@@ -389,10 +388,10 @@ def get_lammps_potential_data(get_structure_data):
                 "Fe_MO_137964310702_004.tersoff.yaml",
             )
 
-            with io.open(filename_parameters) as handle:
+            with open(filename_parameters) as handle:
                 output_dict["parameters"] = yaml.load(handle, yaml.SafeLoader)
 
-            with io.open(output_dict["filename"]) as handle:
+            with open(output_dict["filename"]) as handle:
                 output_dict["potential_data"] = handle.read()
             output_dict["structure"] = get_structure_data("Fe")
 
@@ -411,10 +410,10 @@ def get_lammps_potential_data(get_structure_data):
                 "Fe_MO_492310898779_001.meam.yaml",
             )
 
-            with io.open(filename_parameters) as handle:
+            with open(filename_parameters) as handle:
                 output_dict["parameters"] = yaml.load(handle, yaml.SafeLoader)
 
-            with io.open(output_dict["filename"]) as handle:
+            with open(output_dict["filename"]) as handle:
                 output_dict["potential_data"] = handle.read()
             output_dict["structure"] = get_structure_data("Fe")
 
@@ -433,10 +432,10 @@ def get_lammps_potential_data(get_structure_data):
                 "Fe_MO_331285495617_004.morse.yaml",
             )
 
-            with io.open(filename_parameters) as handle:
+            with open(filename_parameters) as handle:
                 output_dict["parameters"] = yaml.load(handle, yaml.SafeLoader)
 
-            with io.open(output_dict["filename"]) as handle:
+            with open(output_dict["filename"]) as handle:
                 output_dict["potential_data"] = handle.read()
             output_dict["structure"] = get_structure_data("Fe")
 
