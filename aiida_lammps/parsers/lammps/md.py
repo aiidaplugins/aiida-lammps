@@ -15,7 +15,7 @@ class MdParser(LAMMPSBaseParser):
     def __init__(self, node):
         """Initialize the instance of Lammps MD Parser."""
         # pylint: disable=useless-super-delegation
-        super(MdParser, self).__init__(node)
+        super().__init__(node)
 
     def parse(self, **kwargs):
         """Parse the retrieved folder and store results."""

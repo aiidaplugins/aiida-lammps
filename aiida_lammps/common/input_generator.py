@@ -748,7 +748,7 @@ def write_dump_block(
         "variables_types.json",
     )
 
-    with open(_file, "r") as handler:
+    with open(_file) as handler:
         _compute_variables = json.load(handler)["computes"]
 
     computes_list = []
@@ -810,7 +810,7 @@ def write_thermo_block(
         "variables_types.json",
     )
 
-    with open(_file, "r") as handler:
+    with open(_file) as handler:
         _compute_variables = json.load(handler)["computes"]
 
     computes_list = []
@@ -920,7 +920,7 @@ def generate_printing_string(
         "variables_types.json",
     )
 
-    with open(_file, "r") as handler:
+    with open(_file) as handler:
         _compute_variables = json.load(handler)["computes"]
 
     _type = _compute_variables[name]["type"]

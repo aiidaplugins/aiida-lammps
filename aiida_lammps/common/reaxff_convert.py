@@ -238,7 +238,7 @@ def read_lammps_format(lines, tolerances=None):
 
     # Global parameters
     if lines[lineno].split()[0] != str(len(KEYS_GLOBAL)):
-        raise IOError("Expecting {} global parameters".format(len(KEYS_GLOBAL)))
+        raise OSError(f"Expecting {len(KEYS_GLOBAL)} global parameters")
 
     for key in KEYS_GLOBAL:
         lineno += 1
@@ -272,8 +272,8 @@ def read_lammps_format(lines, tolerances=None):
 
         if len(values) != len(KEYS_1BODY):
             raise Exception(
-                "number of values different than expected for species {0}, "
-                "{1} != {2}".format(symbol, len(values), len(KEYS_1BODY))
+                "number of values different than expected for species {}, "
+                "{} != {}".format(symbol, len(values), len(KEYS_1BODY))
             )
 
         key_map = {
@@ -293,13 +293,13 @@ def read_lammps_format(lines, tolerances=None):
         values = split_numbers(lines[lineno]) + split_numbers(lines[lineno + 1])
         species_idx1 = int(values.pop(0))
         species_idx2 = int(values.pop(0))
-        key_name = "{}-{}".format(species_idx1, species_idx2)
+        key_name = f"{species_idx1}-{species_idx2}"
         lineno += 2
 
         if len(values) != len(KEYS_2BODY_BONDS):
             raise Exception(
-                "number of bond values different than expected for key {0}, "
-                "{1} != {2}".format(key_name, len(values), len(KEYS_2BODY_BONDS))
+                "number of bond values different than expected for key {}, "
+                "{} != {}".format(key_name, len(values), len(KEYS_2BODY_BONDS))
             )
 
         output["2body"][key_name] = {
@@ -316,13 +316,13 @@ def read_lammps_format(lines, tolerances=None):
         values = split_numbers(lines[lineno])
         species_idx1 = int(values.pop(0))
         species_idx2 = int(values.pop(0))
-        key_name = "{}-{}".format(species_idx1, species_idx2)
+        key_name = f"{species_idx1}-{species_idx2}"
         lineno += 1
 
         if len(values) != len(KEYS_2BODY_OFFDIAG):
             raise Exception(
-                "number of off-diagonal values different than expected for key {0} (line {1}), "
-                "{2} != {3}".format(
+                "number of off-diagonal values different than expected for key {} (line {}), "
+                "{} != {}".format(
                     key_name, lineno - 1, len(values), len(KEYS_2BODY_OFFDIAG)
                 )
             )
@@ -339,13 +339,13 @@ def read_lammps_format(lines, tolerances=None):
         species_idx1 = int(values.pop(0))
         species_idx2 = int(values.pop(0))
         species_idx3 = int(values.pop(0))
-        key_name = "{}-{}-{}".format(species_idx1, species_idx2, species_idx3)
+        key_name = f"{species_idx1}-{species_idx2}-{species_idx3}"
         lineno += 1
 
         if len(values) != len(KEYS_3BODY_ANGLES):
             raise Exception(
-                "number of angle values different than expected for key {0} (line {1}), "
-                "{2} != {3}".format(
+                "number of angle values different than expected for key {} (line {}), "
+                "{} != {}".format(
                     key_name, lineno - 1, len(values), len(KEYS_3BODY_ANGLES)
                 )
             )
@@ -370,8 +370,8 @@ def read_lammps_format(lines, tolerances=None):
 
         if len(values) != len(KEYS_4BODY_TORSION):
             raise Exception(
-                "number of torsion values different than expected for key {0} (line {1}), "
-                "{2} != {3}".format(
+                "number of torsion values different than expected for key {} (line {}), "
+                "{} != {}".format(
                     key_name, lineno - 1, len(values), len(KEYS_4BODY_TORSION)
                 )
             )
@@ -388,13 +388,13 @@ def read_lammps_format(lines, tolerances=None):
         species_idx1 = int(values.pop(0))
         species_idx2 = int(values.pop(0))
         species_idx3 = int(values.pop(0))
-        key_name = "{}-{}-{}".format(species_idx1, species_idx2, species_idx3)
+        key_name = f"{species_idx1}-{species_idx2}-{species_idx3}"
         lineno += 1
 
         if len(values) != len(KEYS_3BODY_HBOND):
             raise Exception(
-                "number of h-bond values different than expected for key {0} (line {1}), "
-                "{2} != {3}".format(
+                "number of h-bond values different than expected for key {} (line {}), "
+                "{} != {}".format(
                     key_name, lineno - 1, len(values), len(KEYS_3BODY_HBOND)
                 )
             )
@@ -414,7 +414,7 @@ def format_lammps_value(value):
     :return: formatter value
     :rtype: str
     """
-    return "{:.4f}".format(value)
+    return f"{value:.4f}"
 
 
 def write_lammps_format(data):
@@ -426,14 +426,14 @@ def write_lammps_format(data):
     output = [data["description"]]
 
     # Global parameters
-    output.append("{} ! Number of general parameters".format(len(KEYS_GLOBAL)))
+    output.append(f"{len(KEYS_GLOBAL)} ! Number of general parameters")
     for key in KEYS_GLOBAL:
-        output.append("{0:.4f} ! {1}".format(data["global"][key], key))
+        output.append("{:.4f} ! {}".format(data["global"][key], key))
 
     # one-body parameters
     output.extend(
         [
-            "{0} ! Nr of atoms; cov.r; valency;a.m;Rvdw;Evdw;gammaEEM;cov.r2;#".format(
+            "{} ! Nr of atoms; cov.r; valency;a.m;Rvdw;Evdw;gammaEEM;cov.r2;#".format(
                 len(data["species"])
             ),
             "alfa;gammavdW;valency;Eunder;Eover;chiEEM;etaEEM;n.u.",
@@ -517,7 +517,7 @@ def write_lammps_format(data):
 
     output.extend(
         [
-            "{0} ! Nr of bonds; Edis1;LPpen;n.u.;pbe1;pbo5;13corr;pbo6".format(
+            "{} ! Nr of bonds; Edis1;LPpen;n.u.;pbe1;pbo5;13corr;pbo6".format(
                 int(len(suboutout) / 2)
             ),
             "pbe2;pbo3;pbo4;n.u.;pbo1;pbo2;ovcorr",
@@ -543,7 +543,7 @@ def write_lammps_format(data):
 
     output.extend(
         [
-            "{0} ! Nr of off-diagonal terms; Ediss;Ro;gamma;rsigma;rpi;rpi2".format(
+            "{} ! Nr of off-diagonal terms; Ediss;Ro;gamma;rsigma;rpi;rpi2".format(
                 len(suboutout)
             )
         ]
@@ -565,7 +565,7 @@ def write_lammps_format(data):
         )
 
     output.extend(
-        ["{0} ! Nr of angles;at1;at2;at3;Thetao,o;ka;kb;pv1;pv2".format(len(suboutout))]
+        [f"{len(suboutout)} ! Nr of angles;at1;at2;at3;Thetao,o;ka;kb;pv1;pv2"]
         + suboutout
     )
 
@@ -587,7 +587,7 @@ def write_lammps_format(data):
 
     output.extend(
         [
-            "{0} ! Nr of torsions;at1;at2;at3;at4;;V1;V2;V3;V2(BO);vconj;n.u;n".format(
+            "{} ! Nr of torsions;at1;at2;at3;at4;;V1;V2;V3;V2(BO);vconj;n.u;n".format(
                 len(suboutout)
             )
         ]
@@ -609,7 +609,7 @@ def write_lammps_format(data):
         )
 
     output.extend(
-        ["{0} ! Nr of hydrogen bonds;at1;at2;at3;Rhb;Dehb;vhb1".format(len(suboutout))]
+        [f"{len(suboutout)} ! Nr of hydrogen bonds;at1;at2;at3;Rhb;Dehb;vhb1"]
         + suboutout
     )
 
@@ -639,9 +639,9 @@ def filter_by_species(data, species):
             )
         )
     data = copy.deepcopy(data)
-    indices = set(  # pylint: disable=consider-using-set-comprehension
-        [str(i) for i, s in enumerate(data["species"]) if s in species]
-    )
+    indices = {  # pylint: disable=consider-using-set-comprehension
+        str(i) for i, s in enumerate(data["species"]) if s in species
+    }
 
     def convert_indices(key):
         return INDEX_SEP.join(

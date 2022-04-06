@@ -47,7 +47,7 @@ class LammpsTrajectory(orm.Data):
 
         if fileobj is not None:
             if isinstance(fileobj, str):
-                with io.open(fileobj) as handle:
+                with open(fileobj) as handle:
                     self.set_from_fileobj(handle.readlines(), aliases)
             else:
                 self.set_from_fileobj(fileobj, aliases)
@@ -97,14 +97,14 @@ class LammpsTrajectory(orm.Data):
                     if number_atoms is None:
                         number_atoms = trajectory_step.natoms
                     elif trajectory_step.natoms != number_atoms:
-                        raise IOError(
+                        raise OSError(
                             f"step {step_id} contains different number of"
                             f" atoms: {trajectory_step.natoms}"
                         )
                     if field_names is None:
                         field_names = list(trajectory_step.atom_fields.keys())
                     elif field_names != list(trajectory_step.atom_fields.keys()):
-                        raise IOError(
+                        raise OSError(
                             f"step {step_id} contains different field names:"
                             f" {list(trajectory_step.atom_fields.keys())}"
                         )
@@ -117,7 +117,7 @@ class LammpsTrajectory(orm.Data):
                     zip_file.writestr(zip_name, content)
 
             if not time_steps:
-                raise IOError("The trajectory file does not contain any timesteps")
+                raise OSError("The trajectory file does not contain any timesteps")
 
             # Flush and rewind the temporary handle,
             # otherwise the command to store it in the repo will write an empty file

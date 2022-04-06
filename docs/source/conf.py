@@ -115,7 +115,7 @@ def setup(app):
 # We should ignore any python built-in exception, for instance
 # Warnings to ignore when using the -n (nitpicky) option
 nitpicky = True
-with open("nitpick-exceptions", "r") as handle:
+with open("nitpick-exceptions") as handle:
     nitpick_ignore = [
         tuple(line.strip().split(None, 1))
         for line in handle.readlines()

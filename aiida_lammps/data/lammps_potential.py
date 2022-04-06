@@ -77,7 +77,7 @@ class LammpsPotentialData(orm.SinglefileData):
         "title": {"type": str},
     }
 
-    with open(_schema_file, "r") as handler:
+    with open(_schema_file) as handler:
         _defaults = json.load(handler)
         default_potential_info = _defaults["pair_style"]
         default_atom_style_info = _defaults["atom_style"]

@@ -13,7 +13,7 @@ class ForceParser(LAMMPSBaseParser):
     def __init__(self, node):
         """Initialize the instance of Force Lammps Parser."""
         # pylint: disable=useless-super-delegation
-        super(ForceParser, self).__init__(node)
+        super().__init__(node)
 
     def parse(self, **kwargs):
         """Parse the retrieved files and store results."""
@@ -34,7 +34,7 @@ class ForceParser(LAMMPSBaseParser):
             try:
                 array_data = self.parse_traj_file(resources.traj_paths[0])
                 self.out("arrays", array_data)
-            except IOError as err:
+            except OSError as err:
                 self.logger.error(str(err))
                 traj_error = self.exit_codes.ERROR_TRAJ_PARSING
 
@@ -77,15 +77,15 @@ class ForceParser(LAMMPSBaseParser):
         with self.retrieved.open(trajectory_filename, "r") as handle:
             traj_steps = list(iter_trajectories(handle))
         if not traj_steps:
-            raise IOError("trajectory file empty")
+            raise OSError("trajectory file empty")
         if len(traj_steps) > 1:
-            raise IOError("trajectory file has multiple steps (expecting only one)")
+            raise OSError("trajectory file has multiple steps (expecting only one)")
 
         traj_step = traj_steps[0]
 
         for field in ["fx", "fy", "fz"]:
             if field not in traj_step.atom_fields:
-                raise IOError(f"trajectory file does not contain fields {field}")
+                raise OSError(f"trajectory file does not contain fields {field}")
 
         array_data = ArrayData()
 

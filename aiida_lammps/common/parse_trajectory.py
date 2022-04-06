@@ -49,14 +49,14 @@ def parse_step(lines, initial_line=0) -> namedtuple:
     """
     # pylint: disable=too-many-locals
     if "ITEM: TIMESTEP" not in lines[0]:
-        raise IOError(f"expected line {initial_line} to be TIMESTEP")
+        raise OSError(f"expected line {initial_line} to be TIMESTEP")
     if "ITEM: NUMBER OF ATOMS" not in lines[2]:
-        raise IOError(f"expected line {initial_line + 2} to be NUMBER OF ATOMS")
+        raise OSError(f"expected line {initial_line + 2} to be NUMBER OF ATOMS")
     if "ITEM: BOX BOUNDS xy xz yz" not in lines[4]:
-        raise IOError(f"expected line {initial_line + 4} to be BOX BOUNDS xy xz yz")
+        raise OSError(f"expected line {initial_line + 4} to be BOX BOUNDS xy xz yz")
         # TODO handle case when xy xz yz not present -> orthogonal box
     if "ITEM: ATOMS" not in lines[8]:
-        raise IOError(f"expected line {initial_line + 8} to be ATOMS")
+        raise OSError(f"expected line {initial_line + 8} to be ATOMS")
     timestep = int(lines[1])
     number_of_atoms = int(lines[3])
 

@@ -18,7 +18,7 @@ class OptimizeParser(LAMMPSBaseParser):
     def __init__(self, node):
         """Initialize the instance of Optimize Lammps Parser."""
         # pylint: disable=useless-super-delegation
-        super(OptimizeParser, self).__init__(node)
+        super().__init__(node)
 
     def parse(self, **kwargs):
         """Parses the datafolder, stores results."""

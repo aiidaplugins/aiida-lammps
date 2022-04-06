@@ -2,7 +2,6 @@
 """
 # pylint: disable=fixme
 import ast
-import io
 import re
 from typing import Union
 
@@ -33,10 +32,10 @@ def parse_logfile(filename: str = None, file_contents: str = None) -> Union[dict
     if filename is not None:
 
         try:
-            with io.open(filename, "r") as handler:
+            with open(filename) as handler:
                 data = handler.read()
                 data = data.split("\n")
-        except (IOError, OSError):
+        except OSError:
             return None
 
     if file_contents is not None:
@@ -114,9 +113,9 @@ def parse_final_data(filename: str = None, file_contents: str = None) -> dict:
         return None
     if filename is not None:
         try:
-            with io.open(filename, "r") as handle:
+            with open(filename) as handle:
                 data = yaml.load(handle, Loader=yaml.Loader)
-        except (IOError, OSError):
+        except OSError:
             data = None
     if file_contents is not None:
         data = yaml.load(file_contents)
@@ -129,7 +128,7 @@ def read_log_file(logdata_txt, compute_stress=False):
     data = logdata_txt.splitlines()
 
     if not data:
-        raise IOError("The logfile is empty")
+        raise OSError("The logfile is empty")
 
     perf_regex = re.compile(
         r"Performance\:\s(.+)\sns\/day,\s(.+)\shours\/ns\,\s(.+)\stimesteps\/s\s*"
@@ -171,9 +170,9 @@ def read_log_file(logdata_txt, compute_stress=False):
         return {"data": data_dict, "found_end": found_end}
 
     if cell_params is None:
-        raise IOError("'final_cell' could not be found")
+        raise OSError("'final_cell' could not be found")
     if stress_params is None:
-        raise IOError("'final_stress' could not be found")
+        raise OSError("'final_stress' could not be found")
 
     xlo, xhi, box_xy, ylo, yhi, box_xz, zlo, zhi, box_yz = cell_params
     super_cell = np.array(

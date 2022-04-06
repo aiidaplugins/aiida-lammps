@@ -1,7 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Utility functions for validating JSON objects against schemas."""
-import io
 import json
 import os
 
@@ -22,7 +20,7 @@ def load_schema(name):
     :return: dict
     """
     if os.path.isabs(name):
-        with io.open(name) as jfile:
+        with open(name) as jfile:
             schema = json.load(jfile)
     else:
         schema = json.loads(importlib_resources.read_text(schemas, name))

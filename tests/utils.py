@@ -37,7 +37,7 @@ def lammps_version(executable="lammps"):
     if match:
         return match.group(1).strip()
 
-    raise IOError("Could not find version from `{} -h`".format(executable))
+    raise OSError(f"Could not find version from `{executable} -h`")
 
 
 def get_path_to_executable(executable):
@@ -60,7 +60,7 @@ def get_path_to_executable(executable):
     if path is None:
         path = distutils.spawn.find_executable(executable)
     if path is None:
-        raise ValueError("{} executable not found in PATH.".format(executable))
+        raise ValueError(f"{executable} executable not found in PATH.")
 
     return os.path.abspath(path)
 
@@ -157,7 +157,7 @@ def recursive_round(check_object, precision, apply_lists=False):
     return check_object
 
 
-class AiidaTestApp(object):
+class AiidaTestApp:
     """A class providing methods for testing purposes"""
 
     # pylint: disable=useless-object-inheritance

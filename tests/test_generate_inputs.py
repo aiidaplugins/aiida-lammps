@@ -1,6 +1,4 @@
 """Functions to tests the input file generation"""
-
-import io
 import os
 
 import pytest
@@ -58,7 +56,7 @@ def test_input_generate_minimize(
         f"test_generate_input_{potential_type}_minimize.txt",
     )
 
-    with io.open(reference_file, "r") as handler:
+    with open(reference_file) as handler:
         reference_value = handler.read()
 
     assert input_file == reference_value, "the content of the files differ"
@@ -110,7 +108,7 @@ def test_input_generate_md(
         "test_generate_inputs",
         f"test_generate_input_{potential_type}_md.txt",
     )
-    with io.open(reference_file, "r") as handler:
+    with open(reference_file) as handler:
         reference_value = handler.read()
 
     assert input_file == reference_value, "the content of the files differ"
