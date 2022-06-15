@@ -31,7 +31,7 @@ class BaseLammpsCalculation(CalcJob):
 
     _DEFAULT_LOGFILE_FILENAME = "log.lammps"
     _DEFAULT_OUTPUT_FILENAME = "lammps_output"
-    _DEFAULT_TRAJECTORY_FILENAME = "aiida_lampps.trajectory.dump"
+    _DEFAULT_TRAJECTORY_FILENAME = "aiida_lammps.trajectory.dump"
     _DEFAULT_VARIABLES_FILENAME = "aiida_lammps.yaml"
     _DEFAULT_RESTART_FILENAME = "lammps.restart"
     _DEFAULT_POTENTIAL_FILENAME = "potential.dat"
