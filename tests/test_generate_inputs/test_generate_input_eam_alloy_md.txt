@@ -25,11 +25,11 @@ compute pressure_all_aiida all pressure thermo_temp
 compute stress_atom_all_aiida all stress/atom NULL
 #-------------------------End of the Compute information-------------------------#
 #------------------------Start of the Thermo information-------------------------#
-thermo_style custom step ke pe press pxx pyy pzz etotal c_pressure_all_aiida c_pressure_all_aiida[1] c_pressure_all_aiida[2] c_pressure_all_aiida[3] c_pressure_all_aiida[4] c_pressure_all_aiida[5] c_pressure_all_aiida[6]
+thermo_style custom step ke pe press pxx pyy pzz etotal c_pressure_all_aiida c_pressure_all_aiida__1__ c_pressure_all_aiida__2__ c_pressure_all_aiida__3__ c_pressure_all_aiida__4__ c_pressure_all_aiida__5__ c_pressure_all_aiida__6__
 thermo 100
 #-------------------------End of the Thermo information--------------------------#
 #-------------------------Start of the Dump information--------------------------#
-dump aiida all custom 1000 temp.dump id type element x y z c_ke_atom_all_aiida c_pe_atom_all_aiida c_stress_atom_all_aiida[1] c_stress_atom_all_aiida[2] c_stress_atom_all_aiida[3] c_stress_atom_all_aiida[4] c_stress_atom_all_aiida[5] c_stress_atom_all_aiida[6]
+dump aiida all custom 1000 temp.dump id type element x y z c_ke_atom_all_aiida c_pe_atom_all_aiida c_stress_atom_all_aiida__1__ c_stress_atom_all_aiida__2__ c_stress_atom_all_aiida__3__ c_stress_atom_all_aiida__4__ c_stress_atom_all_aiida__5__ c_stress_atom_all_aiida__6__
 dump_modify aiida sort id
 dump_modify aiida element Fe Fe
 dump_modify aiida format line "%6d %4d %4s %16.10f %16.10f %16.10f %16.10f %16.10f %16.10f %16.10f %16.10f %16.10f %16.10f %16.10f"
@@ -50,12 +50,12 @@ variable final_pyy equal pyy
 variable final_pzz equal pzz
 variable final_etotal equal etotal
 variable final_c_pressure_all_aiida equal c_pressure_all_aiida
-variable final_c_pressure_all_aiida_1 equal c_pressure_all_aiida[1]
-variable final_c_pressure_all_aiida_2 equal c_pressure_all_aiida[2]
-variable final_c_pressure_all_aiida_3 equal c_pressure_all_aiida[3]
-variable final_c_pressure_all_aiida_4 equal c_pressure_all_aiida[4]
-variable final_c_pressure_all_aiida_5 equal c_pressure_all_aiida[5]
-variable final_c_pressure_all_aiida_6 equal c_pressure_all_aiida[6]
+variable final_c_pressure_all_aiida__1__ equal c_pressure_all_aiida[1]
+variable final_c_pressure_all_aiida__2__ equal c_pressure_all_aiida[2]
+variable final_c_pressure_all_aiida__3__ equal c_pressure_all_aiida[3]
+variable final_c_pressure_all_aiida__4__ equal c_pressure_all_aiida[4]
+variable final_c_pressure_all_aiida__5__ equal c_pressure_all_aiida[5]
+variable final_c_pressure_all_aiida__6__ equal c_pressure_all_aiida[6]
 #---------------------End of the Final Variables information---------------------#
 #---------------Start of the Printing Final Variables information----------------#
 print "#Final results" file aiida_lammps.yaml
@@ -68,12 +68,12 @@ print "final_pyy: ${final_pyy}" append aiida_lammps.yaml
 print "final_pzz: ${final_pzz}" append aiida_lammps.yaml
 print "final_etotal: ${final_etotal}" append aiida_lammps.yaml
 print "final_c_pressure_all_aiida: ${final_c_pressure_all_aiida}" append aiida_lammps.yaml
-print "final_c_pressure_all_aiida_1: ${final_c_pressure_all_aiida_1}" append aiida_lammps.yaml
-print "final_c_pressure_all_aiida_2: ${final_c_pressure_all_aiida_2}" append aiida_lammps.yaml
-print "final_c_pressure_all_aiida_3: ${final_c_pressure_all_aiida_3}" append aiida_lammps.yaml
-print "final_c_pressure_all_aiida_4: ${final_c_pressure_all_aiida_4}" append aiida_lammps.yaml
-print "final_c_pressure_all_aiida_5: ${final_c_pressure_all_aiida_5}" append aiida_lammps.yaml
-print "final_c_pressure_all_aiida_6: ${final_c_pressure_all_aiida_6}" append aiida_lammps.yaml
+print "final_c_pressure_all_aiida__1__: ${final_c_pressure_all_aiida__1__}" append aiida_lammps.yaml
+print "final_c_pressure_all_aiida__2__: ${final_c_pressure_all_aiida__2__}" append aiida_lammps.yaml
+print "final_c_pressure_all_aiida__3__: ${final_c_pressure_all_aiida__3__}" append aiida_lammps.yaml
+print "final_c_pressure_all_aiida__4__: ${final_c_pressure_all_aiida__4__}" append aiida_lammps.yaml
+print "final_c_pressure_all_aiida__5__: ${final_c_pressure_all_aiida__5__}" append aiida_lammps.yaml
+print "final_c_pressure_all_aiida__6__: ${final_c_pressure_all_aiida__6__}" append aiida_lammps.yaml
 #----------------End of the Printing Final Variables information-----------------#
 #---------------------Start of the write restart information---------------------#
 write_restart restart.aiida
