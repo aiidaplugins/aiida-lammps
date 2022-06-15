@@ -17,7 +17,7 @@ jobs:
       with:
         python-version: 3.8
     - name: Upgrade pip
-      run: pip install --upgrade pip
+      run: pip install --upgrade pip wheel
     - name: Install AiiDA-LAMMPS
       run: pip install pre-commit
     - name: Run pre-commit
@@ -31,17 +31,17 @@ jobs:
       fail-fast: false
       matrix:
         include:
-        - python-version: 3.7
-          lammps-version: "2019.06.05"
+        - python-version: "3.8"
+          lammps-version: "2020.12.24"
           backend: django
-        - python-version: 3.7
-          lammps-version: "2019.06.05"
+        - python-version: "3.8"
+          lammps-version: "2020.12.24"
           backend: sqlalchemy
-        - python-version: 3.8
+        - python-version: "3.9"
           lammps-version: "2020.12.24"
           backend: django
-        - python-version: 3.9
-          lammps-version: "2020.12.24"
+        - python-version: "3.10"
+          lammps-version: "2021.10.27"
           backend: django
 
     runs-on: ubuntu-latest
