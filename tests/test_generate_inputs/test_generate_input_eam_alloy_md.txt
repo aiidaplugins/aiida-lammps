@@ -25,11 +25,11 @@ compute pressure_all_aiida all pressure thermo_temp
 compute stress_atom_all_aiida all stress/atom NULL
 #-------------------------End of the Compute information-------------------------#
 #------------------------Start of the Thermo information-------------------------#
-thermo_style custom step ke pe press pxx pyy pzz etotal c_pressure_all_aiida c_pressure_all_aiida__1__ c_pressure_all_aiida__2__ c_pressure_all_aiida__3__ c_pressure_all_aiida__4__ c_pressure_all_aiida__5__ c_pressure_all_aiida__6__
+thermo_style custom step ke pe press pxx pyy pzz etotal c_pressure_all_aiida c_pressure_all_aiida[1] c_pressure_all_aiida[2] c_pressure_all_aiida[3] c_pressure_all_aiida[4] c_pressure_all_aiida[5] c_pressure_all_aiida[6]
 thermo 100
 #-------------------------End of the Thermo information--------------------------#
 #-------------------------Start of the Dump information--------------------------#
-dump aiida all custom 1000 temp.dump id type element x y z c_ke_atom_all_aiida c_pe_atom_all_aiida c_stress_atom_all_aiida__1__ c_stress_atom_all_aiida__2__ c_stress_atom_all_aiida__3__ c_stress_atom_all_aiida__4__ c_stress_atom_all_aiida__5__ c_stress_atom_all_aiida__6__
+dump aiida all custom 1000 temp.dump id type element x y z c_ke_atom_all_aiida c_pe_atom_all_aiida c_stress_atom_all_aiida[1] c_stress_atom_all_aiida[2] c_stress_atom_all_aiida[3] c_stress_atom_all_aiida[4] c_stress_atom_all_aiida[5] c_stress_atom_all_aiida[6]
 dump_modify aiida sort id
 dump_modify aiida element Fe Fe
 dump_modify aiida format line "%6d %4d %4s %16.10f %16.10f %16.10f %16.10f %16.10f %16.10f %16.10f %16.10f %16.10f %16.10f %16.10f"
