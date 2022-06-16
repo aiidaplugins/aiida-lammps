@@ -480,7 +480,7 @@ time_dependent:
   - -60616.181
   - -60998.054
   - -61353.826
-  c_pressure_all_aiida[1]:
+  c_pressure_all_aiida__1__:
   - -65784.86
   - -65754.123
   - -65658.395
@@ -532,7 +532,7 @@ time_dependent:
   - -56496.14
   - -56926.184
   - -57340.453
-  c_pressure_all_aiida[2]:
+  c_pressure_all_aiida__2__:
   - -66151.806
   - -66129.949
   - -66064.381
@@ -584,7 +584,7 @@ time_dependent:
   - -63084.235
   - -63403.866
   - -63702.654
-  c_pressure_all_aiida[3]:
+  c_pressure_all_aiida__3__:
   - -65307.943
   - -65282.65
   - -65204.64
@@ -636,7 +636,7 @@ time_dependent:
   - -62268.168
   - -62664.111
   - -63018.371
-  c_pressure_all_aiida[4]:
+  c_pressure_all_aiida__4__:
   - -968.80346
   - -973.77775
   - -989.84677
@@ -688,7 +688,7 @@ time_dependent:
   - -1884.7159
   - -1744.5319
   - -1602.112
-  c_pressure_all_aiida[5]:
+  c_pressure_all_aiida__5__:
   - -1835.8858
   - -1846.5829
   - -1879.7798
@@ -740,7 +740,7 @@ time_dependent:
   - -4043.8155
   - -3741.0193
   - -3438.0051
-  c_pressure_all_aiida[6]:
+  c_pressure_all_aiida__6__:
   - -293.61095
   - -291.26981
   - -286.53978

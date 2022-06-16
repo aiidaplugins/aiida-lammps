@@ -2,6 +2,7 @@
 """
 # pylint: disable=fixme
 from collections import namedtuple
+import re
 
 from aiida import orm
 import numpy as np
@@ -88,7 +89,9 @@ def parse_step(lines, initial_line=0) -> namedtuple:
         ]
     )
     cell = super_cell.T
-    field_names = lines[8].split()[2:]
+    field_names = [
+        re.sub("[^a-zA-Z0-9_]", "__", entry) for entry in lines[8].split()[2:]
+    ]
     fields = []
     for i in range(number_of_atoms):
         fields.append(lines[9 + i].split())

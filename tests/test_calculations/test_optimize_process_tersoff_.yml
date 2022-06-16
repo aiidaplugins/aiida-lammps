@@ -32,12 +32,12 @@ trajectory_data:
   - Ga
   - N
   field_names:
-  - c_stpa[1]
-  - c_stpa[2]
-  - c_stpa[3]
-  - c_stpa[4]
-  - c_stpa[5]
-  - c_stpa[6]
+  - c_stpa__1__
+  - c_stpa__2__
+  - c_stpa__3__
+  - c_stpa__4__
+  - c_stpa__5__
+  - c_stpa__6__
   - element
   - fx
   - fy

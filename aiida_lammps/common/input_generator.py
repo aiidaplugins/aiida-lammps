@@ -13,6 +13,7 @@ called since it is necessary for the functioning of LAMMPS.
 from builtins import ValueError
 import json
 import os
+import re
 from typing import Union
 
 from aiida import orm
@@ -437,7 +438,7 @@ def write_final_variables_block(
     variables_block = generate_header("Start of the Final Variables information")
 
     for _thermo in fixed_thermo:
-        _variables.append(_thermo.replace("[", "_").replace("]", ""))
+        _variables.append(re.sub("[^a-zA-Z0-9_]", "__", _thermo))
         variables_block += f"variable final_{_variables[-1]} equal {_thermo}\n"
     variables_block += generate_header("End of the Final Variables information")
 

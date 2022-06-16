@@ -80,7 +80,9 @@ def parse_logfile(filename: str = None, file_contents: str = None) -> Union[dict
             global_parsed_data["bin"] = line.split()[-1]
         if line.startswith("Step"):
             header_line_position = index
-            header_line = line.split()
+            header_line = [
+                re.sub("[^a-zA-Z0-9_]", "__", entry) for entry in line.split()
+            ]
         if header_line_position > 0 and index != header_line_position and not end_found:
             if not line.split()[0].replace(".", "", 1).isdigit():
                 end_found = True
