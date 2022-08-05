@@ -23,7 +23,9 @@ def load_schema(name):
         with open(name) as jfile:
             schema = json.load(jfile)
     else:
-        schema = json.loads(importlib_resources.files(schemas).joinpath(name).read_text())
+        schema = json.loads(
+            importlib_resources.files(schemas).joinpath(name).read_text()
+        )
 
     return schema
 

@@ -65,14 +65,17 @@ class EmpiricalPotential(Data):
         self.base.attributes.set(
             "allowed_element_names",
             sorted(allowed_element_names)
-            if allowed_element_names else allowed_element_names,
+            if allowed_element_names
+            else allowed_element_names,
         )
 
         # store potential section of main input file
-        self.base.attributes.set("md5|input_lines",
-                                 md5(pot_lines.encode("utf-8")).hexdigest())
-        self.base.repository.put_object_from_filelike(StringIO(pot_lines),
-                                                      self.pot_lines_fname)
+        self.base.attributes.set(
+            "md5|input_lines", md5(pot_lines.encode("utf-8")).hexdigest()
+        )
+        self.base.repository.put_object_from_filelike(
+            StringIO(pot_lines), self.pot_lines_fname
+        )
 
         # store external files required by the potential
         external_files = []
@@ -81,8 +84,7 @@ class EmpiricalPotential(Data):
                 f'md5|{fname.replace(".", "_")}',
                 md5(content.encode("utf-8")).hexdigest(),
             )
-            self.base.repository.put_object_from_filelike(
-                StringIO(content), fname)
+            self.base.repository.put_object_from_filelike(StringIO(content), fname)
             external_files.append(fname)
         self.base.attributes.set("external_files", sorted(external_files))
 
@@ -128,8 +130,7 @@ class EmpiricalPotential(Data):
              pair_coeff      * *  S Cr
 
         """
-        content = self.base.repository.get_object_content(
-            self.pot_lines_fname, "r")
+        content = self.base.repository.get_object_content(self.pot_lines_fname, "r")
         if kind_symbols:
             content = content.replace("{kind_symbols}", " ".join(kind_symbols))
         return content

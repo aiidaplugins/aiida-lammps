@@ -7,12 +7,12 @@ import re
 import subprocess
 import sys
 
+from aiida import orm
 from aiida.common import NotExistent
 from aiida.common.folders import SandboxFolder
 from aiida.common.links import LinkType
 from aiida.engine.utils import instantiate_process
 from aiida.manage.manager import get_manager
-from aiida.orm import CalcJobNode, Code, Computer
 from aiida.plugins import CalculationFactory, DataFactory, ParserFactory
 from aiida.plugins.entry_point import format_entry_point_string
 
@@ -35,7 +35,7 @@ def lammps_version(executable="lammps"):
     )
     match = re.search(regex, out_text)
     if match:
-        return match.group(1).strip()
+        return match.group(1).strip().split("-")[0].strip()
 
     raise OSError(f"Could not find version from `{executable} -h`")
 
@@ -76,14 +76,14 @@ def get_or_create_local_computer(work_directory, name="localhost"):
     """
 
     try:
-        computer = Computer.collection.get(label=name)
+        computer = orm.Computer.collection.get(label=name)
     except NotExistent:
-        computer = Computer(
+        computer = orm.Computer(
             label=name,
             hostname="localhost",
             description=("localhost computer, " "set up by aiida_lammps tests"),
-            transport_type="local",
-            scheduler_type="direct",
+            transport_type="core.local",
+            scheduler_type="core.direct",
             workdir=os.path.abspath(work_directory),
         )
         computer.store()
@@ -96,16 +96,16 @@ def get_or_create_code(entry_point, computer, executable, exec_path=None):
     """Setup code on localhost computer"""
 
     if isinstance(computer, str):
-        computer = Computer.collection.get(label=computer)
+        computer = orm.Computer.collection.get(label=computer)
 
     try:
-        code = Code.collection.get(  # pylint: disable=no-member
+        code = orm.Code.collection.get(  # pylint: disable=no-member
             label=f"{entry_point}-{executable}-{computer.label}"
         )
     except NotExistent:
         if exec_path is None:
             exec_path = get_path_to_executable(executable)
-        code = Code(
+        code = orm.Code(
             input_plugin_name=entry_point, remote_computer_exec=[computer, exec_path]
         )
         code.label = f"{entry_point}-{executable}-{computer.label}"
@@ -269,7 +269,7 @@ class AiidaTestApp:
         computer = self.get_or_create_computer(computer_name)
         entry_point = format_entry_point_string("aiida.calculations", entry_point_name)
 
-        node = CalcJobNode(computer=computer, process_type=entry_point)
+        node = orm.CalcJobNode(computer=computer, process_type=entry_point)
         node.set_options(
             {
                 k: v.default() if callable(v.default) else v.default
@@ -285,7 +285,7 @@ class AiidaTestApp:
 
         node.store()
 
-        retrieved.add_incoming(
+        retrieved.base.links.add_incoming(
             node,
             link_type=LinkType.CREATE,
             link_label="retrieved",

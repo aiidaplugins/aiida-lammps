@@ -1,7 +1,6 @@
-from aiida import load_profile
+from aiida import load_profile, orm
 from aiida.common.extendeddicts import AttributeDict
 from aiida.engine import run_get_node
-from aiida.orm import Code, Dict, StructureData
 from aiida.plugins import CalculationFactory
 import numpy as np
 
@@ -32,7 +31,7 @@ if __name__ == "__main__":
         (0.625, 0.625, 0.125),
     ]
 
-    structure = StructureData(cell=cell)
+    structure = orm.StructureData(cell=cell)
     positions = np.dot(scaled_positions, cell)
 
     for i, scaled_position in enumerate(scaled_positions):
@@ -80,7 +79,7 @@ if __name__ == "__main__":
     inputs.metadata.options = options
 
     # Setup code
-    inputs.code = Code.get_from_string(codename)
+    inputs.code = orm.Code.get_from_string(codename)
 
     # setup nodes
     inputs.structure = structure
@@ -88,7 +87,7 @@ if __name__ == "__main__":
         type=potential["pair_style"], data=potential["data"]
     )
 
-    inputs.parameters = Dict(dict=parameters_md)
+    inputs.parameters = orm.Dict(dict=parameters_md)
 
     # run calculation
     result, node = run_get_node(LammpsMDCalculation, **inputs)

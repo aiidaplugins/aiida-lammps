@@ -447,8 +447,7 @@ the test suite can be run in an isolated, virtual environment using `tox` (see `
 or directly:
 
 ```shell
->> pip install -e .[testing]
->> reentry scan -r aiida
+>> pip install .[testing]
 >> pytest -v
 ```
 

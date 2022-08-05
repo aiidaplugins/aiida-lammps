@@ -54,8 +54,7 @@ def test_potential_files(
         potential_type=potential.type,
         data=potential.data,
     )
-    file_regression.check(
-        node.base.repository.get_object_content("potential.pot", "r"))
+    file_regression.check(node.base.repository.get_object_content("potential.pot", "r"))
 
 
 @pytest.mark.parametrize(
@@ -108,7 +107,9 @@ def test_lammps_potentials_init(
 
     for _attribute in _attributes:
         _msg = f'attribute "{_attribute}" does not match between reference and current value'
-        assert reference_values[_attribute] == node.base.attributes.get(_attribute), _msg
+        assert reference_values[_attribute] == node.base.attributes.get(
+            _attribute
+        ), _msg
 
 
 @pytest.mark.parametrize(

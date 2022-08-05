@@ -29,7 +29,8 @@ def test_create_structure(
 
     structure = create_structure(traj_block)
     data_regression.check(
-        recursive_round(structure.base.attributes.all, 2, apply_lists=True))
+        recursive_round(structure.base.attributes.all, 2, apply_lists=True)
+    )
 
 
 def test_lammps_trajectory_data(
@@ -57,9 +58,10 @@ def test_lammpstraj_get_step_struct(
     path = os.path.join(TEST_DIR, "input_files", "trajectory.lammpstrj")
     data = LammpsTrajectory(path)
     data_regression.check(
-        recursive_round(data.get_step_structure(-1).base.attributes.all,
-                        2,
-                        apply_lists=True))
+        recursive_round(
+            data.get_step_structure(-1).base.attributes.all, 2, apply_lists=True
+        )
+    )
 
 
 def test_lammpstraj_timesteps(db_test_app):  # pylint: disable=unused-argument

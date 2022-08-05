@@ -1,11 +1,12 @@
 """Single stage MD calculation in LAMMPS."""
 # pylint: disable=fixme, useless-super-delegation, duplicate-code
+from aiida import orm
 from aiida.common.exceptions import InputValidationError
-from aiida.plugins import DataFactory
 import numpy as np
 
 from aiida_lammps.calculations.lammps import BaseLammpsCalculation
 from aiida_lammps.common.utils import convert_date_string, get_path, join_keywords
+from aiida_lammps.data.trajectory import LammpsTrajectory
 from aiida_lammps.validation import validate_against_schema
 
 
@@ -25,13 +26,13 @@ class MdCalculation(BaseLammpsCalculation):
 
         spec.output(
             "trajectory_data",
-            valid_type=DataFactory("lammps.trajectory"),
+            valid_type=LammpsTrajectory,
             required=True,
             help="atomic configuration data per dump step",
         )
         spec.output(
             "system_data",
-            valid_type=DataFactory("array"),
+            valid_type=orm.ArrayData,
             required=False,
             help="selected system data per dump step",
         )

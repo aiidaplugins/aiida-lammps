@@ -108,8 +108,7 @@ class LAMMPSBaseParser(Parser):
     def parse_log_file(self, compute_stress=False):
         """Parse the log file."""
         output_filename = self.node.get_option("output_filename")
-        output_txt = self.retrieved.base.repository.get_object_content(
-            output_filename)
+        output_txt = self.retrieved.base.repository.get_object_content(output_filename)
         try:
             output_data = read_log_file(
                 output_txt,
@@ -123,11 +122,17 @@ class LAMMPSBaseParser(Parser):
     def add_warnings_and_errors(self, output_data):
         """Add warning and errors to the output data."""
         # add the dictionary with warnings and errors
-        warnings = (self.retrieved.base.repository.get_object_content(
-            self.node.get_option("scheduler_stderr")).strip().splitlines())
+        warnings = (
+            self.retrieved.base.repository.get_object_content(
+                self.node.get_option("scheduler_stderr")
+            )
+            .strip()
+            .splitlines()
+        )
         # for some reason, errors may be in the stdout, but not the log.lammps
         stdout = self.retrieved.base.repository.get_object_content(
-            self.node.get_option("scheduler_stdout"))
+            self.node.get_option("scheduler_stdout")
+        )
         errors = [line for line in stdout.splitlines() if line.startswith("ERROR")]
         warnings.extend(
             [line for line in stdout.splitlines() if line.startswith("WARNING")]

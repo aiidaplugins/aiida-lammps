@@ -1,6 +1,6 @@
 """Single point calculation of the energy in LAMMPS."""
 # pylint: disable=fixme, duplicate-code, useless-super-delegation
-from aiida.plugins import DataFactory
+from aiida import orm
 
 from aiida_lammps.calculations.lammps import BaseLammpsCalculation
 from aiida_lammps.common.utils import convert_date_string
@@ -22,7 +22,7 @@ class ForceCalculation(BaseLammpsCalculation):
 
         spec.output(
             "arrays",
-            valid_type=DataFactory("array"),
+            valid_type=orm.ArrayData,
             required=True,
             help="force data per atom",
         )
@@ -39,8 +39,8 @@ class ForceCalculation(BaseLammpsCalculation):
     ):
         # pylint: disable=too-many-arguments, too-many-locals
         version_date = convert_date_string(
-            parameter_data.base.attributes.get("lammps_version",
-                                               "11 Aug 2017"))
+            parameter_data.base.attributes.get("lammps_version", "11 Aug 2017")
+        )
 
         lammps_input_file = f"units          {potential_data.default_units}\n"
         lammps_input_file += "boundary        p p p\n"

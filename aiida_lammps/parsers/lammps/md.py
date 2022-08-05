@@ -54,7 +54,7 @@ class MdParser(LAMMPSBaseParser):
             self.logger.warning("units missing in log")
         self.add_warnings_and_errors(output_data)
         self.add_standard_info(output_data)
-        if "parameters" in self.node.get_incoming().all_link_labels():
+        if "parameters" in self.node.base.links.get_incoming().all_link_labels():
             output_data["timestep_picoseconds"] = convert_units(
                 self.node.inputs.parameters.dict.timestep,
                 output_data["units_style"],
@@ -78,8 +78,9 @@ class MdParser(LAMMPSBaseParser):
             except Exception:  # pylint: disable=broad-except
                 traceback.print_exc()
                 sys_data_error = self.exit_codes.ERROR_INFO_PARSING
-            sys_data.base.attributes.set("units_style",
-                                         output_data.get("units_style", None))
+            sys_data.base.attributes.set(
+                "units_style", output_data.get("units_style", None)
+            )
             self.out("system_data", sys_data)
 
         if output_data["errors"]:

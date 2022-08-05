@@ -14,7 +14,6 @@ retrieved:
 - _scheduler-stderr.txt
 - _scheduler-stdout.txt
 - cell_transform.npy
-- equilibrate-lammps.restart.400
 - log.lammps
 system__equilibrate:
   array|c_reax_1_:

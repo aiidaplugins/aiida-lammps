@@ -139,8 +139,7 @@ class LammpsTrajectory(orm.Data):
         self.base.attributes.set("trajectory_filename", self._trajectory_filename)
         self.base.attributes.set("timestep_filename", self._timestep_filename)
         self.base.attributes.set("zip_prefix", self._zip_prefix)
-        self.base.attributes.set("compression_method",
-                                 self._compression_method)
+        self.base.attributes.set("compression_method", self._compression_method)
         self.base.attributes.set("aliases", aliases)
         self.base.attributes.set("elements", list(sorted(elements)))
 
@@ -161,7 +160,8 @@ class LammpsTrajectory(orm.Data):
         :rtype: list
         """
         with self.base.repository.open(
-                self.base.attributes.get("timestep_filename"), "r") as handle:
+            self.base.attributes.get("timestep_filename"), "r"
+        ) as handle:
             output = [int(i) for i in handle.readline().split()]
         return output
 
@@ -197,13 +197,13 @@ class LammpsTrajectory(orm.Data):
         step_idx = list(range(self.number_steps))[step_idx]
         zip_name = f'{self.base.attributes.get("zip_prefix")}{step_idx}'
         with self.base.repository.open(
-                self.base.attributes.get("trajectory_filename"),
-                mode="rb",
+            self.base.attributes.get("trajectory_filename"),
+            mode="rb",
         ) as handle:
             with ZipFile(
-                    handle,
-                    "r",
-                    self.base.attributes.get("compression_method"),
+                handle,
+                "r",
+                self.base.attributes.get("compression_method"),
             ) as zip_file:
                 with zip_file.open(zip_name, "r") as step_file:
                     content = step_file.read()
@@ -222,13 +222,13 @@ class LammpsTrajectory(orm.Data):
             steps = range(0, self.number_steps, steps)
 
         with self.base.repository.open(
-                self.base.attributes.get("trajectory_filename"),
-                mode="rb",
+            self.base.attributes.get("trajectory_filename"),
+            mode="rb",
         ) as handle:
             with ZipFile(
-                    handle,
-                    "r",
-                    self.base.attributes.get("compression_method"),
+                handle,
+                "r",
+                self.base.attributes.get("compression_method"),
             ) as zip_file:
                 for step_idx in steps:
                     zip_name = f'{self.base.attributes.get("zip_prefix")}{step_idx}'

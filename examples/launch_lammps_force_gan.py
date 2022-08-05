@@ -1,6 +1,6 @@
+from aiida import orm
 from aiida.common.extendeddicts import AttributeDict
 from aiida.engine import run_get_node
-from aiida.orm import Code, StructureData
 from aiida.plugins import CalculationFactory
 import numpy as np
 
@@ -34,7 +34,7 @@ if __name__ == "__main__":
 
     symbols = ["Ga", "Ga", "N", "N"]
 
-    structure = StructureData(cell=cell)
+    structure = orm.StructureData(cell=cell)
     positions = np.dot(scaled_positions, cell)
 
     for i, scaled_position in enumerate(scaled_positions):
@@ -77,7 +77,7 @@ if __name__ == "__main__":
     inputs.metadata.options = options
 
     # Setup code
-    inputs.code = Code.get_from_string(codename)
+    inputs.code = orm.Code.get_from_string(codename)
 
     # setup nodes
     inputs.structure = structure

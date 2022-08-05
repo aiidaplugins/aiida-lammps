@@ -1,6 +1,5 @@
 """Parser for LAMMPS MDMulti calculations."""
 import os
-import re
 import traceback
 
 from aiida.orm import ArrayData, Dict
@@ -61,7 +60,7 @@ class MdMultiParser(LAMMPSBaseParser):
             self.logger.warning("units missing in log")
         self.add_warnings_and_errors(output_data)
         self.add_standard_info(output_data)
-        if "parameters" in self.node.get_incoming().all_link_labels():
+        if "parameters" in self.node.base.links.get_incoming().all_link_labels():
             output_data["timestep_picoseconds"] = convert_units(
                 self.node.inputs.parameters.dict.timestep,
                 output_data["units_style"],
@@ -80,8 +79,9 @@ class MdMultiParser(LAMMPSBaseParser):
         for sys_path in resources.sys_paths:
             stage_name = os.path.basename(sys_path).split("-")[0]
             sys_data = ArrayData()
-            sys_data.base.attributes.set("units_style",
-                                         output_data.get("units_style", None))
+            sys_data.base.attributes.set(
+                "units_style", output_data.get("units_style", None)
+            )
             try:
                 with open(sys_path) as handle:
                     names = handle.readline().strip().split()
@@ -96,20 +96,22 @@ class MdMultiParser(LAMMPSBaseParser):
         if arrays:
             self.out("system", arrays)
 
+        # @TODO Re-add this functionality for aiida-core 2.x if possible
         # retrieve the last restart file, per stage
-        restart_map = {}
-        for rpath in resources.restart_paths:
-            rpath_base = os.path.basename(rpath)
-            match = re.match(r"([^\-]*)\-.*\.([\d]+)", rpath_base)
-            if match:
-                stage, step = match.groups()
-                if int(step) > restart_map.get(stage, (-1, None))[0]:
-                    restart_map[stage] = (int(step), rpath)
+        # restart_map = {}
+        # for rpath in resources.restart_paths:
+        #    rpath_base = os.path.basename(rpath)
+        #    match = re.match(r"([^\-]*)\-.*\.([\d]+)", rpath_base)
+        #    if match:
+        #        stage, step = match.groups()
+        #        if int(step) > restart_map.get(stage, (-1, None))[0]:
+        #            restart_map[stage] = (int(step), rpath)
 
-        for stage, (step, rpath) in restart_map.items():
-            with open(rpath, "rb") as handle:
-                self.retrieved.base.repository.put_object_from_filelike(
-                    handle, os.path.basename(rpath), "wb", force=True)
+        # for stage, (step, rpath) in restart_map.items():
+        #    with open(rpath, "rb") as handle:
+        #        self.retrieved.base.repository.put_object_from_filelike(
+        #            handle, os.path.basename(rpath)
+        #        )
 
         if output_data["errors"]:
             return self.exit_codes.ERROR_LAMMPS_RUN

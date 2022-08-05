@@ -1,12 +1,14 @@
 """Class describing the calculation of the optimization of a structure
 using LAMMPS (minimize method).
 """
+from aiida import orm
+
 # pylint: disable=fixme, duplicate-code, useless-super-delegation
 from aiida.common.exceptions import InputValidationError
-from aiida.plugins import DataFactory
 
 from aiida_lammps.calculations.lammps import BaseLammpsCalculation
 from aiida_lammps.common.utils import convert_date_string, join_keywords
+from aiida_lammps.data.trajectory import LammpsTrajectory
 from aiida_lammps.validation import validate_against_schema
 
 
@@ -25,13 +27,13 @@ class OptimizeCalculation(BaseLammpsCalculation):
 
         spec.output(
             "structure",
-            valid_type=DataFactory("structure"),
+            valid_type=orm.StructureData,
             required=True,
             help="the structure output from the calculation",
         )
         spec.output(
             "trajectory_data",
-            valid_type=DataFactory("lammps.trajectory"),
+            valid_type=LammpsTrajectory,
             required=True,
             help="forces, stresses and positions data per step",
         )
@@ -160,7 +162,7 @@ class OptimizeCalculation(BaseLammpsCalculation):
             raise InputValidationError("parameter data not set")
         validate_against_schema(param_data.get_dict(), "optimize.schema.json")
 
-        # ensure the potential and paramters are in the same unit systems
+        # ensure the potential and parameters are in the same unit systems
         # TODO convert between unit systems (e.g. using https://pint.readthedocs.io)
         if "units" in param_data.get_dict():
             punits = param_data.get_dict()["units"]
