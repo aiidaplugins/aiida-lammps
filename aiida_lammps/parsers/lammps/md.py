@@ -78,7 +78,8 @@ class MdParser(LAMMPSBaseParser):
             except Exception:  # pylint: disable=broad-except
                 traceback.print_exc()
                 sys_data_error = self.exit_codes.ERROR_INFO_PARSING
-            sys_data.set_attribute("units_style", output_data.get("units_style", None))
+            sys_data.base.attributes.set("units_style",
+                                         output_data.get("units_style", None))
             self.out("system_data", sys_data)
 
         if output_data["errors"]:

@@ -319,7 +319,7 @@ def write_structure_block(
     structure_block += f'dimension {structure.get_dimensionality()["dim"]}\n'
     structure_block += "boundary "
     for _bound in ["pbc1", "pbc2", "pbc3"]:
-        structure_block += f'{"p" if structure.attributes[_bound] else "f"} '
+        structure_block += f'{"p" if structure.base.attributes.all[_bound] else "f"} '
     structure_block += "\n"
     structure_block += f'atom_style {parameters_structure["atom_style"]}\n'
     structure_block += f"read_data {structure_filename}\n"

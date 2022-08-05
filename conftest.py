@@ -73,7 +73,7 @@ def db_test_app(aiida_profile, pytestconfig):
         work_directory = tempfile.mkdtemp()
 
     yield AiidaTestApp(work_directory, executables, environment=aiida_profile)
-    aiida_profile.reset_db()
+    aiida_profile.clear_profile()
 
     if not test_workdir:
         shutil.rmtree(work_directory)

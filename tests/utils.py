@@ -76,7 +76,7 @@ def get_or_create_local_computer(work_directory, name="localhost"):
     """
 
     try:
-        computer = Computer.objects.get(label=name)
+        computer = Computer.collection.get(label=name)
     except NotExistent:
         computer = Computer(
             label=name,
@@ -96,10 +96,10 @@ def get_or_create_code(entry_point, computer, executable, exec_path=None):
     """Setup code on localhost computer"""
 
     if isinstance(computer, str):
-        computer = Computer.objects.get(label=computer)
+        computer = Computer.collection.get(label=computer)
 
     try:
-        code = Code.objects.get(  # pylint: disable=no-member
+        code = Code.collection.get(  # pylint: disable=no-member
             label=f"{entry_point}-{executable}-{computer.label}"
         )
     except NotExistent:
@@ -281,7 +281,7 @@ class AiidaTestApp:
         node.set_option("max_wallclock_seconds", 1800)
 
         if attributes:
-            node.set_attributes(attributes)  # pylint: disable=no-member
+            node.base.attributes.set(attributes)  # pylint: disable=no-member
 
         node.store()
 

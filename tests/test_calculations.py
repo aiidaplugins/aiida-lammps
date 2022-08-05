@@ -347,9 +347,9 @@ def test_force_process(
     output = run_get_node(builder)
     calc_node = output.node
 
-    # raise ValueError(calc_node.get_object_content('input.in'))
-    # raise ValueError(calc_node.outputs.retrieved.get_object_content('_scheduler-stdout.txt'))
-    # raise ValueError(calc_node.outputs.retrieved.get_object_content('trajectory.lammpstrj'))
+    # raise ValueError(calc_node.base.repository.get_object_content('input.in'))
+    # raise ValueError(calc_node.outputs.retrieved.base.repository.get_object_content('_scheduler-stdout.txt'))
+    # raise ValueError(calc_node.outputs.retrieved.base.repository.get_object_content('trajectory.lammpstrj'))
 
     if not calc_node.is_finished_ok:
         print(calc_node.attributes)
@@ -547,15 +547,17 @@ def test_md_multi_process(
         ]
     )
 
-    data_regression.check(
-        {
-            "retrieved": calc_node.outputs.retrieved.list_object_names(),
-            "results": sanitize_results(
-                calc_node.outputs.results.get_dict(), round_energy=1
-            ),
-            "system__thermalise": calc_node.outputs.system__thermalise.attributes,
-            "system__equilibrate": calc_node.outputs.system__equilibrate.attributes,
-            "trajectory__thermalise": calc_node.outputs.trajectory__thermalise.attributes,
-            "trajectory__equilibrate": calc_node.outputs.trajectory__equilibrate.attributes,
-        }
-    )
+    data_regression.check({
+        "retrieved":
+        calc_node.outputs.retrieved.base.repository.list_object_names(),
+        "results":
+        sanitize_results(calc_node.outputs.results.get_dict(), round_energy=1),
+        "system__thermalise":
+        calc_node.outputs.system__thermalise.attributes,
+        "system__equilibrate":
+        calc_node.outputs.system__equilibrate.attributes,
+        "trajectory__thermalise":
+        calc_node.outputs.trajectory__thermalise.attributes,
+        "trajectory__equilibrate":
+        calc_node.outputs.trajectory__equilibrate.attributes,
+    })

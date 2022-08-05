@@ -80,7 +80,8 @@ class MdMultiParser(LAMMPSBaseParser):
         for sys_path in resources.sys_paths:
             stage_name = os.path.basename(sys_path).split("-")[0]
             sys_data = ArrayData()
-            sys_data.set_attribute("units_style", output_data.get("units_style", None))
+            sys_data.base.attributes.set("units_style",
+                                         output_data.get("units_style", None))
             try:
                 with open(sys_path) as handle:
                     names = handle.readline().strip().split()
@@ -107,9 +108,8 @@ class MdMultiParser(LAMMPSBaseParser):
 
         for stage, (step, rpath) in restart_map.items():
             with open(rpath, "rb") as handle:
-                self.retrieved.put_object_from_filelike(
-                    handle, os.path.basename(rpath), "wb", force=True
-                )
+                self.retrieved.base.repository.put_object_from_filelike(
+                    handle, os.path.basename(rpath), "wb", force=True)
 
         if output_data["errors"]:
             return self.exit_codes.ERROR_LAMMPS_RUN
