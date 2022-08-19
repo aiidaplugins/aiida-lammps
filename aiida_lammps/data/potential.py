@@ -59,10 +59,10 @@ class EmpiricalPotential(Data):
         external_contents = pot_class.get_external_content() or {}
         pot_lines = pot_class.get_input_potential_lines()
 
-        self.set_attribute("potential_type", potential_type)
-        self.set_attribute("atom_style", atom_style)
-        self.set_attribute("default_units", default_units)
-        self.set_attribute(
+        self.base.attributes.set("potential_type", potential_type)
+        self.base.attributes.set("atom_style", atom_style)
+        self.base.attributes.set("default_units", default_units)
+        self.base.attributes.set(
             "allowed_element_names",
             sorted(allowed_element_names)
             if allowed_element_names
@@ -70,46 +70,48 @@ class EmpiricalPotential(Data):
         )
 
         # store potential section of main input file
-        self.set_attribute(
+        self.base.attributes.set(
             "md5|input_lines", md5(pot_lines.encode("utf-8")).hexdigest()
         )
-        self.put_object_from_filelike(StringIO(pot_lines), self.pot_lines_fname)
+        self.base.repository.put_object_from_filelike(
+            StringIO(pot_lines), self.pot_lines_fname
+        )
 
         # store external files required by the potential
         external_files = []
         for fname, content in external_contents.items():
-            self.set_attribute(
+            self.base.attributes.set(
                 f'md5|{fname.replace(".", "_")}',
                 md5(content.encode("utf-8")).hexdigest(),
             )
-            self.put_object_from_filelike(StringIO(content), fname)
+            self.base.repository.put_object_from_filelike(StringIO(content), fname)
             external_files.append(fname)
-        self.set_attribute("external_files", sorted(external_files))
+        self.base.attributes.set("external_files", sorted(external_files))
 
         # delete any previously stored files that are no longer required
-        for fname in self.list_object_names():
+        for fname in self.base.repository.list_object_names():
             if fname not in external_files + [self.pot_lines_fname]:
                 self.delete_object(fname)
 
     @property
     def potential_type(self):
         """Return lammps atom style."""
-        return self.get_attribute("potential_type")
+        return self.base.attributes.get("potential_type")
 
     @property
     def atom_style(self):
         """Return lammps atom style."""
-        return self.get_attribute("atom_style")
+        return self.base.attributes.get("atom_style")
 
     @property
     def default_units(self):
         """Return lammps default units."""
-        return self.get_attribute("default_units")
+        return self.base.attributes.get("default_units")
 
     @property
     def allowed_element_names(self):
         """Return available atomic symbols."""
-        return self.get_attribute("allowed_element_names")
+        return self.base.attributes.get("allowed_element_names")
 
     def get_input_lines(self, kind_symbols=None):
         """Return the command(s) required to setup the potential.
@@ -128,7 +130,7 @@ class EmpiricalPotential(Data):
              pair_coeff      * *  S Cr
 
         """
-        content = self.get_object_content(self.pot_lines_fname, "r")
+        content = self.base.repository.get_object_content(self.pot_lines_fname, "r")
         if kind_symbols:
             content = content.replace("{kind_symbols}", " ".join(kind_symbols))
         return content
@@ -136,6 +138,6 @@ class EmpiricalPotential(Data):
     def get_external_files(self):
         """Return the mapping of external filenames to content."""
         fmap = {}
-        for fname in self.get_attribute("external_files"):
-            fmap[fname] = self.get_object_content(fname, "r")
+        for fname in self.base.attributes.get("external_files"):
+            fmap[fname] = self.base.repository.get_object_content(fname, "r")
         return fmap

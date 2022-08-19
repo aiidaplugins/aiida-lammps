@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [master, develop]
+    branches: [master, develop, workchains]
   pull_request:
 
 jobs:
@@ -32,17 +32,15 @@ jobs:
       matrix:
         include:
         - python-version: "3.8"
-          lammps-version: "2020.12.24"
-          backend: django
+          lammps-version: "2020.03.03"
         - python-version: "3.8"
           lammps-version: "2020.12.24"
-          backend: sqlalchemy
         - python-version: "3.9"
           lammps-version: "2020.12.24"
-          backend: django
+        - python-version: "3.9"
+          lammps-version: "2020.03.03"
         - python-version: "3.10"
           lammps-version: "2021.09.29"
-          backend: django
 
     runs-on: ubuntu-latest
 
@@ -50,7 +48,7 @@ jobs:
       postgres:
         image: postgres:10
         env:
-          POSTGRES_DB: test_${{ matrix.backend }}
+          POSTGRES_DB: test_lammps
           POSTGRES_PASSWORD: ''
           POSTGRES_HOST_AUTH_METHOD: trust
         options: >-
@@ -86,7 +84,6 @@ jobs:
     - name: Installation
       run: |
         pip install -e .[testing,pre-commit]
-        reentry scan
 
     - name: Run pytest
       run: |

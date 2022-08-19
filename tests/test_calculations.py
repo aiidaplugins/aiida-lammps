@@ -347,22 +347,22 @@ def test_force_process(
     output = run_get_node(builder)
     calc_node = output.node
 
-    # raise ValueError(calc_node.get_object_content('input.in'))
-    # raise ValueError(calc_node.outputs.retrieved.get_object_content('_scheduler-stdout.txt'))
-    # raise ValueError(calc_node.outputs.retrieved.get_object_content('trajectory.lammpstrj'))
+    # raise ValueError(calc_node.base.repository.get_object_content('input.in'))
+    # raise ValueError(calc_node.outputs.retrieved.base.repository.get_object_content('_scheduler-stdout.txt'))
+    # raise ValueError(calc_node.outputs.retrieved.base.repository.get_object_content('trajectory.lammpstrj'))
 
     if not calc_node.is_finished_ok:
         print(calc_node.attributes)
         print(get_calcjob_report(calc_node))
         raise Exception(f"finished with exit message: {calc_node.exit_message}")
 
-    link_labels = calc_node.get_outgoing().all_link_labels()
+    link_labels = calc_node.base.links.get_outgoing().all_link_labels()
     assert set(link_labels).issuperset(["results", "arrays"])
 
     data_regression.check(
         {
             "results": sanitize_results(calc_node.outputs.results.get_dict(), 1),
-            "arrays": calc_node.outputs.arrays.attributes,
+            "arrays": calc_node.outputs.arrays.base.attributes.all,
         }
     )
 
@@ -411,10 +411,10 @@ def test_optimize_process(
         print(get_calcjob_report(calc_node))
         raise Exception(f"finished with exit message: {calc_node.exit_message}")
 
-    link_labels = calc_node.get_outgoing().all_link_labels()
+    link_labels = calc_node.base.links.get_outgoing().all_link_labels()
     assert set(link_labels).issuperset(["results", "trajectory_data", "structure"])
 
-    trajectory_data = calc_node.outputs.trajectory_data.attributes
+    trajectory_data = calc_node.outputs.trajectory_data.base.attributes.all
     # optimization steps may differ between lammps versions
     trajectory_data = {k: v for k, v in trajectory_data.items() if k != "number_steps"}
     data_regression.check(
@@ -475,7 +475,7 @@ def test_md_process(
         print(get_calcjob_report(calc_node))
         raise Exception(f"finished with exit message: {calc_node.exit_message}")
 
-    link_labels = calc_node.get_outgoing().all_link_labels()
+    link_labels = calc_node.base.links.get_outgoing().all_link_labels()
     assert set(link_labels).issuperset(["results", "trajectory_data", "system_data"])
 
     data_regression.check(
@@ -484,8 +484,8 @@ def test_md_process(
                 calc_node.outputs.results.get_dict(),
                 round_energy=1,
             ),
-            "system_data": calc_node.outputs.system_data.attributes,
-            "trajectory_data": calc_node.outputs.trajectory_data.attributes,
+            "system_data": calc_node.outputs.system_data.base.attributes.all,
+            "trajectory_data": calc_node.outputs.trajectory_data.base.attributes.all,
         },
         basename=f"test_md_process-{potential_type}-{version_year}",
     )
@@ -535,7 +535,7 @@ def test_md_multi_process(
         print(get_calcjob_report(calc_node))
         raise Exception(f"finished with exit message: {calc_node.exit_message}")
 
-    link_labels = calc_node.get_outgoing().all_link_labels()
+    link_labels = calc_node.base.links.get_outgoing().all_link_labels()
     assert set(link_labels).issuperset(
         [
             "results",
@@ -549,13 +549,13 @@ def test_md_multi_process(
 
     data_regression.check(
         {
-            "retrieved": calc_node.outputs.retrieved.list_object_names(),
+            "retrieved": calc_node.outputs.retrieved.base.repository.list_object_names(),
             "results": sanitize_results(
                 calc_node.outputs.results.get_dict(), round_energy=1
             ),
-            "system__thermalise": calc_node.outputs.system__thermalise.attributes,
-            "system__equilibrate": calc_node.outputs.system__equilibrate.attributes,
-            "trajectory__thermalise": calc_node.outputs.trajectory__thermalise.attributes,
-            "trajectory__equilibrate": calc_node.outputs.trajectory__equilibrate.attributes,
+            "system__thermalise": calc_node.outputs.system.thermalise.base.attributes.all,
+            "system__equilibrate": calc_node.outputs.system.equilibrate.base.attributes.all,
+            "trajectory__thermalise": calc_node.outputs.trajectory.thermalise.base.attributes.all,
+            "trajectory__equilibrate": calc_node.outputs.trajectory.equilibrate.base.attributes.all,
         }
     )

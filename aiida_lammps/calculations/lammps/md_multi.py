@@ -1,10 +1,11 @@
 """Run a multi-stage molecular dynamic simulation."""
 # pylint: disable=fixme
+from aiida import orm
 from aiida.common.exceptions import InputValidationError
-from aiida.plugins import DataFactory
 
 from aiida_lammps.calculations.lammps import BaseLammpsCalculation
 from aiida_lammps.common.utils import convert_date_string, get_path, join_keywords
+from aiida_lammps.data.trajectory import LammpsTrajectory
 from aiida_lammps.validation import validate_against_schema
 
 
@@ -25,14 +26,14 @@ class MdMultiCalculation(BaseLammpsCalculation):
         spec.output_namespace(
             "system",
             dynamic=True,
-            valid_type=DataFactory("array"),
+            valid_type=orm.ArrayData,
             help="selected system data per dump step of a stage",
         )
 
         spec.output_namespace(
             "trajectory",
             dynamic=True,
-            valid_type=DataFactory("lammps.trajectory"),
+            valid_type=LammpsTrajectory,
             help="atomic configuration data per dump step of a stage",
         )
 

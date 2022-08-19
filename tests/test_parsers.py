@@ -82,9 +82,15 @@ def test_missing_log(db_test_app, plugin_name):
 def test_missing_traj(db_test_app, plugin_name):
     """Check if the trajectory file is produced during calculation."""
     retrieved = FolderData()
-    retrieved.put_object_from_filelike(io.StringIO(get_log()), "log.lammps")
-    retrieved.put_object_from_filelike(io.StringIO(""), "_scheduler-stdout.txt")
-    retrieved.put_object_from_filelike(io.StringIO(""), "_scheduler-stderr.txt")
+    retrieved.base.repository.put_object_from_filelike(
+        io.StringIO(get_log()), "log.lammps"
+    )
+    retrieved.base.repository.put_object_from_filelike(
+        io.StringIO(""), "_scheduler-stdout.txt"
+    )
+    retrieved.base.repository.put_object_from_filelike(
+        io.StringIO(""), "_scheduler-stderr.txt"
+    )
 
     calc_node = db_test_app.generate_calcjob_node(plugin_name, retrieved)
     parser = ParserFactory(plugin_name)
@@ -117,7 +123,7 @@ def test_empty_log(db_test_app, plugin_name):
         "_scheduler-stdout.txt",
         "_scheduler-stderr.txt",
     ]:
-        retrieved.put_object_from_filelike(io.StringIO(""), filename)
+        retrieved.base.repository.put_object_from_filelike(io.StringIO(""), filename)
 
     calc_node = db_test_app.generate_calcjob_node(plugin_name, retrieved)
     parser = ParserFactory(plugin_name)
@@ -147,13 +153,15 @@ def test_empty_log(db_test_app, plugin_name):
 def test_empty_traj(db_test_app, plugin_name):
     """Check if the lammps trajectory file is empty."""
     retrieved = FolderData()
-    retrieved.put_object_from_filelike(io.StringIO(get_log()), "log.lammps")
+    retrieved.base.repository.put_object_from_filelike(
+        io.StringIO(get_log()), "log.lammps"
+    )
     for filename in [
         "trajectory.lammpstrj",
         "_scheduler-stdout.txt",
         "_scheduler-stderr.txt",
     ]:
-        retrieved.put_object_from_filelike(io.StringIO(""), filename)
+        retrieved.base.repository.put_object_from_filelike(io.StringIO(""), filename)
 
     calc_node = db_test_app.generate_calcjob_node(plugin_name, retrieved)
     parser = ParserFactory(plugin_name)
@@ -182,19 +190,19 @@ def test_empty_traj(db_test_app, plugin_name):
 def test_run_error(db_test_app, plugin_name):
     """Check if the parser runs without producing errors."""
     retrieved = FolderData()
-    retrieved.put_object_from_filelike(
+    retrieved.base.repository.put_object_from_filelike(
         io.StringIO(get_log()),
         "log.lammps",
     )
-    retrieved.put_object_from_filelike(
+    retrieved.base.repository.put_object_from_filelike(
         io.StringIO(get_traj_force()),
         "x-trajectory.lammpstrj",
     )
-    retrieved.put_object_from_filelike(
+    retrieved.base.repository.put_object_from_filelike(
         io.StringIO("ERROR description"),
         "_scheduler-stdout.txt",
     )
-    retrieved.put_object_from_filelike(
+    retrieved.base.repository.put_object_from_filelike(
         io.StringIO(""),
         "_scheduler-stderr.txt",
     )

@@ -1,6 +1,6 @@
 """Single point calculation of the energy in LAMMPS."""
 # pylint: disable=fixme, duplicate-code, useless-super-delegation
-from aiida.plugins import DataFactory
+from aiida import orm
 
 from aiida_lammps.calculations.lammps import BaseLammpsCalculation
 from aiida_lammps.common.utils import convert_date_string
@@ -22,7 +22,7 @@ class ForceCalculation(BaseLammpsCalculation):
 
         spec.output(
             "arrays",
-            valid_type=DataFactory("array"),
+            valid_type=orm.ArrayData,
             required=True,
             help="force data per atom",
         )
@@ -39,7 +39,7 @@ class ForceCalculation(BaseLammpsCalculation):
     ):
         # pylint: disable=too-many-arguments, too-many-locals
         version_date = convert_date_string(
-            parameter_data.get_attribute("lammps_version", "11 Aug 2017")
+            parameter_data.base.attributes.get("lammps_version", "11 Aug 2017")
         )
 
         lammps_input_file = f"units          {potential_data.default_units}\n"
@@ -55,7 +55,7 @@ class ForceCalculation(BaseLammpsCalculation):
         lammps_input_file += "neigh_modify    every 1 delay 0 check no\n"
 
         thermo_keywords = ["step", "temp", "epair", "emol", "etotal", "press"]
-        for kwd in parameter_data.get_attribute("thermo_keywords", []):
+        for kwd in parameter_data.base.attributes.get("thermo_keywords", []):
             if kwd not in thermo_keywords:
                 thermo_keywords.append(kwd)
         lammps_input_file += f'thermo_style custom {" ".join(thermo_keywords)}\n'
@@ -85,7 +85,7 @@ class ForceCalculation(BaseLammpsCalculation):
 
         lammps_input_file += "run             0\n"
 
-        variables = parameter_data.get_attribute("output_variables", [])
+        variables = parameter_data.base.attributes.get("output_variables", [])
         for var in variables:
             var_alias = var.replace("[", "_").replace("]", "_")
             lammps_input_file += f"variable {var_alias} equal {var}\n"

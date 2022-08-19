@@ -149,19 +149,19 @@ if __name__ == "__main__":
 
     STRUCTURE = generate_structure()
     POTENTIAL = generate_potential()
-    CODE = orm.load_code("my_lammps_code")
+    CODE = orm.load_code("lammps@localhost")
     OPTIONS = AttributeDict()
     OPTIONS.resources = AttributeDict()
     # Total number of mpi processes
     OPTIONS.resources.tot_num_mpiprocs = 2
     # Name of the parallel environment
-    OPTIONS.resources.parallel_env = "mpi"
+    #    OPTIONS.resources.parallel_env = "mpi"
     # Maximum allowed execution time in seconds
-    OPTIONS.max_wallclock_seconds = 18000
+    #    OPTIONS.max_wallclock_seconds = 18000
     # Whether to run in parallel
-    OPTIONS.withmpi = True
+    #    OPTIONS.withmpi = True
     # Set the slot type for the calculation
-    OPTIONS.custom_scheduler_commands = "#$ -l slot_type=execute\n#$ -l exclusive=true"
+    #    OPTIONS.custom_scheduler_commands = "#$ -l slot_type=execute\n#$ -l exclusive=true"
 
     _parameters = AttributeDict()
     _parameters.control = AttributeDict()

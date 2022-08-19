@@ -29,8 +29,7 @@ $ tox -e py37
 or directly:
 
 ```shell
-$ pip install -e .[testing]
-$ reentry scan -r aiida
+$ pip install .[testing]
 $ pytest -v
 ```
 
