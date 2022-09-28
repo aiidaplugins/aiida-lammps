@@ -82,13 +82,7 @@ def generate_input_file(
     control_block = write_control_block(
         parameters_control=parameters.get("control", {})
     )
-    # Generate the compute input block
-    if "compute" in parameters:
-        compute_block = write_compute_block(
-            parameters_compute=parameters.get("compute", {})
-        )
-    else:
-        compute_block = ""
+
     # Generate the thermo input block
     thermo_block, fixed_thermo = write_thermo_block(
         parameters_thermo=parameters.get("thermo", {}),
@@ -121,6 +115,13 @@ def generate_input_file(
         )
     else:
         fix_block = ""
+    # Generate the compute input block
+    if "compute" in parameters:
+        compute_block = write_compute_block(
+            parameters_compute=parameters.get("compute", {}), group_names=group_lists
+        )
+    else:
+        compute_block = ""
     # Generate the potential input block
     potential_block = write_potential_block(
         parameters_potential=parameters.get("potential", {}),
@@ -325,7 +326,7 @@ def write_structure_block(
     structure_block += f"read_data {structure_filename}\n"
     # Set the groups which will be used for the calculations
     if "groups" in parameters_structure:
-        for _group in parameters_structure["group"]:
+        for _group in parameters_structure["groups"]:
             # Check if the given type name corresponds to the ones assigned to the atom types
             if "type" in _group["args"]:
 
@@ -344,7 +345,6 @@ def write_structure_block(
             f'read_restart {restart_file} {parameters_structure["remap"]}'
         )
     structure_block += generate_header("End of the Structure information")
-
     return structure_block, group_names
 
 
@@ -511,7 +511,7 @@ def generate_velocity_options(options_velocity: dict) -> str:
     :return: string with the velocity options
     :rtype: str
     """
-    _options = ["dist", "sum", "mom" "rot", "temp", "bias", "loop", "rigid", "units"]
+    _options = ["dist", "sum", "mom", "rot", "temp", "bias", "loop", "rigid", "units"]
 
     velocity_option = ""
     for _option in _options:
