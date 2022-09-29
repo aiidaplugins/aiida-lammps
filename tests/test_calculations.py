@@ -1,10 +1,26 @@
 """Test the aiida-lammps calculations."""
+from aiida import orm
 from aiida.cmdline.utils.common import get_calcjob_report
+from aiida.common import AttributeDict
 from aiida.engine import run_get_node
-from aiida.orm import Dict
 from aiida.plugins import CalculationFactory, DataFactory
+import numpy as np
 import pytest
 
+from aiida_lammps.fixtures.calculations import (
+    md_parameters_npt,
+    md_parameters_nve,
+    md_parameters_nvt,
+    md_reference_data_npt,
+    md_reference_data_nve,
+    md_reference_data_nvt,
+    minimize_groups_reference_data,
+    minimize_parameters,
+    minimize_parameters_groups,
+    minimize_reference_data,
+)
+from aiida_lammps.fixtures.data import generate_structure  # noqa: F401
+from aiida_lammps.fixtures.data import get_potential_fe_eam  # noqa: F401
 from . import utils as tests
 
 
@@ -129,7 +145,7 @@ def get_calc_parameters(lammps_version, plugin_name, units, potential_type):
     else:
         raise ValueError(plugin_name)
 
-    return Dict(dict=parameters_opt)
+    return orm.Dict(dict=parameters_opt)
 
 
 def sanitize_results(results_dict, round_dp_all=None, round_energy=None):
@@ -559,3 +575,103 @@ def test_md_multi_process(
             "trajectory__equilibrate": calc_node.outputs.trajectory.equilibrate.base.attributes.all,
         }
     )
+
+
+@pytest.mark.lammps_call
+@pytest.mark.parametrize(
+    "parameters,reference_data",
+    [
+        (minimize_parameters(), minimize_reference_data()),
+        (minimize_parameters_groups(), minimize_groups_reference_data()),
+        (md_parameters_nve(), md_reference_data_nve()),
+        (md_parameters_nvt(), md_reference_data_nvt()),
+        (md_parameters_npt(), md_reference_data_npt()),
+    ],
+)
+def test_lammps_base(
+    db_test_app,
+    generate_structure,  # pylint: disable=redefined-outer-name  # noqa: F811
+    get_potential_fe_eam,  # pylint: disable=redefined-outer-name  # noqa: F811
+    parameters,
+    reference_data,
+):
+    """
+    _summary_
+
+    _extended_summary_
+
+    :param db_test_app: _description_
+    :type db_test_app: _type_
+    :param generate_structure: _description_
+    :type generate_structure: _type_
+    """
+
+    calc_plugin = "lammps.base"
+    code = db_test_app.get_or_create_code(calc_plugin)
+
+    calculation = CalculationFactory(calc_plugin)
+
+    inputs = AttributeDict()
+    inputs.code = code
+    inputs.metadata = tests.get_default_metadata()
+    inputs.structure = generate_structure
+    inputs.potential = get_potential_fe_eam
+    inputs.parameters = orm.Dict(dict=parameters)
+
+    results, node = run_get_node(calculation, **inputs)
+
+    assert node.exit_status == 0, "calculation ended in non-zero state"
+
+    assert "results" in results, 'the "results" node not present'
+
+    for key, value in reference_data.results.items():
+        _msg = f'key "{key}" not present'
+        assert key in results["results"], _msg
+        _msg = f'value for "{key}" does not match'
+        _results = results["results"].get_dict()
+        if isinstance(_results[key], (int, float)):
+            assert np.isclose(
+                value,
+                _results[key],
+                rtol=1e-03,
+            ), _msg
+        if isinstance(_results[key], dict):
+            for sub_key, sub_value in reference_data.results[key].items():
+                assert sub_key in _results[key], f'key "{sub_key}" not present'
+                if sub_key != "steps_per_second":
+                    assert (
+                        sub_value == _results[key][sub_key]
+                    ), f'value for key "{sub_key}" doe not match'
+
+    assert (
+        "time_dependent_computes" in results
+    ), 'the "time_dependent_computes" node is not present'
+    for key, value in reference_data.time_dependent_computes.items():
+        _msg = f'key "{key}" not present'
+        assert key in results["time_dependent_computes"].get_arraynames(), _msg
+        _msg = f'arrays for "{key}" do not match'
+        assert np.allclose(
+            value,
+            results["time_dependent_computes"].get_array(key),
+            rtol=1e-02,
+        ), _msg
+
+    assert "trajectories" in results, 'the "trajectories" node is not present'
+    _attributes = results["trajectories"].base.attributes.all
+    for key, value in reference_data.trajectories["attributes"].items():
+        assert key in _attributes, f'the key "{key}" is not present'
+        assert value == _attributes[key], f'the values for "{key}" do not match'
+    for key, value in reference_data.trajectories["step_data"].items():
+        _step_data = results["trajectories"].get_step_data(key).atom_fields
+        for sub_key, sub_value in value.items():
+            _msg = f'key "{sub_key}" not present'
+            assert sub_key in _step_data, _msg
+            _msg = f'data for key "{key}" does not match'
+            if sub_key != "element":
+                assert np.allclose(
+                    np.asarray(sub_value, dtype=float),
+                    np.asarray(_step_data[sub_key], dtype=float),
+                    rtol=1e-02,
+                ), _msg
+            else:
+                assert sub_value == _step_data[sub_key], _msg
