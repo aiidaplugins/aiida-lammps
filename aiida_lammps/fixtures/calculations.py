@@ -236,6 +236,12 @@ def minimize_parameters_groups() -> AttributeDict:
 
 
 def minimize_groups_reference_data() -> AttributeDict:
+    """
+    Set of reference values for a minimization calculation using groups
+
+    :return: reference values for a minimization calculation
+    :rtype: AttributeDict
+    """
     reference_data = AttributeDict()
 
     _results = {
@@ -418,6 +424,12 @@ def md_parameters_nve() -> AttributeDict:
 
 
 def md_reference_data_nve():
+    """
+    Set of reference values for a md calculation using the nve integration
+
+    :return: reference values for a md calculation
+    :rtype: AttributeDict
+    """
     reference_data = AttributeDict()
 
     _results = {
@@ -758,7 +770,12 @@ def md_parameters_nvt() -> AttributeDict:
 
 
 def md_reference_data_nvt() -> AttributeDict:
+    """
+    Set of reference values for a md calculation using the nvt integration
 
+    :return: reference values for a md calculation
+    :rtype: AttributeDict
+    """
     reference_data = AttributeDict()
 
     _results = {
@@ -1101,6 +1118,12 @@ def md_parameters_npt() -> AttributeDict:
 
 
 def md_reference_data_npt() -> AttributeDict:
+    """
+    Set of reference values for a md calculation using the npt integration
+
+    :return: reference values for a md calculation
+    :rtype: AttributeDict
+    """
     reference_data = AttributeDict()
 
     _results = {

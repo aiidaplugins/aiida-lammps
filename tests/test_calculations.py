@@ -596,14 +596,11 @@ def test_lammps_base(
     reference_data,
 ):
     """
-    _summary_
+    Set of tests for the lammps.base calculation
 
-    _extended_summary_
-
-    :param db_test_app: _description_
-    :type db_test_app: _type_
-    :param generate_structure: _description_
-    :type generate_structure: _type_
+    :param db_test_app: set of function to setup test profiles
+    :param generate_structure: structure used for the tests
+    :type generate_structure: orm.StructureDate
     """
 
     calc_plugin = "lammps.base"
