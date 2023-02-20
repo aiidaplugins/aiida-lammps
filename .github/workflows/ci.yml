@@ -1,9 +1,6 @@
 name: CI
 
-on:
-  push:
-    branches: [master, develop, workchains]
-  pull_request:
+on: [push, pull_request]
 
 jobs:
   pre-commit:
@@ -15,12 +12,13 @@ jobs:
         uses: actions/setup-python@v4.5.0
         with:
           python-version: "3.8"
-      - name: Upgrade pip
-        run: pip install --upgrade pip
-      - name: Install AiiDA-LAMMPS
-        run: pip install pre-commit
-      - name: Run pre-commit
-        run: pre-commit run --all-files || ( git diff; git status; exit 1; )
+      - name: Make sure virtualevn>20 is installed, which will yield newer pip and posibility to pin pip version.
+        run: pip install virtualenv>20
+      - name: Install Tox
+        run: pip install tox
+      - name: Run pre-commit in Tox
+        run: tox -e pre-commit
+
 
   tests:
     timeout-minutes: 30
@@ -74,18 +72,14 @@ jobs:
       - name: install lammps
         run: conda install -y lammps==${{ matrix.lammps-version }}
 
-      - name: Upgrade pip
-        run: |
-          pip install --upgrade pip wheel
-          pip --version
-
-      - name: Installation
-        run: |
-          pip install -e .[testing,pre-commit]
+      - name: Make sure virtualevn>20 is installed, which will yield newer pip and posibility to pin pip version.
+        run: pip install virtualenv>20
+      - name: Install Tox
+        run: pip install tox
 
       - name: Run pytest
         run: |
-          pytest  --lammps-exec lmp_serial --cov=aiida_lammps --cov-report=xml --cov-report=term-missing
+          tox -e ${{ matrix.python-version }}-aiida_lammps -- tests/ --cov=./aiida_lammps --cov-append --cov-report=xml --cov-report=term-missing
 
       - name: Upload to Codecov
         if: matrix.python-version == 3.8
@@ -93,5 +87,4 @@ jobs:
         with:
           name: pytests-lammps
           flags: pytests
-          file: ./coverage.xml
           fail_ci_if_error: true
