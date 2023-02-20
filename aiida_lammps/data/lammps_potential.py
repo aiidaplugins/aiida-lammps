@@ -160,7 +160,7 @@ class LammpsPotentialData(orm.SinglefileData):
     def is_readable_byte_stream(stream) -> bool:
         """Return if object is a readable filelike object in binary mode or stream of bytes.
 
-        :param stream: the object to analyse.
+        :param stream: the object to analyze.
         :returns: True if ``stream`` appears to be a readable filelike object
             in binary mode, False otherwise.
         """
@@ -226,7 +226,7 @@ class LammpsPotentialData(orm.SinglefileData):
             raise TypeError("The pair_style of the potential must be provided.")
         if pair_style not in self.default_potential_info.keys():
             raise KeyError(f'The pair_style "{pair_style}" is not valid')
-        self.set_attribute("pair_style", pair_style)
+        self.base.attributes.set("pair_style", pair_style)
 
     def validate_species(self, species: list):
         """
@@ -243,7 +243,7 @@ class LammpsPotentialData(orm.SinglefileData):
             raise TypeError("The species for this potential must be provided.")
         for _specie in species:
             self.validate_element(_specie)
-        self.set_attribute("species", species)
+        self.base.attributes.set("species", species)
 
     def validate_atom_style(self, atom_style: str, pair_style: str):
         """
@@ -262,7 +262,7 @@ class LammpsPotentialData(orm.SinglefileData):
             atom_style = self.default_potential_info[pair_style]["atom_style"]
         if atom_style not in self.default_atom_style_info:
             raise ValueError(f'The atom_style "{atom_style}" is not valid')
-        self.set_attribute("atom_style", atom_style)
+        self.base.attributes.set("atom_style", atom_style)
 
     @classmethod
     def validate_element(cls, element: str):
@@ -300,7 +300,7 @@ class LammpsPotentialData(orm.SinglefileData):
             "nano",
         ]:
             raise ValueError(f'The units "{units}" is not valid')
-        self.set_attribute("default_units", units)
+        self.base.attributes.set("default_units", units)
 
     def validate_extra_tags(self, extra_tags: dict):
         """
@@ -343,7 +343,7 @@ class LammpsPotentialData(orm.SinglefileData):
     ):
         """Set the file content.
 
-        .. note:: this method will first analyse the type of the ``source``
+        .. note:: this method will first analyze the type of the ``source``
             and if it is a filepath will convert it to a binary stream of the
             content located at that filepath, which is then passed on to the
             superclass. This needs to be done first, because it will properly
@@ -403,7 +403,7 @@ class LammpsPotentialData(orm.SinglefileData):
         if extra_tags is not None:
             self.validate_extra_tags(extra_tags=extra_tags)
         for key in self._extra_keys:
-            self.set_attribute(key, extra_tags.get(key, None))
+            self.base.attributes.set(key, extra_tags.get(key, None))
 
         super().set_file(source, filename, **kwargs)
         source.seek(0)
@@ -428,7 +428,7 @@ class LammpsPotentialData(orm.SinglefileData):
         :return: the default `atomic_style` of this potential
         :rtype: str
         """
-        return self.get_attribute("atom_style")
+        return self.base.attributes.get("atom_style")
 
     @property
     def pair_style(self) -> str:
@@ -437,7 +437,7 @@ class LammpsPotentialData(orm.SinglefileData):
         :return: the `pair_style` of the potential
         :rtype: str
         """
-        return self.get_attribute("pair_style")
+        return self.base.attributes.get("pair_style")
 
     @property
     def species(self) -> list:
@@ -445,7 +445,7 @@ class LammpsPotentialData(orm.SinglefileData):
         :return: The list of chemical species which are contained in this potential.
         :rtype: list
         """
-        return self.get_attribute("species")
+        return self.base.attributes.get("species")
 
     @property
     def default_units(self) -> str:
@@ -454,7 +454,7 @@ class LammpsPotentialData(orm.SinglefileData):
         :return: the default units associated with this potential
         :rtype: str
         """
-        return self.get_attribute("default_units")
+        return self.base.attributes.get("default_units")
 
     @property
     def content_origin(self) -> str:
@@ -471,7 +471,7 @@ class LammpsPotentialData(orm.SinglefileData):
         :return: the place where this potential information can be found.
         :rtype: str
         """
-        return self.get_attribute("content_origin")
+        return self.base.attributes.get("content_origin")
 
     @property
     def content_other_locations(self) -> typing.Union[str, list]:
@@ -484,7 +484,7 @@ class LammpsPotentialData(orm.SinglefileData):
         :return: other locations where the potential can be found.
         :rtype: typing.Union[str, list]
         """
-        return self.get_attribute("content_other_locations")
+        return self.base.attributes.get("content_other_locations")
 
     @property
     def data_method(self) -> str:
@@ -498,7 +498,7 @@ class LammpsPotentialData(orm.SinglefileData):
         :return: data_method used to generate the potential
         :rtype: str
         """
-        return self.get_attribute("data_method")
+        return self.base.attributes.get("data_method")
 
     @property
     def description(self) -> str:
@@ -513,7 +513,7 @@ class LammpsPotentialData(orm.SinglefileData):
         :return: description of the potential
         :rtype: str
         """
-        return self.get_attribute("description")
+        return self.base.attributes.get("description")
 
     @property
     def developer(self) -> typing.Union[str, list]:
@@ -529,7 +529,7 @@ class LammpsPotentialData(orm.SinglefileData):
         :return: developer information of this potential
         :rtype: typing.Union[str, list]
         """
-        return self.get_attribute("developer")
+        return self.base.attributes.get("developer")
 
     @property
     def disclaimer(self) -> str:
@@ -543,7 +543,7 @@ class LammpsPotentialData(orm.SinglefileData):
         :return: disclaimer regarding the usage of this potential
         :rtype: str
         """
-        return self.get_attribute("disclaimer")
+        return self.base.attributes.get("disclaimer")
 
     @property
     def properties(self) -> typing.Union[str, list]:
@@ -555,7 +555,7 @@ class LammpsPotentialData(orm.SinglefileData):
         :return: properties fow which this potential was devised.
         :rtype: typing.Union[str, list]
         """
-        return self.get_attribute("properties")
+        return self.base.attributes.get("properties")
 
     @property
     def publication_year(self) -> typing.Union[str, datetime.datetime, int]:
@@ -567,7 +567,7 @@ class LammpsPotentialData(orm.SinglefileData):
         :return: year of publication of this potential
         :rtype: typing.Union[str, datetime.datetime, int]
         """
-        return self.get_attribute("publication_year")
+        return self.base.attributes.get("publication_year")
 
     @property
     def source_citations(self) -> typing.Union[str, list]:
@@ -580,7 +580,7 @@ class LammpsPotentialData(orm.SinglefileData):
         :return: the citation where the potential was originally published.
         :rtype: typing.Union[str, list]
         """
-        return self.get_attribute("source_citations")
+        return self.base.attributes.get("source_citations")
 
     @property
     def title(self) -> str:
@@ -594,19 +594,19 @@ class LammpsPotentialData(orm.SinglefileData):
         :return: the title of the potential
         :rtype: str
         """
-        return self.get_attribute("title")
+        return self.base.attributes.get("title")
 
     @property
     def md5(self) -> typing.Optional[int]:
         """Return the md5.
         :return: the md5 of the stored file.
         """
-        return self.get_attribute(self._key_md5, None)
+        return self.base.attributes.get(self._key_md5, None)
 
     @property
     def generation_method(self) -> str:
         """
-        Return the geneation method of the potential.
+        Return the generation method of the potential.
 
         In here one can describe how the potential itself was generated, if it
         was done via ML, fitting via specific codes, analytical fitting, etc.
@@ -614,7 +614,7 @@ class LammpsPotentialData(orm.SinglefileData):
         :return: the generation method of the potential
         :rtype: str
         """
-        return self.get_attribute("generation_method")
+        return self.base.attributes.get("generation_method")
 
     @md5.setter
     def md5(self, value: str):
@@ -623,4 +623,4 @@ class LammpsPotentialData(orm.SinglefileData):
         :raises ValueError: if the md5 does not match that of the currently stored file.
         """
         self.validate_md5(value)
-        self.set_attribute(self._key_md5, value)
+        self.base.attributes.set(self._key_md5, value)

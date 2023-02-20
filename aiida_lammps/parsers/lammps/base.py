@@ -50,7 +50,7 @@ class LAMMPSBaseParser(Parser):
             list_of_temp_files = os.listdir(temporary_folder)
 
         # check what is inside the folder
-        list_of_files = out_folder.list_object_names()
+        list_of_files = out_folder.base.repository.list_object_names()
 
         # check log file
         if self.node.get_option("output_filename") not in list_of_files:
@@ -108,7 +108,7 @@ class LAMMPSBaseParser(Parser):
     def parse_log_file(self, compute_stress=False):
         """Parse the log file."""
         output_filename = self.node.get_option("output_filename")
-        output_txt = self.retrieved.get_object_content(output_filename)
+        output_txt = self.retrieved.base.repository.get_object_content(output_filename)
         try:
             output_data = read_log_file(
                 output_txt,
@@ -123,12 +123,14 @@ class LAMMPSBaseParser(Parser):
         """Add warning and errors to the output data."""
         # add the dictionary with warnings and errors
         warnings = (
-            self.retrieved.get_object_content(self.node.get_option("scheduler_stderr"))
+            self.retrieved.base.repository.get_object_content(
+                self.node.get_option("scheduler_stderr")
+            )
             .strip()
             .splitlines()
         )
         # for some reason, errors may be in the stdout, but not the log.lammps
-        stdout = self.retrieved.get_object_content(
+        stdout = self.retrieved.base.repository.get_object_content(
             self.node.get_option("scheduler_stdout")
         )
         errors = [line for line in stdout.splitlines() if line.startswith("ERROR")]

@@ -6,7 +6,6 @@ which can then be easily accessed by the user.
 """
 # pylint: disable=too-many-ancestors
 import io
-import pathlib
 import tempfile
 from zipfile import ZIP_DEFLATED, ZipFile
 
@@ -56,7 +55,7 @@ class LammpsTrajectory(orm.Data):
         """Validate that a trajectory has been set, before storing."""
 
         super()._validate()
-        if self.get_attribute("number_steps", None) is None:
+        if self.base.attributes.get("number_steps", None) is None:
             raise ValidationError("trajectory has not yet been set")
 
     def set_from_fileobj(self, fileobj, aliases=None):
@@ -78,7 +77,7 @@ class LammpsTrajectory(orm.Data):
         field_names = None
         number_atoms = None
 
-        self.reset_attributes({})
+        self.base.attributes.reset({})
 
         if not (aliases is None or isinstance(aliases, dict)):
             raise ValueError("aliases must be None or dict")
@@ -124,38 +123,25 @@ class LammpsTrajectory(orm.Data):
             temp_handle.flush()
             temp_handle.seek(0)
 
-            if isinstance(temp_handle, (str, pathlib.Path)):
-                is_filelike = False
-            else:
-                is_filelike = True
+            self.base.repository.put_object_from_filelike(
+                temp_handle,
+                self._trajectory_filename,
+            )
 
-            if is_filelike:
-                self.put_object_from_filelike(
-                    temp_handle,
-                    self._trajectory_filename,
-                    mode="wb",
-                    encoding=None,
-                )
-            else:
-                self.put_object_from_filelike(
-                    temp_handle,
-                    self._trajectory_filename,
-                )
-
-        self.put_object_from_filelike(
+        self.base.repository.put_object_from_filelike(
             io.StringIO(" ".join([str(entry) for entry in time_steps])),
             self._timestep_filename,
         )
 
-        self.set_attribute("number_steps", len(time_steps))
-        self.set_attribute("number_atoms", number_atoms)
-        self.set_attribute("field_names", list(sorted(field_names)))
-        self.set_attribute("trajectory_filename", self._trajectory_filename)
-        self.set_attribute("timestep_filename", self._timestep_filename)
-        self.set_attribute("zip_prefix", self._zip_prefix)
-        self.set_attribute("compression_method", self._compression_method)
-        self.set_attribute("aliases", aliases)
-        self.set_attribute("elements", list(sorted(elements)))
+        self.base.attributes.set("number_steps", len(time_steps))
+        self.base.attributes.set("number_atoms", number_atoms)
+        self.base.attributes.set("field_names", list(sorted(field_names)))
+        self.base.attributes.set("trajectory_filename", self._trajectory_filename)
+        self.base.attributes.set("timestep_filename", self._timestep_filename)
+        self.base.attributes.set("zip_prefix", self._zip_prefix)
+        self.base.attributes.set("compression_method", self._compression_method)
+        self.base.attributes.set("aliases", aliases)
+        self.base.attributes.set("elements", list(sorted(elements)))
 
     @property
     def number_steps(self):
@@ -164,7 +150,7 @@ class LammpsTrajectory(orm.Data):
         :return: number of steps stored in the data
         :rtype: int
         """
-        return self.get_attribute("number_steps")
+        return self.base.attributes.get("number_steps")
 
     @property
     def time_steps(self):
@@ -173,7 +159,9 @@ class LammpsTrajectory(orm.Data):
         :return: time steps stored in the data.
         :rtype: list
         """
-        with self.open(self.get_attribute("timestep_filename"), "r") as handle:
+        with self.base.repository.open(
+            self.base.attributes.get("timestep_filename"), "r"
+        ) as handle:
             output = [int(i) for i in handle.readline().split()]
         return output
 
@@ -184,7 +172,7 @@ class LammpsTrajectory(orm.Data):
         :return: number of atoms in the simulation box
         :rtype: int
         """
-        return self.get_attribute("number_atoms")
+        return self.base.attributes.get("number_atoms")
 
     @property
     def field_names(self):
@@ -193,7 +181,7 @@ class LammpsTrajectory(orm.Data):
         :return: list of field names as written to file.
         :rtype: list
         """
-        return self.get_attribute("field_names")
+        return self.base.attributes.get("field_names")
 
     @property
     def aliases(self):
@@ -202,20 +190,20 @@ class LammpsTrajectory(orm.Data):
         :return: mapping of one or more lammps variables.
         :rtype: list
         """
-        return self.get_attribute("aliases")
+        return self.base.attributes.get("aliases")
 
     def get_step_string(self, step_idx):
         """Return the content string, for a specific trajectory step."""
         step_idx = list(range(self.number_steps))[step_idx]
-        zip_name = f'{self.get_attribute("zip_prefix")}{step_idx}'
-        with self.open(
-            self.get_attribute("trajectory_filename"),
+        zip_name = f'{self.base.attributes.get("zip_prefix")}{step_idx}'
+        with self.base.repository.open(
+            self.base.attributes.get("trajectory_filename"),
             mode="rb",
         ) as handle:
             with ZipFile(
                 handle,
                 "r",
-                self.get_attribute("compression_method"),
+                self.base.attributes.get("compression_method"),
             ) as zip_file:
                 with zip_file.open(zip_name, "r") as step_file:
                     content = step_file.read()
@@ -233,17 +221,17 @@ class LammpsTrajectory(orm.Data):
         elif isinstance(steps, int):
             steps = range(0, self.number_steps, steps)
 
-        with self.open(
-            self.get_attribute("trajectory_filename"),
+        with self.base.repository.open(
+            self.base.attributes.get("trajectory_filename"),
             mode="rb",
         ) as handle:
             with ZipFile(
                 handle,
                 "r",
-                self.get_attribute("compression_method"),
+                self.base.attributes.get("compression_method"),
             ) as zip_file:
                 for step_idx in steps:
-                    zip_name = f'{self.get_attribute("zip_prefix")}{step_idx}'
+                    zip_name = f'{self.base.attributes.get("zip_prefix")}{step_idx}'
                     with zip_file.open(zip_name) as step_file:
                         content = step_file.read()
                         yield content

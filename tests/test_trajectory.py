@@ -28,7 +28,9 @@ def test_create_structure(
         traj_block = next(iter_trajectories(handle))
 
     structure = create_structure(traj_block)
-    data_regression.check(recursive_round(structure.attributes, 2, apply_lists=True))
+    data_regression.check(
+        recursive_round(structure.base.attributes.all, 2, apply_lists=True)
+    )
 
 
 def test_lammps_trajectory_data(
@@ -37,7 +39,7 @@ def test_lammps_trajectory_data(
     """Test that one can generate a trajectory from a file"""
     path = os.path.join(TEST_DIR, "input_files", "trajectory.lammpstrj")
     data = LammpsTrajectory(path)
-    data_regression.check(data.attributes)
+    data_regression.check(data.base.attributes.all)
 
 
 def test_lammpstraj_get_step_string(
@@ -56,7 +58,9 @@ def test_lammpstraj_get_step_struct(
     path = os.path.join(TEST_DIR, "input_files", "trajectory.lammpstrj")
     data = LammpsTrajectory(path)
     data_regression.check(
-        recursive_round(data.get_step_structure(-1).attributes, 2, apply_lists=True)
+        recursive_round(
+            data.get_step_structure(-1).base.attributes.all, 2, apply_lists=True
+        )
     )
 
 

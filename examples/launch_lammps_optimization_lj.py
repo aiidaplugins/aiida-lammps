@@ -1,6 +1,6 @@
+from aiida import orm
 from aiida.common.extendeddicts import AttributeDict
 from aiida.engine import run_get_node
-from aiida.orm import Code, Dict, StructureData
 from aiida.plugins import CalculationFactory
 import numpy as np
 
@@ -27,7 +27,7 @@ if __name__ == "__main__":
     symbols = ["Ar"] * 2
     scaled_positions = [(0.33333, 0.66666, 0.25000), (0.66667, 0.33333, 0.75000)]
 
-    structure = StructureData(cell=cell)
+    structure = orm.StructureData(cell=cell)
     positions = np.dot(scaled_positions, cell)
 
     for i, scaled_position in enumerate(scaled_positions):
@@ -84,7 +84,7 @@ if __name__ == "__main__":
     inputs.metadata.options = options
 
     # Setup code
-    inputs.code = Code.get_from_string(codename)
+    inputs.code = orm.Code.get_from_string(codename)
 
     # setup nodes
     inputs.structure = structure
@@ -92,7 +92,7 @@ if __name__ == "__main__":
         type=potential["pair_style"], data=potential["data"]
     )
 
-    inputs.parameters = Dict(dict=parameters_opt)
+    inputs.parameters = orm.Dict(dict=parameters_opt)
 
     # run calculation
     result, node = run_get_node(LammpsOptimizeCalculation, **inputs)

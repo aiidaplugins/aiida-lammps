@@ -74,7 +74,7 @@ class ForceParser(LAMMPSBaseParser):
         :return: array with the forces and charges (if present) for the calculation
         :rtype: orm.ArrayData
         """
-        with self.retrieved.open(trajectory_filename, "r") as handle:
+        with self.retrieved.base.repository.open(trajectory_filename, "r") as handle:
             traj_steps = list(iter_trajectories(handle))
         if not traj_steps:
             raise OSError("trajectory file empty")

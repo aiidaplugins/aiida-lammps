@@ -42,14 +42,16 @@ class LAMMPSBaseParser(Parser):
         except exceptions.NotExistent:
             return self.exit_codes.ERROR_NO_RETRIEVED_FOLDER
 
-        list_of_files = out_folder.list_object_names()
+        list_of_files = out_folder.base.repository.list_object_names()
 
         # check log file
         if self.node.get_option("logfile_filename") not in list_of_files:
             return self.exit_codes.ERROR_LOG_FILE_MISSING
         filename = self.node.get_option("logfile_filename")
         parsed_data = parse_logfile(
-            file_contents=self.node.outputs.retrieved.get_object_content(filename)
+            file_contents=self.node.outputs.retrieved.base.repository.get_object_content(
+                filename
+            )
         )
         if parsed_data is None:
             return self.exit_codes.ERROR_PARSING_LOGFILE
@@ -62,7 +64,9 @@ class LAMMPSBaseParser(Parser):
 
         filename = self.node.get_option("variables_filename")
         final_variables = parse_final_data(
-            file_contents=self.node.outputs.retrieved.get_object_content(filename)
+            file_contents=self.node.outputs.retrieved.base.repository.get_object_content(
+                filename
+            )
         )
         if final_variables is None:
             return self.exit_codes.ERROR_PARSING_FINAL_VARIABLES

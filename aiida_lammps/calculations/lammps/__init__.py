@@ -6,8 +6,6 @@ from aiida import orm
 from aiida.common import CalcInfo, CodeInfo
 from aiida.common.exceptions import ValidationError
 from aiida.engine import CalcJob
-from aiida.orm import Dict, StructureData
-from aiida.plugins import DataFactory
 import numpy as np
 
 from aiida_lammps.common.generate_structure import generate_lammps_structure
@@ -34,7 +32,7 @@ def get_supercell(
 
     supercell_array = np.dot(cell, np.diag(supercell_shape))
 
-    supercell = StructureData(cell=supercell_array)
+    supercell = orm.StructureData(cell=supercell_array)
     for k in range(positions.shape[0]):
         for entry in itertools.product(*[range(i) for i in supercell_shape[::-1]]):
             position = positions[k, :] + np.dot(np.array(entry[::-1]), cell)
@@ -118,7 +116,7 @@ class BaseLammpsCalculation(CalcJob):
         super().define(spec)
         spec.input(
             "structure",
-            valid_type=StructureData,
+            valid_type=orm.StructureData,
             help="the structure",
         )
         spec.input(
@@ -128,7 +126,7 @@ class BaseLammpsCalculation(CalcJob):
         )
         spec.input(
             "parameters",
-            valid_type=Dict,
+            valid_type=orm.Dict,
             help="the parameters",
             required=False,
         )
@@ -160,7 +158,7 @@ class BaseLammpsCalculation(CalcJob):
 
         spec.output(
             "results",
-            valid_type=DataFactory("dict"),
+            valid_type=orm.Dict,
             required=True,
             help="the data extracted from the main output file",
         )
@@ -331,7 +329,7 @@ class BaseLammpsCalculation(CalcJob):
         if "parameters" in self.inputs:
             parameters = self.inputs.parameters
         else:
-            parameters = Dict()
+            parameters = orm.Dict()
 
         # Setup input parameters
         input_txt = self.create_main_input_content(
