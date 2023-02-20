@@ -120,7 +120,7 @@ def parse_final_data(filename: str = None, file_contents: str = None) -> dict:
         except OSError:
             data = None
     if file_contents is not None:
-        data = yaml.load(file_contents)
+        data = yaml.load(file_contents, Loader=yaml.Loader)
     return data
 
 

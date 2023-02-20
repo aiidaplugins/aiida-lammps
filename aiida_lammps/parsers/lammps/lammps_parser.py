@@ -91,7 +91,7 @@ class LAMMPSBaseParser(Parser):
             return self.exit_codes.ERROR_TRAJECTORY_FILE_MISSING
         # Gather the lammps trajectory data
         filename = self.node.get_option("trajectory_filename")
-        with self.node.outputs.retrieved.open(filename) as handle:
+        with self.node.outputs.retrieved.base.repository.open(filename) as handle:
             lammps_trajectory = LammpsTrajectory(handle)
         self.out("trajectories", lammps_trajectory)
 
