@@ -5,7 +5,7 @@ build-backend = "flit_core.buildapi"
 [project]
 name = "aiida-lammps"
 dynamic = ["version", "description"]
-authors = [{name = "Chris Sewell", email = "chrisj_sewell@hotmail.com"}, {name = "Jonathon Chico"}]
+authors = [{name = "Chris Sewell", email = "chrisj_sewell@hotmail.com"}, {name = "Jonathon Chico", email = "jonathan.chico@sandvik.com"}]
 readme = "README.md"
 license = {file = "LICENSE"}
 classifiers = [
@@ -45,6 +45,13 @@ testing = [
     "pytest-timeout",
     "pytest-regressions"
 ]
+
+pre-commit = [
+    "aiida-core[pre-commit]~=2.2",
+    "tox>=3.23.0",
+    "virtualenv>20"
+]
+
 docs = [
     "myst-parser~=0.15.0",
     "sphinx-external-toc",
@@ -87,6 +94,11 @@ exclude = [
     "tests/",
 ]
 
+[tool.coverage.run]
+# Configuration of [coverage.py](https://coverage.readthedocs.io)
+# reporting which lines of your plugin are covered by tests
+source=["aiida_lammps"]
+
 [tool.isort]
 skip = ["venv"]
 # Force imports to be sorted by module, independent of import type
@@ -99,3 +111,56 @@ known_first_party = ["aiida_lammps"]
 
 # Settings for Black compatibility
 profile = "black"
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+envlist = pre-commit,{3.8,3.9,3.10}-aiida_lammps
+requires = virtualenv >= 20
+isolated_build = True
+
+[testenv]
+setenv = AIIDA_PATH={toxworkdir}/.aiida
+allowlist_externals =
+                    mkdir
+                    rm
+commands =
+	 mkdir -p {toxworkdir}/.aiida
+	 pytest --lammps-exec lmp_serial {posargs}
+	 rm -r {toxworkdir}/.aiida
+extras = testing
+
+[testenv:pre-commit]
+allowlist_externals = bash
+commands = bash -ec 'pre-commit run --all-files || ( git diff; git status; exit 1; )'
+extras =
+       pre-commit
+       tests
+
+[testenv:docs-{clean,update}]
+extras = docs
+allowlist_externals =
+    rm
+    echo
+commands =
+    clean: rm -rf docs/_build
+    clean: rm -rf docs/source/reference/apidoc
+    sphinx-build -n -W --keep-going -c docs/source docs/source docs/_build
+commands_post = echo "open docs/_build/index.html"
+
+[pytest]
+addopts = --ignore=setup.py
+timeout = 180
+filterwarnings =
+    ignore::DeprecationWarning:frozendict.*
+    ignore::DeprecationWarning:sqlalchemy_utils.*
+    ignore::DeprecationWarning:reentry.*
+markers =
+    lammps_call: calls the lammps executable
+
+[flake8]
+max-line-length = 140
+import-order-style = edited
+[pycodestyle]
+max-line-length = 140
+"""

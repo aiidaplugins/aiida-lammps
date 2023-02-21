@@ -6,52 +6,50 @@ on:
       - "v[0-9]+.[0-9]+.[0-9]+*"
 
 jobs:
-
   pre-commit:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: "3.8"
-    - name: Upgrade pip
-      run: pip install --upgrade pip
-    - name: Install AiiDA-LAMMPS
-      run: pip install pre-commit
-    - name: Run pre-commit
-      run: pre-commit run --all-files || ( git diff; git status; exit 1; )
+      - uses: actions/checkout@v3.3.0
+      - name: Set up Python
+        uses: actions/setup-python@v4.5.0
+        with:
+          python-version: "3.8"
+      - name: Make sure virtualevn>20 is installed, which will yield newer pip and posibility to pin pip version.
+        run: pip install virtualenv>20
+      - name: Install Tox
+        run: pip install tox
+      - name: Run pre-commit in Tox
+        run: tox -e pre-commit
 
   tests:
-
     timeout-minutes: 30
 
     strategy:
       fail-fast: false
       matrix:
         include:
-        - python-version: "3.8"
-          lammps-version: "2020.12.24"
-          backend: django
-        - python-version: "3.8"
-          lammps-version: "2020.12.24"
-          backend: sqlalchemy
-        - python-version: "3.9"
-          lammps-version: "2020.12.24"
-          backend: django
-        - python-version: "3.10"
-          lammps-version: "2021.09.29"
-          backend: django
+          - python-version: "3.8"
+            lammps-version: "2020.12.24"
+            backend: django
+          - python-version: "3.8"
+            lammps-version: "2020.12.24"
+            backend: sqlalchemy
+          - python-version: "3.9"
+            lammps-version: "2020.12.24"
+            backend: django
+          - python-version: "3.10"
+            lammps-version: "2021.09.29"
+            backend: django
 
     runs-on: ubuntu-latest
 
     services:
       postgres:
-        image: postgres:10
+        image: postgres:12
         env:
           POSTGRES_DB: test_${{ matrix.backend }}
-          POSTGRES_PASSWORD: ''
+          POSTGRES_PASSWORD: ""
           POSTGRES_HOST_AUTH_METHOD: trust
         options: >-
           --health-cmd pg_isready
@@ -66,39 +64,34 @@ jobs:
           - 5672:5672
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v3.3.0
 
-    - name: Setup conda
-      uses: s-weigand/setup-conda@v1
-      with:
-        # update-conda: true
-        python-version: ${{ matrix.python-version }}
-        conda-channels: conda-forge
+      - name: Setup conda
+        uses: s-weigand/setup-conda@v1.1.1
+        with:
+          # update-conda: true
+          python-version: ${{ matrix.python-version }}
+          conda-channels: conda-forge
 
-    - name: install lammps
-      run: conda install -y lammps==${{ matrix.lammps-version }}
+      - name: install lammps
+        run: conda install -y lammps==${{ matrix.lammps-version }}
 
-    - name: Upgrade pip
-      run: |
-        pip install --upgrade pip wheel
-        pip --version
+      - name: Make sure virtualevn>20 is installed, which will yield newer pip and posibility to pin pip version.
+        run: pip install virtualenv>20
+      - name: Install Tox
+        run: pip install tox
 
-    - name: Installation
-      run: |
-        pip install -e .[testing,pre-commit]
+      - name: Run pytest
+        run: |
+          tox -e ${{ matrix.python-version }}-aiida_lammps -- tests/ --cov=./aiida_lammps --cov-append --cov-report=xml --cov-report=term-missing
 
-    - name: Run pytest
-      run: |
-        pytest  --lammps-exec lmp_serial --cov=aiida_lammps --cov-report=xml --cov-report=term-missing
-
-    - name: Upload to Codecov
-      if: matrix.python-version == 3.8
-      uses: codecov/codecov-action@v1
-      with:
-        name: pytests-lammps
-        flags: pytests
-        file: ./coverage.xml
-        fail_ci_if_error: true
+      - name: Upload to Codecov
+        if: matrix.python-version == 3.8
+        uses: codecov/codecov-action@v3
+        with:
+          name: pytests-lammps
+          flags: pytests
+          fail_ci_if_error: true
 
   publish:
     name: Publish to PyPi
@@ -106,18 +99,18 @@ jobs:
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout source
-      uses: actions/checkout@v2
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.8'
-    - name: install flit
-      run: |
-        pip install flit~=3.4
-    - name: Build and publish
-      run: |
-        flit publish
-      env:
-        FLIT_USERNAME: __token__
-        FLIT_PASSWORD: ${{ secrets.PYPI_KEY }}
+      - name: Checkout source
+        uses: actions/checkout@v3.3.0
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v4.5.0
+        with:
+          python-version: "3.8"
+      - name: install flit
+        run: |
+          pip install flit~=3.4
+      - name: Build and publish
+        run: |
+          flit publish
+        env:
+          FLIT_USERNAME: __token__
+          FLIT_PASSWORD: ${{ secrets.PYPI_KEY }}
