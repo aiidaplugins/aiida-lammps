@@ -112,6 +112,7 @@ def setup(app):
         app.connect("builder-inited", run_apidoc)
 
 
+autodoc_mock_imports = ["pytest"]
 # We should ignore any python built-in exception, for instance
 # Warnings to ignore when using the -n (nitpicky) option
 nitpicky = True
