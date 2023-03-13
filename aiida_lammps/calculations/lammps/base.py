@@ -255,8 +255,6 @@ class BaseLammpsCalculation(CalcJob):
         codeinfo.code_uuid = self.inputs.code.uuid
         # Set the name of the stdout
         codeinfo.stdout_name = _output_filename
-        # Set whether or not one is running with MPI
-        codeinfo.withmpi = self.inputs.metadata.options.withmpi
 
         # Generate the datastructure for the calculation information
         calcinfo = datastructures.CalcInfo()
