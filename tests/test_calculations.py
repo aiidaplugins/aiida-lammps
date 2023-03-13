@@ -1,4 +1,7 @@
 """Test the aiida-lammps calculations."""
+import io
+import textwrap
+
 from aiida import orm
 from aiida.cmdline.utils.common import get_calcjob_report
 from aiida.common import AttributeDict
@@ -672,3 +675,37 @@ def test_lammps_base(
                 ), _msg
             else:
                 assert sub_value == _step_data[sub_key], _msg
+
+
+def test_lammps_base_script(generate_calc_job, aiida_local_code_factory):
+    """Test the ``BaseLammpsCalculation`` with the ``script`` input."""
+    from aiida_lammps.calculations.lammps.base import BaseLammpsCalculation
+
+    inputs = {
+        "code": aiida_local_code_factory("lammps.base", "bash"),
+        "metadata": {"options": {"resources": {"num_machines": 1}}},
+    }
+
+    with pytest.raises(
+        ValueError,
+        match=r"Unless `script` is specified the inputs .* have to be specified.",
+    ):
+        generate_calc_job("lammps.base", inputs)
+
+    content = textwrap.dedent(
+        """
+        "velocity      all create 1.44 87287 loop geom
+        "pair_style    lj/cut 2.5
+        "pair_coeff    1 1 1.0 1.0 2.5
+        "neighbor      0.3 bin
+        "neigh_modify  delay 0 every 20 check no
+        "fix           1 all nve
+        "run           10000
+        """
+    )
+    stream = io.StringIO(content)
+    script = DataFactory("core.singlefile")(stream)
+
+    inputs["script"] = script
+    tmp_path, calc_info = generate_calc_job("lammps.base", inputs)
+    assert (tmp_path / BaseLammpsCalculation._INPUT_FILENAME).read_text() == content
