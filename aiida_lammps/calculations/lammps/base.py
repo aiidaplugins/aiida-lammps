@@ -101,11 +101,8 @@ class BaseLammpsCalculation(CalcJob):
             valid_type=str,
             default=cls._DEFAULT_RESTART_FILENAME,
         )
-        spec.input(
-            "metadata.options.parser_name",
-            valid_type=str,
-            default=cls._DEFAULT_PARSER,
-        )
+        spec.inputs["metadata"]["options"]["parser_name"].default = cls._DEFAULT_PARSER
+
         spec.output(
             "results",
             valid_type=orm.Dict,
