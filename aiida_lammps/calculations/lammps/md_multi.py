@@ -16,11 +16,7 @@ class MdMultiCalculation(BaseLammpsCalculation):
     def define(cls, spec):
         super().define(spec)
 
-        spec.input(
-            "metadata.options.parser_name",
-            valid_type=str,
-            default="lammps.md.multi",
-        )
+        spec.inputs["metadata"]["options"]["parser_name"].default = "lammps.md.multi"
         spec.default_output_port = "results"
 
         spec.output_namespace(

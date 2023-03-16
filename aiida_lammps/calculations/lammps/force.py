@@ -14,11 +14,7 @@ class ForceCalculation(BaseLammpsCalculation):
     def define(cls, spec):
         super().define(spec)
 
-        spec.input(
-            "metadata.options.parser_name",
-            valid_type=str,
-            default="lammps.force",
-        )
+        spec.inputs["metadata"]["options"]["parser_name"].default = "lammps.force"
 
         spec.output(
             "arrays",

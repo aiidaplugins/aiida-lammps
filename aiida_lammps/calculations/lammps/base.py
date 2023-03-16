@@ -101,11 +101,8 @@ class BaseLammpsCalculation(CalcJob):
             valid_type=str,
             default=cls._DEFAULT_RESTART_FILENAME,
         )
-        spec.input(
-            "metadata.options.parser_name",
-            valid_type=str,
-            default=cls._DEFAULT_PARSER,
-        )
+        spec.inputs["metadata"]["options"]["parser_name"].default = cls._DEFAULT_PARSER
+
         spec.output(
             "results",
             valid_type=orm.Dict,
@@ -258,8 +255,6 @@ class BaseLammpsCalculation(CalcJob):
         codeinfo.code_uuid = self.inputs.code.uuid
         # Set the name of the stdout
         codeinfo.stdout_name = _output_filename
-        # Set whether or not one is running with MPI
-        codeinfo.withmpi = self.inputs.metadata.options.withmpi
 
         # Generate the datastructure for the calculation information
         calcinfo = datastructures.CalcInfo()
