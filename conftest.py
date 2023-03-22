@@ -1,10 +1,13 @@
 """
 initialise a test database and profile
 """
+from __future__ import annotations
+
 from collections import namedtuple
 import os
 import shutil
 import tempfile
+import typing as t
 
 from aiida import orm
 import numpy as np
@@ -78,6 +81,44 @@ def db_test_app(aiida_profile, pytestconfig):
 
     if not test_workdir:
         shutil.rmtree(work_directory)
+
+
+@pytest.fixture
+def generate_calc_job(tmp_path):
+    """Create a :class:`aiida.engine.CalcJob` instance with the given inputs.
+
+    The fixture will call ``prepare_for_submission`` and return a tuple of the temporary folder that was passed to it,
+    as well as the ``CalcInfo`` instance that it returned.
+    """
+
+    def factory(
+        entry_point_name: str,
+        inputs: dict[str, t.Any] | None = None,
+        return_process: bool = False,
+    ) -> tuple[pathlib.Path, CalcInfo] | CalcJob:
+        """Create a :class:`aiida.engine.CalcJob` instance with the given inputs.
+
+        :param entry_point_name: The entry point name of the calculation job plugin to run.
+        :param inputs: The dictionary of inputs for the calculation job.
+        :param return_process: Flag, if ``True``, return the constructed ``CalcJob`` instance instead of the tuple of
+            the temporary folder and ``CalcInfo`` instance.
+        """
+        from aiida.common.folders import Folder
+        from aiida.engine.utils import instantiate_process
+        from aiida.manage import get_manager
+        from aiida.plugins import CalculationFactory
+
+        runner = get_manager().get_runner()
+        process_class = CalculationFactory(entry_point_name)
+        process = instantiate_process(runner, process_class, **inputs or {})
+        calc_info = process.prepare_for_submission(Folder(tmp_path))
+
+        if return_process:
+            return process
+
+        return tmp_path, calc_info
+
+    return factory
 
 
 @pytest.fixture(scope="function")
