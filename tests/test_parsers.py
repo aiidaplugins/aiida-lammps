@@ -6,7 +6,7 @@ import os
 from textwrap import dedent
 
 from aiida.cmdline.utils.common import get_calcjob_report
-from aiida.orm import FolderData
+from aiida.orm import FolderData, SinglefileData
 from aiida.plugins import ParserFactory
 import pytest
 import yaml
@@ -48,6 +48,41 @@ def get_traj_force():
         S    25.5468278966   -20.6615772179     0.0000000000
         """
     )
+
+
+def test_lammps_base(db_test_app, data_regression):
+    """Check if the log file is produced during calculation."""
+    filename = os.path.join(
+        TEST_DIR,
+        "input_files",
+        "parsers",
+        "log.lammps",
+    )
+    retrieved = FolderData()
+    retrieved.base.repository.put_object_from_file(filename, "log.lammps")
+    retrieved.base.repository.put_object_from_filelike(
+        io.StringIO(""), "_scheduler-stdout.txt"
+    )
+    retrieved.base.repository.put_object_from_filelike(
+        io.StringIO(""), "_scheduler-stderr.txt"
+    )
+    inputs = {"script": SinglefileData(io.StringIO(""))}
+    calc_node = db_test_app.generate_calcjob_node(
+        "lammps.base", retrieved, inputs=inputs
+    )
+    parser = ParserFactory("lammps.base")
+    with db_test_app.sandbox_folder() as temp_path:
+        (
+            results,
+            calcfunction,
+        ) = parser.parse_from_node(  # pylint: disable=unused-variable
+            calc_node,
+            retrieved_temporary_folder=temp_path.abspath,
+        )
+
+    assert calcfunction.is_finished_ok
+    assert "results" in calcfunction.outputs
+    data_regression.check({"results": calcfunction.outputs.results.get_dict()})
 
 
 @pytest.mark.parametrize(
@@ -220,8 +255,6 @@ def test_run_error(db_test_app, plugin_name):
             calc_node,
             retrieved_temporary_folder=temp_path.abspath,
         )
-
-    print(get_calcjob_report(calc_node))
 
     assert calcfunction.is_finished, calcfunction.exception
     assert calcfunction.is_failed, calcfunction.exit_status

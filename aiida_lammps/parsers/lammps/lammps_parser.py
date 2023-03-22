@@ -4,6 +4,8 @@ Base parser for LAMMPS calculations.
 It takes care of parsing the log.lammps file, the trajectory file and the
 yaml file with the final value of the variables printed in the ``thermo_style``.
 """
+import time
+
 from aiida import orm
 from aiida.common import exceptions
 from aiida.parsers.parser import Parser
@@ -45,39 +47,55 @@ class LAMMPSBaseParser(Parser):
         list_of_files = out_folder.base.repository.list_object_names()
 
         # check log file
-        if self.node.get_option("logfile_filename") not in list_of_files:
+        logfile_filename = self.node.get_option("logfile_filename")
+        if logfile_filename not in list_of_files:
             return self.exit_codes.ERROR_LOG_FILE_MISSING
-        filename = self.node.get_option("logfile_filename")
         parsed_data = parse_logfile(
             file_contents=self.node.outputs.retrieved.base.repository.get_object_content(
-                filename
+                logfile_filename
             )
         )
         if parsed_data is None:
             return self.exit_codes.ERROR_PARSING_LOGFILE
+
         global_data = parsed_data["global"]
         arrays = parsed_data["time_dependent"]
+        results = {"compute_variables": global_data}
+
+        if "total_wall_time" in global_data:
+            try:
+                parsed_time = time.strptime(global_data["total_wall_time"], "%H:%M:%S")
+            except ValueError:
+                pass
+            else:
+                total_wall_time_seconds = (
+                    parsed_time.tm_hour * 3600
+                    + parsed_time.tm_min * 60
+                    + parsed_time.tm_sec
+                )
+                global_data["total_wall_time_seconds"] = total_wall_time_seconds
 
         # check final variable file
-        if self.node.get_option("variables_filename") not in list_of_files:
-            return self.exit_codes.ERROR_FINAL_VARIABLE_FILE_MISSING
-
-        filename = self.node.get_option("variables_filename")
-        final_variables = parse_final_data(
-            file_contents=self.node.outputs.retrieved.base.repository.get_object_content(
-                filename
+        final_variables = None
+        variables_filename = self.node.get_option("variables_filename")
+        if variables_filename not in list_of_files:
+            if "script" not in self.node.inputs:
+                return self.exit_codes.ERROR_FINAL_VARIABLE_FILE_MISSING
+        else:
+            final_variables = parse_final_data(
+                file_contents=self.node.outputs.retrieved.base.repository.get_object_content(
+                    variables_filename
+                )
             )
-        )
-        if final_variables is None:
-            return self.exit_codes.ERROR_PARSING_FINAL_VARIABLES
+            if final_variables is None:
+                return self.exit_codes.ERROR_PARSING_FINAL_VARIABLES
 
-        results = orm.Dict(dict={**final_variables, "compute_variables": global_data})
+            results.update(**final_variables)
 
         # Expose the results from the log.lammps outputs
-        self.out("results", results)
+        self.out("results", orm.Dict(results))
 
         # Get the time-dependent outputs exposed as an ArrayData
-
         time_dependent_computes = orm.ArrayData()
 
         for key, value in arrays.items():
@@ -87,15 +105,18 @@ class LAMMPSBaseParser(Parser):
         self.out("time_dependent_computes", time_dependent_computes)
 
         # check trajectory file
-        if self.node.get_option("trajectory_filename") not in list_of_files:
-            return self.exit_codes.ERROR_TRAJECTORY_FILE_MISSING
-        # Gather the lammps trajectory data
-        filename = self.node.get_option("trajectory_filename")
-        with self.node.outputs.retrieved.base.repository.open(filename) as handle:
-            lammps_trajectory = LammpsTrajectory(handle)
-        self.out("trajectories", lammps_trajectory)
+        trajectory_filename = self.node.get_option("trajectory_filename")
+        if trajectory_filename not in list_of_files:
+            if "script" not in self.node.inputs:
+                return self.exit_codes.ERROR_TRAJECTORY_FILE_MISSING
+        else:
+            with self.node.outputs.retrieved.base.repository.open(
+                trajectory_filename
+            ) as handle:
+                lammps_trajectory = LammpsTrajectory(handle)
 
-        self.out("structure", lammps_trajectory.get_step_structure(-1))
+            self.out("trajectories", lammps_trajectory)
+            self.out("structure", lammps_trajectory.get_step_structure(-1))
 
         # check stdout
         if self.node.get_option("scheduler_stdout") not in list_of_files:
