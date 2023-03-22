@@ -279,7 +279,6 @@ class BaseLammpsCalculation(CalcJob):
 
         # Generate the datastructure for the calculation information
         calcinfo = datastructures.CalcInfo()
-        calcinfo.uuid = str(self.uuid)
         # Set the files that must be retrieved
         calcinfo.retrieve_list = []
         calcinfo.retrieve_list.append(_output_filename)
