@@ -13,8 +13,23 @@
             "md",
             "fix",
             "thermo",
-            "dump"
+            "dump",
+            "restart"
         ]
+    },
+    "restart": {
+        "type": "object",
+        "properties": {
+            "print_final": {
+                "type": "boolean"
+            },
+            "print_intermediate": {
+                "type": "boolean"
+            },
+            "num_steps": {
+                "type": "integer"
+            }
+        }
     },
     "control": {
         "type": "object",
@@ -37,7 +52,10 @@
             "newton": {
                 "type": "string",
                 "propertyNames": {
-                    "enum": ["on", "off"]
+                    "enum": [
+                        "on",
+                        "off"
+                    ]
                 }
             },
             "processors": {
@@ -99,7 +117,10 @@
             "box_tilt": {
                 "type": "string",
                 "propertyNames": {
-                    "enum": ["small", "large"]
+                    "enum": [
+                        "small",
+                        "large"
+                    ]
                 }
             }
         }
@@ -110,11 +131,17 @@
         },
         "md": {
             "type": "object",
-            "required": ["integration"],
+            "required": [
+                "integration"
+            ],
             "properties": {
                 "run_style": {
                     "type": "string",
-                    "enum": ["verlet", "verlet/split", "respa"]
+                    "enum": [
+                        "verlet",
+                        "verlet/split",
+                        "respa"
+                    ]
                 },
                 "rspa_options": {
                     "type": "array"
@@ -131,13 +158,15 @@
                                 "type": "object",
                                 "properties": {
                                     "temp": {
-                                        "type":"number"
+                                        "type": "number"
                                     },
                                     "seed": {
                                         "type": "integer"
                                     }
                                 },
-                                "required": ["temp"]
+                                "required": [
+                                    "temp"
+                                ]
                             },
                             "set": {
                                 "type": "object",
@@ -161,7 +190,11 @@
                                 "properties": {
                                     "vdim": {
                                         "type": "string",
-                                        "enum": ["vx", "vy", "vz"]
+                                        "enum": [
+                                            "vx",
+                                            "vy",
+                                            "vz"
+                                        ]
                                     },
                                     "vlo": {
                                         "type": "number"
@@ -171,7 +204,11 @@
                                     },
                                     "dim": {
                                         "type": "string",
-                                        "enum": ["x", "y", "z"]
+                                        "enum": [
+                                            "x",
+                                            "y",
+                                            "z"
+                                        ]
                                     },
                                     "clo": {
                                         "type": "number"
@@ -183,17 +220,67 @@
                             },
                             "zero": {
                                 "type": "string",
-                                "enum": ["linear", "angular"]
+                                "enum": [
+                                    "linear",
+                                    "angular"
+                                ]
                             },
-                            "dist": {"type": "string", "enum": ["uniform", "gaussian"]},
-                            "sum": {"type": "string", "enum": ["yes", "no"]},
-                            "mom": {"type": "string", "enum": ["yes", "no"]},
-                            "rot": {"type": "string", "enum": ["yes", "no"]},
-                            "temp": {"type": "string"},
-                            "bias": {"type": "string", "enum": ["yes", "no"]},
-                            "loop": {"type": "string", "enum": ["all", "local", "geom"]},
-                            "rigid": {"type": "string"},
-                            "units": {"type": "string", "enum": ["box", "lattice"]},
+                            "dist": {
+                                "type": "string",
+                                "enum": [
+                                    "uniform",
+                                    "gaussian"
+                                ]
+                            },
+                            "sum": {
+                                "type": "string",
+                                "enum": [
+                                    "yes",
+                                    "no"
+                                ]
+                            },
+                            "mom": {
+                                "type": "string",
+                                "enum": [
+                                    "yes",
+                                    "no"
+                                ]
+                            },
+                            "rot": {
+                                "type": "string",
+                                "enum": [
+                                    "yes",
+                                    "no"
+                                ]
+                            },
+                            "temp": {
+                                "type": "string"
+                            },
+                            "bias": {
+                                "type": "string",
+                                "enum": [
+                                    "yes",
+                                    "no"
+                                ]
+                            },
+                            "loop": {
+                                "type": "string",
+                                "enum": [
+                                    "all",
+                                    "local",
+                                    "geom"
+                                ]
+                            },
+                            "rigid": {
+                                "type": "string"
+                            },
+                            "units": {
+                                "type": "string",
+                                "enum": [
+                                    "box",
+                                    "lattice"
+                                ]
+                            },
                             "group": {
                                 "type": "string"
                             }
@@ -205,7 +292,10 @@
                                 ],
                                 "not": {
                                     "required": [
-                                        "set", "scale", "ramp", "zero"
+                                        "set",
+                                        "scale",
+                                        "ramp",
+                                        "zero"
                                     ]
                                 }
                             },
@@ -215,7 +305,10 @@
                                 ],
                                 "not": {
                                     "required": [
-                                        "create", "scale", "ramp", "zero"
+                                        "create",
+                                        "scale",
+                                        "ramp",
+                                        "zero"
                                     ]
                                 }
                             },
@@ -225,7 +318,10 @@
                                 ],
                                 "not": {
                                     "required": [
-                                        "create", "set", "ramp", "zero"
+                                        "create",
+                                        "set",
+                                        "ramp",
+                                        "zero"
                                     ]
                                 }
                             },
@@ -235,7 +331,10 @@
                                 ],
                                 "not": {
                                     "required": [
-                                        "create", "scale", "set", "zero"
+                                        "create",
+                                        "scale",
+                                        "set",
+                                        "zero"
                                     ]
                                 }
                             },
@@ -245,7 +344,10 @@
                                 ],
                                 "not": {
                                     "required": [
-                                        "create", "scale", "ramp", "set"
+                                        "create",
+                                        "scale",
+                                        "ramp",
+                                        "set"
                                     ]
                                 }
                             }
@@ -302,38 +404,44 @@
                             "type": "object",
                             "properties": {
                                 "temp": {
-                                    "$ref" : "#/definitions/int_constraint"
+                                    "$ref": "#/definitions/int_constraint"
                                 },
                                 "iso": {
-                                    "$ref" : "#/definitions/int_constraint"
+                                    "$ref": "#/definitions/int_constraint"
                                 },
                                 "tri": {
-                                    "$ref" : "#/definitions/int_constraint"
+                                    "$ref": "#/definitions/int_constraint"
                                 },
                                 "aniso": {
-                                    "$ref" : "#/definitions/int_constraint"
+                                    "$ref": "#/definitions/int_constraint"
                                 },
                                 "x": {
-                                    "$ref" : "#/definitions/int_constraint"
+                                    "$ref": "#/definitions/int_constraint"
                                 },
                                 "y": {
-                                    "$ref" : "#/definitions/int_constraint"
+                                    "$ref": "#/definitions/int_constraint"
                                 },
                                 "z": {
-                                    "$ref" : "#/definitions/int_constraint"
+                                    "$ref": "#/definitions/int_constraint"
                                 },
                                 "xy": {
-                                    "$ref" : "#/definitions/int_constraint"
+                                    "$ref": "#/definitions/int_constraint"
                                 },
                                 "xz": {
-                                    "$ref" : "#/definitions/int_constraint"
+                                    "$ref": "#/definitions/int_constraint"
                                 },
                                 "yz": {
-                                    "$ref" : "#/definitions/int_constraint"
+                                    "$ref": "#/definitions/int_constraint"
                                 },
                                 "couple": {
                                     "type": "string",
-                                    "enum": ["none", "xyz", "xy", "yz", "xz"]
+                                    "enum": [
+                                        "none",
+                                        "xyz",
+                                        "xy",
+                                        "yz",
+                                        "xz"
+                                    ]
                                 },
                                 "tchain": {
                                     "type": "integer"
@@ -343,7 +451,10 @@
                                 },
                                 "mtk": {
                                     "type": "string",
-                                    "enum": ["yes", "no"]
+                                    "enum": [
+                                        "yes",
+                                        "no"
+                                    ]
                                 },
                                 "tloop": {
                                     "type": "integer"
@@ -365,31 +476,57 @@
                                 },
                                 "scalexy": {
                                     "type": "string",
-                                    "enum": ["yes", "no"]
+                                    "enum": [
+                                        "yes",
+                                        "no"
+                                    ]
                                 },
                                 "scalexz": {
                                     "type": "string",
-                                    "enum": ["yes", "no"]
+                                    "enum": [
+                                        "yes",
+                                        "no"
+                                    ]
                                 },
                                 "scaleyz": {
                                     "type": "string",
-                                    "enum": ["yes", "no"]
+                                    "enum": [
+                                        "yes",
+                                        "no"
+                                    ]
                                 },
                                 "flip": {
                                     "type": "string",
-                                    "enum": ["yes", "no"]
+                                    "enum": [
+                                        "yes",
+                                        "no"
+                                    ]
                                 },
                                 "fixedpoint": {
                                     "type": "string",
-                                    "enum": ["x", "y", "z"]
+                                    "enum": [
+                                        "x",
+                                        "y",
+                                        "z"
+                                    ]
                                 },
                                 "update": {
                                     "type": "string",
-                                    "enum": ["dipole", "dipole/dlm"]
+                                    "enum": [
+                                        "dipole",
+                                        "dipole/dlm"
+                                    ]
                                 },
                                 "ext": {
                                     "type": "string",
-                                    "enum": ["x", "y", "z", "xy", "yz", "xz"]
+                                    "enum": [
+                                        "x",
+                                        "y",
+                                        "z",
+                                        "xy",
+                                        "yz",
+                                        "xz"
+                                    ]
                                 },
                                 "erate": {
                                     "type": "array",
@@ -397,7 +534,7 @@
                                     "maxItems": 2,
                                     "items": [
                                         {
-                                            "description" : "strain rates in the x direction",
+                                            "description": "strain rates in the x direction",
                                             "type": "number"
                                         },
                                         {
@@ -418,7 +555,9 @@
                             }
                         }
                     },
-                    "required": ["style"]
+                    "required": [
+                        "style"
+                    ]
                 }
             }
         },
@@ -453,12 +592,12 @@
         "thermo": {
             "type": "object",
             "properties": {
-                "printing_rate":{
+                "printing_rate": {
                     "type": "integer"
                 },
-                "thermo_printing":{
-                    "propertyNames":{
-                        "enum":[
+                "thermo_printing": {
+                    "propertyNames": {
+                        "enum": [
                             "step",
                             "elapsed",
                             "elaplong",

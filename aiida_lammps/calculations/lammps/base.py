@@ -73,6 +73,12 @@ class BaseLammpsCalculation(CalcJob):
             help="Input restartfile to continue from a previous ``LAMMPS`` calculation",
         )
         spec.input(
+            "parent_folder",
+            valid_type=orm.RemoteData,
+            required=False,
+            help="An optional working directory of a previously completed calculation to restart from.",
+        )
+        spec.input(
             "metadata.options.input_filename",
             valid_type=str,
             default=cls._INPUT_FILENAME,
@@ -131,7 +137,7 @@ class BaseLammpsCalculation(CalcJob):
         spec.output(
             "restartfile",
             valid_type=orm.SinglefileData,
-            required=True,
+            required=False,
             help="The restartfile of a ``LAMMPS`` calculation",
         )
         spec.output(
@@ -173,6 +179,16 @@ class BaseLammpsCalculation(CalcJob):
             355,
             "ERROR_STDERR_FILE_MISSING",
             message="the stderr output file was not found",
+        )
+        spec.exit_code(
+            356,
+            "ERROR_RESTART_FILE_MISSING",
+            message="the file with the restart information was not found",
+        )
+        spec.exit_code(
+            357,
+            "ERROR_CALCULATION_DID_NOT_FINISH",
+            message="The calculation did not finish properly but an intermediate restartfile was found",
         )
         spec.exit_code(
             1001,
@@ -280,13 +296,24 @@ class BaseLammpsCalculation(CalcJob):
         # Generate the datastructure for the calculation information
         calcinfo = datastructures.CalcInfo()
         calcinfo.uuid = str(self.uuid)
+
+        # Define the list of temporary files that will be retrieved
+        calcinfo.retrieve_temporary_list = []
         # Set the files that must be retrieved
         calcinfo.retrieve_list = []
         calcinfo.retrieve_list.append(_output_filename)
         calcinfo.retrieve_list.append(_logfile_filename)
-        calcinfo.retrieve_list.append(_restart_filename)
         calcinfo.retrieve_list.append(_variables_filename)
         calcinfo.retrieve_list.append(_trajectory_filename)
+        # Add the restart file to the list of files to be retrieved if we want to store it in the database
+        if "restart" in _parameters:
+            if _parameters.get("restart", {}).get("print_final", False):
+                calcinfo.retrieve_list.append(_restart_filename)
+            if _parameters.get("restart", {}).get("print_intermediate", False):
+                calcinfo.retrieve_temporary_list.append(
+                    (f"{_restart_filename}*", ".", None)
+                )
+
         # Set the information of the code into the calculation datastructure
         calcinfo.codes_info = [codeinfo]
 

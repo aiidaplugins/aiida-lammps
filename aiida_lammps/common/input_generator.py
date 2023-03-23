@@ -78,6 +78,9 @@ def generate_input_file(
     # Validate the inputs
     validate_input_parameters(parameters)
 
+    # Set the maximum number of steps
+    max_number_steps = 0
+
     # Generate the control input block
     control_block = write_control_block(
         parameters_control=parameters.get("control", {})
@@ -93,9 +96,11 @@ def generate_input_file(
         run_block = write_minimize_block(
             parameters_minimize=parameters.get("minimize", {})
         )
+        max_number_steps = parameters.get("minimize", {}).get("max_iterations", 1000)
     # Generate the md input block
     if "md" in parameters:
         run_block = write_md_block(parameters_md=parameters.get("md", {}))
+        max_number_steps = parameters.get("md", {}).get("max_number_steps", 100)
     # Generate the structure input block
     structure_block, group_lists = write_structure_block(
         parameters_structure=parameters.get("structure", {}),
@@ -138,7 +143,14 @@ def generate_input_file(
         kind_symbols=[kind.symbol for kind in structure.kinds],
     )
     # Generate the restart input block
-    restart_block = write_restart_block(restart_filename=restart_filename)
+    if "restart" in parameters:
+        restart_block = write_restart_block(
+            parameters_restart=parameters.get("restart", {}),
+            restart_filename=restart_filename,
+            max_number_steps=max_number_steps,
+        )
+    else:
+        restart_block = {"final": "", "intermediate": ""}
     # Generate the final variables input block
     final_block = write_final_variables_block(
         fixed_thermo=fixed_thermo,
@@ -153,9 +165,10 @@ def generate_input_file(
         + compute_block
         + thermo_block
         + dump_block
+        + restart_block["intermediate"]
         + run_block
         + final_block
-        + restart_block
+        + restart_block["final"]
     )
     return input_file
 
@@ -859,19 +872,47 @@ def write_thermo_block(
     return thermo_block, printing_variables
 
 
-def write_restart_block(restart_filename: str) -> str:
+def write_restart_block(
+    parameters_restart: dict, restart_filename: str, max_number_steps: int
+) -> dict:
     """Generate the block to write the restart file.
 
+    :param parameters_restart: set of parameters controling the printing of the restartfile
+    :type parameters_restart: dict
     :param restart_filename: Name of the LAMMPS restart file
     :type restart_filename: str
-    :return: string block indicating the printing of a restart file.
-    :rtype: str
+    :param max_number_steps: maximum number of steps in the simulation
+    :type max_number_steps: int
+    :return: dictionary with the string block indicating the printing of the final restart file and intermediate files.
+    :rtype: dict
     """
 
-    restart_block = generate_header("Start of the write restart information")
-    restart_block += f"write_restart {restart_filename}\n"
-    restart_block += generate_header("End of the write restart information")
+    restart_block = {"final": "", "intermediate": ""}
 
+    if "print_final" in parameters_restart and parameters_restart["print_final"]:
+
+        restart_block["final"] += generate_header(
+            "Start of the write restart information"
+        )
+        restart_block["final"] += f"write_restart {restart_filename}\n"
+        restart_block["final"] += generate_header(
+            "End of the write restart information"
+        )
+
+    if (
+        "print_intermediate" in parameters_restart
+        and parameters_restart["print_intermediate"]
+    ):
+
+        restart_block["intermediate"] += generate_header(
+            "Start of the intermediate write restart information"
+        )
+        restart_block[
+            "intermediate"
+        ] += f"restart {restart_filename} {parameters_restart.get('num_steps', int(max_number_steps/10))}"
+        restart_block["intermediate"] += generate_header(
+            "End of the intermediate write restart information"
+        )
     return restart_block
 
 
