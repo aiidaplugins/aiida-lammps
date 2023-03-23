@@ -85,6 +85,41 @@ def test_lammps_base(db_test_app, data_regression):
     data_regression.check({"results": calcfunction.outputs.results.get_dict()})
 
 
+def test_lammps_base_timing_info(db_test_app, data_regression):
+    """Test that the timing performance is properly parsed."""
+    filename = os.path.join(
+        TEST_DIR,
+        "input_files",
+        "parsers",
+        "log_alt.lammps",
+    )
+    retrieved = FolderData()
+    retrieved.base.repository.put_object_from_file(filename, "log.lammps")
+    retrieved.base.repository.put_object_from_filelike(
+        io.StringIO(""), "_scheduler-stdout.txt"
+    )
+    retrieved.base.repository.put_object_from_filelike(
+        io.StringIO(""), "_scheduler-stderr.txt"
+    )
+    inputs = {"script": SinglefileData(io.StringIO(""))}
+    calc_node = db_test_app.generate_calcjob_node(
+        "lammps.base", retrieved, inputs=inputs
+    )
+    parser = ParserFactory("lammps.base")
+    with db_test_app.sandbox_folder() as temp_path:
+        (
+            results,
+            calcfunction,
+        ) = parser.parse_from_node(  # pylint: disable=unused-variable
+            calc_node,
+            retrieved_temporary_folder=temp_path.abspath,
+        )
+
+    assert calcfunction.is_finished_ok
+    assert "results" in calcfunction.outputs
+    data_regression.check({"results": calcfunction.outputs.results.get_dict()})
+
+
 @pytest.mark.parametrize(
     "plugin_name", ["lammps.force", "lammps.optimize", "lammps.md", "lammps.md.multi"]
 )
@@ -264,7 +299,7 @@ def test_run_error(db_test_app, plugin_name):
     )
 
 
-def test_parser_log():
+def test_parser_log(data_regression):
     """
     Test the parser for the ``log.lammps`` file.
     """
@@ -276,19 +311,7 @@ def test_parser_log():
     )
 
     parsed_data = parse_logfile(filename=filename)
-
-    reference_filename = os.path.join(
-        TEST_DIR,
-        "test_raw_parsers",
-        "test_parse_log.yaml",
-    )
-
-    with open(reference_filename) as handle:
-        reference_data = yaml.load(handle, Loader=yaml.Loader)
-
-    assert (
-        parsed_data == reference_data
-    ), 'content of "log.lammps" differs from reference'
+    data_regression.check(parsed_data)
 
 
 def test_parse_final_variables():
