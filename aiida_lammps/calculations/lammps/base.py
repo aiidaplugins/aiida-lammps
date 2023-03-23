@@ -244,6 +244,7 @@ class BaseLammpsCalculation(CalcJob):
 
         if "script" in self.inputs:
             input_filecontent = self.inputs.script.get_content()
+            _parameters = {}
         else:
             # Get the parameters dictionary so that they can be used for creating
             # the input file
