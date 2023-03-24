@@ -1,22 +1,22 @@
 compute:
   ke/atom:
-  - group: all
-    type:
-    - keyword: ' '
-      value: ' '
+    - group: all
+      type:
+        - keyword: " "
+          value: " "
   pe/atom:
-  - group: all
-    type:
-    - keyword: ' '
-      value: ' '
+    - group: all
+      type:
+        - keyword: " "
+          value: " "
   pressure:
-  - group: all
-    type:
-    - thermo_temp
+    - group: all
+      type:
+        - thermo_temp
   stress/atom:
-  - group: all
-    type:
-    - 'NULL'
+    - group: all
+      type:
+        - "NULL"
 control:
   timestep: 1.0e-05
   units: metal
@@ -24,12 +24,12 @@ dump:
   dump_rate: 1000
 fix:
   box/relax:
-  - group: all
-    type:
-    - iso
-    - 0.0
-    - vmax
-    - 0.001
+    - group: all
+      type:
+        - iso
+        - 0.0
+        - vmax
+        - 0.001
 minimize:
   energy_tolerance: 0.0001
   force_tolerance: 1.0e-05
@@ -49,3 +49,5 @@ thermo:
     pyy: true
     pzz: true
     step: true
+restart:
+  print_final: True
