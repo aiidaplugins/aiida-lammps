@@ -2,7 +2,6 @@
 import os
 
 import pytest
-import yaml
 
 from aiida_lammps.common import input_generator
 from aiida_lammps.data.lammps_potential import LammpsPotentialData
@@ -115,32 +114,24 @@ def test_input_generate_md(
 def test_input_generate_restart(
     db_test_app,  # pylint: disable=unused-argument
     restart_data,  # pylint: disable=redefined-outer-name  # noqa: F811
+    parameters_md,  # pylint: disable=redefined-outer-name  # noqa: F811
     print_final,
     print_intermediate,
     num_steps,
 ):
     """Test the generation of the input file for MD calculations"""
-    # pylint: disable=too-many-locals
+    # pylint: disable=too-many-locals, too-many-arguments
 
-    parameters_file = os.path.join(
-        TEST_DIR,
-        "test_generate_inputs",
-        "parameters_md.yaml",
-    )
-    # Dictionary with parameters for controlling aiida-lammps
-    with open(parameters_file) as handler:
-        parameters = yaml.load(handler, yaml.SafeLoader)
-
-    parameters["restart"]["print_final"] = print_final
-    parameters["restart"]["print_intermediate"] = print_intermediate
+    parameters_md["restart"]["print_final"] = print_final
+    parameters_md["restart"]["print_intermediate"] = print_intermediate
     if num_steps:
-        parameters["restart"]["num_steps"] = num_steps
+        parameters_md["restart"]["num_steps"] = num_steps
 
-    input_generator.validate_input_parameters(parameters)
+    input_generator.validate_input_parameters(parameters_md)
 
     # Generating the input file
     input_file = input_generator.write_restart_block(
-        parameters_restart=parameters["restart"],
+        parameters_restart=parameters_md["restart"],
         restart_filename="restart.aiida",
         max_number_steps=1000,
     )
