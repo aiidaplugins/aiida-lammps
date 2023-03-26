@@ -25,16 +25,7 @@ def test_input_generate_minimize(
     """Test the generation of the input file for minimize calculations"""
     # pylint: disable=too-many-locals
 
-    parameters_file = os.path.join(
-        TEST_DIR,
-        "test_generate_inputs",
-        "parameters_minimize.yaml",
-    )
-    # Dictionary with parameters for controlling aiida-lammps
-    with open(parameters_file) as handler:
-        parameters = yaml.load(handler, yaml.SafeLoader)
-
-    input_generator.validate_input_parameters(parameters)
+    input_generator.validate_input_parameters(parameters_minimize)
     # Generate the potential
     potential_information = get_lammps_potential_data(potential_type)
     potential = LammpsPotentialData.get_or_create(
@@ -46,7 +37,7 @@ def test_input_generate_minimize(
     structure = potential_information["structure"]
     # Generating the input file
     input_file = input_generator.generate_input_file(
-        parameters=parameters,
+        parameters=parameters_minimize,
         potential=potential,
         structure=structure,
         trajectory_filename="temp.dump",
@@ -54,7 +45,14 @@ def test_input_generate_minimize(
         potential_filename="potential.dat",
         structure_filename="structure.dat",
     )
-    reference_value = parameters_minimize
+    reference_file = os.path.join(
+        TEST_DIR,
+        "test_generate_inputs",
+        f"test_generate_input_{potential_type}_minimize.txt",
+    )
+
+    with open(reference_file) as handler:
+        reference_value = handler.read()
 
     assert input_file == reference_value, "the content of the files differ"
 
@@ -72,16 +70,7 @@ def test_input_generate_md(
     """Test the generation of the input file for MD calculations"""
     # pylint: disable=too-many-locals
 
-    parameters_file = os.path.join(
-        TEST_DIR,
-        "test_generate_inputs",
-        "parameters_md.yaml",
-    )
-    # Dictionary with parameters for controlling aiida-lammps
-    with open(parameters_file) as handler:
-        parameters = yaml.load(handler, yaml.SafeLoader)
-
-    input_generator.validate_input_parameters(parameters)
+    input_generator.validate_input_parameters(parameters_md)
     # Generate the potential
     potential_information = get_lammps_potential_data(potential_type)
     potential = LammpsPotentialData.get_or_create(
@@ -93,7 +82,7 @@ def test_input_generate_md(
     structure = potential_information["structure"]
     # Generating the input file
     input_file = input_generator.generate_input_file(
-        parameters=parameters,
+        parameters=parameters_md,
         potential=potential,
         structure=structure,
         trajectory_filename="temp.dump",
@@ -101,7 +90,14 @@ def test_input_generate_md(
         potential_filename="potential.dat",
         structure_filename="structure.dat",
     )
-    reference_value = parameters_md
+
+    reference_file = os.path.join(
+        TEST_DIR,
+        "test_generate_inputs",
+        f"test_generate_input_{potential_type}_md.txt",
+    )
+    with open(reference_file) as handler:
+        reference_value = handler.read()
 
     assert input_file == reference_value, "the content of the files differ"
 
