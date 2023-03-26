@@ -877,7 +877,7 @@ def write_restart_block(
 ) -> dict:
     """Generate the block to write the restart file.
 
-    :param parameters_restart: set of parameters controling the printing of the restartfile
+    :param parameters_restart: set of parameters controlling the printing of the restartfile
     :type parameters_restart: dict
     :param restart_filename: Name of the LAMMPS restart file
     :type restart_filename: str
@@ -909,7 +909,7 @@ def write_restart_block(
         )
         restart_block[
             "intermediate"
-        ] += f"restart {restart_filename} {parameters_restart.get('num_steps', int(max_number_steps/10))}"
+        ] += f"restart {restart_filename} {parameters_restart.get('num_steps', int(max_number_steps/10))}\n"
         restart_block["intermediate"] += generate_header(
             "End of the intermediate write restart information"
         )
