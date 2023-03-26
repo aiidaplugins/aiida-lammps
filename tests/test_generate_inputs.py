@@ -133,7 +133,8 @@ def test_input_generate_restart(
 
     parameters["restart"]["print_final"] = print_final
     parameters["restart"]["print_intermediate"] = print_intermediate
-    parameters["restart"]["num_steps"] = num_steps
+    if num_steps:
+        parameters["restart"]["num_steps"] = num_steps
 
     input_generator.validate_input_parameters(parameters)
 
