@@ -6,8 +6,10 @@ and then use them to generate the ``LAMMPS`` input file. The input file
 is generated depending on the parameters provided, the type of potential,
 the input structure and whether or not a restart file is provided.
 """
+import os
+
 from aiida import orm
-from aiida.common import datastructures
+from aiida.common import datastructures, exceptions
 from aiida.engine import CalcJob
 
 from aiida_lammps.common.generate_structure import generate_lammps_structure
@@ -39,6 +41,9 @@ class BaseLammpsCalculation(CalcJob):
 
     _DEFAULT_PARSER = "lammps.base"
 
+    # In restarts, will not copy but use symlinks
+    _default_symlink_usage = True
+
     @classmethod
     def define(cls, spec):
         super().define(spec)
@@ -64,7 +69,13 @@ class BaseLammpsCalculation(CalcJob):
             "parameters",
             valid_type=orm.Dict,
             required=False,
-            help="Parameters that control the ``LAMMPS`` calculation",
+            help="Parameters that control the input script generated for the ``LAMMPS`` calculation",
+        )
+        spec.input(
+            "settings",
+            valid_type=orm.Dict,
+            required=False,
+            help="Additional settings that control the ``LAMMPS`` calculation",
         )
         spec.input(
             "input_restartfile",
@@ -233,22 +244,47 @@ class BaseLammpsCalculation(CalcJob):
         # Get the name of the logfile file
         _logfile_filename = self.inputs.metadata.options.logfile_filename
 
-        # If there is a restartfile set its name to the input variables and
-        # write it in the remote folder
-        if "input_restartfile" in self.inputs:
-            _read_restart_filename = self._DEFAULT_READ_RESTART_FILENAME
-            with folder.open(_read_restart_filename, "wb") as handle:
-                handle.write(self.inputs.input_restartfile.get_content())
+        # Get the parameters dictionary so that they can be used for creating
+        # the input file
+        if "parameters" in self.inputs:
+            _parameters = self.inputs.parameters.get_dict()
         else:
-            _read_restart_filename = None
+            _parameters = {}
+
+        if "settings" in self.inputs:
+            settings = self.inputs.settings.get_dict()
+        else:
+            settings = {}
+
+        # Set the remote copy list and the symlink so that if one needs to use restartfiles from
+        # a previous calculations one can do so without problems
+        remote_copy_list = []
+        remote_symlink_list = []
+        local_copy_list = []
+        retrieve_temporary_list = []
+        retrieve_list = [
+            _output_filename,
+            _logfile_filename,
+            _variables_filename,
+            _trajectory_filename,
+        ]
+
+        calcinfo = datastructures.CalcInfo()
+
+        # Handle the restart file for simulations coming from previous runs
+        restart_data = self.handle_restartfiles(
+            settings=settings, parameters=_parameters, calcinfo=calcinfo
+        )
+        _read_restart_filename = restart_data.get("restart_file", None)
+        remote_copy_list += restart_data.get("remote_copy_list", [])
+        remote_symlink_list += restart_data.get("remote_symlink_list", [])
+        local_copy_list += restart_data.get("local_copy_list", [])
+        retrieve_list += restart_data.get("retrieve_list", [])
+        retrieve_temporary_list += restart_data.get("retrieve_temporary_list", [])
 
         if "script" in self.inputs:
             input_filecontent = self.inputs.script.get_content()
-            _parameters = {}
         else:
-            # Get the parameters dictionary so that they can be used for creating
-            # the input file
-            _parameters = self.inputs.parameters.get_dict()
 
             # Generate the content of the structure file based on the input
             # structure
@@ -295,27 +331,115 @@ class BaseLammpsCalculation(CalcJob):
         codeinfo.stdout_name = _output_filename
 
         # Generate the datastructure for the calculation information
-        calcinfo = datastructures.CalcInfo()
         calcinfo.uuid = str(self.uuid)
 
+        calcinfo.remote_copy_list = remote_copy_list
+        calcinfo.remote_symlink_list = remote_symlink_list
         # Define the list of temporary files that will be retrieved
-        calcinfo.retrieve_temporary_list = []
+        calcinfo.retrieve_temporary_list = retrieve_temporary_list
         # Set the files that must be retrieved
-        calcinfo.retrieve_list = []
-        calcinfo.retrieve_list.append(_output_filename)
-        calcinfo.retrieve_list.append(_logfile_filename)
-        calcinfo.retrieve_list.append(_variables_filename)
-        calcinfo.retrieve_list.append(_trajectory_filename)
-        # Add the restart file to the list of files to be retrieved if we want to store it in the database
-        if "restart" in _parameters:
-            if _parameters.get("restart", {}).get("print_final", False):
-                calcinfo.retrieve_list.append(_restart_filename)
-            if _parameters.get("restart", {}).get("print_intermediate", False):
-                calcinfo.retrieve_temporary_list.append(
-                    (f"{_restart_filename}*", ".", None)
-                )
-
+        calcinfo.retrieve_list = retrieve_list
         # Set the information of the code into the calculation datastructure
         calcinfo.codes_info = [codeinfo]
 
         return calcinfo
+
+    def handle_restartfiles(
+        self,
+        settings: dict,
+        parameters: dict,
+        calcinfo: datastructures.CalcInfo(),
+    ) -> dict:
+        """Get the information needed to handle the restartfiles
+
+        :param settings: Additional settings that control the ``LAMMPS`` calculation
+        :type settings: dict
+        :param parameters: Parameters that control the input script generated for the ``LAMMPS`` calculation
+        :type parameters: dict
+        :param calcinfo: object that stores the information generated and given to the ``CalcJob``
+        :type calcinfo: datastructures.CalcInfo
+        :raises exceptions.InputValidationError: if the name of the given restart file is not in the remote folder
+        :return: dictionary with the information about how to handle the restartfile either for parsing, \
+            storage or input
+        :rtype: dict
+        """
+        local_copy_list = []
+        remote_symlink_list = []
+        remote_copy_list = []
+        retrieve_list = []
+        retrieve_temporary_list = []
+        # If there is a restartfile set its name to the input variables and
+        # write it in the remote folder
+        if "input_restartfile" in self.inputs:
+            _read_restart_filename = self._DEFAULT_READ_RESTART_FILENAME
+            local_copy_list.append(
+                (
+                    self.inputs.input_restartfile.uuid,
+                    self.inputs.input_restartfile.filename,
+                    calcinfo,
+                )
+            )
+        else:
+            _read_restart_filename = None
+
+        # check if there is a parent folder to restart the simulation from a previous run
+        if "parent_folder" in self.inputs:
+            # Check if one should do symlinks or if one should copy the files
+            # By default symlinks are used as the file can be quite large
+            symlink = settings.pop("parent_folder_symlink", self._default_symlink_usage)
+            # Find the name of the previous restartfile, if none is given the default one is assumed
+            # Setting the name here will mean that if the input file is generated from the parameters
+            # that this name will be used
+            _read_restart_filename = settings.pop(
+                "previous_restartfile", self._DEFAULT_RESTART_FILENAME
+            )
+
+            if not _read_restart_filename in self.inputs.parent_folder.listdir():
+                raise exceptions.InputValidationError(
+                    f'The name "{_read_restart_filename}" for the restartfile is not present in the '
+                    f'remote folder "{self.input.parent_folder.uuid}"'
+                )
+
+            if symlink:
+                # Symlink the old restart file to the new one in the current directoy
+                remote_symlink_list.append(
+                    (
+                        self.inputs.parent_folder.computer.uuid,
+                        os.path.join(
+                            self.inputs.parent_folder.get_remote_path(),
+                            _read_restart_filename,
+                        ),
+                        ".",
+                    )
+                )
+            else:
+                # Copy the old restart file to the current directory
+                remote_copy_list.append(
+                    (
+                        self.inputs.parent_folder.computer.uuid,
+                        os.path.join(
+                            self.inputs.parent_folder.get_remote_path(),
+                            _read_restart_filename,
+                        ),
+                        ".",
+                    )
+                )
+
+        # Add the restart file to the list of files to be retrieved if we want to store it in the database
+        if "restart" in parameters and settings.get("store_restart", False):
+            if parameters.get("restart", {}).get("print_final", False):
+                retrieve_list.append(self.inputs.metadata.options.restart_filename)
+            if parameters.get("restart", {}).get("print_intermediate", False):
+                retrieve_temporary_list.append(
+                    (f"{self.inputs.metadata.options.restart_filename}*", ".", None)
+                )
+
+        data = {
+            "remote_copy_list": remote_copy_list,
+            "remote_symlink_list": remote_symlink_list,
+            "local_copy_list": local_copy_list,
+            "restart_file": _read_restart_filename,
+            "retrieve_list": retrieve_list,
+            "retrieve_temporary_list": retrieve_temporary_list,
+        }
+        return data

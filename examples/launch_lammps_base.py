@@ -108,6 +108,7 @@ def generate_potential() -> LammpsPotentialData:
 
 
 def main(
+    settings: orm.Dict,
     parameters: orm.Dict,
     structure: orm.StructureData,
     potential: LammpsPotentialData,
@@ -117,7 +118,9 @@ def main(
     """
     Submission of the calculation for an MD run in ``LAMMPS``.
 
-    :param parameters: calculation parameters to control the ``LAMMPS`` calculation
+    :param settings: Additional settings that control the ``LAMMPS`` calculation
+    :type settings: orm.Dict
+    :param parameters: Parameters that control the input script generated for the ``LAMMPS`` calculation
     :type parameters: orm.Dict
     :param structure: structure to be used in the calculation
     :type structure: orm.StructureData
@@ -135,6 +138,7 @@ def main(
 
     builder = calculation.get_builder()
     builder.code = code
+    builder.settings = settings
     builder.structure = structure
     builder.parameters = parameters
     builder.potential = potential
@@ -153,6 +157,7 @@ if __name__ == "__main__":
     OPTIONS = AttributeDict()
     OPTIONS.resources = AttributeDict()
     # Total number of mpi processes
+    OPTIONS.resources.num_machines = 1
     OPTIONS.resources.tot_num_mpiprocs = 2
     # Name of the parallel environment
     #    OPTIONS.resources.parallel_env = "mpi"
@@ -199,10 +204,17 @@ if __name__ == "__main__":
         },
     }
     _parameters.dump = {"dump_rate": 1000}
+    _parameters.restart = {"print_final": True}
 
     PARAMETERS = orm.Dict(dict=_parameters)
 
+    _settings = AttributeDict()
+    _settings.store_restart = True
+
+    SETTINGS = orm.Dict(dict=_settings)
+
     submission_node = main(
+        settings=SETTINGS,
         structure=STRUCTURE,
         potential=POTENTIAL,
         parameters=PARAMETERS,

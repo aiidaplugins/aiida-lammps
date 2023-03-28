@@ -41,7 +41,14 @@ class LAMMPSBaseParser(Parser):
         # pylint: disable=too-many-return-statements, too-many-locals
 
         # Get the input parameters to see if one needs to parse the restart file
-        parameters = self.node.inputs.parameters.get_dict()
+        if "parameters" in self.node.inputs:
+            parameters = self.node.inputs.parameters.get_dict()
+        else:
+            parameters = {}
+        if "settings" in self.node.inputs:
+            settings = self.node.inputs.settings.get_dict()
+        else:
+            settings = {}
 
         try:
             out_folder = self.retrieved
@@ -111,7 +118,7 @@ class LAMMPSBaseParser(Parser):
         if self.node.get_option("scheduler_stderr") not in list_of_files:
             return self.exit_codes.ERROR_STDERR_FILE_MISSING
 
-        if "restart" in parameters:
+        if "restart" in parameters and settings.get("store_restart", False):
             self.parse_restartfile(parameters=parameters, list_of_files=list_of_files)
         return None
 
@@ -130,7 +137,8 @@ class LAMMPSBaseParser(Parser):
                 restart_found = False
             else:
                 with self.node.outputs.retrieved.base.repository.open(
-                    restart_filename
+                    restart_filename,
+                    mode="rb",
                 ) as handle:
                     restart_file = orm.SinglefileData(handle)
                 self.out("restartfile", restart_file)
@@ -152,7 +160,8 @@ class LAMMPSBaseParser(Parser):
             if restartfiles:
                 latest_file = max(restartfiles, key=os.path.getctime)
                 with self.node.outputs.retrieved.base.repository.open(
-                    latest_file
+                    latest_file,
+                    mode="rb",
                 ) as handle:
                     restart_file = orm.SinglefileData(handle)
                 self.out("restartfile", restart_file)
