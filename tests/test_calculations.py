@@ -584,11 +584,11 @@ def test_md_multi_process(
 @pytest.mark.parametrize(
     "parameters,reference_data",
     [
-        (minimize_parameters(), minimize_reference_data()),
-        (minimize_parameters_groups(), minimize_groups_reference_data()),
-        (md_parameters_nve(), md_reference_data_nve()),
-        (md_parameters_nvt(), md_reference_data_nvt()),
-        (md_parameters_npt(), md_reference_data_npt()),
+        ("minimize_parameters", "minimize_reference_data"),
+        ("minimize_parameters_groups", "minimize_groups_reference_data"),
+        ("md_parameters_nve", "md_reference_data_nve"),
+        ("md_parameters_nvt", "md_reference_data_nvt"),
+        ("md_parameters_npt", "md_reference_data_npt"),
     ],
 )
 def test_lammps_base(
@@ -597,6 +597,7 @@ def test_lammps_base(
     get_potential_fe_eam,  # pylint: disable=redefined-outer-name  # noqa: F811
     parameters,
     reference_data,
+    request,
 ):
     """
     Set of tests for the lammps.base calculation
@@ -605,6 +606,7 @@ def test_lammps_base(
     :param generate_structure: structure used for the tests
     :type generate_structure: orm.StructureDate
     """
+    # pylint: disable=too-many-arguments, too-many-locals
 
     calc_plugin = "lammps.base"
     code = db_test_app.get_or_create_code(calc_plugin)
@@ -616,13 +618,15 @@ def test_lammps_base(
     inputs.metadata = tests.get_default_metadata()
     inputs.structure = generate_structure
     inputs.potential = get_potential_fe_eam
-    inputs.parameters = orm.Dict(dict=parameters)
+    inputs.parameters = orm.Dict(dict=request.getfixturevalue(parameters))
 
     results, node = run_get_node(calculation, **inputs)
 
     assert node.exit_status == 0, "calculation ended in non-zero state"
 
     assert "results" in results, 'the "results" node not present'
+
+    reference_data = request.getfixturevalue(reference_data)
 
     for key, value in reference_data.results.items():
         _msg = f'key "{key}" not present'

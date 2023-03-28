@@ -1,8 +1,10 @@
 """Fixtures for the calculations tests."""
 from aiida.common import AttributeDict
 import numpy as np
+import pytest
 
 
+@pytest.fixture
 def minimize_parameters() -> AttributeDict:
     """
     Set of parameters for a minimization calculation
@@ -46,6 +48,7 @@ def minimize_parameters() -> AttributeDict:
     return parameters
 
 
+@pytest.fixture
 def minimize_reference_data() -> AttributeDict:
     """
     Set of reference values for a minimization calculation
@@ -188,6 +191,7 @@ def minimize_reference_data() -> AttributeDict:
     return reference_data
 
 
+@pytest.fixture
 def minimize_parameters_groups() -> AttributeDict:
     """
     Set of parameters for a minimization calculation using groups
@@ -235,6 +239,7 @@ def minimize_parameters_groups() -> AttributeDict:
     return parameters
 
 
+@pytest.fixture
 def minimize_groups_reference_data() -> AttributeDict:
     """
     Set of reference values for a minimization calculation using groups
@@ -380,6 +385,7 @@ def minimize_groups_reference_data() -> AttributeDict:
     return reference_data
 
 
+@pytest.fixture
 def md_parameters_nve() -> AttributeDict:
     """
     Set of parameters for a md calculation using the nve integration
@@ -423,6 +429,7 @@ def md_parameters_nve() -> AttributeDict:
     return parameters
 
 
+@pytest.fixture
 def md_reference_data_nve():
     """
     Set of reference values for a md calculation using the nve integration
@@ -723,6 +730,7 @@ def md_reference_data_nve():
     return reference_data
 
 
+@pytest.fixture
 def md_parameters_nvt() -> AttributeDict:
     """
     Set of parameters for a md calculation using the nvt integration
@@ -769,6 +777,7 @@ def md_parameters_nvt() -> AttributeDict:
     return parameters
 
 
+@pytest.fixture
 def md_reference_data_nvt() -> AttributeDict:
     """
     Set of reference values for a md calculation using the nvt integration
@@ -1069,6 +1078,7 @@ def md_reference_data_nvt() -> AttributeDict:
     return reference_data
 
 
+@pytest.fixture
 def md_parameters_npt() -> AttributeDict:
     """
     Set of parameters for a md calculation using the npt integration
@@ -1117,6 +1127,7 @@ def md_parameters_npt() -> AttributeDict:
     return parameters
 
 
+@pytest.fixture
 def md_reference_data_npt() -> AttributeDict:
     """
     Set of reference values for a md calculation using the npt integration
