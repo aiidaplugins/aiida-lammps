@@ -19,7 +19,7 @@ def restart_data() -> AttributeDict:
     )
     data.intermediate = (
         "#--------------Start of the intermediate write restart information---------------#\n"
-        "restart restart.aiida 100\n"
+        "restart 100 restart.aiida\n"
         "#---------------End of the intermediate write restart information----------------#\n"
     )
     return data
