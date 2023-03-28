@@ -273,7 +273,8 @@ class BaseLammpsCalculation(CalcJob):
 
         # Handle the restart file for simulations coming from previous runs
         restart_data = self.handle_restartfiles(
-            settings=settings, parameters=_parameters,
+            settings=settings,
+            parameters=_parameters,
         )
         _read_restart_filename = restart_data.get("restart_file", None)
         remote_copy_list += restart_data.get("remote_copy_list", [])
@@ -407,10 +408,10 @@ class BaseLammpsCalculation(CalcJob):
                             self.inputs.parent_folder.get_remote_path(),
                             _read_restart_filename,
                         ),
-                        'input_lammps.restart',
+                        "input_lammps.restart",
                     )
                 )
-                _read_restart_filename = 'input_lammps.restart'
+                _read_restart_filename = "input_lammps.restart"
             else:
                 # Copy the old restart file to the current directory
                 remote_copy_list.append(
@@ -420,10 +421,10 @@ class BaseLammpsCalculation(CalcJob):
                             self.inputs.parent_folder.get_remote_path(),
                             _read_restart_filename,
                         ),
-                        'input_lammps.restart',
+                        "input_lammps.restart",
                     )
                 )
-                _read_restart_filename = 'input_lammps.restart'
+                _read_restart_filename = "input_lammps.restart"
 
         # Add the restart file to the list of files to be retrieved if we want to store it in the database
         if "restart" in parameters and settings.get("store_restart", False):
@@ -431,9 +432,8 @@ class BaseLammpsCalculation(CalcJob):
                 retrieve_list.append(self.inputs.metadata.options.restart_filename)
             if parameters.get("restart", {}).get("print_intermediate", False):
                 retrieve_temporary_list.append(
-                    (f"{self.inputs.metadata.options.restart_filename}*", ".", None)
+                    f"{self.inputs.metadata.options.restart_filename}*"
                 )
-
         data = {
             "remote_copy_list": remote_copy_list,
             "remote_symlink_list": remote_symlink_list,

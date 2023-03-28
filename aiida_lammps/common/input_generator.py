@@ -906,7 +906,7 @@ def write_restart_block(
         )
         restart_block[
             "intermediate"
-        ] += f"restart {restart_filename} {parameters_restart.get('num_steps', int(max_number_steps/10))}\n"
+        ] += f"restart {parameters_restart.get('num_steps', int(max_number_steps/10))} {restart_filename}\n"
         restart_block["intermediate"] += generate_header(
             "End of the intermediate write restart information"
         )
