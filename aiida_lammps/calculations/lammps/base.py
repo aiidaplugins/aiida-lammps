@@ -273,7 +273,7 @@ class BaseLammpsCalculation(CalcJob):
 
         # Handle the restart file for simulations coming from previous runs
         restart_data = self.handle_restartfiles(
-            settings=settings, parameters=_parameters, calcinfo=calcinfo
+            settings=settings, parameters=_parameters,
         )
         _read_restart_filename = restart_data.get("restart_file", None)
         remote_copy_list += restart_data.get("remote_copy_list", [])
@@ -333,6 +333,7 @@ class BaseLammpsCalculation(CalcJob):
         # Generate the datastructure for the calculation information
         calcinfo.uuid = str(self.uuid)
 
+        calcinfo.local_copy_list = local_copy_list
         calcinfo.remote_copy_list = remote_copy_list
         calcinfo.remote_symlink_list = remote_symlink_list
         # Define the list of temporary files that will be retrieved
@@ -348,7 +349,6 @@ class BaseLammpsCalculation(CalcJob):
         self,
         settings: dict,
         parameters: dict,
-        calcinfo: datastructures.CalcInfo(),
     ) -> dict:
         """Get the information needed to handle the restartfiles
 
@@ -356,8 +356,6 @@ class BaseLammpsCalculation(CalcJob):
         :type settings: dict
         :param parameters: Parameters that control the input script generated for the ``LAMMPS`` calculation
         :type parameters: dict
-        :param calcinfo: object that stores the information generated and given to the ``CalcJob``
-        :type calcinfo: datastructures.CalcInfo
         :raises exceptions.InputValidationError: if the name of the given restart file is not in the remote folder
         :return: dictionary with the information about how to handle the restartfile either for parsing, \
             storage or input
@@ -376,7 +374,7 @@ class BaseLammpsCalculation(CalcJob):
                 (
                     self.inputs.input_restartfile.uuid,
                     self.inputs.input_restartfile.filename,
-                    calcinfo,
+                    self._DEFAULT_READ_RESTART_FILENAME,
                 )
             )
         else:
@@ -409,9 +407,10 @@ class BaseLammpsCalculation(CalcJob):
                             self.inputs.parent_folder.get_remote_path(),
                             _read_restart_filename,
                         ),
-                        ".",
+                        'input_lammps.restart',
                     )
                 )
+                _read_restart_filename = 'input_lammps.restart'
             else:
                 # Copy the old restart file to the current directory
                 remote_copy_list.append(
@@ -421,9 +420,10 @@ class BaseLammpsCalculation(CalcJob):
                             self.inputs.parent_folder.get_remote_path(),
                             _read_restart_filename,
                         ),
-                        ".",
+                        'input_lammps.restart',
                     )
                 )
+                _read_restart_filename = 'input_lammps.restart'
 
         # Add the restart file to the list of files to be retrieved if we want to store it in the database
         if "restart" in parameters and settings.get("store_restart", False):

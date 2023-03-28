@@ -109,9 +109,12 @@ def generate_input_file(
     )
     # Append the read restart to the structure block
     if read_restart_filename is not None:
-        structure_block += write_read_restart_block(
+        read_restart_block = write_read_restart_block(
             restart_filename=read_restart_filename
         )
+        structure_block = ""
+    else:
+        read_restart_block = ""
     # Generate the fix input block
     if "fix" in parameters:
         fix_block = write_fix_block(
@@ -159,6 +162,7 @@ def generate_input_file(
     # Printing the potential
     input_file = (
         control_block
+        + read_restart_block
         + structure_block
         + potential_block
         + fix_block
@@ -296,7 +300,6 @@ def write_structure_block(
     parameters_structure: dict,
     structure: orm.StructureData,
     structure_filename: str,
-    restart_file: str = None,
 ) -> Union[str, list]:
     """
     Generate the input block with the structure options.
@@ -314,8 +317,6 @@ def write_structure_block(
     :param structure_filename: name of the file where the structure will be
         written so that LAMMPS can read it
     :type structure_filename: str
-    :param restart_file: Overwrite the structure generation with the restartfile
-        this will allow the final state of a previous calculation to be used.
     :return: block with the structural information and list of groups present
     :rtype: Union[str, list]
     """
@@ -353,10 +354,6 @@ def write_structure_block(
             )
             # Store the name of the group for later usage
             group_names.append(_group["name"])
-    if restart_file is not None:
-        structure_block += (
-            f'read_restart {restart_file} {parameters_structure["remap"]}'
-        )
     structure_block += generate_header("End of the Structure information")
     return structure_block, group_names
 
