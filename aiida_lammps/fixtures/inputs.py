@@ -9,7 +9,7 @@ def parameters_restart_full() -> AttributeDict:
 
     :return: get the parameters controlling the restart file generation
     :rtype: AttributeDict
-    """    
+    """
     data = AttributeDict()
     data.restart = AttributeDict()
     data.restart.print_final = True
@@ -26,7 +26,7 @@ def parameters_restart_full_no_storage() -> AttributeDict:
 
     :return: get the parameters controlling the restart file generation
     :rtype: AttributeDict
-    """    
+    """
     data = AttributeDict()
     data.restart = AttributeDict()
     data.restart.print_final = True
@@ -41,7 +41,7 @@ def parameters_restart_final() -> AttributeDict:
 
     :return: get the parameters controlling the restart file generation
     :rtype: AttributeDict
-    """    
+    """
     data = AttributeDict()
     data.restart = AttributeDict()
     data.restart.print_final = True
@@ -56,7 +56,7 @@ def parameters_restart_intermediate() -> AttributeDict:
 
     :return: get the parameters controlling the restart file generation
     :rtype: AttributeDict
-    """    
+    """
     data = AttributeDict()
     data.restart = AttributeDict()
     data.restart.print_intermediate = True

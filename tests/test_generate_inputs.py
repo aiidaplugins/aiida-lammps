@@ -57,14 +57,18 @@ def test_input_generate_minimize(
 
 
 @pytest.mark.parametrize(
-    "potential_type",
-    ["eam_alloy"],
+    "potential_type,restart",
+    [
+        ("eam_alloy", None),
+        ("eam_alloy", "input_aiida_lammps.restart"),
+    ],
 )
 def test_input_generate_md(
     db_test_app,  # pylint: disable=unused-argument
     parameters_md,  # pylint: disable=redefined-outer-name  # noqa: F811
     get_lammps_potential_data,
     potential_type,
+    restart,
 ):
     """Test the generation of the input file for MD calculations"""
     # pylint: disable=too-many-locals
@@ -88,12 +92,18 @@ def test_input_generate_md(
         restart_filename="restart.aiida",
         potential_filename="potential.dat",
         structure_filename="structure.dat",
+        read_restart_filename=restart,
     )
+
+    if restart:
+        filename = f"test_generate_input_{potential_type}_md_restart.txt"
+    else:
+        filename = f"test_generate_input_{potential_type}_md.txt"
 
     reference_file = os.path.join(
         TEST_DIR,
         "test_generate_inputs",
-        f"test_generate_input_{potential_type}_md.txt",
+        filename,
     )
     with open(reference_file) as handler:
         reference_value = handler.read()
