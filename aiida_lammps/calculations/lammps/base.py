@@ -269,8 +269,6 @@ class BaseLammpsCalculation(CalcJob):
             _trajectory_filename,
         ]
 
-        calcinfo = datastructures.CalcInfo()
-
         # Handle the restart file for simulations coming from previous runs
         restart_data = self.handle_restartfiles(
             settings=settings,
@@ -305,7 +303,7 @@ class BaseLammpsCalculation(CalcJob):
                 handle.write(self.inputs.potential.get_content())
 
             # Write the input file content. This function will also check the
-            # sanity of the passed paremters when comparing it to a schema
+            # sanity of the passed parameters when comparing it to a schema
             input_filecontent = generate_input_file(
                 potential=self.inputs.potential,
                 structure=self.inputs.structure,
@@ -332,6 +330,7 @@ class BaseLammpsCalculation(CalcJob):
         codeinfo.stdout_name = _output_filename
 
         # Generate the datastructure for the calculation information
+        calcinfo = datastructures.CalcInfo()
         calcinfo.uuid = str(self.uuid)
 
         calcinfo.local_copy_list = local_copy_list
@@ -400,7 +399,7 @@ class BaseLammpsCalculation(CalcJob):
                 )
 
             if symlink:
-                # Symlink the old restart file to the new one in the current directoy
+                # Symlink the old restart file to the new one in the current directory
                 remote_symlink_list.append(
                     (
                         self.inputs.parent_folder.computer.uuid,
@@ -426,7 +425,8 @@ class BaseLammpsCalculation(CalcJob):
                 )
                 _read_restart_filename = "input_lammps.restart"
 
-        # Add the restart file to the list of files to be retrieved if we want to store it in the database
+        # Add the restart file to the list of files to be retrieved if we want to store it in the
+        # database
         if "restart" in parameters and settings.get("store_restart", False):
             if parameters.get("restart", {}).get("print_final", False):
                 retrieve_list.append(self.inputs.metadata.options.restart_filename)

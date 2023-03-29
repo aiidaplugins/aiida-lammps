@@ -5,9 +5,11 @@ import pytest
 
 from aiida_lammps.common import input_generator
 from aiida_lammps.data.lammps_potential import LammpsPotentialData
-from aiida_lammps.fixtures.inputs import parameters_md  # noqa: F401
-from aiida_lammps.fixtures.inputs import parameters_minimize  # noqa: F401
-from aiida_lammps.fixtures.inputs import restart_data  # noqa: F401
+from aiida_lammps.fixtures.inputs import (
+    parameters_md,
+    parameters_minimize,
+    restart_data,
+)
 from .utils import TEST_DIR
 
 
