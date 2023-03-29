@@ -109,33 +109,3 @@ def get_potential_fe_eam() -> LammpsPotentialData:
     )
 
     return potential
-
-
-@pytest.fixture
-def generate_remote_data():
-    """Return a `RemoteData` node."""
-
-    def _generate_remote_data(computer, remote_path, entry_point_name=None):
-        """Return a `RemoteData` node mimicking a previous calculation."""
-        from aiida.common.links import LinkType
-        from aiida.orm import CalcJobNode, RemoteData
-        from aiida.plugins.entry_point import format_entry_point_string
-
-        entry_point = format_entry_point_string("aiida.calculations", entry_point_name)
-
-        remote = RemoteData(remote_path=remote_path)
-        remote.computer = computer
-
-        if entry_point_name is not None:
-            creator = CalcJobNode(computer=computer, process_type=entry_point)
-            creator.set_option(
-                "resources", {"num_machines": 1, "num_mpiprocs_per_machine": 1}
-            )
-            remote.base.links.add_incoming(
-                creator, link_type=LinkType.CREATE, link_label="remote_folder"
-            )
-            creator.store()
-
-        return remote
-
-    return _generate_remote_data

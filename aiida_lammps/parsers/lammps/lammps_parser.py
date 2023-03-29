@@ -71,7 +71,6 @@ class LAMMPSBaseParser(Parser):
             return self.exit_codes.ERROR_PARSING_LOGFILE
         global_data = parsed_data["global"]
         arrays = parsed_data["time_dependent"]
-
         # check final variable file
         if self.node.get_option("variables_filename") not in list_of_files:
             return self.exit_codes.ERROR_FINAL_VARIABLE_FILE_MISSING

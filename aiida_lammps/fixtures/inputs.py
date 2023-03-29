@@ -4,6 +4,69 @@ import pytest
 
 
 @pytest.fixture
+def parameters_restart_full() -> AttributeDict:
+    """Get the parameters when all the restart possibilities are considered
+
+    :return: get the parameters controlling the restart file generation
+    :rtype: AttributeDict
+    """    
+    data = AttributeDict()
+    data.restart = AttributeDict()
+    data.restart.print_final = True
+    data.restart.print_intermediate = True
+    data.restart.num_steps = 1000
+    data.settings = AttributeDict()
+    data.settings.store_restart = True
+    return data
+
+
+@pytest.fixture
+def parameters_restart_full_no_storage() -> AttributeDict:
+    """Get the parameters when one is not storing the restartfile
+
+    :return: get the parameters controlling the restart file generation
+    :rtype: AttributeDict
+    """    
+    data = AttributeDict()
+    data.restart = AttributeDict()
+    data.restart.print_final = True
+    data.restart.print_intermediate = True
+    data.restart.num_steps = 1000
+    return data
+
+
+@pytest.fixture
+def parameters_restart_final() -> AttributeDict:
+    """Get the parameters for the restart of only the final file
+
+    :return: get the parameters controlling the restart file generation
+    :rtype: AttributeDict
+    """    
+    data = AttributeDict()
+    data.restart = AttributeDict()
+    data.restart.print_final = True
+    data.settings = AttributeDict()
+    data.settings.store_restart = True
+    return data
+
+
+@pytest.fixture
+def parameters_restart_intermediate() -> AttributeDict:
+    """Get the parameters for the restartf of only the intermediate file
+
+    :return: get the parameters controlling the restart file generation
+    :rtype: AttributeDict
+    """    
+    data = AttributeDict()
+    data.restart = AttributeDict()
+    data.restart.print_intermediate = True
+    data.restart.num_steps = 1000
+    data.settings = AttributeDict()
+    data.settings.store_restart = True
+    return data
+
+
+@pytest.fixture
 def restart_data() -> AttributeDict:
     """Get the reference data for the restart information
 

@@ -52,6 +52,7 @@ def parse_logfile(filename: str = None, file_contents: str = None) -> Union[dict
     )
 
     for index, line in enumerate(data):
+        line = line.strip()
         if perf_regex.match(line):
             _, _, step_sec = perf_regex.match(line).groups()
             global_parsed_data["steps_per_second"] = float(step_sec)

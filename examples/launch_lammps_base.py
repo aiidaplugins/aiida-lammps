@@ -3,7 +3,7 @@ Sets up an example for the calculation of bcc Fe using ``aiida-lammps``.
 """
 from aiida import orm
 from aiida.common.extendeddicts import AttributeDict
-from aiida.engine import submit
+from aiida.engine import run_get_node, submit
 from aiida.plugins import CalculationFactory
 import numpy as np
 
@@ -143,8 +143,9 @@ def main(
     builder.parameters = parameters
     builder.potential = potential
     builder.metadata.options = options
+    builder.input_restartfile = orm.load_node(13537)
 
-    node = submit(calculation, **builder)
+    node = run_get_node(calculation, **builder)
 
     return node
 
@@ -153,7 +154,7 @@ if __name__ == "__main__":
 
     STRUCTURE = generate_structure()
     POTENTIAL = generate_potential()
-    CODE = orm.load_code("lammps@localhost")
+    CODE = orm.load_code("lammps-23.06.2022@localhost")
     OPTIONS = AttributeDict()
     OPTIONS.resources = AttributeDict()
     # Total number of mpi processes
@@ -187,7 +188,7 @@ if __name__ == "__main__":
             },
         },
         "max_number_steps": 5000,
-        "velocity": [{"create": {"temp": 300}, "group": "all"}],
+        # "velocity": [{"create": {"temp": 300}, "group": "all"}],
     }
     _parameters.structure = {"atom_style": "atomic"}
     _parameters.potential = {}
