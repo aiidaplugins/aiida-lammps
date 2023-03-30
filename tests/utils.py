@@ -254,6 +254,7 @@ class AiidaTestApp:
         retrieved,
         computer_name="localhost",
         attributes=None,
+        inputs=None,
     ):
         """Fixture to generate a mock `CalcJobNode` for testing parsers.
 
@@ -282,6 +283,11 @@ class AiidaTestApp:
 
         if attributes:
             node.base.attributes.set(attributes)  # pylint: disable=no-member
+
+        if inputs:
+            for key, value in inputs.items():
+                value.store()
+                node.add_incoming(value, link_type=LinkType.INPUT_CALC, link_label=key)
 
         node.store()
 

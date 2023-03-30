@@ -75,6 +75,7 @@ class BaseLammpsCalculation(CalcJob):
             "settings",
             valid_type=orm.Dict,
             required=False,
+            validator=cls.validate_settings,
             help="Additional settings that control the ``LAMMPS`` calculation",
         )
         spec.input(
@@ -223,6 +224,23 @@ class BaseLammpsCalculation(CalcJob):
                 "`parameters` have to be specified."
             )
 
+    @classmethod
+    def validate_settings(cls, value, ctx):
+        """Validate the ``settings`` input."""
+        if not value:
+            return
+
+        settings = value.get_dict()
+        additional_cmdline_params = settings.get("additional_cmdline_params", [])
+
+        if not isinstance(additional_cmdline_params, list) or any(
+            not isinstance(e, str) for e in additional_cmdline_params
+        ):
+            return (
+                "Invalid value for `additional_cmdline_params`, should be "
+                f"list of strings but got: {additional_cmdline_params}"
+            )
+
     def prepare_for_submission(self, folder):
         """
         Create the input files from the input nodes passed to this instance of the `CalcJob`.
@@ -320,10 +338,16 @@ class BaseLammpsCalculation(CalcJob):
         with folder.open(_input_filename, "w") as handle:
             handle.write(input_filecontent)
 
+        cmdline_params = ["-in", _input_filename, "-log", _logfile_filename]
+
+        if "settings" in self.inputs:
+            settings = self.inputs.settings.get_dict()
+            cmdline_params += settings.get("additional_cmdline_params", [])
+
         codeinfo = datastructures.CodeInfo()
         # Command line variables to ensure that the input file from LAMMPS can
         # be read
-        codeinfo.cmdline_params = ["-in", _input_filename, "-log", _logfile_filename]
+        codeinfo.cmdline_params = cmdline_params
         # Set the code uuid
         codeinfo.code_uuid = self.inputs.code.uuid
         # Set the name of the stdout
@@ -331,8 +355,6 @@ class BaseLammpsCalculation(CalcJob):
 
         # Generate the datastructure for the calculation information
         calcinfo = datastructures.CalcInfo()
-        calcinfo.uuid = str(self.uuid)
-
         calcinfo.local_copy_list = local_copy_list
         calcinfo.remote_copy_list = remote_copy_list
         calcinfo.remote_symlink_list = remote_symlink_list

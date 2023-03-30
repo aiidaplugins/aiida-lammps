@@ -8,7 +8,6 @@ global:
   ghost_atom_cutoff: 8.1287
   master_list_distance_cutoff: 8.1287
   max_neighbors_atom: 2000
-  steps_per_second: 45452.422
   total_wall_time: 0:00:00
   units_style: metal
 time_dependent:

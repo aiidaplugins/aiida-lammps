@@ -718,7 +718,7 @@ def test_lammps_base_script(generate_calc_job, aiida_local_code_factory):
         """
     )
     stream = io.StringIO(content)
-    script = DataFactory("core.singlefile")(stream)
+    script = orm.SinglefileData(stream)
 
     inputs["script"] = script
     tmp_path, calc_info = generate_calc_job("lammps.base", inputs)
@@ -879,3 +879,33 @@ def test_lammps_restart_generation(
         .get_scaled_positions(),
         results["trajectories"].get_step_structure(-1).get_ase().get_scaled_positions(),
     ), _msg
+
+
+def test_lammps_base_settings_invalid(generate_calc_job, aiida_local_code_factory):
+    """Test the validation of the ``settings`` input."""
+    inputs = {
+        "code": aiida_local_code_factory("lammps.base", "bash"),
+        "settings": orm.Dict({"additional_cmdline_params": ["--option", 1]}),
+        "metadata": {"options": {"resources": {"num_machines": 1}}},
+    }
+
+    with pytest.raises(
+        ValueError,
+        match=r"Invalid value for `additional_cmdline_params`, should be list of strings but got.*",
+    ):
+        generate_calc_job("lammps.base", inputs)
+
+
+def test_lammps_base_settings(generate_calc_job, aiida_local_code_factory):
+    """Test the ``BaseLammpsCalculation`` with the ``settings`` input."""
+    from aiida_lammps.calculations.lammps.base import BaseLammpsCalculation
+
+    inputs = {
+        "code": aiida_local_code_factory("lammps.base", "bash"),
+        "script": orm.SinglefileData(io.StringIO("")),
+        "settings": orm.Dict({"additional_cmdline_params": ["--option", "value"]}),
+        "metadata": {"options": {"resources": {"num_machines": 1}}},
+    }
+
+    _, calc_info = generate_calc_job("lammps.base", inputs)
+    assert calc_info.codes_info[0].cmdline_params[-2:] == ["--option", "value"]

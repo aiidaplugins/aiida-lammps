@@ -47,15 +47,14 @@ def parse_logfile(filename: str = None, file_contents: str = None) -> Union[dict
     end_found = False
     parsed_data = {}
     global_parsed_data = {}
-    perf_regex = re.compile(
-        r"Performance\:\s(.+)\sns\/day,\s(.+)\shours\/ns\,\s(.+)\stimesteps\/s\s*"
-    )
+
+    perf_regex = re.compile(r".*Performance\:.*\,\s+([0-9\.]*)\stimesteps\/s.*")
+    performance_match = perf_regex.search(file_contents or "")
+    if performance_match:
+        global_parsed_data["steps_per_second"] = float(performance_match.group(1))
 
     for index, line in enumerate(data):
         line = line.strip()
-        if perf_regex.match(line):
-            _, _, step_sec = perf_regex.match(line).groups()
-            global_parsed_data["steps_per_second"] = float(step_sec)
         if "binsize" in line:
             global_parsed_data["binsize"] = ast.literal_eval(
                 line.split()[2].replace(",", "")

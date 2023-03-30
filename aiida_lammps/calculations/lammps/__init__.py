@@ -294,7 +294,6 @@ class BaseLammpsCalculation(CalcJob):
         codeinfo.stdout_name = self._stdout_name
 
         calcinfo = CalcInfo()
-        calcinfo.uuid = self.uuid
         calcinfo.retrieve_list = retrieve_list
         calcinfo.retrieve_temporary_list = retrieve_temporary_list
         calcinfo.codes_info = [codeinfo]
