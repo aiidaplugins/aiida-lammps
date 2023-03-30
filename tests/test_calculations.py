@@ -1,4 +1,5 @@
 """Test the aiida-lammps calculations."""
+import copy
 import io
 import textwrap
 
@@ -729,19 +730,19 @@ def test_lammps_base_script(generate_calc_job, aiida_local_code_factory):
     "parameters,restart_parameters",
     [
         (
-            "md_parameters_nvt",
+            "md_parameters_npt",
             "parameters_restart_full",
         ),
         (
-            "md_parameters_nvt",
+            "md_parameters_npt",
             "parameters_restart_full_no_storage",
         ),
         (
-            "md_parameters_nvt",
+            "md_parameters_npt",
             "parameters_restart_final",
         ),
         (
-            "md_parameters_nvt",
+            "md_parameters_npt",
             "parameters_restart_intermediate",
         ),
     ],
@@ -825,7 +826,7 @@ def test_lammps_restart_generation(
 
     # Remove the velocity if pressent so that the simulation is not shaken at the start. This allows
     # for comparizon between parameters from initial and final steps
-    _parameters = parameters
+    _parameters = copy.deepcopy(parameters)
     if "velocity" in _parameters["md"]:
         del _parameters["md"]["velocity"]
 
