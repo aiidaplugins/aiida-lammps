@@ -378,7 +378,8 @@ class BaseLammpsCalculation(CalcJob):
         :type settings: dict
         :param parameters: Parameters that control the input script generated for the ``LAMMPS`` calculation
         :type parameters: dict
-        :raises exceptions.InputValidationError: if the name of the given restart file is not in the remote folder
+        :raises aiida.common.exceptions.InputValidationError: if the name of the given restart file is not in the \
+            remote folder
         :return: dictionary with the information about how to handle the restartfile either for parsing, \
             storage or input
         :rtype: dict
