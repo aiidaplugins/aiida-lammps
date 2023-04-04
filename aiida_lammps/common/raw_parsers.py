@@ -54,6 +54,7 @@ def parse_logfile(filename: str = None, file_contents: str = None) -> Union[dict
         global_parsed_data["steps_per_second"] = float(performance_match.group(1))
 
     for index, line in enumerate(data):
+        line = line.strip()
         if "binsize" in line:
             global_parsed_data["binsize"] = ast.literal_eval(
                 line.split()[2].replace(",", "")

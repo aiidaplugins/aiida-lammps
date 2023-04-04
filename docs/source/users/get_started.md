@@ -145,7 +145,14 @@ The dictionary is separated into several nested dictionaries that control differ
     * ``force_tolerance``: tolerance for the force minimization (default: 1e-4).
     * ``max_iterations``: maximum number of iterations (default: 1000).
     * ``max_evaluations``: maximum number of evaluations (default: 1000).
+- ``restart``: set of variables controlling the printing of the binary file to [restart](https://docs.lammps.org/Howto_restart.html)  a ``LAMMPS`` calculation.
+    * ``print_final``: whether or not to print a restart file at the end of the calculation, equivalent to setting [write_restart](https://docs.lammps.org/write_restart.html) at the end of the calculation (default: ``False``).
+    * ``print_intermediate``: whether or not to print restart files throughout the run at regular intervals, equivalent to the [restart](https://docs.lammps.org/restart.html) ``LAMMPS`` command (default: ``False``).
+    * ``num_steps``: however often the restart file is written if ``print_intermediate`` is used (default: ``max_number_steps*0.1``).
 
+```{note}
+As the restart files can be very large, they are by default not printed, nor stored in the database. Even when one prints them with the ``print_final`` and/or ``print_intermediate`` they are not retrieved and are only kept in the remote folder. The storage of the restart file can be controlled via the ``store_restart=True``(``store_restart=False``) to store(not-store) option in the ``settings`` dictionary.
+```
 ### Compute parameters
 When asking ``aiida-lammps`` to calculate a certain ``compute`` its ``LAMMPS`` name will be automatically generated following the pattern ``compute_name_group_name_aiida`` where ``compute_name`` is the ``LAMMPS`` name of the compute, e.g. ``pe/atom`` with the difference than the ``/`` character is replaced by ``_`` and ``group_name`` is the name of the group to which the compute is applied. All global computes are printed to the ``lammps.log`` and all site dependent quantities are printed to the trajectory file. These computes can then be accessed as outputs of the simulation.
 

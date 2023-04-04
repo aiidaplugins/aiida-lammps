@@ -1,4 +1,5 @@
 """Test the aiida-lammps calculations."""
+import copy
 import io
 import textwrap
 
@@ -22,8 +23,13 @@ from aiida_lammps.fixtures.calculations import (
     minimize_parameters_groups,
     minimize_reference_data,
 )
-from aiida_lammps.fixtures.data import generate_structure  # noqa: F401
-from aiida_lammps.fixtures.data import get_potential_fe_eam  # noqa: F401
+from aiida_lammps.fixtures.data import generate_structure, get_potential_fe_eam
+from aiida_lammps.fixtures.inputs import (
+    parameters_restart_final,
+    parameters_restart_full,
+    parameters_restart_full_no_storage,
+    parameters_restart_intermediate,
+)
 from . import utils as tests
 
 
@@ -584,11 +590,11 @@ def test_md_multi_process(
 @pytest.mark.parametrize(
     "parameters,reference_data",
     [
-        (minimize_parameters(), minimize_reference_data()),
-        (minimize_parameters_groups(), minimize_groups_reference_data()),
-        (md_parameters_nve(), md_reference_data_nve()),
-        (md_parameters_nvt(), md_reference_data_nvt()),
-        (md_parameters_npt(), md_reference_data_npt()),
+        ("minimize_parameters", "minimize_reference_data"),
+        ("minimize_parameters_groups", "minimize_groups_reference_data"),
+        ("md_parameters_nve", "md_reference_data_nve"),
+        ("md_parameters_nvt", "md_reference_data_nvt"),
+        ("md_parameters_npt", "md_reference_data_npt"),
     ],
 )
 def test_lammps_base(
@@ -597,6 +603,7 @@ def test_lammps_base(
     get_potential_fe_eam,  # pylint: disable=redefined-outer-name  # noqa: F811
     parameters,
     reference_data,
+    request,
 ):
     """
     Set of tests for the lammps.base calculation
@@ -605,6 +612,7 @@ def test_lammps_base(
     :param generate_structure: structure used for the tests
     :type generate_structure: orm.StructureDate
     """
+    # pylint: disable=too-many-arguments, too-many-locals
 
     calc_plugin = "lammps.base"
     code = db_test_app.get_or_create_code(calc_plugin)
@@ -616,13 +624,15 @@ def test_lammps_base(
     inputs.metadata = tests.get_default_metadata()
     inputs.structure = generate_structure
     inputs.potential = get_potential_fe_eam
-    inputs.parameters = orm.Dict(dict=parameters)
+    inputs.parameters = orm.Dict(dict=request.getfixturevalue(parameters))
 
     results, node = run_get_node(calculation, **inputs)
 
     assert node.exit_status == 0, "calculation ended in non-zero state"
 
     assert "results" in results, 'the "results" node not present'
+
+    reference_data = request.getfixturevalue(reference_data)
 
     for key, value in reference_data.results.items():
         _msg = f'key "{key}" not present'
@@ -646,6 +656,10 @@ def test_lammps_base(
     assert (
         "time_dependent_computes" in results
     ), 'the "time_dependent_computes" node is not present'
+
+    _msg = "No time dependet computes obtained even when expected"
+    assert len(results["time_dependent_computes"].get_arraynames()) > 0, _msg
+
     for key, value in reference_data.time_dependent_computes.items():
         _msg = f'key "{key}" not present'
         assert key in results["time_dependent_computes"].get_arraynames(), _msg
@@ -709,6 +723,162 @@ def test_lammps_base_script(generate_calc_job, aiida_local_code_factory):
     inputs["script"] = script
     tmp_path, calc_info = generate_calc_job("lammps.base", inputs)
     assert (tmp_path / BaseLammpsCalculation._INPUT_FILENAME).read_text() == content
+
+
+@pytest.mark.lammps_call
+@pytest.mark.parametrize(
+    "parameters,restart_parameters",
+    [
+        (
+            "md_parameters_npt",
+            "parameters_restart_full",
+        ),
+        (
+            "md_parameters_npt",
+            "parameters_restart_full_no_storage",
+        ),
+        (
+            "md_parameters_npt",
+            "parameters_restart_final",
+        ),
+        (
+            "md_parameters_npt",
+            "parameters_restart_intermediate",
+        ),
+    ],
+)
+def test_lammps_restart_generation(
+    db_test_app,
+    generate_structure,  # pylint: disable=redefined-outer-name  # noqa: F811
+    get_potential_fe_eam,  # pylint: disable=redefined-outer-name  # noqa: F811
+    parameters,
+    restart_parameters,
+    request,
+):
+
+    calc_plugin = "lammps.base"
+    code = db_test_app.get_or_create_code(calc_plugin)
+
+    calculation = CalculationFactory(calc_plugin)
+
+    parameters = request.getfixturevalue(parameters)
+
+    restart_parameters = request.getfixturevalue(restart_parameters)
+
+    parameters.restart = restart_parameters.restart
+
+    inputs = AttributeDict()
+    inputs.code = code
+    inputs.metadata = tests.get_default_metadata()
+    inputs.structure = generate_structure
+    inputs.potential = get_potential_fe_eam
+    inputs.parameters = orm.Dict(dict=parameters)
+
+    if "settings" in restart_parameters:
+        inputs.settings = orm.Dict(dict=restart_parameters.settings)
+
+    results, node = run_get_node(calculation, **inputs)
+
+    assert node.exit_status == 0, "calculation ended in non-zero state"
+
+    for _node in ["results", "retrieved", "remote_folder"]:
+        assert _node in results, f"the '{_node}' node it not present"
+
+    # Check that the restartfile is stored
+    if restart_parameters.get("settings", {}).get("store_restart", False):
+        assert "restartfile" in results, "The restartfile is not found"
+        if restart_parameters.restart.get("print_final", False):
+            _msg = "The restartfile is not in the retrieved folder"
+            assert (
+                node.get_option("restart_filename")
+                in results["retrieved"].base.repository.list_object_names()
+            ), _msg
+    else:
+        # Check that if the file was not asked to be stored that it is not stored
+        assert (
+            not "restartfile" in results
+        ), "The restartfile is stored even when it was not requested"
+        if restart_parameters.restart.get("print_final", False):
+            _msg = "The restartfile is in the retrieved folder even when it was not requested"
+            assert (
+                not node.get_option("restart_filename")
+                in results["retrieved"].base.repository.list_object_names()
+            ), _msg
+
+    # Check that the final restartfile is printed
+    if restart_parameters.restart.get("print_final", False):
+        _msg = "The restartfile was not created by the lammps calculation"
+        assert (
+            node.get_option("restart_filename") in results["remote_folder"].listdir()
+        ), _msg
+
+    # Check that the intermediate restartfiles are printed
+    if restart_parameters.restart.get("print_intermediate", False):
+        restartfiles = [
+            entry
+            for entry in results["remote_folder"].listdir()
+            if node.get_option("restart_filename") in entry
+        ]
+        _msg = (
+            "The intermediate restartfiles were not created by the lammps calculation"
+        )
+        assert len(restartfiles) > 0, _msg
+
+    # Remove the velocity if pressent so that the simulation is not shaken at the start. This allows
+    # for comparizon between parameters from initial and final steps
+    _parameters = copy.deepcopy(parameters)
+    if "velocity" in _parameters["md"]:
+        del _parameters["md"]["velocity"]
+
+    # Set the parameters for the restart calculation
+    inputs_restart = AttributeDict()
+    inputs_restart.code = code
+    inputs_restart.metadata = tests.get_default_metadata()
+    inputs_restart.structure = generate_structure
+    inputs_restart.potential = get_potential_fe_eam
+    inputs_restart.parameters = orm.Dict(dict=_parameters)
+
+    # Add the appropriate restart input for the calculation
+    if restart_parameters.get("settings", {}).get("store_restart", False):
+        inputs_restart.input_restartfile = results["restartfile"]
+    else:
+        inputs_restart.parent_folder = results["remote_folder"]
+
+    # Add the appropriate restart setting
+    if "settings" in restart_parameters:
+        inputs_restart.settings = orm.Dict(dict=restart_parameters.settings)
+
+    # run the restart calculation
+    results_restart, node_restart = run_get_node(calculation, **inputs_restart)
+
+    # Check that the restart calculation ended properly
+    assert node_restart.exit_status == 0, "calculation ended in non-zero state"
+
+    # Check that the last step of the initial calculation and the initial step of the restart match
+    # This should happen if one runs with the same version of lammps in the same hardware
+    for _name in results_restart["time_dependent_computes"].get_arraynames():
+        if _name.lower() not in ["step"]:
+            _msg = f"The initial value of the restart compute '{_name}' is not equal to the last step of the input"
+            assert np.isclose(
+                results_restart["time_dependent_computes"].get_array(_name)[0],
+                results["time_dependent_computes"].get_array(_name)[-1],
+            ), _msg
+
+    # Check that the initial structure from the relax and the final structure from the input match
+    _msg = "The initial cell from the restart does not match the final cell"
+    assert np.allclose(
+        results_restart["trajectories"].get_step_structure(0).get_ase().cell,
+        results["trajectories"].get_step_structure(-1).get_ase().cell,
+    ), _msg
+
+    _msg = "The atomic positions from the restart does not match the final atomic positions"
+    assert np.allclose(
+        results_restart["trajectories"]
+        .get_step_structure(0)
+        .get_ase()
+        .get_scaled_positions(),
+        results["trajectories"].get_step_structure(-1).get_ase().get_scaled_positions(),
+    ), _msg
 
 
 def test_lammps_base_settings_invalid(generate_calc_job, aiida_local_code_factory):

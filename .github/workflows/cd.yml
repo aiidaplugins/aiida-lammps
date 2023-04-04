@@ -15,7 +15,7 @@ jobs:
         uses: actions/setup-python@v4.5.0
         with:
           python-version: "3.8"
-      - name: Make sure virtualevn>20 is installed, which will yield newer pip and posibility to pin pip version.
+      - name: Make sure virtualevn>20 is installed, which will yield newer pip and possibility to pin pip version.
         run: pip install virtualenv>20
       - name: Install Tox
         run: pip install tox
@@ -76,7 +76,7 @@ jobs:
       - name: install lammps
         run: conda install -y lammps==${{ matrix.lammps-version }}
 
-      - name: Make sure virtualevn>20 is installed, which will yield newer pip and posibility to pin pip version.
+      - name: Make sure virtualevn>20 is installed, which will yield newer pip and possibility to pin pip version.
         run: pip install virtualenv>20
       - name: Install Tox
         run: pip install tox
