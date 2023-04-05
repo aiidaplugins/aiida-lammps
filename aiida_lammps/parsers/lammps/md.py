@@ -9,7 +9,7 @@ from aiida_lammps.data.trajectory import LammpsTrajectory
 from aiida_lammps.parsers.lammps.base import LammpsBaseParser
 
 
-class LammpsMdParser(LAMMPSBaseParser):
+class LammpsMdParser(LammpsBaseParser):
     """Parser for LAMMPS MD calculations."""
 
     def __init__(self, node):
