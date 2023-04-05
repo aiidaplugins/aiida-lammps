@@ -3,7 +3,7 @@ results:
   energy: -1018.1
   energy_units: Kcal/mole
   errors: []
-  parser_class: MdMultiParser
+  parser_class: LammpsMdMultiParser
   stage_names:
   - thermalise
   - equilibrate

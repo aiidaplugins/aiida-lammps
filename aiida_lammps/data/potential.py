@@ -7,7 +7,7 @@ from aiida.orm import Data
 from aiida.plugins.entry_point import get_entry_point_names, load_entry_point
 
 
-class EmpiricalPotential(Data):
+class LammpsEmpiricalPotential(Data):
     """
     Store the empirical potential data
     """

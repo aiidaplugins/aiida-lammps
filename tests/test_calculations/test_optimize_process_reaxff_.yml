@@ -8,7 +8,7 @@ results:
     etotal: -1030.4
     temp: 0.0
   force_units: Kcal/mole-Angstrom
-  parser_class: OptimizeParser
+  parser_class: LammpsOptimizeParser
   stress_units: atmospheres
   units_style: real
 structure:

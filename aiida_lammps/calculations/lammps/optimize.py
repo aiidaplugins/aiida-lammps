@@ -12,7 +12,7 @@ from aiida_lammps.data.trajectory import LammpsTrajectory
 from aiida_lammps.validation import validate_against_schema
 
 
-class OptimizeCalculation(BaseLammpsCalculation):
+class LammpsOptimizeCalculation(BaseLammpsCalculation):
     """Calculation for the optimization of the structure in LAMMPS."""
 
     @classmethod
@@ -147,7 +147,7 @@ class OptimizeCalculation(BaseLammpsCalculation):
         :param param_data: input parameters for the optimization calculations
         :type param_data: orm.Dict
         :param potential_object: LAMMPS potential
-        :type potential_object: EmpiricalPotential
+        :type potential_object: LammpsEmpiricalPotential
         :raises InputValidationError: if there is no parameters data passed
         :raises InputValidationError: if the units of the parameters and
             the potential are different.

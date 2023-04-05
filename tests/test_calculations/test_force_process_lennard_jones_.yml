@@ -11,5 +11,5 @@ results:
     etotal: 0.0
     temp: 0.0
   force_units: eV/Angstrom
-  parser_class: ForceParser
+  parser_class: LammpsForceParser
   units_style: metal

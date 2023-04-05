@@ -6,20 +6,20 @@ import yaml
 
 from aiida_lammps.common import input_generator
 from aiida_lammps.data.lammps_potential import LammpsPotentialData
-from aiida_lammps.data.potential import EmpiricalPotential
+from aiida_lammps.data.potential import LammpsEmpiricalPotential
 from .utils import TEST_DIR
 
 
 def test_list_potentials():
     """Test that all the supported potential types are recognized."""
-    assert set(EmpiricalPotential.list_types()).issuperset(
+    assert set(LammpsEmpiricalPotential.list_types()).issuperset(
         ["eam", "lennard_jones", "reaxff", "tersoff"]
     )
 
 
 def test_load_type():
     """Test that an specific potential can be loaded"""
-    EmpiricalPotential.load_type("eam")
+    LammpsEmpiricalPotential.load_type("eam")
 
 
 @pytest.mark.parametrize(
@@ -34,7 +34,7 @@ def test_init(
 ):
     """Test that the potential can be generated"""
     potential = get_potential_data(potential_type)
-    node = EmpiricalPotential(
+    node = LammpsEmpiricalPotential(
         potential_type=potential.type,
         data=potential.data,
     )
@@ -50,7 +50,7 @@ def test_potential_files(
 ):
     """Test that one can read the potential content."""
     potential = get_potential_data(potential_type)
-    node = EmpiricalPotential(
+    node = LammpsEmpiricalPotential(
         potential_type=potential.type,
         data=potential.data,
     )
@@ -69,7 +69,7 @@ def test_input_lines(
 ):
     """Test that one can get the potential lines for a given aiida-lammps potential"""
     potential = get_potential_data(potential_type)
-    node = EmpiricalPotential(
+    node = LammpsEmpiricalPotential(
         potential_type=potential.type,
         data=potential.data,
     )

@@ -4,7 +4,7 @@ from aiida.engine import run_get_node
 from aiida.plugins import CalculationFactory
 import numpy as np
 
-from aiida_lammps.data.potential import EmpiricalPotential
+from aiida_lammps.data.potential import LammpsEmpiricalPotential
 
 if __name__ == "__main__":
 
@@ -81,7 +81,7 @@ if __name__ == "__main__":
 
     # setup nodes
     inputs.structure = structure
-    inputs.potential = EmpiricalPotential(
+    inputs.potential = LammpsEmpiricalPotential(
         type=potential["pair_style"], data=potential["data"]
     )
 

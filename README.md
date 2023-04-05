@@ -168,7 +168,7 @@ Inputs        PK  Type
 ----------  ----  ------------------
 code        1351  Code
 parameters  2479  Dict
-potential   2478  EmpiricalPotential
+potential   2478  LammpsEmpiricalPotential
 structure   2477  StructureData
 
 Outputs          PK  Type
@@ -185,7 +185,7 @@ calc_node.outputs.results.attributes
 
 ```python
 {'parser_version': '0.4.0b3',
- 'parser_class': 'ForceParser',
+ 'parser_class': 'LammpsForceParser',
  'errors': [],
  'warnings': '',
  'distance_units': 'Angstroms',
@@ -264,7 +264,7 @@ Inputs        PK  Type
 ----------  ----  ------------------
 code        1344  Code
 parameters  2485  Dict
-potential   2478  EmpiricalPotential
+potential   2478  LammpsEmpiricalPotential
 structure   2477  StructureData
 
 Outputs          PK  Type
@@ -282,7 +282,7 @@ calc_node.outputs.results.attributes
 
 ```python
 {'parser_version': '0.4.0b3',
- 'parser_class': 'OptimizeParser',
+ 'parser_class': 'LammpsOptimizeParser',
  'errors': [],
  'warnings': '',
  'stress_units': 'bars',
@@ -366,7 +366,7 @@ Inputs        PK  Type
 ----------  ----  ------------------
 code        1540  Code
 parameters  2492  Dict
-potential   2478  EmpiricalPotential
+potential   2478  LammpsEmpiricalPotential
 structure   2477  StructureData
 
 Outputs            PK  Type
@@ -384,7 +384,7 @@ calc_node.outputs.results.attributes
 
 ```python
 {'parser_version': '0.4.0b3',
- 'parser_class': 'MdParser',
+ 'parser_class': 'LammpsMdParser',
  'errors': [],
  'warnings': '',
  'time_units': 'picoseconds',

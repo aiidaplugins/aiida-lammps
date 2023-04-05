@@ -61,21 +61,21 @@ docs = [
 
 [project.entry-points."aiida.calculations"]
 "lammps.base" = "aiida_lammps.calculations.lammps.base:LammpsBaseCalculation"
-"lammps.combinate" = "aiida_lammps.calculations.lammps.combinate:CombinateCalculation"
+"lammps.combinate" = "aiida_lammps.calculations.lammps.combinate:LammpsCombinateCalculation"
 "lammps.force" = "aiida_lammps.calculations.lammps.force:LammpsForceCalculation"
 "lammps.md" = "aiida_lammps.calculations.lammps.md:LammpsMdCalculation"
-"lammps.md.multi" = "aiida_lammps.calculations.lammps.md_multi:MdMultiCalculation"
-"lammps.optimize" = "aiida_lammps.calculations.lammps.optimize:OptimizeCalculation"
+"lammps.md.multi" = "aiida_lammps.calculations.lammps.md_multi:LammpsMdMultiCalculation"
+"lammps.optimize" = "aiida_lammps.calculations.lammps.optimize:LammpsOptimizeCalculation"
 
 [project.entry-points."aiida.parsers"]
-"lammps.base" = "aiida_lammps.parsers.lammps.lammps_parser:LAMMPSBaseParser"
-"lammps.force" = "aiida_lammps.parsers.lammps.force:ForceParser"
-"lammps.md" = "aiida_lammps.parsers.lammps.md:MdParser"
-"lammps.md.multi" = "aiida_lammps.parsers.lammps.md_multi:MdMultiParser"
-"lammps.optimize" = "aiida_lammps.parsers.lammps.optimize:OptimizeParser"
+"lammps.base" = "aiida_lammps.parsers.lammps.lammps_parser:LammpsBaseParser"
+"lammps.force" = "aiida_lammps.parsers.lammps.force:LammpsForceParser"
+"lammps.md" = "aiida_lammps.parsers.lammps.md:LammpsMdParser"
+"lammps.md.multi" = "aiida_lammps.parsers.lammps.md_multi:LammpsMdMultiParser"
+"lammps.optimize" = "aiida_lammps.parsers.lammps.optimize:LammpsOptimizeParser"
 
 [project.entry-points."aiida.data"]
-"lammps.potential" = "aiida_lammps.data.potential:EmpiricalPotential"
+"lammps.potential" = "aiida_lammps.data.potential:LammpsEmpiricalPotential"
 "lammps.lammps_potential" = "aiida_lammps.data.lammps_potential:LammpsPotentialData"
 "lammps.trajectory" = "aiida_lammps.data.trajectory:LammpsTrajectory"
 
