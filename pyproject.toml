@@ -60,10 +60,10 @@ docs = [
 ]
 
 [project.entry-points."aiida.calculations"]
-"lammps.base" = "aiida_lammps.calculations.lammps.base:BaseLammpsCalculation"
+"lammps.base" = "aiida_lammps.calculations.lammps.base:LammpsBaseCalculation"
 "lammps.combinate" = "aiida_lammps.calculations.lammps.combinate:CombinateCalculation"
-"lammps.force" = "aiida_lammps.calculations.lammps.force:ForceCalculation"
-"lammps.md" = "aiida_lammps.calculations.lammps.md:MdCalculation"
+"lammps.force" = "aiida_lammps.calculations.lammps.force:LammpsForceCalculation"
+"lammps.md" = "aiida_lammps.calculations.lammps.md:LammpsMdCalculation"
 "lammps.md.multi" = "aiida_lammps.calculations.lammps.md_multi:MdMultiCalculation"
 "lammps.optimize" = "aiida_lammps.calculations.lammps.optimize:OptimizeCalculation"
 

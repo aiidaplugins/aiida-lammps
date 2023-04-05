@@ -18,7 +18,7 @@ from aiida_lammps.data.lammps_potential import LammpsPotentialData
 from aiida_lammps.data.trajectory import LammpsTrajectory
 
 
-class BaseLammpsCalculation(CalcJob):
+class LammpsBaseCalculation(CalcJob):
     """
     A basic plugin for performing calculations in ``LAMMPS`` using aiida.
 

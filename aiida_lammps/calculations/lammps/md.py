@@ -10,7 +10,7 @@ from aiida_lammps.data.trajectory import LammpsTrajectory
 from aiida_lammps.validation import validate_against_schema
 
 
-class MdCalculation(BaseLammpsCalculation):
+class LammpsMdCalculation(BaseLammpsCalculation):
     """Calculation of a single MD stage in LAMMPS."""
 
     @classmethod

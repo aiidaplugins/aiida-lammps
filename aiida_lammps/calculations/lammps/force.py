@@ -7,7 +7,7 @@ from aiida_lammps.common.utils import convert_date_string
 from aiida_lammps.validation import validate_against_schema
 
 
-class ForceCalculation(BaseLammpsCalculation):
+class LammpsForceCalculation(BaseLammpsCalculation):
     """Calculation of a single point in LAMMPS, to obtain the energy of the system."""
 
     @classmethod

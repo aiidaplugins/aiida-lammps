@@ -144,7 +144,7 @@ result, calc_node = run_get_node(builder)
 $ verdi process list -D desc -a -l 1
   PK  Created    Process label     Process State    Process status
 ----  ---------  ----------------  ---------------  ----------------
-2480  32s ago    ForceCalculation  Finished [0]
+2480  32s ago    LammpsForceCalculation  Finished [0]
 
 Total results: 1
 
@@ -342,7 +342,7 @@ result, calc_node = run_get_node(builder)
 $ verdi process list -D desc -a -l 1
   PK  Created    Process label    Process State    Process status
 ----  ---------  ---------------  ---------------  ----------------
-2493  12s ago    MdCalculation    ⏹ Finished [0]
+2493  12s ago    LammpsMdCalculation    ⏹ Finished [0]
 
 Total results: 1
 
