@@ -9,7 +9,7 @@ from aiida_lammps.data.trajectory import LammpsTrajectory
 from aiida_lammps.validation import validate_against_schema
 
 
-class MdMultiCalculation(BaseLammpsCalculation):
+class LammpsMdMultiCalculation(BaseLammpsCalculation):
     """Run a multi-stage molecular dynamic simulation."""
 
     @classmethod

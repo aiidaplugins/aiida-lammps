@@ -692,8 +692,8 @@ def test_lammps_base(
 
 
 def test_lammps_base_script(generate_calc_job, aiida_local_code_factory):
-    """Test the ``BaseLammpsCalculation`` with the ``script`` input."""
-    from aiida_lammps.calculations.lammps.base import BaseLammpsCalculation
+    """Test the ``LammpsBaseCalculation`` with the ``script`` input."""
+    from aiida_lammps.calculations.lammps.base import LammpsBaseCalculation
 
     inputs = {
         "code": aiida_local_code_factory("lammps.base", "bash"),
@@ -722,7 +722,7 @@ def test_lammps_base_script(generate_calc_job, aiida_local_code_factory):
 
     inputs["script"] = script
     tmp_path, calc_info = generate_calc_job("lammps.base", inputs)
-    assert (tmp_path / BaseLammpsCalculation._INPUT_FILENAME).read_text() == content
+    assert (tmp_path / LammpsBaseCalculation._INPUT_FILENAME).read_text() == content
 
 
 @pytest.mark.lammps_call
@@ -897,8 +897,8 @@ def test_lammps_base_settings_invalid(generate_calc_job, aiida_local_code_factor
 
 
 def test_lammps_base_settings(generate_calc_job, aiida_local_code_factory):
-    """Test the ``BaseLammpsCalculation`` with the ``settings`` input."""
-    from aiida_lammps.calculations.lammps.base import BaseLammpsCalculation
+    """Test the ``LammpsBaseCalculation`` with the ``settings`` input."""
+    from aiida_lammps.calculations.lammps.base import LammpsBaseCalculation
 
     inputs = {
         "code": aiida_local_code_factory("lammps.base", "bash"),

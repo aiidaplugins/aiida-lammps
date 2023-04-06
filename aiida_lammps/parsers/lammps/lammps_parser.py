@@ -18,7 +18,7 @@ from aiida_lammps.common.raw_parsers import parse_final_data, parse_logfile
 from aiida_lammps.data.trajectory import LammpsTrajectory
 
 
-class LAMMPSBaseParser(Parser):
+class LammpsBaseParser(Parser):
     """
     Base parser for LAMMPS calculations.
 

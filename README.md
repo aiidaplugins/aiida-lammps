@@ -144,7 +144,7 @@ result, calc_node = run_get_node(builder)
 $ verdi process list -D desc -a -l 1
   PK  Created    Process label     Process State    Process status
 ----  ---------  ----------------  ---------------  ----------------
-2480  32s ago    ForceCalculation  Finished [0]
+2480  32s ago    LammpsForceCalculation  Finished [0]
 
 Total results: 1
 
@@ -168,7 +168,7 @@ Inputs        PK  Type
 ----------  ----  ------------------
 code        1351  Code
 parameters  2479  Dict
-potential   2478  EmpiricalPotential
+potential   2478  LammpsEmpiricalPotential
 structure   2477  StructureData
 
 Outputs          PK  Type
@@ -185,7 +185,7 @@ calc_node.outputs.results.attributes
 
 ```python
 {'parser_version': '0.4.0b3',
- 'parser_class': 'ForceParser',
+ 'parser_class': 'LammpsForceParser',
  'errors': [],
  'warnings': '',
  'distance_units': 'Angstroms',
@@ -264,7 +264,7 @@ Inputs        PK  Type
 ----------  ----  ------------------
 code        1344  Code
 parameters  2485  Dict
-potential   2478  EmpiricalPotential
+potential   2478  LammpsEmpiricalPotential
 structure   2477  StructureData
 
 Outputs          PK  Type
@@ -282,7 +282,7 @@ calc_node.outputs.results.attributes
 
 ```python
 {'parser_version': '0.4.0b3',
- 'parser_class': 'OptimizeParser',
+ 'parser_class': 'LammpsOptimizeParser',
  'errors': [],
  'warnings': '',
  'stress_units': 'bars',
@@ -342,7 +342,7 @@ result, calc_node = run_get_node(builder)
 $ verdi process list -D desc -a -l 1
   PK  Created    Process label    Process State    Process status
 ----  ---------  ---------------  ---------------  ----------------
-2493  12s ago    MdCalculation    ⏹ Finished [0]
+2493  12s ago    LammpsMdCalculation    ⏹ Finished [0]
 
 Total results: 1
 
@@ -366,7 +366,7 @@ Inputs        PK  Type
 ----------  ----  ------------------
 code        1540  Code
 parameters  2492  Dict
-potential   2478  EmpiricalPotential
+potential   2478  LammpsEmpiricalPotential
 structure   2477  StructureData
 
 Outputs            PK  Type
@@ -384,7 +384,7 @@ calc_node.outputs.results.attributes
 
 ```python
 {'parser_version': '0.4.0b3',
- 'parser_class': 'MdParser',
+ 'parser_class': 'LammpsMdParser',
  'errors': [],
  'warnings': '',
  'time_units': 'picoseconds',

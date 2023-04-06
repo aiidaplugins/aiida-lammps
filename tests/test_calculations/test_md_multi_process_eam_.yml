@@ -3,7 +3,7 @@ results:
   energy: -8.2
   energy_units: eV
   errors: []
-  parser_class: MdMultiParser
+  parser_class: LammpsMdMultiParser
   stage_names:
   - thermalise
   - equilibrate

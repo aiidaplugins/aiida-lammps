@@ -3,7 +3,7 @@ results:
   energy: -17.8
   energy_units: eV
   errors: []
-  parser_class: MdParser
+  parser_class: LammpsMdParser
   time_units: picoseconds
   timestep_picoseconds: 0.001
   units_style: metal

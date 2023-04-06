@@ -14,5 +14,5 @@ results:
     etotal: -1028.0
     temp: 0.0
   force_units: Kcal/mole-Angstrom
-  parser_class: ForceParser
+  parser_class: LammpsForceParser
   units_style: real

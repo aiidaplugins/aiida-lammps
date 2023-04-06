@@ -9,7 +9,7 @@ from aiida.engine import CalcJob
 import numpy as np
 
 from aiida_lammps.common.generate_structure import generate_lammps_structure
-from aiida_lammps.data.potential import EmpiricalPotential
+from aiida_lammps.data.potential import LammpsEmpiricalPotential
 
 
 class BaseLammpsCalculation(CalcJob):
@@ -40,7 +40,7 @@ class BaseLammpsCalculation(CalcJob):
         )
         spec.input(
             "potential",
-            valid_type=EmpiricalPotential,
+            valid_type=LammpsEmpiricalPotential,
             help="lammps potential",
         )
         spec.input(

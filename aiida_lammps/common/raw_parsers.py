@@ -146,7 +146,7 @@ def read_log_file(logdata_txt, compute_stress=False):
             found_end = True
         elif "Total wall time:" in line:
             data_dict["total_wall_time"] = line.split()[-1]
-        # These are handled in LAMMPSBaseParser.add_warnings_and_errors
+        # These are handled in LammpsBaseParser.add_warnings_and_errors
         # if line.strip().startswith("WARNING"):
         #     data_dict.setdefault("warnings", []).append(line.strip())
         # if line.strip().startswith("ERROR"):

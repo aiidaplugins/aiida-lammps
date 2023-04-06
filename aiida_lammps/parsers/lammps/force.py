@@ -4,10 +4,10 @@ import numpy as np
 
 from aiida_lammps.common.parse_trajectory import iter_trajectories
 from aiida_lammps.common.raw_parsers import get_units_dict
-from aiida_lammps.parsers.lammps.base import LAMMPSBaseParser
+from aiida_lammps.parsers.lammps.base import LammpsBaseParser
 
 
-class ForceParser(LAMMPSBaseParser):
+class LammpsForceParser(LammpsBaseParser):
     """Parser for LAMMPS single point energy calculation."""
 
     def __init__(self, node):

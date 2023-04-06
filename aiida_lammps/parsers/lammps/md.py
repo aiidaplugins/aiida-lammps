@@ -6,10 +6,10 @@ import numpy as np
 
 from aiida_lammps.common.raw_parsers import convert_units, get_units_dict
 from aiida_lammps.data.trajectory import LammpsTrajectory
-from aiida_lammps.parsers.lammps.base import LAMMPSBaseParser
+from aiida_lammps.parsers.lammps.base import LammpsBaseParser
 
 
-class MdParser(LAMMPSBaseParser):
+class LammpsMdParser(LammpsBaseParser):
     """Parser for LAMMPS MD calculations."""
 
     def __init__(self, node):

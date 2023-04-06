@@ -16,7 +16,7 @@ ParsingResources = namedtuple(
 )
 
 
-class LAMMPSBaseParser(Parser):
+class LammpsBaseParser(Parser):
     """Abstract Base Parser for LAMMPS, supplying common methods."""
 
     def __init__(self, node):
