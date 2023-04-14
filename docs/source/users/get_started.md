@@ -60,7 +60,7 @@ Certain tags are required, and must be provided to be able to upload the potenti
 
 Then the potential can be uploaded to the database
 ```{code-block} python
-from aiida_lamps.data.lammps_potential import LammpsPotentialData
+from aiida_lamps.data.potential import LammpsPotentialData
 
 potential = LammpsPotentialData.get_or_create(
     source='Fe_2.eam.fs', # Relative path to the potential file

@@ -4,7 +4,7 @@ from aiida import orm
 import numpy as np
 import pytest
 
-from aiida_lammps.data.lammps_potential import LammpsPotentialData
+from aiida_lammps.data.potential import LammpsPotentialData
 
 
 @pytest.fixture

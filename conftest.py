@@ -62,11 +62,6 @@ def db_test_app(aiida_profile, pytestconfig):
     """Clear the database after each test."""
     exec_name = pytestconfig.getoption("lammps_exec") or "lammps"
     executables = {
-        "lammps.md": exec_name,
-        "lammps.md.multi": exec_name,
-        "lammps.optimize": exec_name,
-        "lammps.force": exec_name,
-        "lammps.combinate": exec_name,
         "lammps.base": exec_name,
     }
 

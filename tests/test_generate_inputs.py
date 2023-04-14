@@ -4,7 +4,7 @@ import os
 import pytest
 
 from aiida_lammps.common import input_generator
-from aiida_lammps.data.lammps_potential import LammpsPotentialData
+from aiida_lammps.data.potential import LammpsPotentialData
 from aiida_lammps.fixtures.inputs import (
     parameters_md,
     parameters_minimize,

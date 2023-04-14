@@ -123,7 +123,7 @@ def generate_structure() -> orm.StructureData:
 When dealing with a new potential that one wishes to use for a simulation one can upload a potential by using the ``get_or_create`` method in the ``LammpsPotentialData``, this method will calculate the ``md5`` checksum of the file and check if exists in the database, if it does that database entry is used, otherwise the file it is uploaded into the database and the used in the simulation. To make the potential easy to find and reuse one can pass a series of optional tags based of the [OpenKIM schema](https://openkim.org/doc/schema/kimspec/), which will provide a systematic way of tagging and finding potentials.
 
 ```{code-block} python
-from aiida_lammps.data.lammps_potential import LammpsPotentialData
+from aiida_lammps.data.potential import LammpsPotentialData
 
 def generate_potential() -> LammpsPotentialData:
     """

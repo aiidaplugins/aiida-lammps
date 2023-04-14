@@ -5,75 +5,8 @@ import pytest
 import yaml
 
 from aiida_lammps.common import input_generator
-from aiida_lammps.data.lammps_potential import LammpsPotentialData
-from aiida_lammps.data.potential import LammpsEmpiricalPotential
+from aiida_lammps.data.potential import LammpsPotentialData
 from .utils import TEST_DIR
-
-
-def test_list_potentials():
-    """Test that all the supported potential types are recognized."""
-    assert set(LammpsEmpiricalPotential.list_types()).issuperset(
-        ["eam", "lennard_jones", "reaxff", "tersoff"]
-    )
-
-
-def test_load_type():
-    """Test that an specific potential can be loaded"""
-    LammpsEmpiricalPotential.load_type("eam")
-
-
-@pytest.mark.parametrize(
-    "potential_type",
-    ["lennard-jones", "tersoff", "eam", "reaxff"],
-)
-def test_init(
-    db_test_app,  # pylint: disable=unused-argument
-    get_potential_data,
-    potential_type,
-    data_regression,
-):
-    """Test that the potential can be generated"""
-    potential = get_potential_data(potential_type)
-    node = LammpsEmpiricalPotential(
-        potential_type=potential.type,
-        data=potential.data,
-    )
-    data_regression.check(node.base.attributes.all)
-
-
-@pytest.mark.parametrize("potential_type", ["tersoff"])
-def test_potential_files(
-    db_test_app,  # pylint: disable=unused-argument
-    get_potential_data,
-    potential_type,
-    file_regression,
-):
-    """Test that one can read the potential content."""
-    potential = get_potential_data(potential_type)
-    node = LammpsEmpiricalPotential(
-        potential_type=potential.type,
-        data=potential.data,
-    )
-    file_regression.check(node.base.repository.get_object_content("potential.pot", "r"))
-
-
-@pytest.mark.parametrize(
-    "potential_type",
-    ["lennard-jones", "tersoff", "eam", "reaxff"],
-)
-def test_input_lines(
-    db_test_app,  # pylint: disable=unused-argument
-    get_potential_data,
-    potential_type,
-    file_regression,
-):
-    """Test that one can get the potential lines for a given aiida-lammps potential"""
-    potential = get_potential_data(potential_type)
-    node = LammpsEmpiricalPotential(
-        potential_type=potential.type,
-        data=potential.data,
-    )
-    file_regression.check(node.get_input_lines())
 
 
 @pytest.mark.parametrize(

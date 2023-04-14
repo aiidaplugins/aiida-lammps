@@ -14,7 +14,7 @@ from aiida.engine import CalcJob
 
 from aiida_lammps.common.generate_structure import generate_lammps_structure
 from aiida_lammps.common.input_generator import generate_input_file
-from aiida_lammps.data.lammps_potential import LammpsPotentialData
+from aiida_lammps.data.potential import LammpsPotentialData
 from aiida_lammps.data.trajectory import LammpsTrajectory
 
 
