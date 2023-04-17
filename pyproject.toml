@@ -60,10 +60,10 @@ docs = [
 ]
 
 [project.entry-points."aiida.calculations"]
-"lammps.base" = "aiida_lammps.calculations.lammps.base:LammpsBaseCalculation"
+"lammps.base" = "aiida_lammps.calculations.base:LammpsBaseCalculation"
 
 [project.entry-points."aiida.parsers"]
-"lammps.base" = "aiida_lammps.parsers.lammps.lammps_parser:LammpsBaseParser"
+"lammps.base" = "aiida_lammps.parsers.base:LammpsBaseParser"
 
 [project.entry-points."aiida.data"]
 "lammps.potential" = "aiida_lammps.data.potential:LammpsPotentialData"
