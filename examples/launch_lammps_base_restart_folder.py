@@ -123,13 +123,13 @@ def preapre_restart_calculation(results: dict, parameters: orm.Dict) -> dict:
     # calculation matches with the final one in the previous calculation
 
     if "velocity" in _parameters.md:
-        del _parameters['md']["velocity"]
+        del _parameters["md"]["velocity"]
 
     if "restartfile" in results:
-        node_restart = results['restartfile']
+        node_restart = results["restartfile"]
         return {"parameters": orm.Dict(_parameters), "input_restartfile": node_restart}
 
-    node_restart = results['remote_folder']
+    node_restart = results["remote_folder"]
     return {"parameters": orm.Dict(_parameters), "parent_folder": node_restart}
 
 
