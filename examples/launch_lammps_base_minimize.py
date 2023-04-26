@@ -3,7 +3,7 @@ Sets up an example for the calculation of bcc Fe using ``aiida-lammps``.
 """
 from aiida import orm
 from aiida.common.extendeddicts import AttributeDict
-from aiida.engine import run_get_node, submit
+from aiida.engine import run_get_node
 from aiida.plugins import CalculationFactory
 import numpy as np
 
@@ -14,7 +14,7 @@ def generate_structure() -> orm.StructureData:
     """
     Generates the structure for the calculation.
 
-    It will create a bcc structure in a square lattice.
+    It will create a bcc structure in a cubic lattice.
 
     :return: structure to be used in the calculation
     :rtype: orm.StructureData
@@ -54,6 +54,7 @@ def generate_potential() -> LammpsPotentialData:
     :rtype: LammpsPotentialData
     """
 
+    # Set of values to tag the potential for categorization and easy queriability
     potential_parameters = {
         "species": ["Fe"],
         "atom_style": "atomic",
@@ -99,6 +100,7 @@ def generate_potential() -> LammpsPotentialData:
         },
     }
 
+    # Define the potential datastructure or get it from the database if the node already exists
     potential = LammpsPotentialData.get_or_create(
         source="Fe_2.eam.fs",
         **potential_parameters,
@@ -108,7 +110,6 @@ def generate_potential() -> LammpsPotentialData:
 
 
 def main(
-    settings: orm.Dict,
     parameters: orm.Dict,
     structure: orm.StructureData,
     potential: LammpsPotentialData,
@@ -116,10 +117,8 @@ def main(
     code: orm.Code,
 ) -> orm.Node:
     """
-    Submission of the calculation for an MD run in ``LAMMPS``.
+    Submission of the calculation for an minimization run in ``LAMMPS``.
 
-    :param settings: Additional settings that control the ``LAMMPS`` calculation
-    :type settings: orm.Dict
     :param parameters: Parameters that control the input script generated for the ``LAMMPS`` calculation
     :type parameters: orm.Dict
     :param structure: structure to be used in the calculation
@@ -138,60 +137,62 @@ def main(
 
     builder = calculation.get_builder()
     builder.code = code
-    builder.settings = settings
     builder.structure = structure
     builder.parameters = parameters
     builder.potential = potential
     builder.metadata.options = options
-    builder.input_restartfile = orm.load_node(13537)
 
-    node = run_get_node(calculation, **builder)
+    _, node = run_get_node(calculation, **builder)
 
     return node
 
 
 if __name__ == "__main__":
 
+    # Get the structure that will be used in the calculation
     STRUCTURE = generate_structure()
+    # Get the potential that will be used in the calculation
     POTENTIAL = generate_potential()
+    # Get the lammps code defined in AiiDA database
     CODE = orm.load_code("lammps-23.06.2022@localhost")
+    # Define the parameters for the resources requested for the calculation
     OPTIONS = AttributeDict()
     OPTIONS.resources = AttributeDict()
-    # Total number of mpi processes
+    # Total number of machines used
     OPTIONS.resources.num_machines = 1
+    # Total number of mpi processes
     OPTIONS.resources.tot_num_mpiprocs = 2
-    # Name of the parallel environment
-    #    OPTIONS.resources.parallel_env = "mpi"
-    # Maximum allowed execution time in seconds
-    #    OPTIONS.max_wallclock_seconds = 18000
-    # Whether to run in parallel
-    #    OPTIONS.withmpi = True
-    # Set the slot type for the calculation
-    #    OPTIONS.custom_scheduler_commands = "#$ -l slot_type=execute\n#$ -l exclusive=true"
 
+    # Parameters to control the input file generation
     _parameters = AttributeDict()
+    # Control section specifying global simulation parameters
     _parameters.control = AttributeDict()
+    # Types of units to be used in the calculation
     _parameters.control.units = "metal"
+    # Size of the time step in the units previously defined
     _parameters.control.timestep = 1e-5
+    # Set of computes to be evaluated during the calculation
     _parameters.compute = {
         "pe/atom": [{"type": [{"keyword": " ", "value": " "}], "group": "all"}],
         "ke/atom": [{"type": [{"keyword": " ", "value": " "}], "group": "all"}],
         "stress/atom": [{"type": ["NULL"], "group": "all"}],
         "pressure": [{"type": ["thermo_temp"], "group": "all"}],
     }
-    _parameters.md = {
-        "integration": {
-            "style": "npt",
-            "constraints": {
-                "temp": [300, 300, 100],
-                "iso": [0.0, 0.0, 1000.0],
-            },
-        },
-        "max_number_steps": 5000,
-        # "velocity": [{"create": {"temp": 300}, "group": "all"}],
+    # Set of values to control the behaviour of the minimization cycle
+    _parameters.minimize = {
+        "style": "cg",
+        "energy_tolerance": 1e-4,
+        "force_tolerance": 1e-4,
+        "max_iterations": 1000,
+        "max_evaluations": 1000,
     }
+    # Control how often the computes are printed to file
+    _parameters.dump = {"dump_rate": 1000}
+    # Parameters used to pass special information about the structure
     _parameters.structure = {"atom_style": "atomic"}
+    # Parameters used to pass special information about the potential
     _parameters.potential = {}
+    # Parameters controlling the global values written directly to the log
     _parameters.thermo = {
         "printing_rate": 100,
         "thermo_printing": {
@@ -204,18 +205,11 @@ if __name__ == "__main__":
             "pzz": True,
         },
     }
-    _parameters.dump = {"dump_rate": 1000}
-    _parameters.restart = {"print_final": True}
-
+    # Convert the parameters to an AiiDA data structure
     PARAMETERS = orm.Dict(dict=_parameters)
 
-    _settings = AttributeDict()
-    _settings.store_restart = True
-
-    SETTINGS = orm.Dict(dict=_settings)
-
+    # Run the aiida-lammps calculation
     submission_node = main(
-        settings=SETTINGS,
         structure=STRUCTURE,
         potential=POTENTIAL,
         parameters=PARAMETERS,

@@ -2,14 +2,26 @@
 
 In a traditional ``LAMMPS`` calculation a user has an input file which is sequentially read by the executable, each line has a command specifying what actions will be taken, usually the potential is kept as a separate file which is then referred to in the input file.
 
-``aiida-lammps`` generates the necessary inputs by taking three principal data types, namely the ``structure``, the ``parameters`` and the ``potential``.
+``aiida-lammps`` generates the necessary inputs by taking three principal data types, namely the ``structure``, the ``potential`` and the ``parameters``, which decribe the simulation box, the interaction parameters between the atoms and the parameters needed to construct the input file (which kind of simulation, which computes/fixes, etc.) respectively.
+
+## Structure
+
+The structure is the simulation box that will be used for the simulation. The data structure must be of an `~:code:aiida.orm.StructureData` type.
+
+```{note}
+``LAMMPS`` can in principle generate the structure internally, but this is not supported by the input generator that is shipped with the plugin. One can instead if necessary run the entire calculation only giving a ``LAMMPS`` input file.
+```
+
+```{note}
+    LAMMPS requires the simulation cell to be in the format of a lower triangular matrix (right-handed basis). Therefore the cell and positions may require [rotation and inversion](https://lammps.sandia.gov/doc/Howto_triclinic.html). This is automatically done to **every structure** at the calculation level, so it might be that the cell that is provided is modified so that it follows this convention.
+```
 
 ## Potential
 
 The potential is one of the most important pieces of data in a MD simulation, since it controls how the atoms interact with each other.
-In ``aiida-lammps`` the potential file is stored in the `LammpsPotentialData` data type, which will store the entire potential file in the database, and add certain attributes so that the data node is easily queryable for later usage, these attributes have been chosen so that they resemble the [OpenKIM](https://openkim.org/doc/schema/kimspec/) standard as much as possible.
+In ``aiida-lammps`` the potential file is stored in the `LammpsPotentialData` data type, which will store the entire potential file in the database, and add certain attributes so that the data node is easily queryable for later usage. These attributes have been chosen so that they resemble the [OpenKIM](https://openkim.org/doc/schema/kimspec/) standard as much as possible.
 
-To demonstrate how this works one can [download](https://openkim.org/id/EAM_Dynamo_Mendelev_2003_Fe__MO_546673549085_000) a potential from the OpenKIM database, after the file has been downloaded one can generate a dictionary with the metadata of the potential to tag it in the AiiDA database.
+To demonstrate how this works one can [download](https://openkim.org/id/EAM_Dynamo_Mendelev_2003_Fe__MO_546673549085_000) a potential from the OpenKIM database, after the file has been downloaded one can generate a dictionary with the metadata of the potential to tag it in the ``AiiDA`` database.
 
 ```{code-block} python
 potential_parameters = {
@@ -56,7 +68,7 @@ potential_parameters = {
     }
 }
 ```
-Certain tags are required, and must be provided to be able to upload the potential to the database. This is because they identify which ``pair_style`` is associated with the potential, which atomic species can be treated with it, etc. The rest of the tags, in this example are filled so that they follow the OpenKIM standard as that is the place where the potential was obtained, if another database is used or if it is a homemade potential, these tags can be used to facilitate the querying of the potential.
+Certain tags are required, and must be provided to be able to upload the potential to the database. This is because they identify which ``pair_style`` is associated with the potential, which atomic species can be treated with it, etc. The rest of the tags, in this example are filled so that they follow the [OpenKIM](https://openkim.org/doc/schema/kimspec/) standard as that is the place where the potential was obtained. If another database is used or if it is a homemade potential, these tags can be used to facilitate the querying of the potential.
 
 Then the potential can be uploaded to the database
 ```{code-block} python
@@ -69,10 +81,18 @@ potential = LammpsPotentialData.get_or_create(
 
 ```
 
-The ``get_or_create`` method is based on the one by [aiida-pseudo](https://github.com/aiidateam/aiida-pseudo/blob/master/aiida_pseudo/data/pseudo/pseudo.py), which will calculate the md5 sum of the file and check the database for another file with the same md5 sum, if such entry is found, that potential is used instead. This avoids the unnecessary replication of potential data nodes whenever one tries to upload a previously uploaded potential.
+The ``get_or_create`` method is based on the one by [aiida-pseudo](https://github.com/aiidateam/aiida-pseudo/blob/master/aiida_pseudo/data/pseudo/pseudo.py), which will calculate the md5 sum of the file and check the database for another file with the same [md5 hash](https://en.wikipedia.org/wiki/MD5), if such entry is found, that potential is used instead. This avoids the unnecessary replication of potential data nodes whenever one tries to upload a previously uploaded potential.
+
+```{note}
+When calculating the md5 hash the program will look at the contents of the file, so that even if a minor change is done (that should not affect the result of a calculation), the checksum will be different and hence a new potential node will be created.
+```
 
 ### Potentials without files
 In ``LAMMPS`` certain [pair_style](https://docs.lammps.org/pair_style.html) such as the Lenard-Johns potential do not read their parameters from an auxiliary file, if not they are directly written to the main input file. In ``aiida-lammps`` to standardize the potential storage in the database these kinds of potentials are expected to be also be stored as a file. The format expected for these kinds of potentials is simply the coefficients that one would normally write the in the ``LAMMPS`` input file. The input file generator will then generate the necessary lines for the input file depending on the potential ``pair_style``.
+
+
+### Potentials with multiple files
+In ``LAMMPS`` it is in principle possible to give several potential files to treat different atoms. Currently this is **not** supported in the plugin. As only one potential file can be give as to treat the entire system. This is a situation that is aimed to be solved in future releases.
 
 ## Parameters
 The behavior of the ``aiida-lammps`` calculation can be controlled by collecting ``LAMMPS`` simulation parameters in a dictionary
