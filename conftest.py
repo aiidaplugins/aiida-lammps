@@ -3,18 +3,19 @@ initialise a test database and profile
 """
 from __future__ import annotations
 
-from collections import namedtuple
 import os
+import pathlib
 import shutil
 import tempfile
-import typing as t
+from typing import Any
 
 from aiida import orm
+from aiida.common.datastructures import CalcInfo
+from aiida.engine import CalcJob
 import numpy as np
 import pytest
 import yaml
 
-from aiida_lammps.common.reaxff_convert import filter_by_species, read_lammps_format
 from tests.utils import TEST_DIR, AiidaTestApp
 
 pytest_plugins = ["aiida.manage.tests.pytest_fixtures"]
@@ -62,11 +63,6 @@ def db_test_app(aiida_profile, pytestconfig):
     """Clear the database after each test."""
     exec_name = pytestconfig.getoption("lammps_exec") or "lammps"
     executables = {
-        "lammps.md": exec_name,
-        "lammps.md.multi": exec_name,
-        "lammps.optimize": exec_name,
-        "lammps.force": exec_name,
-        "lammps.combinate": exec_name,
         "lammps.base": exec_name,
     }
 
@@ -93,7 +89,7 @@ def generate_calc_job(tmp_path):
 
     def factory(
         entry_point_name: str,
-        inputs: dict[str, t.Any] | None = None,
+        inputs: dict[str, Any] | None = None,
         return_process: bool = False,
     ) -> tuple[pathlib.Path, CalcInfo] | CalcJob:
         """Create a :class:`aiida.engine.CalcJob` instance with the given inputs.
@@ -258,126 +254,6 @@ def get_structure_data():
         return structure
 
     return _get_structure_data
-
-
-PotentialData = namedtuple(
-    "PotentialTestData",
-    ["type", "data", "structure", "output"],
-)
-
-
-@pytest.fixture(scope="function")
-def get_potential_data(get_structure_data):
-    """Get the potential information for different types of potentials.
-
-    :param get_structure_data: Structure to be used in the simulation
-    :type get_structure_data: orm.StructureData
-    """
-
-    def _get_potential_data(pkey):
-        """return data to create a potential,
-        and accompanying structure data and expected output data to test it with
-        """
-        if pkey == "eam":
-            pair_style = "eam"
-            filename = os.path.join(
-                TEST_DIR,
-                "input_files",
-                "potentials",
-                "Fe_mm.eam.fs",
-            )
-            with open(filename, encoding="utf8") as handle:
-                potential_dict = {
-                    "type": "fs",
-                    "file_contents": handle.readlines(),
-                    "element_names": ["Fe"],
-                }
-            structure = get_structure_data("Fe")
-            output_dict = {"initial_energy": -8.2441284, "energy": -8.2448702}
-
-        elif pkey == "lennard-jones":
-
-            structure = get_structure_data("Ar")
-
-            # Example LJ parameters for Argon. These may not be accurate at all
-            pair_style = "lennard_jones"
-            potential_dict = {
-                "1  1": "0.01029   3.4    3.5",
-            }
-
-            output_dict = {
-                "initial_energy": 0.0,
-                "energy": 0.0,  # TODO should LJ energy be 0?
-            }
-
-        elif pkey == "tersoff":
-
-            structure = get_structure_data("GaN")
-
-            potential_dict = {
-                "Ga Ga Ga": "1.0 0.007874 1.846 1.918000 0.75000 -0.301300 "
-                + "1.0 1.0 1.44970 410.132 2.87 0.15 1.60916 535.199",
-                "N  N  N": "1.0 0.766120 0.000 0.178493 0.20172 -0.045238 "
-                + "1.0 1.0 2.38426 423.769 2.20 0.20 3.55779 1044.77",
-                "Ga Ga N": "1.0 0.001632 0.000 65.20700 2.82100 -0.518000 "
-                + "1.0 0.0 0.00000 0.00000 2.90 0.20 0.00000 0.00000",
-                "Ga N  N": "1.0 0.001632 0.000 65.20700 2.82100 -0.518000 "
-                + "1.0 1.0 2.63906 3864.27 2.90 0.20 2.93516 6136.44",
-                "N  Ga Ga": "1.0 0.001632 0.000 65.20700 2.82100 -0.518000 "
-                + "1.0 1.0 2.63906 3864.27 2.90 0.20 2.93516 6136.44",
-                "N  Ga N ": "1.0 0.766120 0.000 0.178493 0.20172 -0.045238 "
-                + "1.0 0.0 0.00000 0.00000 2.20 0.20 0.00000 0.00000",
-                "N  N  Ga": "1.0 0.001632 0.000 65.20700 2.82100 -0.518000 "
-                + "1.0 0.0 0.00000 0.00000 2.90 0.20 0.00000 0.00000",
-                "Ga N  Ga": "1.0 0.007874 1.846 1.918000 0.75000 -0.301300 "
-                + "1.0 0.0 0.00000 0.00000 2.87 0.15 0.00000 0.00000",
-            }
-
-            pair_style = "tersoff"
-
-            output_dict = {"initial_energy": -18.109886, "energy": -18.110852}
-
-        elif pkey == "reaxff":
-
-            pair_style = "reaxff"
-            filename = os.path.join(
-                TEST_DIR,
-                "input_files",
-                "potentials",
-                "FeCrOSCH.reaxff",
-            )
-            with open(filename, encoding="utf8") as handle:
-                potential_dict = read_lammps_format(
-                    handle.read().splitlines(),
-                    tolerances={"hbonddist": 7.0},
-                )
-                potential_dict = filter_by_species(
-                    potential_dict,
-                    ["Fe core", "S core"],
-                )
-                for name in ["anglemin", "angleprod", "hbondmin", "torsionprod"]:
-                    potential_dict["global"].pop(name)
-                potential_dict["control"] = {"safezone": 1.6}
-
-            structure = get_structure_data("pyrite")
-
-            output_dict = {
-                "initial_energy": -1027.9739,
-                "energy": -1030.3543,
-                "units": "real",
-            }
-
-        else:
-            raise ValueError(f"Unknown potential key: {pkey}")
-
-        return PotentialData(
-            pair_style,
-            potential_dict,
-            structure,
-            output_dict,
-        )
-
-    return _get_potential_data
 
 
 @pytest.fixture(scope="function")

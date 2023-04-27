@@ -21,7 +21,7 @@ import jsonschema
 import numpy as np
 
 from aiida_lammps.common.utils import flatten, generate_header
-from aiida_lammps.data.lammps_potential import LammpsPotentialData
+from aiida_lammps.data.potential import LammpsPotentialData
 
 
 def generate_input_file(
