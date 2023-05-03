@@ -12,7 +12,7 @@ from zipfile import ZIP_DEFLATED, ZipFile
 from aiida import orm
 from aiida.common.exceptions import ValidationError
 
-from aiida_lammps.common.parse_trajectory import (
+from aiida_lammps.parsers.parse_raw import (
     create_structure,
     iter_trajectories,
     parse_step,

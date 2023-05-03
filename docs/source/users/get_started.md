@@ -13,7 +13,7 @@ The structure is the simulation box that will be used for the simulation. The da
 ```
 
 ```{note}
-    LAMMPS requires the simulation cell to be in the format of a lower triangular matrix (right-handed basis). Therefore the cell and positions may require [rotation and inversion](https://lammps.sandia.gov/doc/Howto_triclinic.html). This is automatically done to **every structure** at the calculation level, so it might be that the cell that is provided is modified so that it follows this convention.
+    LAMMPS requires the simulation cell to be in the format of a lower triangular matrix (right-handed basis). Therefore the cell and positions may require [rotation and inversion](https://lammps.sandia.gov/doc/Howto_triclinic.html). This is **automatically** done to **every structure** at the calculation level, so it might be that the cell that is provided is modified so that it follows this convention. However, this is just a different representation of the cell, its symmetry group, should remain unchanged in this process.
 ```
 
 ## Potential

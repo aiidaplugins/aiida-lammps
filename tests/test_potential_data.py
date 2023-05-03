@@ -4,8 +4,8 @@ import os
 import pytest
 import yaml
 
-from aiida_lammps.common import input_generator
 from aiida_lammps.data.potential import LammpsPotentialData
+from aiida_lammps.parsers import inputfile
 from .utils import TEST_DIR
 
 
@@ -87,7 +87,7 @@ def test_lammps_potentials_input_block(
         **potential_information["parameters"],
     )
 
-    potential_block = input_generator.write_potential_block(
+    potential_block = inputfile.write_potential_block(
         parameters_potential={},
         potential_file="potential.dat",
         potential=node,
