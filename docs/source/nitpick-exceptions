@@ -14,7 +14,7 @@ py:class utils.AttributesFrozendict
 py:exc jsonschema.exceptions.ValidationError
 py:exc jsonschema.exceptions.SchemaError
 py:exc InputValidationError
-py:class aiida_lammps.common.parse_trajectory.TRAJ_BLOCK
+py:class aiida_lammps.parsers.parse_raw.trajectory.TRAJ_BLOCK
 py:exc aiida.common.StoringNotAllowed
 py:class Logger
 py:class AttributeDict
