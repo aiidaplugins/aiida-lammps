@@ -3,13 +3,13 @@ import os
 
 import pytest
 
-from aiida_lammps.common import input_generator
 from aiida_lammps.data.potential import LammpsPotentialData
 from aiida_lammps.fixtures.inputs import (
     parameters_md,
     parameters_minimize,
     restart_data,
 )
+from aiida_lammps.parsers import inputfile
 from .utils import TEST_DIR
 
 
@@ -26,7 +26,7 @@ def test_input_generate_minimize(
     """Test the generation of the input file for minimize calculations"""
     # pylint: disable=too-many-locals
 
-    input_generator.validate_input_parameters(parameters_minimize)
+    inputfile.validate_input_parameters(parameters_minimize)
     # Generate the potential
     potential_information = get_lammps_potential_data(potential_type)
     potential = LammpsPotentialData.get_or_create(
@@ -37,7 +37,7 @@ def test_input_generate_minimize(
     # Generating the structure
     structure = potential_information["structure"]
     # Generating the input file
-    input_file = input_generator.generate_input_file(
+    input_file = inputfile.generate_input_file(
         parameters=parameters_minimize,
         potential=potential,
         structure=structure,
@@ -75,7 +75,7 @@ def test_input_generate_md(
     """Test the generation of the input file for MD calculations"""
     # pylint: disable=too-many-locals
 
-    input_generator.validate_input_parameters(parameters_md)
+    inputfile.validate_input_parameters(parameters_md)
     # Generate the potential
     potential_information = get_lammps_potential_data(potential_type)
     potential = LammpsPotentialData.get_or_create(
@@ -86,7 +86,7 @@ def test_input_generate_md(
     # Generating the structure
     structure = potential_information["structure"]
     # Generating the input file
-    input_file = input_generator.generate_input_file(
+    input_file = inputfile.generate_input_file(
         parameters=parameters_md,
         potential=potential,
         structure=structure,
@@ -139,10 +139,10 @@ def test_input_generate_restart(
     if num_steps:
         parameters_md["restart"]["num_steps"] = num_steps
 
-    input_generator.validate_input_parameters(parameters_md)
+    inputfile.validate_input_parameters(parameters_md)
 
     # Generating the input file
-    input_file = input_generator.write_restart_block(
+    input_file = inputfile.write_restart_block(
         parameters_restart=parameters_md["restart"],
         restart_filename="restart.aiida",
         max_number_steps=1000,

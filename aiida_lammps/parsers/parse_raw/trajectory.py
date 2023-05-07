@@ -12,7 +12,7 @@ TrajectoryBlock = namedtuple(
 )
 
 
-def iter_step_lines(file_obj):
+def _iter_step_lines(file_obj):
     """Parse the lines containing the time step information
 
     :param file_obj: file object that is being parsed
@@ -109,7 +109,7 @@ def parse_step(lines, initial_line=0) -> namedtuple:
 
 def iter_trajectories(file_obj):
     """Parse a LAMMPS Trajectory file, yielding data for each time step."""
-    for line_num, lines in iter_step_lines(file_obj):
+    for line_num, lines in _iter_step_lines(file_obj):
         yield parse_step(lines, line_num)
 
 

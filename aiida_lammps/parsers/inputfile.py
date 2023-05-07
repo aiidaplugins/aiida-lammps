@@ -20,8 +20,8 @@ from aiida import orm
 import jsonschema
 import numpy as np
 
-from aiida_lammps.common.utils import flatten, generate_header
 from aiida_lammps.data.potential import LammpsPotentialData
+from aiida_lammps.parsers.utils import flatten, generate_header
 
 
 def generate_input_file(

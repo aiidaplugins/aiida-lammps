@@ -1,8 +1,8 @@
 """Tests for the aiida-lammps trajectory data type"""
 import os
 
-from aiida_lammps.common.parse_trajectory import create_structure, iter_trajectories
 from aiida_lammps.data.trajectory import LammpsTrajectory
+from aiida_lammps.parsers.parse_raw import create_structure, iter_trajectories
 from .utils import TEST_DIR, recursive_round
 
 

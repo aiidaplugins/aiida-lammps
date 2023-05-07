@@ -14,8 +14,8 @@ from aiida.common import exceptions
 from aiida.parsers.parser import Parser
 import numpy as np
 
-from aiida_lammps.common.raw_parsers import parse_final_data, parse_logfile
 from aiida_lammps.data.trajectory import LammpsTrajectory
+from aiida_lammps.parsers.parse_raw import parse_final_data, parse_logfile
 
 
 class LammpsBaseParser(Parser):
