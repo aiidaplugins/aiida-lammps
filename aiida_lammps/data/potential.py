@@ -23,7 +23,7 @@ import io
 import json
 import os
 import pathlib
-import typing
+from typing import BinaryIO, List, Optional, Union
 
 from aiida import orm, plugins
 from aiida.common.constants import elements
@@ -82,14 +82,14 @@ class LammpsPotentialData(orm.SinglefileData):
     @classmethod
     def get_or_create(
         cls,
-        source: typing.Union[str, pathlib.Path, typing.BinaryIO],
+        source: Union[str, pathlib.Path, BinaryIO],
         filename: str = None,
         pair_style: str = None,
         species: list = None,
         atom_style: str = None,
         units: str = None,
-        developer: typing.Union[str, typing.List[str]] = None,
-        publication_year: typing.Union[str, int, datetime.datetime] = None,
+        developer: Union[str, List[str]] = None,
+        publication_year: Union[str, int, datetime.datetime] = None,
         title: str = None,
         extra_tags: dict = None,
     ):
@@ -102,7 +102,7 @@ class LammpsPotentialData(orm.SinglefileData):
         :param source: the source potential content, either a binary stream,
             or a ``str`` or ``Path`` to the path of the file on disk,
             which can be relative or absolute.
-        :type source: typing.Union[str, pathlib.Path, typing,BinaryIO]
+        :type source: Union[str, pathlib.Path, BinaryIO]
         :param filename: optional explicit filename to give to the file stored in the repository.
         :type filename: str
         :param pair_style: Type of potential according to LAMMPS
@@ -114,9 +114,9 @@ class LammpsPotentialData(orm.SinglefileData):
         :param units: Default units to be used with this potential.
         :type units:  str
         :param developer: Name or list of names of the developer(s) of the potential.
-        :type developers: typing.Union[str, typing.List[str]]
+        :type developers: Union[str, List[str]]
         :param publication_year: Year of publication of the potential.
-        :type publication_year: typing.Union[str, int, datetime.datetime]
+        :type publication_year: Union[str, int, datetime.datetime]
         :para title: title given to the potential.
         :type title: str
         :param extra_tags: Dictionary with extra information to tag the
@@ -180,9 +180,7 @@ class LammpsPotentialData(orm.SinglefileData):
         )
 
     @classmethod
-    def prepare_source(
-        cls, source: typing.Union[str, pathlib.Path, typing.BinaryIO]
-    ) -> typing.BinaryIO:
+    def prepare_source(cls, source: Union[str, pathlib.Path, BinaryIO]) -> BinaryIO:
         """Validate the ``source`` representing a file on disk or a byte stream.
 
         .. note:: if the ``source`` is a valid file on disk, its content is
@@ -328,12 +326,12 @@ class LammpsPotentialData(orm.SinglefileData):
             raise TypeError(f'The title "{title}" is not of type str')
         self.base.attributes.set("title", title)
 
-    def validate_developer(self, developer: typing.Union[str, typing.List[str]]):
+    def validate_developer(self, developer: Union[str, List[str]]):
         """
         Validate the developer of the potential
 
         :param developer: name of the developer(s) of the potential
-        :type developer: typing.Union[str, typing.List[str]]
+        :type developer: Union[str, List[str]]
         :raises ValueError: raise if the developer is a falsy value
         :raises TypeError: raise if the developer is not a str or List[str]
         """
@@ -351,13 +349,13 @@ class LammpsPotentialData(orm.SinglefileData):
         self.base.attributes.set("developer", developer)
 
     def validate_publication_year(
-        self, publication_year: typing.Union[str, int, datetime.datetime]
+        self, publication_year: Union[str, int, datetime.datetime]
     ):
         """
         Validate the publication year of the potential
 
         :param publication_year: publication year of the potential
-        :type publication_year: typing.Union[str,int, datetime.datetime]
+        :type publication_year: Union[str,int, datetime.datetime]
         :raises ValueError: raise if the publication year is a falsy value
         :raises TypeError: raise if the publication year is not a str, int or datetime.datetime
         """
@@ -399,14 +397,14 @@ class LammpsPotentialData(orm.SinglefileData):
 
     def set_file(
         self,
-        source: typing.Union[str, pathlib.Path, typing.BinaryIO],
+        source: Union[str, pathlib.Path, BinaryIO],
         filename: str = None,
         pair_style: str = None,
         species: list = None,
         atom_style: str = None,
         units: str = None,
-        developer: typing.Union[str, typing.List[str]] = None,
-        publication_year: typing.Union[str, int, datetime.datetime] = None,
+        developer: Union[str, List[str]] = None,
+        publication_year: Union[str, int, datetime.datetime] = None,
         title: str = None,
         extra_tags: dict = None,
         **kwargs,
@@ -429,7 +427,7 @@ class LammpsPotentialData(orm.SinglefileData):
         :param source: the source lammps potential content, either a binary
             stream, or a ``str`` or ``Path`` to the path of the file on disk,
             which can be relative or absolute.
-        :type source: typing.Union[str, pathlib.Path, typing.BinaryIO]
+        :type source: Union[str, pathlib.Path, BinaryIO]
         :param filename: optional explicit filename to give to the file stored in the repository.
         :type filename: str
         :param pair_style: Type of potential according to LAMMPS
@@ -441,9 +439,9 @@ class LammpsPotentialData(orm.SinglefileData):
         :param units: Default units to be used with this potential.
         :type units:  str
         :param developer: Name or list of names of the developer(s) of the potential.
-        :type developers: typing.Union[str, typing.List[str]]
+        :type developers: Union[str, List[str]]
         :param publication_year: Year of publication of the potential.
-        :type publication_year: typing.Union[str, int, datetime.datetime]
+        :type publication_year: Union[str, int, datetime.datetime]
         :para title: title given to the potential.
         :type title: str
         :param extra_tags: Dictionary with extra information to tag the
@@ -559,7 +557,7 @@ class LammpsPotentialData(orm.SinglefileData):
         return self.base.attributes.get("content_origin")
 
     @property
-    def content_other_locations(self) -> typing.Union[str, list]:
+    def content_other_locations(self) -> Union[str, list]:
         """
         Return other locations where the potential can be found.
 
@@ -567,7 +565,7 @@ class LammpsPotentialData(orm.SinglefileData):
         to other location(s) where the content is available.
 
         :return: other locations where the potential can be found.
-        :rtype: typing.Union[str, list]
+        :rtype: Union[str, list]
         """
         return self.base.attributes.get("content_other_locations")
 
@@ -601,7 +599,7 @@ class LammpsPotentialData(orm.SinglefileData):
         return self.base.attributes.get("description")
 
     @property
-    def developer(self) -> typing.Union[str, list]:
+    def developer(self) -> Union[str, list]:
         """
         Return the developer information of this potential.
 
@@ -612,7 +610,7 @@ class LammpsPotentialData(orm.SinglefileData):
         of an interatomic model or a specific parameter set for it.
 
         :return: developer information of this potential
-        :rtype: typing.Union[str, list]
+        :rtype: Union[str, list]
         """
         return self.base.attributes.get("developer")
 
@@ -631,31 +629,31 @@ class LammpsPotentialData(orm.SinglefileData):
         return self.base.attributes.get("disclaimer")
 
     @property
-    def properties(self) -> typing.Union[str, list]:
+    def properties(self) -> Union[str, list]:
         """
         Return the properties for which this potential was devised.
 
         As based in the KIM schema. A list of properties reported by a KIM Item.
 
         :return: properties fow which this potential was devised.
-        :rtype: typing.Union[str, list]
+        :rtype: Union[str, list]
         """
         return self.base.attributes.get("properties")
 
     @property
-    def publication_year(self) -> typing.Union[str, datetime.datetime, int]:
+    def publication_year(self) -> Union[str, datetime.datetime, int]:
         """
         Return the year of publication of this potential.
 
         As based in the KIM schema. Year this item was published on openkim.org.
 
         :return: year of publication of this potential
-        :rtype: typing.Union[str, datetime.datetime, int]
+        :rtype: Union[str, datetime.datetime, int]
         """
         return self.base.attributes.get("publication_year")
 
     @property
-    def source_citations(self) -> typing.Union[str, list]:
+    def source_citations(self) -> Union[str, list]:
         """
         Return the citation where the potential was originally published.
 
@@ -663,7 +661,7 @@ class LammpsPotentialData(orm.SinglefileData):
         corresponding to primary published work(s) describing the KIM Item.
 
         :return: the citation where the potential was originally published.
-        :rtype: typing.Union[str, list]
+        :rtype: Union[str, list]
         """
         return self.base.attributes.get("source_citations")
 
@@ -682,7 +680,7 @@ class LammpsPotentialData(orm.SinglefileData):
         return self.base.attributes.get("title")
 
     @property
-    def md5(self) -> typing.Optional[int]:
+    def md5(self) -> Optional[int]:
         """Return the md5.
         :return: the md5 of the stored file.
         """
