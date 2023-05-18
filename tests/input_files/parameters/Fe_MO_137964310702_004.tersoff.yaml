@@ -2,15 +2,16 @@ species: ["Fe"]
 atom_style: "atomic"
 pair_style: "tersoff"
 units: "metal"
+publication_year: 2021
+developer: ["Michael Müller", "Paul Erhart", "Karsten Albe"]
+title: "Tersoff-style three-body potential for bcc and fcc Fe developed by Müller, Erhart, and Albe (2007) v004"
 extra_tags:
         content_origin: Null
         content_other_locations: Null
         data_method: "unknown"
         description: "Tersoff-style three-body potential for bcc and fcc iron by Müller, Erhart, and Albe." 
-        developer: ["Michael Müller", "Paul Erhart", "Karsten Albe"]
         disclaimer: Null 
         properties: Null
-        publication_year: 2021
         source_citations: [
                 {
                         "author": "Michael M{\\\"u}ller and Paul Erhart and Karsten Albe",
@@ -26,5 +27,4 @@ extra_tags:
                         "year": "2007",
                 }
         ]
-        title: "Tersoff-style three-body potential for bcc and fcc Fe developed by Müller, Erhart, and Albe (2007) v004"
 

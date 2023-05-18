@@ -1,6 +1,2 @@
 """Package for validating JSON objects against schemas."""
-from aiida_lammps.validation.utils import (  # noqa: F401
-    load_schema,
-    load_validator,
-    validate_against_schema,
-)
+from aiida_lammps.validation.utils import validate_against_schema  # noqa: F401

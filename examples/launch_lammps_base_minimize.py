@@ -60,6 +60,9 @@ def generate_potential() -> LammpsPotentialData:
         "atom_style": "atomic",
         "pair_style": "eam/fs",
         "units": "metal",
+        "publication_year": 2018,
+        "developer": ["Ronald E. Miller"],
+        "title": "EAM potential (LAMMPS cubic hermite tabulation) for Fe developed by Mendelev et al. (2003) v000",
         "extra_tags": {
             "content_origin": "NIST IPRP: https: // www.ctcms.nist.gov/potentials/Fe.html",
             "content_other_locations": None,
@@ -73,13 +76,11 @@ def generate_potential() -> LammpsPotentialData:
             The file header includes a note from the NIST contributor:
             \"The potential was taken from v9_4_bcc (in C:\\SIMULATION.MD\\Fe\\Results\\ab_initio+Interstitials)\"
             """,
-            "developer": ["Ronald E. Miller"],
             "disclaimer": """According to the developer Giovanni Bonny
             (as reported by the NIST IPRP), this potential was not stiffened and cannot
             be used in its present form for collision cascades.
             """,
             "properties": None,
-            "publication_year": 2018,
             "source_citations": [
                 {
                     "abstract": None,
@@ -96,7 +97,6 @@ def generate_potential() -> LammpsPotentialData:
                     "year": "{2003}",
                 }
             ],
-            "title": "EAM potential (LAMMPS cubic hermite tabulation) for Fe developed by Mendelev et al. (2003) v000",
         },
     }
 
