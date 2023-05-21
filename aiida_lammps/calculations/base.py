@@ -7,6 +7,7 @@ is generated depending on the parameters provided, the type of potential,
 the input structure and whether or not a restart file is provided.
 """
 import os
+import shutil
 
 from aiida import orm
 from aiida.common import datastructures, exceptions
@@ -89,6 +90,19 @@ class LammpsBaseCalculation(CalcJob):
             valid_type=orm.RemoteData,
             required=False,
             help="An optional working directory of a previously completed calculation to restart from.",
+        )
+        spec.input_namespace(
+            "files",
+            valid_type=orm.SinglefileData,
+            required=False,
+            help="Optional files that should be written to the working directory.",
+        )
+        spec.input(
+            "filenames",
+            valid_type=orm.Dict,
+            serializer=orm.to_aiida_type,
+            required=False,
+            help="Optional namespace to specify with which filenames the files of ``files`` input should be written.",
         )
         spec.input(
             "metadata.options.input_filename",
@@ -224,6 +238,20 @@ class LammpsBaseCalculation(CalcJob):
                 "`parameters` have to be specified."
             )
 
+        # The filename with which the file is written to the working directory is defined by the ``filenames`` input
+        # namespace, falling back to the filename of the ``SinglefileData`` node if not defined.
+        overrides = value["filenames"].get_dict() if "filenames" in value else {}
+        filenames = [
+            overrides.get(key, node.filename)
+            for key, node in value.get("files", {}).items()
+        ]
+
+        if len(filenames) != len(set(filenames)):
+            return (
+                f"The list of filenames of the ``files`` input is not unique: {filenames}. Use the ``filenames`` input "
+                "namespace to explicitly define unique filenames for each file."
+            )
+
     @classmethod
     def validate_settings(cls, value, ctx):
         """Validate the ``settings`` input."""
@@ -279,6 +307,7 @@ class LammpsBaseCalculation(CalcJob):
         remote_copy_list = []
         remote_symlink_list = []
         local_copy_list = []
+        provenance_exclude_list = []
         retrieve_temporary_list = []
         retrieve_list = [
             _output_filename,
@@ -332,6 +361,22 @@ class LammpsBaseCalculation(CalcJob):
                 read_restart_filename=_read_restart_filename,
             )
 
+        filenames = (
+            self.inputs["filenames"].get_dict() if "filenames" in self.inputs else {}
+        )
+
+        for key, node in self.inputs.get("files", {}).items():
+
+            # The filename with which the file is written to the working directory is defined by the ``filenames`` input
+            # namespace, falling back to the filename of the ``SinglefileData`` node if not defined.
+            filename = filenames.get(key, node.filename)
+
+            with folder.open(filename, "wb") as target:
+                with node.open(mode="rb") as source:
+                    shutil.copyfileobj(source, target)
+
+            provenance_exclude_list.append(filename)
+
         # Get the name of the input file, and write it to the remote folder
         _input_filename = self.inputs.metadata.options.input_filename
 
@@ -358,6 +403,7 @@ class LammpsBaseCalculation(CalcJob):
         calcinfo.local_copy_list = local_copy_list
         calcinfo.remote_copy_list = remote_copy_list
         calcinfo.remote_symlink_list = remote_symlink_list
+        calcinfo.provenance_exclude_list = provenance_exclude_list
         # Define the list of temporary files that will be retrieved
         calcinfo.retrieve_temporary_list = retrieve_temporary_list
         # Set the files that must be retrieved
