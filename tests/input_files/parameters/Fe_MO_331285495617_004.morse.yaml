@@ -2,31 +2,31 @@ species: ["Fe"]
 atom_style: "atomic"
 pair_style: "morse"
 units: "metal"
-publication_year: 2020
-developer: ["Ryan S. Elliott"]
-title: "Morse potential (shifted) for Fe by Girifalco and Weizer (1959) using a low-accuracy cutoff distance v004" 
 extra_tags:
-        content_origin: Null 
-        content_other_locations: Null
-        data_method: "unknown"
-        description: "This is a Fe Morse Model Parameterization by Girifalco and Weizer (1959) using a low-accuracy cutoff distance.  The Morse parameters were calculated using experimental values for the energy of vaporization, the lattice constant, and the compressibility. The equation of state and the elastic constants which were computed using the Morse parameters, agreed with experiment for both face-centered and body-centered cubic metals. All stability conditions were also satisfied for both the face-centered and the body-centered metals. This shows that the Morse function can be applied validly to problems involving any type of deformation of the cubic metals."
-        disclaimer: "According to the developer Giovanni Bonny (as reported by the NIST IPRP), this potential was not stiffened and cannot be used in its present form for collision cascades."
-        properties: Null
-        source_citations: [
-                {
-                        "author": "Girifalco, L. A. and Weizer, V. G.",
-                        "doi": "10.1103/PhysRev.114.687",
-                        "issue": "3",
-                        "journal": "Physical Review",
-                        "month": "May",
-                        "numpages": "0",
-                        "pages": "687--690",
-                        "publisher": "American Physical Society",
-                        "recordkey": "MO_331285495617_004a",
-                        "recordprimary": "recordprimary",
-                        "recordtype": "article",
-                        "title": "Application of the {M}orse Potential Function to Cubic Metals",
-                        "volume": "114",
-                        "year": "1959",
-                }
-        ]
+    publication_year: 2020
+    developer: ["Ryan S. Elliott"]
+    title: "Morse potential (shifted) for Fe by Girifalco and Weizer (1959) using a low-accuracy cutoff distance v004" 
+    content_origin: Null 
+    content_other_locations: Null
+    data_method: "unknown"
+    description: "This is a Fe Morse Model Parameterization by Girifalco and Weizer (1959) using a low-accuracy cutoff distance.  The Morse parameters were calculated using experimental values for the energy of vaporization, the lattice constant, and the compressibility. The equation of state and the elastic constants which were computed using the Morse parameters, agreed with experiment for both face-centered and body-centered cubic metals. All stability conditions were also satisfied for both the face-centered and the body-centered metals. This shows that the Morse function can be applied validly to problems involving any type of deformation of the cubic metals."
+    disclaimer: "According to the developer Giovanni Bonny (as reported by the NIST IPRP), this potential was not stiffened and cannot be used in its present form for collision cascades."
+    properties: Null
+    source_citations: [
+        {
+            "author": "Girifalco, L. A. and Weizer, V. G.",
+            "doi": "10.1103/PhysRev.114.687",
+            "issue": "3",
+            "journal": "Physical Review",
+            "month": "May",
+            "numpages": "0",
+            "pages": "687--690",
+            "publisher": "American Physical Society",
+            "recordkey": "MO_331285495617_004a",
+            "recordprimary": "recordprimary",
+            "recordtype": "article",
+            "title": "Application of the {M}orse Potential Function to Cubic Metals",
+            "volume": "114",
+            "year": "1959",
+        }
+    ]

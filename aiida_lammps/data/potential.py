@@ -10,7 +10,7 @@ file.
 
 Based on the
 `pseudo <https://github.com/aiidateam/aiida-pseudo/blob/master/aiida_pseudo/data/pseudo/pseudo.py>`_
-class written by Sebaastian Huber.
+class written by Sebastiaan Huber.
 
 The potentials are also tagged by following the KIM-API
 `schema <https://openkim.org/doc/schema/kimspec/>`_, as to make them more easy
@@ -24,11 +24,115 @@ import json
 import os
 import pathlib
 from typing import BinaryIO, List, Optional, Union
+import warnings
 
 from aiida import orm, plugins
 from aiida.common.constants import elements
 from aiida.common.exceptions import StoringNotAllowed
 from aiida.common.files import md5_from_filelike
+
+
+def _validate_string(data: str) -> str:
+    """
+    Validate if the given data is a string
+
+    :param data: data to be validated
+    :type data: str
+    :raises TypeError: Raised if the data is not of the correct type
+    :return: validated string
+    :rtype: str
+    """
+    if not isinstance(data, str):
+        raise TypeError(f'"{data}" is not of type str')
+    return data
+
+
+def _validate_string_list(data: Union[str, List[str]]) -> List[str]:
+    """
+    Validate the a list of strings
+
+    :param data: string or list of strings
+    :type data: Union[str, List[str]]
+    :raises TypeError: raise if the data is not of type str or list
+    :raises TypeError: raise if an entry in the list is not fo type str
+    :return: the data as a list of strings
+    :rtype: List[str]
+    """
+    if not isinstance(data, (list, str)):
+        raise TypeError(f'"{data}" is not of type str or list')
+    if isinstance(data, list) and not all(isinstance(entry, str) for entry in data):
+        raise TypeError(f'Not all entries in "{data}" are of type str')
+    if isinstance(data, str):
+        data = [data]
+    return data
+
+
+def _validate_datetime(data: Union[str, int, float, datetime.datetime]) -> int:
+    """
+    Validate and transform dates into integers
+
+    :param data: representation of a year
+    :type data: Union[str,int,float, datetime.datetime]
+    :raises TypeError: raise if the data is not of type str, int, float or datetime.datetime
+    :return: integer representing a year
+    :rtype: int
+    """
+    if not isinstance(data, (int, float, str, datetime.datetime)):
+        raise TypeError(f'"{data}" is not of type (str,int,float,datetime.datetime)')
+    if isinstance(data, (float, str)):
+        data = int(str(data).strip())
+    if isinstance(data, datetime.datetime):
+        data = data.year
+    return data
+
+
+def _validate_sources(data: Union[dict, List[dict]]) -> List[dict]:
+    """
+    Validate the sources for the potential.
+
+    This checks whether the entry is a dictionary that can be used to describe
+    the citation for a potential.
+
+    :param data: citation data for a potential
+    :type data: Union[dict, List[dict]]
+    :raises TypeError: raises if the data is not a dict or list of dicts
+    :raises TypeError: raises if not all the entries in the list are dicts
+    :return: list of references for a potential
+    :rtype: List[dict]
+    """
+
+    def _validate_single_source(source: dict) -> dict:
+        """
+        Validate a single potential citation data
+
+        This will check if certain keys exists and add them to the citation data
+
+        :param source: citation data for a potential
+        :type source: dict
+        :return: validated potential data
+        :rtype: dict
+        """
+        _required_keys = ["author", "journal", "title", "volume", "year"]
+
+        for key in _required_keys:
+            if key not in source:
+                source[key] = None
+                warnings.warn(
+                    f'The required key "{key}" is not found, setting its value to None'
+                )
+        return source
+
+    if not isinstance(data, (dict, list)):
+        raise TypeError("The data is not of type dict or list")
+    if isinstance(data, list) and not all(isinstance(entry, dict) for entry in data):
+        raise TypeError(f'Not all entries in "{data}" are not of type dict')
+    if isinstance(data, dict):
+        data = _validate_single_source(data)
+        data = [data]
+    if isinstance(data, list):
+        for index, _source in enumerate(data):
+            data[index] = _validate_single_source(_source)
+    return data
 
 
 class LammpsPotentialData(orm.SinglefileData):
@@ -61,20 +165,23 @@ class LammpsPotentialData(orm.SinglefileData):
     )
 
     _extra_keys = {
-        "content_origin": {"type": str},
-        "content_other_locations": {"type": (str, list)},
+        "title": {"validator": _validate_string},
+        "developer": {"validator": _validate_string_list},
+        "publication_year": {"validator": _validate_datetime},
+        "content_origin": {"validator": _validate_string},
+        "content_other_locations": {"validator": _validate_string_list},
         "data_method": {
-            "type": str,
             "values": ["experiment", "computation", "unknown"],
+            "validator": _validate_string,
         },
-        "description": {"type": str},
-        "disclaimer": {"type": str},
-        "generation_method": {"type": str},
-        "properties": {"type": (str, list)},
-        "source_citations": {"type": (str, list)},
+        "description": {"validator": _validate_string},
+        "disclaimer": {"validator": _validate_string},
+        "generation_method": {"validator": _validate_string},
+        "properties": {"validator": _validate_string_list},
+        "source_citations": {"validator": _validate_sources},
     }
 
-    with open(_schema_file) as handler:
+    with open(_schema_file, encoding="utf8") as handler:
         _defaults = json.load(handler)
         default_potential_info = _defaults["pair_style"]
         default_atom_style_info = _defaults["atom_style"]
@@ -88,9 +195,6 @@ class LammpsPotentialData(orm.SinglefileData):
         species: list = None,
         atom_style: str = None,
         units: str = None,
-        developer: Union[str, List[str]] = None,
-        publication_year: Union[str, int, datetime.datetime] = None,
-        title: str = None,
         extra_tags: dict = None,
     ):
         """
@@ -113,12 +217,6 @@ class LammpsPotentialData(orm.SinglefileData):
         :type atom_style: str
         :param units: Default units to be used with this potential.
         :type units:  str
-        :param developer: Name or list of names of the developer(s) of the potential.
-        :type developers: Union[str, List[str]]
-        :param publication_year: Year of publication of the potential.
-        :type publication_year: Union[str, int, datetime.datetime]
-        :para title: title given to the potential.
-        :type title: str
         :param extra_tags: Dictionary with extra information to tag the
             potential, based on the KIM schema.
         :type extra_tags: dict
@@ -147,9 +245,6 @@ class LammpsPotentialData(orm.SinglefileData):
             cls.species = species
             cls.atom_style = atom_style
             cls.units = units
-            cls.developer = developer
-            cls.publication_year = publication_year
-            cls.title = title
             cls.extra_tags = extra_tags
             source.seek(0)
             potential = cls(source, filename)
@@ -311,62 +406,6 @@ class LammpsPotentialData(orm.SinglefileData):
             raise ValueError(f'The units "{units}" is not valid')
         self.base.attributes.set("default_units", units)
 
-    def validate_title(self, title: str):
-        """
-        Validate the title of the potential
-
-        :param title: title of the potential
-        :type title: str
-        :raises ValueError: raise if the title is a falsy value
-        :raises TypeError: raise if the title is not a str
-        """
-        if not title:
-            raise ValueError("The potential title needs to be provided")
-        if not isinstance(title, str):
-            raise TypeError(f'The title "{title}" is not of type str')
-        self.base.attributes.set("title", title)
-
-    def validate_developer(self, developer: Union[str, List[str]]):
-        """
-        Validate the developer of the potential
-
-        :param developer: name of the developer(s) of the potential
-        :type developer: Union[str, List[str]]
-        :raises ValueError: raise if the developer is a falsy value
-        :raises TypeError: raise if the developer is not a str or List[str]
-        """
-        if not developer:
-            raise ValueError("The developer of the potential needs to be provided")
-        if not isinstance(developer, (str, list)):
-            raise TypeError(
-                f'The developer "{developer}" is not of type str or List[str]'
-            )
-        if isinstance(developer, list):
-            if not all(isinstance(entry, str) for entry in developer):
-                raise TypeError(
-                    f'The developer "{developer}" is not of type str or List[str]'
-                )
-        self.base.attributes.set("developer", developer)
-
-    def validate_publication_year(
-        self, publication_year: Union[str, int, datetime.datetime]
-    ):
-        """
-        Validate the publication year of the potential
-
-        :param publication_year: publication year of the potential
-        :type publication_year: Union[str,int, datetime.datetime]
-        :raises ValueError: raise if the publication year is a falsy value
-        :raises TypeError: raise if the publication year is not a str, int or datetime.datetime
-        """
-        if not publication_year:
-            raise ValueError("The publication year needs to be provided")
-        if not isinstance(publication_year, (int, str, datetime.datetime)):
-            raise TypeError(
-                f'The publication year "{publication_year}" is not of type str, int or datetime.datetime'
-            )
-        self.base.attributes.set("publication_year", publication_year)
-
     def validate_extra_tags(self, extra_tags: dict):
         """
         Validate the dictionary with the extra tags for the potential.
@@ -378,22 +417,25 @@ class LammpsPotentialData(orm.SinglefileData):
 
         :param extra_tags: dictionary with the extra tags that can be used to tag the potential
         :type extra_tags: dict
-        :raises ValueError: If the type of the entry does not matches the expected
+        :raises TypeError: If the type of the entry does not matches the expected
         :raises ValueError: If the value of the entry does not match the possible values
         """
         for key, value in self._extra_keys.items():
             _value = extra_tags.get(key, None)
-            _types = value.get("type", None)
-            _values = value.get("values", None)
-            if _value is not None:
-                if not isinstance(_value, _types):
-                    raise ValueError(
-                        f'Tag "{key}" with value "{_value}" is not of type "{_types}"'
-                    )
-                if _values is not None and _value not in _values:
-                    raise ValueError(
-                        f'Tag "{key}" is not in the accepted values "{_values}"'
-                    )
+            _accepted_values = value.get("values", None)
+            _validator = value.get("validator", None)
+            if _value is not None and _validator is not None:
+                _value = _validator(_value)
+            if (
+                _accepted_values is not None
+                and _value is not None
+                and _value not in _accepted_values
+            ):
+                raise ValueError(
+                    f'The value "{_value}" not in the "{_accepted_values}"'
+                )
+
+            self.base.attributes.set(key, _value)
 
     def set_file(
         self,
@@ -403,9 +445,6 @@ class LammpsPotentialData(orm.SinglefileData):
         species: list = None,
         atom_style: str = None,
         units: str = None,
-        developer: Union[str, List[str]] = None,
-        publication_year: Union[str, int, datetime.datetime] = None,
-        title: str = None,
         extra_tags: dict = None,
         **kwargs,
     ):
@@ -438,12 +477,6 @@ class LammpsPotentialData(orm.SinglefileData):
         :type atom_style: str
         :param units: Default units to be used with this potential.
         :type units:  str
-        :param developer: Name or list of names of the developer(s) of the potential.
-        :type developers: Union[str, List[str]]
-        :param publication_year: Year of publication of the potential.
-        :type publication_year: Union[str, int, datetime.datetime]
-        :para title: title given to the potential.
-        :type title: str
         :param extra_tags: Dictionary with extra information to tag the
             potential, based on the KIM schema.
         :type extra_tags: dict
@@ -464,12 +497,6 @@ class LammpsPotentialData(orm.SinglefileData):
             atom_style = self.atom_style
         if self.units is not None and units is None:
             units = self.units
-        if self.developer is not None and developer is None:
-            developer = self.developer
-        if self.publication_year is not None and publication_year is None:
-            publication_year = self.publication_year
-        if self.title is not None and title is None:
-            title = self.title
         if self.extra_tags is not None and extra_tags is None:
             extra_tags = self.extra_tags
 
@@ -477,16 +504,10 @@ class LammpsPotentialData(orm.SinglefileData):
         self.validate_species(species=species)
         self.validate_atom_style(atom_style=atom_style, pair_style=pair_style)
         self.validate_units(units=units, pair_style=pair_style)
-        self.validate_title(title=title)
-        self.validate_publication_year(publication_year=publication_year)
-        self.validate_developer(developer=developer)
 
         if extra_tags is None:
             extra_tags = {}
-        if extra_tags is not None:
-            self.validate_extra_tags(extra_tags=extra_tags)
-        for key in self._extra_keys:
-            self.base.attributes.set(key, extra_tags.get(key, None))
+        self.validate_extra_tags(extra_tags=extra_tags)
 
         super().set_file(source, filename, **kwargs)
         source.seek(0)

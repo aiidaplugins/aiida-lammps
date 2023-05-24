@@ -2,29 +2,29 @@ species: ["Fe", "W"]
 atom_style: "atomic"
 pair_style: "eam/alloy"
 units: "metal"
-publication_year: 2018
-developer: ["Ellad Tadmor"]
-title: "EAM potential (LAMMPS cubic hermite tabulation) for the Fe-W system developed by Bonny et al. (2013) v000"
 extra_tags:
-        content_origin: "NIST IPRP (https://www.ctcms.nist.gov/potentials/Fe.html#Fe-W)"
-        content_other_locations: Null
-        data_method: "unknown"
-        description: "EAM potential for the Fe-W system developed by Bonny et al. (2013)."
-        disclaimer: "According to the developer Giovanni Bonny (as reported by the NIST IPRP), this potential was not stiffened and cannot be used in its present form for collision cascades."
-        properties: Null
-        source_citations: [
-                {
-                        "abstract": "Reduced activation steels are considered as structural materials for future fusion reactors. Besides iron and the main alloying element chromium, these steels contain other minor alloying elements, typically tungsten, vanadium and tantalum. In this work we study the impact of chromium and tungsten, being major alloying elements of ferritic Fe–Cr–W-based steels, on the stability and mobility of vacancy defects, typically formed under irradiation in collision cascades. For this purpose, we perform ab initio calculations, develop a many-body interatomic potential (EAM formalism) for large-scale calculations, validate the potential and apply it using an atomistic kinetic Monte Carlo method to characterize the lifetime and diffusivity of vacancy clusters. To distinguish the role of Cr and W we perform atomistic kinetic Monte Carlo simulations in Fe–Cr, Fe–W and Fe–Cr–W alloys. Within the limitation of transferability of the potentials it is found that both Cr and W enhance the diffusivity of vacancy clusters, while only W strongly reduces their lifetime. The cluster lifetime reduction increases with W concentration and saturates at about 1–2 at.%. The obtained results imply that W acts as an efficient ‘breaker’ of small migrating vacancy clusters and therefore the short-term annealing process of cascade debris is modified by the presence of W, even in small concentrations.",
-                        "author": "Bonny, G and Castin, N and Bullens, J and Bakaev, A and Klaver, T C P and Terentyev, D",
-                        "doi": "10.1088/0953-8984/25/31/315401",
-                        "journal": "Journal of Physics: Condensed Matter",
-                        "number": "31",
-                        "pages": "315401",
-                        "recordkey": "MO_737567242631_000a",
-                        "recordprimary": "recordprimary",
-                        "recordtype": "article",
-                        "title": "On the mobility of vacancy clusters in reduced activation steels: an atomistic study in the {Fe}-{Cr}-{W} model alloy",
-                        "volume": "25",
-                        "year": "2013"
-                }
-        ]
+    publication_year: 2018
+    developer: ["Ellad Tadmor"]
+    title: "EAM potential (LAMMPS cubic hermite tabulation) for the Fe-W system developed by Bonny et al. (2013) v000"
+    content_origin: "NIST IPRP (https://www.ctcms.nist.gov/potentials/Fe.html#Fe-W)"
+    content_other_locations: Null
+    data_method: "unknown"
+    description: "EAM potential for the Fe-W system developed by Bonny et al. (2013)."
+    disclaimer: "According to the developer Giovanni Bonny (as reported by the NIST IPRP), this potential was not stiffened and cannot be used in its present form for collision cascades."
+    properties: Null
+    source_citations: [
+        {
+            "abstract": "Reduced activation steels are considered as structural materials for future fusion reactors. Besides iron and the main alloying element chromium, these steels contain other minor alloying elements, typically tungsten, vanadium and tantalum. In this work we study the impact of chromium and tungsten, being major alloying elements of ferritic Fe–Cr–W-based steels, on the stability and mobility of vacancy defects, typically formed under irradiation in collision cascades. For this purpose, we perform ab initio calculations, develop a many-body interatomic potential (EAM formalism) for large-scale calculations, validate the potential and apply it using an atomistic kinetic Monte Carlo method to characterize the lifetime and diffusivity of vacancy clusters. To distinguish the role of Cr and W we perform atomistic kinetic Monte Carlo simulations in Fe–Cr, Fe–W and Fe–Cr–W alloys. Within the limitation of transferability of the potentials it is found that both Cr and W enhance the diffusivity of vacancy clusters, while only W strongly reduces their lifetime. The cluster lifetime reduction increases with W concentration and saturates at about 1–2 at.%. The obtained results imply that W acts as an efficient ‘breaker’ of small migrating vacancy clusters and therefore the short-term annealing process of cascade debris is modified by the presence of W, even in small concentrations.",
+            "author": "Bonny, G and Castin, N and Bullens, J and Bakaev, A and Klaver, T C P and Terentyev, D",
+            "doi": "10.1088/0953-8984/25/31/315401",
+            "journal": "Journal of Physics: Condensed Matter",
+            "number": "31",
+            "pages": "315401",
+            "recordkey": "MO_737567242631_000a",
+            "recordprimary": "recordprimary",
+            "recordtype": "article",
+            "title": "On the mobility of vacancy clusters in reduced activation steels: an atomistic study in the {Fe}-{Cr}-{W} model alloy",
+            "volume": "25",
+            "year": "2013"
+        }
+    ]
