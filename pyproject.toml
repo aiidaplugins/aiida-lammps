@@ -5,7 +5,7 @@ build-backend = "flit_core.buildapi"
 [project]
 name = "aiida-lammps"
 dynamic = ["version", "description"]
-authors = [{name = "Chris Sewell", email = "chrisj_sewell@hotmail.com"}, {name = "Jonathon Chico", email = "jonathan.chico@sandvik.com"}]
+authors = [{name = "Chris Sewell", email = "chrisj_sewell@hotmail.com"}, {name = "Jonathan Chico", email = "jonathan.chico@sandvik.com"}]
 readme = "README.md"
 license = {file = "LICENSE"}
 classifiers = [

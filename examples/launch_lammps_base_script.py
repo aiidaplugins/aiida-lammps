@@ -9,11 +9,9 @@ import io
 import textwrap
 
 from aiida import orm
+from aiida.common import AttributeDict
 from aiida.engine import run_get_node
 from aiida.plugins import CalculationFactory
-import numpy as np
-
-from aiida_lammps.data.potential import LammpsPotentialData
 
 
 def main(

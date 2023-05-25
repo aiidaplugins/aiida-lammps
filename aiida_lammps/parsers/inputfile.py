@@ -17,11 +17,11 @@ import re
 from typing import Union
 
 from aiida import orm
-import jsonschema
 import numpy as np
 
 from aiida_lammps.data.potential import LammpsPotentialData
 from aiida_lammps.parsers.utils import flatten, generate_header
+from aiida_lammps.validation.utils import validate_against_schema
 
 
 def generate_input_file(
@@ -187,16 +187,14 @@ def validate_input_parameters(parameters: dict = None):
     :param parameters: dictionary with the input parameters, defaults to None
     :type parameters: dict, optional
     """
+
     _file = os.path.join(
         os.path.dirname(os.path.abspath(__file__)),
         "..",
         "validation/schemas/lammps_schema.json",
     )
 
-    with open(_file) as handler:
-        schema = json.load(handler)
-
-    jsonschema.validate(schema=schema, instance=parameters)
+    validate_against_schema(data=parameters, filename=_file)
 
 
 def write_control_block(parameters_control: dict) -> str:

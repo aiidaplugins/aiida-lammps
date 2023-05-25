@@ -10,7 +10,7 @@ file.
 
 Based on the
 `pseudo <https://github.com/aiidateam/aiida-pseudo/blob/master/aiida_pseudo/data/pseudo/pseudo.py>`_
-class written by Sebaastian Huber.
+class written by Sebastiaan Huber.
 
 The potentials are also tagged by following the KIM-API
 `schema <https://openkim.org/doc/schema/kimspec/>`_, as to make them more easy
@@ -23,12 +23,116 @@ import io
 import json
 import os
 import pathlib
-import typing
+from typing import BinaryIO, List, Optional, Union
+import warnings
 
 from aiida import orm, plugins
 from aiida.common.constants import elements
 from aiida.common.exceptions import StoringNotAllowed
 from aiida.common.files import md5_from_filelike
+
+
+def _validate_string(data: str) -> str:
+    """
+    Validate if the given data is a string
+
+    :param data: data to be validated
+    :type data: str
+    :raises TypeError: Raised if the data is not of the correct type
+    :return: validated string
+    :rtype: str
+    """
+    if not isinstance(data, str):
+        raise TypeError(f'"{data}" is not of type str')
+    return data
+
+
+def _validate_string_list(data: Union[str, List[str]]) -> List[str]:
+    """
+    Validate the a list of strings
+
+    :param data: string or list of strings
+    :type data: Union[str, List[str]]
+    :raises TypeError: raise if the data is not of type str or list
+    :raises TypeError: raise if an entry in the list is not fo type str
+    :return: the data as a list of strings
+    :rtype: List[str]
+    """
+    if not isinstance(data, (list, str)):
+        raise TypeError(f'"{data}" is not of type str or list')
+    if isinstance(data, list) and not all(isinstance(entry, str) for entry in data):
+        raise TypeError(f'Not all entries in "{data}" are of type str')
+    if isinstance(data, str):
+        data = [data]
+    return data
+
+
+def _validate_datetime(data: Union[str, int, float, datetime.datetime]) -> int:
+    """
+    Validate and transform dates into integers
+
+    :param data: representation of a year
+    :type data: Union[str,int,float, datetime.datetime]
+    :raises TypeError: raise if the data is not of type str, int, float or datetime.datetime
+    :return: integer representing a year
+    :rtype: int
+    """
+    if not isinstance(data, (int, float, str, datetime.datetime)):
+        raise TypeError(f'"{data}" is not of type (str,int,float,datetime.datetime)')
+    if isinstance(data, (float, str)):
+        data = int(str(data).strip())
+    if isinstance(data, datetime.datetime):
+        data = data.year
+    return data
+
+
+def _validate_sources(data: Union[dict, List[dict]]) -> List[dict]:
+    """
+    Validate the sources for the potential.
+
+    This checks whether the entry is a dictionary that can be used to describe
+    the citation for a potential.
+
+    :param data: citation data for a potential
+    :type data: Union[dict, List[dict]]
+    :raises TypeError: raises if the data is not a dict or list of dicts
+    :raises TypeError: raises if not all the entries in the list are dicts
+    :return: list of references for a potential
+    :rtype: List[dict]
+    """
+
+    def _validate_single_source(source: dict) -> dict:
+        """
+        Validate a single potential citation data
+
+        This will check if certain keys exists and add them to the citation data
+
+        :param source: citation data for a potential
+        :type source: dict
+        :return: validated potential data
+        :rtype: dict
+        """
+        _required_keys = ["author", "journal", "title", "volume", "year"]
+
+        for key in _required_keys:
+            if key not in source:
+                source[key] = None
+                warnings.warn(
+                    f'The required key "{key}" is not found, setting its value to None'
+                )
+        return source
+
+    if not isinstance(data, (dict, list)):
+        raise TypeError("The data is not of type dict or list")
+    if isinstance(data, list) and not all(isinstance(entry, dict) for entry in data):
+        raise TypeError(f'Not all entries in "{data}" are not of type dict')
+    if isinstance(data, dict):
+        data = _validate_single_source(data)
+        data = [data]
+    if isinstance(data, list):
+        for index, _source in enumerate(data):
+            data[index] = _validate_single_source(_source)
+    return data
 
 
 class LammpsPotentialData(orm.SinglefileData):
@@ -61,23 +165,23 @@ class LammpsPotentialData(orm.SinglefileData):
     )
 
     _extra_keys = {
-        "content_origin": {"type": str},
-        "content_other_locations": {"type": (str, list)},
+        "title": {"validator": _validate_string},
+        "developer": {"validator": _validate_string_list},
+        "publication_year": {"validator": _validate_datetime},
+        "content_origin": {"validator": _validate_string},
+        "content_other_locations": {"validator": _validate_string_list},
         "data_method": {
-            "type": str,
             "values": ["experiment", "computation", "unknown"],
+            "validator": _validate_string,
         },
-        "description": {"type": str},
-        "developer": {"type": (str, list)},
-        "disclaimer": {"type": str},
-        "generation_method": {"type": str},
-        "properties": {"type": (str, list)},
-        "publication_year": {"type": (str, datetime.datetime, int)},
-        "source_citations": {"type": (str, list)},
-        "title": {"type": str},
+        "description": {"validator": _validate_string},
+        "disclaimer": {"validator": _validate_string},
+        "generation_method": {"validator": _validate_string},
+        "properties": {"validator": _validate_string_list},
+        "source_citations": {"validator": _validate_sources},
     }
 
-    with open(_schema_file) as handler:
+    with open(_schema_file, encoding="utf8") as handler:
         _defaults = json.load(handler)
         default_potential_info = _defaults["pair_style"]
         default_atom_style_info = _defaults["atom_style"]
@@ -85,7 +189,7 @@ class LammpsPotentialData(orm.SinglefileData):
     @classmethod
     def get_or_create(
         cls,
-        source: typing.Union[str, pathlib.Path, typing.BinaryIO],
+        source: Union[str, pathlib.Path, BinaryIO],
         filename: str = None,
         pair_style: str = None,
         species: list = None,
@@ -102,7 +206,9 @@ class LammpsPotentialData(orm.SinglefileData):
         :param source: the source potential content, either a binary stream,
             or a ``str`` or ``Path`` to the path of the file on disk,
             which can be relative or absolute.
+        :type source: Union[str, pathlib.Path, BinaryIO]
         :param filename: optional explicit filename to give to the file stored in the repository.
+        :type filename: str
         :param pair_style: Type of potential according to LAMMPS
         :type pair_style: str
         :param species: Species that can be used for this potential.
@@ -169,9 +275,7 @@ class LammpsPotentialData(orm.SinglefileData):
         )
 
     @classmethod
-    def prepare_source(
-        cls, source: typing.Union[str, pathlib.Path, typing.BinaryIO]
-    ) -> typing.BinaryIO:
+    def prepare_source(cls, source: Union[str, pathlib.Path, BinaryIO]) -> BinaryIO:
         """Validate the ``source`` representing a file on disk or a byte stream.
 
         .. note:: if the ``source`` is a valid file on disk, its content is
@@ -313,26 +417,29 @@ class LammpsPotentialData(orm.SinglefileData):
 
         :param extra_tags: dictionary with the extra tags that can be used to tag the potential
         :type extra_tags: dict
-        :raises ValueError: If the type of the entry does not matches the expected
+        :raises TypeError: If the type of the entry does not matches the expected
         :raises ValueError: If the value of the entry does not match the possible values
         """
         for key, value in self._extra_keys.items():
             _value = extra_tags.get(key, None)
-            _types = value.get("type", None)
-            _values = value.get("values", None)
-            if _value is not None:
-                if not isinstance(_value, _types):
-                    raise ValueError(
-                        f'Tag "{key}" with value "{_value}" is not of type "{_types}"'
-                    )
-                if _values is not None and _value not in _values:
-                    raise ValueError(
-                        f'Tag "{key}" is not in the accepted values "{_values}"'
-                    )
+            _accepted_values = value.get("values", None)
+            _validator = value.get("validator", None)
+            if _value is not None and _validator is not None:
+                _value = _validator(_value)
+            if (
+                _accepted_values is not None
+                and _value is not None
+                and _value not in _accepted_values
+            ):
+                raise ValueError(
+                    f'The value "{_value}" not in the "{_accepted_values}"'
+                )
+
+            self.base.attributes.set(key, _value)
 
     def set_file(
         self,
-        source: typing.Union[str, pathlib.Path, typing.BinaryIO],
+        source: Union[str, pathlib.Path, BinaryIO],
         filename: str = None,
         pair_style: str = None,
         species: list = None,
@@ -359,7 +466,7 @@ class LammpsPotentialData(orm.SinglefileData):
         :param source: the source lammps potential content, either a binary
             stream, or a ``str`` or ``Path`` to the path of the file on disk,
             which can be relative or absolute.
-        :type source: typing.Union[str, pathlib.Path, typing.BinaryIO]
+        :type source: Union[str, pathlib.Path, BinaryIO]
         :param filename: optional explicit filename to give to the file stored in the repository.
         :type filename: str
         :param pair_style: Type of potential according to LAMMPS
@@ -369,7 +476,7 @@ class LammpsPotentialData(orm.SinglefileData):
         :param atom_style: Type of treatment of the atoms according to LAMMPS.
         :type atom_style: str
         :param units: Default units to be used with this potential.
-        :type unite:  str
+        :type units:  str
         :param extra_tags: Dictionary with extra information to tag the
             potential, based on the KIM schema.
         :type extra_tags: dict
@@ -400,10 +507,7 @@ class LammpsPotentialData(orm.SinglefileData):
 
         if extra_tags is None:
             extra_tags = {}
-        if extra_tags is not None:
-            self.validate_extra_tags(extra_tags=extra_tags)
-        for key in self._extra_keys:
-            self.base.attributes.set(key, extra_tags.get(key, None))
+        self.validate_extra_tags(extra_tags=extra_tags)
 
         super().set_file(source, filename, **kwargs)
         source.seek(0)
@@ -474,7 +578,7 @@ class LammpsPotentialData(orm.SinglefileData):
         return self.base.attributes.get("content_origin")
 
     @property
-    def content_other_locations(self) -> typing.Union[str, list]:
+    def content_other_locations(self) -> Union[str, list]:
         """
         Return other locations where the potential can be found.
 
@@ -482,7 +586,7 @@ class LammpsPotentialData(orm.SinglefileData):
         to other location(s) where the content is available.
 
         :return: other locations where the potential can be found.
-        :rtype: typing.Union[str, list]
+        :rtype: Union[str, list]
         """
         return self.base.attributes.get("content_other_locations")
 
@@ -516,7 +620,7 @@ class LammpsPotentialData(orm.SinglefileData):
         return self.base.attributes.get("description")
 
     @property
-    def developer(self) -> typing.Union[str, list]:
+    def developer(self) -> Union[str, list]:
         """
         Return the developer information of this potential.
 
@@ -527,7 +631,7 @@ class LammpsPotentialData(orm.SinglefileData):
         of an interatomic model or a specific parameter set for it.
 
         :return: developer information of this potential
-        :rtype: typing.Union[str, list]
+        :rtype: Union[str, list]
         """
         return self.base.attributes.get("developer")
 
@@ -546,31 +650,31 @@ class LammpsPotentialData(orm.SinglefileData):
         return self.base.attributes.get("disclaimer")
 
     @property
-    def properties(self) -> typing.Union[str, list]:
+    def properties(self) -> Union[str, list]:
         """
         Return the properties for which this potential was devised.
 
         As based in the KIM schema. A list of properties reported by a KIM Item.
 
         :return: properties fow which this potential was devised.
-        :rtype: typing.Union[str, list]
+        :rtype: Union[str, list]
         """
         return self.base.attributes.get("properties")
 
     @property
-    def publication_year(self) -> typing.Union[str, datetime.datetime, int]:
+    def publication_year(self) -> Union[str, datetime.datetime, int]:
         """
         Return the year of publication of this potential.
 
         As based in the KIM schema. Year this item was published on openkim.org.
 
         :return: year of publication of this potential
-        :rtype: typing.Union[str, datetime.datetime, int]
+        :rtype: Union[str, datetime.datetime, int]
         """
         return self.base.attributes.get("publication_year")
 
     @property
-    def source_citations(self) -> typing.Union[str, list]:
+    def source_citations(self) -> Union[str, list]:
         """
         Return the citation where the potential was originally published.
 
@@ -578,7 +682,7 @@ class LammpsPotentialData(orm.SinglefileData):
         corresponding to primary published work(s) describing the KIM Item.
 
         :return: the citation where the potential was originally published.
-        :rtype: typing.Union[str, list]
+        :rtype: Union[str, list]
         """
         return self.base.attributes.get("source_citations")
 
@@ -597,7 +701,7 @@ class LammpsPotentialData(orm.SinglefileData):
         return self.base.attributes.get("title")
 
     @property
-    def md5(self) -> typing.Optional[int]:
+    def md5(self) -> Optional[int]:
         """Return the md5.
         :return: the md5 of the stored file.
         """
