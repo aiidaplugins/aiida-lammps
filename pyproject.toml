@@ -71,6 +71,10 @@ docs = [
 "lammps.potential" = "aiida_lammps.data.potential:LammpsPotentialData"
 "lammps.trajectory" = "aiida_lammps.data.trajectory:LammpsTrajectory"
 
+[project.entry-points."aiida.workflows"]
+"lammps.base" = "aiida_lammps.workflows.base:LammpsBaseWorkChain"
+
+
 [tool.flit.module]
 name = "aiida_lammps"
 

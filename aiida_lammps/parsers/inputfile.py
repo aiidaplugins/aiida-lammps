@@ -405,6 +405,11 @@ def write_md_block(parameters_md: dict) -> str:
         style=parameters_md["integration"].get("style", "nve"),
         integration_parameters=parameters_md["integration"].get("constraints"),
     )
+    time_step = (
+        join_keywords(parameters_md["reset_timestep"])
+        if "reset_timestep" in parameters_md
+        else 0
+    )
 
     md_block = generate_header("Start of the MD information")
     _key = parameters_md["integration"].get("style", "nve")
@@ -413,10 +418,10 @@ def write_md_block(parameters_md: dict) -> str:
         md_block += (
             f'{generate_velocity_string(parameters_velocity=parameters_md["velocity"])}'
         )
-    md_block += "reset_timestep 0\n"
-    if parameters_md.get("run_style", "verlet") == "rspa":
+    md_block += f"reset_timestep {time_step}\n"
+    if parameters_md.get("run_style", "verlet") == "respa":
         md_block += f'run_style {parameters_md.get("run_style", "verlet")} '
-        md_block += f'{join_keywords(parameters_md["rspa_options"])}\n'
+        md_block += f'{join_keywords(parameters_md["respa_options"])}\n'
     else:
         md_block += f'run_style {parameters_md.get("run_style", "verlet")}\n'
     md_block += f'run {parameters_md.get("max_number_steps", 100)}\n'

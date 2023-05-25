@@ -191,9 +191,9 @@ class LammpsBaseCalculation(CalcJob):
             message="the file with the restart information was not found",
         )
         spec.exit_code(
-            357,
-            "ERROR_CALCULATION_DID_NOT_FINISH",
-            message="The calculation did not finish properly but an intermediate restartfile was found",
+            400,
+            "ERROR_OUT_OF_WALLTIME",
+            message="The calculation stopped prematurely because it ran out of walltime.",
         )
         spec.exit_code(
             1001,
