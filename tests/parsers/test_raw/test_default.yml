@@ -1,0 +1,15 @@
+results:
+  compute_variables:
+    bin: standard
+    bins:
+    - 24
+    - 24
+    - 24
+    binsize: 1.4
+    ghost_atom_cutoff: 2.8
+    master_list_distance_cutoff: 2.8
+    max_neighbors_atom: 2000
+    steps_per_second: 1908.427
+    total_wall_time: 0:00:00
+    total_wall_time_seconds: 0
+    units_style: lattice

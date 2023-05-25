@@ -3,6 +3,7 @@ initialise a test database and profile
 """
 from __future__ import annotations
 
+import collections
 import os
 import pathlib
 import shutil
@@ -11,6 +12,7 @@ from typing import Any
 
 from aiida import orm
 from aiida.common.datastructures import CalcInfo
+from aiida.common.links import LinkType
 from aiida.engine import CalcJob
 import numpy as np
 import pytest
@@ -56,6 +58,12 @@ def pytest_report_header(config):
         f'LAMMPS Executable: {shutil.which(config.getoption("lammps_exec") or "lammps")}',
         f'LAMMPS Work Directory: {config.getoption("lammps_workdir") or "<TEMP>"}',
     ]
+
+
+@pytest.fixture
+def filepath_tests() -> pathlib.Path:
+    """Return the path to the tests folder."""
+    return pathlib.Path(__file__).resolve().parent / "tests"
 
 
 @pytest.fixture(scope="function")
@@ -113,6 +121,69 @@ def generate_calc_job(tmp_path):
             return process
 
         return tmp_path, calc_info
+
+    return factory
+
+
+@pytest.fixture
+def generate_calc_job_node(filepath_tests, aiida_computer_local, tmp_path):
+    """Create and return a :class:`aiida.orm.CalcJobNode` instance."""
+
+    def flatten_inputs(inputs, prefix=""):
+        """Flatten inputs recursively like :meth:`aiida.engine.processes.process::Process._flatten_inputs`."""
+        flat_inputs = []
+        for key, value in inputs.items():
+            if isinstance(value, collections.abc.Mapping):
+                flat_inputs.extend(flatten_inputs(value, prefix=prefix + key + "__"))
+            else:
+                flat_inputs.append((prefix + key, value))
+        return flat_inputs
+
+    def factory(
+        entry_point: str,
+        test_name: str,
+        inputs: dict = None,
+        retrieve_temporary_list: list[str] | None = None,
+    ):
+        """Create and return a :class:`aiida.orm.CalcJobNode` instance."""
+        node = orm.CalcJobNode(
+            computer=aiida_computer_local(),
+            process_type=f"aiida.calculations:{entry_point}",
+        )
+
+        if inputs:
+            for link_label, input_node in flatten_inputs(inputs):
+                input_node.store()
+                node.base.links.add_incoming(
+                    input_node, link_type=LinkType.INPUT_CALC, link_label=link_label
+                )
+
+        node.store()
+
+        filepath_retrieved = (
+            filepath_tests
+            / "parsers"
+            / "fixtures"
+            / entry_point.split(".")[-1]
+            / test_name
+        )
+
+        retrieved = orm.FolderData()
+        retrieved.base.repository.put_object_from_tree(filepath_retrieved)
+        retrieved.base.links.add_incoming(
+            node, link_type=LinkType.CREATE, link_label="retrieved"
+        )
+        retrieved.store()
+
+        if retrieve_temporary_list:
+            for pattern in retrieve_temporary_list:
+                for filename in filepath_retrieved.glob(pattern):
+                    filepath = tmp_path / filename.relative_to(filepath_retrieved)
+                    filepath.write_bytes(filename.read_bytes())
+
+            return node, tmp_path
+
+        return node
 
     return factory
 
