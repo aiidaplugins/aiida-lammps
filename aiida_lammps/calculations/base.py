@@ -196,6 +196,16 @@ class LammpsBaseCalculation(CalcJob):
             message="The calculation stopped prematurely because it ran out of walltime.",
         )
         spec.exit_code(
+            401,
+            "ERROR_ENERGY_NOT_CONVERGED",
+            message="The energy tolerance was not reached at minimization.",
+        )
+        spec.exit_code(
+            402,
+            "ERROR_FORCE_NOT_CONVERGED",
+            message="The force tolerance was not reached at minimization.",
+        )
+        spec.exit_code(
             1001,
             "ERROR_PARSING_LOGFILE",
             message="error parsing the log file has failed.",

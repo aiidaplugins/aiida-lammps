@@ -25,32 +25,7 @@ class LammpsBaseWorkChain(BaseRestartWorkChain):
         """Define the process specification."""
         # yapf: disable
         super().define(spec)
-        spec.expose_inputs(LammpsBaseCalculation)
-        spec.input(
-            "max_iterations",
-            valid_type=orm.Int,
-            default=lambda: orm.Int(5),
-            help="Maximum number of restarts",
-        )
-        spec.input(
-            "clean_workdir",
-            valid_type=orm.Bool,
-            required=False,
-            default= lambda: orm.Bool(False),
-            help="""
-            Whether to clean the workdir of the calculations or not,
-            the default is not clean.
-            """,
-        )
-        spec.input(
-            "verbosity",
-            valid_type=orm.Bool,
-            default=lambda: orm.Bool(False),
-            required=False,
-            help="""
-            Whether to print more information during the workflow execution.
-            """,
-        )
+        spec.expose_inputs(LammpsBaseCalculation, namespace='lammps')
         spec.input(
             "store_restart",
             valid_type=orm.Bool,
@@ -60,7 +35,7 @@ class LammpsBaseWorkChain(BaseRestartWorkChain):
             Whether to store the restartfile in the repository.
             """,
         )
-
+        spec.expose_outputs(LammpsBaseCalculation)
         spec.outline(
             cls.setup,
             cls.validate_parameters,
@@ -72,7 +47,6 @@ class LammpsBaseWorkChain(BaseRestartWorkChain):
             cls.results,
         )
 
-        spec.expose_outputs(LammpsBaseCalculation)
         spec.exit_code(
             300,
             "ERROR_UNRECOVERABLE_FAILURE",
@@ -92,7 +66,9 @@ class LammpsBaseWorkChain(BaseRestartWorkChain):
         default namelists for the ``parameters`` are set to empty dictionaries if not specified.
         """
         super().setup()
-        self.ctx.inputs = AttributeDict(self.exposed_inputs(LammpsBaseCalculation))
+        self.ctx.inputs = AttributeDict(
+            self.exposed_inputs(LammpsBaseCalculation, "lammps")
+        )
         self.ctx.inputs.parameters = self.ctx.inputs.parameters.get_dict()
         self.ctx.inputs.settings = (
             self.ctx.inputs.settings.get_dict() if "settings" in self.ctx.inputs else {}
@@ -102,7 +78,7 @@ class LammpsBaseWorkChain(BaseRestartWorkChain):
         """Validate the parameters for the workchain"""
 
         if "store_restart" in self.ctx.inputs:
-            self.inputs.settings.store_restart = self.ctx.inputs.store_restart.value
+            self.ctx.inputs.settings.store_restart = self.ctx.inputs.store_restart.value
 
         if "script" not in self.ctx.inputs and any(
             key not in self.ctx.inputs
@@ -200,6 +176,9 @@ class LammpsBaseWorkChain(BaseRestartWorkChain):
             if "parameters" in self.ctx.inputs and "md" in self.ctx.inputs.parameters:
                 self.ctx.inputs.parameters["md"]["reset_timestep"] = timestep
                 del self.ctx.inputs.parameters["md"]["velocity"]
+                self.logger.warning(
+                    "Removing the velocity parameter from the MD control"
+                )
         if restart_type == RestartTypes.FROM_STRUCTURE:
             self.ctx.inputs.structure = (
                 calculation.outputs.trajectory.get_step_structure(-1)
@@ -208,6 +187,9 @@ class LammpsBaseWorkChain(BaseRestartWorkChain):
             if "parameters" in self.ctx.inputs and "md" in self.ctx.inputs.parameters:
                 self.ctx.inputs.parameters["md"]["reset_timestep"] = timestep
                 del self.ctx.inputs.parameters["md"]["velocity"]
+                self.logger.warning(
+                    "Removing the velocity parameter from the MD control"
+                )
         if restart_type == RestartTypes.FROM_REMOTEFOLDER:
 
             latest_file = self._check_restart_in_remote(calculation=calculation)
@@ -222,6 +204,9 @@ class LammpsBaseWorkChain(BaseRestartWorkChain):
                 ):
                     self.ctx.inputs.parameters["md"]["reset_timestep"] = timestep
                     del self.ctx.inputs.parameters["md"]["velocity"]
+                    self.logger.warning(
+                        "Removing the velocity parameter from the MD control"
+                    )
         if restart_type == RestartTypes.FROM_SCRATCH:
             self.ctx.inputs.options["max_wallclock_seconds"] *= 1.50
 
@@ -237,8 +222,9 @@ class LammpsBaseWorkChain(BaseRestartWorkChain):
         if calculation.is_failed and calculation.exit_status < 400:
             self.report_error_handled(calculation, "unrecoverable error, aborting...")
             return ProcessHandlerReport(
-                True, self.exit_codes.ERROR_UNRECOVERABLE_FAILURE
-            )  # pylint: disable=no-member
+                True,
+                self.exit_codes.ERROR_UNRECOVERABLE_FAILURE,  # pylint: disable=no-member
+            )
         return None
 
     @process_handler(
@@ -247,28 +233,124 @@ class LammpsBaseWorkChain(BaseRestartWorkChain):
             LammpsBaseCalculation.exit_codes.ERROR_OUT_OF_WALLTIME,  # pylint: disable=no-member
         ],
     )
-    def handle_walltime_error(self, calculation):
-        """Handle calculations where the walltime has been reached"""
-        if calculation.is_failed and calculation.exit_status == 400:
-            latest_file = self._check_restart_in_remote(calculation=calculation)
-            if "restartfile" in calculation.outputs:
-                self.set_restart_type(
-                    restart_type=RestartTypes.FROM_RESTARTFILE,
-                    calculation=calculation,
-                )
-            elif latest_file is not None:
-                self.set_restart_type(
-                    restart_type=RestartTypes.FROM_REMOTEFOLDER,
-                    calculation=calculation,
-                )
-            elif "trajectory" in calculation.outputs:
-                self.set_restart_type(
-                    restart_type=RestartTypes.FROM_STRUCTURE,
-                    calculation=calculation,
-                )
-            else:
-                self.set_restart_type(
-                    restart_type=RestartTypes.FROM_SCRATCH,
-                    calculation=calculation,
-                )
+    def handle_out_of_walltime(self, calculation):
+        """
+        Handle calculations where the walltime was reached.
+
+        The handler will try to find a configuration to restart from with the
+        following priority
+
+        1. Use a stored restart file in the repository from the previous calculation.
+        2. Use a restartfile found in the remote folder from the previous calculation.
+        3. Use the structure from the last step of the trajectory from the previous calculation.
+        4. Restart from scratch
+        """
+        self.logger.report("Walltime reached attempting restart")
+
+        latest_file = self._check_restart_in_remote(calculation=calculation)
+        if "restartfile" in calculation.outputs:
+            self.set_restart_type(
+                restart_type=RestartTypes.FROM_RESTARTFILE,
+                calculation=calculation,
+            )
+            self.report_error_handled(
+                calculation,
+                "restarting from the stored restartfile",
+            )
+        elif latest_file is not None:
+            self.set_restart_type(
+                restart_type=RestartTypes.FROM_REMOTEFOLDER,
+                calculation=calculation,
+            )
+            self.report_error_handled(
+                calculation,
+                "restarting from the remote folder of the previous calculation",
+            )
+        elif "trajectory" in calculation.outputs:
+            self.set_restart_type(
+                restart_type=RestartTypes.FROM_STRUCTURE,
+                calculation=calculation,
+            )
+            self.report_error_handled(
+                calculation,
+                "restarting from the last step of the trajectory",
+            )
+        else:
+            self.set_restart_type(
+                restart_type=RestartTypes.FROM_SCRATCH,
+                calculation=calculation,
+            )
+            self.report_error_handled(
+                calculation,
+                "restarting from scratch and increasing the walltime",
+            )
+        return ProcessHandlerReport(True)
+
+    @process_handler(
+        priority=620,
+        exit_codes=[
+            LammpsBaseCalculation.exit_codes.ERROR_FORCE_NOT_CONVERGED,  # pylint: disable=no-member
+            LammpsBaseCalculation.exit_codes.ERROR_ENERGY_NOT_CONVERGED,  # pylint: disable=no-member
+        ],
+    )
+    def handle_minimization_not_converged(self, calculation):
+        """
+        Handle calculations where the minimization did not converge
+
+        The handler will try to find a configuration to restart from with the
+        following priority
+
+        1. Use a stored restart file in the repository from the previous calculation.
+        2. Use a restartfile found in the remote folder from the previous calculation.
+        3. Use the structure from the last step of the trajectory from the previous calculation.
+
+        This handler should never start from restart as at least the trajectory
+        should always exist, if the calculation finished successfully.
+        """
+
+        if calculation.exit_status == 401:
+            self.logger.report(
+                "Energy not converged during minimization, attempting restart"
+            )
+        if calculation.exit_status == 402:
+            self.logger.report(
+                "Force not converged during minimization, attempting restart"
+            )
+        latest_file = self._check_restart_in_remote(calculation=calculation)
+        if "restartfile" in calculation.outputs:
+            self.set_restart_type(
+                restart_type=RestartTypes.FROM_RESTARTFILE,
+                calculation=calculation,
+            )
+            self.report_error_handled(
+                calculation,
+                "restarting from the stored restartfile",
+            )
+        elif latest_file is not None:
+            self.set_restart_type(
+                restart_type=RestartTypes.FROM_REMOTEFOLDER,
+                calculation=calculation,
+            )
+            self.report_error_handled(
+                calculation,
+                "restarting from the remote folder of the previous calculation",
+            )
+        elif "trajectory" in calculation.outputs:
+            self.set_restart_type(
+                restart_type=RestartTypes.FROM_STRUCTURE,
+                calculation=calculation,
+            )
+            self.report_error_handled(
+                calculation,
+                "restarting from the last step of the trajectory",
+            )
+        else:
+            self.report_error_handled(
+                calculation,
+                "did not find any configuration to restart from, something is wrong, aborting...",
+            )
+            return ProcessHandlerReport(
+                True,
+                self.exit_codes.ERROR_KNOWN_UNRECOVERABLE_FAILURE,  # pylint: disable=no-member
+            )
         return ProcessHandlerReport(True)

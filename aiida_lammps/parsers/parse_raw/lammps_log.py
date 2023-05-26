@@ -77,6 +77,22 @@ def parse_logfile(filename: str = None, file_contents: str = None) -> Union[dict
             global_parsed_data["total_wall_time"] = line.split()[-1]
         if "bin:" in line:
             global_parsed_data["bin"] = line.split()[-1]
+
+        if "Minimization stats" in line:
+            global_parsed_data["minimization"] = {}
+        if "Stopping criterion" in line:
+            global_parsed_data["minimization"]["stop_criterion"] = (
+                line.strip().split("=")[-1].strip()
+            )
+        if "Energy initial, next-to-last, final" in line:
+            global_parsed_data["minimization"][
+                "energy_relative_difference"
+            ] = _calculate_energy_tolerance(data[index + 1])
+        if "Force two-norm initial, final" in line:
+            global_parsed_data["minimization"]["force_two_norm"] = float(
+                line.strip().split("=")[-1].split()[-1].strip()
+            )
+
         if line.startswith("Step"):
             header_line_position = index
             header_line = [
@@ -91,3 +107,9 @@ def parse_logfile(filename: str = None, file_contents: str = None) -> Union[dict
     for index, entry in enumerate(header_line):
         parsed_data[entry] = _data[:, index].tolist()
     return {"time_dependent": parsed_data, "global": global_parsed_data}
+
+
+def _calculate_energy_tolerance(line: str) -> float:
+    """Determine the energy tolerance found in the minimization step"""
+    energy = [float(entry) for entry in line.split()]
+    return (energy[-1] - energy[-2]) / energy[-1]

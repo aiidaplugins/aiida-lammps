@@ -148,6 +148,37 @@ class LammpsBaseParser(Parser):
         if not _end_file_found:
             return self.exit_codes.ERROR_OUT_OF_WALLTIME
 
+        if (
+            "parameters" in self.node.inputs
+            and "minimize" in self.node.inputs.parameters.get_dict()
+        ):
+            _etol = global_data.get("minimization", {}).get(
+                "energy_relative_difference", None
+            )
+            _ftol = global_data.get("minimization", {}).get("force_two_norm", None)
+            _stop_criterion = global_data.get("minimization", {}).get(
+                "stop_criterion", None
+            )
+
+            _input_etol = (
+                self.node.inputs.parameters.get_dict()
+                .get("minimize", {})
+                .get("energy_tolerance", None)
+            )
+            _input_ftol = (
+                self.node.inputs.parameters.get_dict()
+                .get("minimize", {})
+                .get("force_tolerance", None)
+            )
+
+            if _stop_criterion:
+                if _stop_criterion.lower() == "force tolerance" and _ftol > _input_ftol:
+                    raise self.exit_codes.ERROR_FORCE_NOT_CONVERGED
+                if (
+                    _stop_criterion.lower() == "energy tolerance"
+                    and _etol > _input_etol
+                ):
+                    raise self.exit_codes.ERROR_ENERGY_NOT_CONVERGED
         return None
 
     def parse_restartfile(
