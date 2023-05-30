@@ -10,37 +10,18 @@ from aiida.plugins import CalculationFactory
 import numpy as np
 import pytest
 
-from aiida_lammps.fixtures.calculations import (
-    md_parameters_npt,
-    md_parameters_nve,
-    md_parameters_nvt,
-    md_reference_data_npt,
-    md_reference_data_nve,
-    md_reference_data_nvt,
-    minimize_groups_reference_data,
-    minimize_parameters,
-    minimize_parameters_groups,
-    minimize_reference_data,
-)
-from aiida_lammps.fixtures.data import generate_structure, get_potential_fe_eam
-from aiida_lammps.fixtures.inputs import (
-    parameters_restart_final,
-    parameters_restart_full,
-    parameters_restart_full_no_storage,
-    parameters_restart_intermediate,
-)
 from . import utils as tests
 
 
 @pytest.mark.lammps_call
 @pytest.mark.parametrize(
-    "parameters,reference_data",
+    "parameters",
     [
-        ("minimize_parameters", "minimize_reference_data"),
-        ("minimize_parameters_groups", "minimize_groups_reference_data"),
-        ("md_parameters_nve", "md_reference_data_nve"),
-        ("md_parameters_nvt", "md_reference_data_nvt"),
-        ("md_parameters_npt", "md_reference_data_npt"),
+        ("parameters_minimize"),
+        ("parameters_minimize_groups"),
+        ("parameters_md_nve"),
+        ("parameters_md_nvt"),
+        ("parameters_md_npt"),
     ],
 )
 def test_lammps_base(
@@ -48,8 +29,9 @@ def test_lammps_base(
     generate_structure,  # pylint: disable=redefined-outer-name  # noqa: F811
     get_potential_fe_eam,  # pylint: disable=redefined-outer-name  # noqa: F811
     parameters,
-    reference_data,
     request,
+    data_regression,
+    ndarrays_regression,
 ):
     """
     Set of tests for the lammps.base calculation
@@ -78,63 +60,41 @@ def test_lammps_base(
 
     assert "results" in results, 'the "results" node not present'
 
-    reference_data = request.getfixturevalue(reference_data)
+    _results = results["results"].get_dict()
+    if (
+        "compute_variables" in _results
+        and "steps_per_second" in _results["compute_variables"]
+    ):
+        del _results["compute_variables"]["steps_per_second"]
 
-    for key, value in reference_data.results.items():
-        _msg = f'key "{key}" not present'
-        assert key in results["results"], _msg
-        _msg = f'value for "{key}" does not match'
-        _results = results["results"].get_dict()
-        if isinstance(_results[key], (int, float)):
-            assert np.isclose(
-                value,
-                _results[key],
-                rtol=1e-03,
-            ), _msg
-        if isinstance(_results[key], dict):
-            for sub_key, sub_value in reference_data.results[key].items():
-                assert sub_key in _results[key], f'key "{sub_key}" not present'
-                if sub_key != "steps_per_second":
-                    assert (
-                        sub_value == _results[key][sub_key]
-                    ), f'value for key "{sub_key}" doe not match'
+    assert "trajectories" in results, 'the "trajectories" node is not present'
+
+    _trajectories_steps = {
+        key: results["trajectories"].get_step_data(key).atom_fields
+        for key in range(len(results["trajectories"].time_steps))
+    }
+
+    data_regression.check(
+        {
+            "results": _results,
+            "trajectories_attributes": results["trajectories"].base.attributes.all,
+            "trajectories_steps": _trajectories_steps,
+        }
+    )
 
     assert (
         "time_dependent_computes" in results
     ), 'the "time_dependent_computes" node is not present'
 
-    _msg = "No time dependet computes obtained even when expected"
+    _msg = "No time dependent computes obtained even when expected"
     assert len(results["time_dependent_computes"].get_arraynames()) > 0, _msg
 
-    for key, value in reference_data.time_dependent_computes.items():
-        _msg = f'key "{key}" not present'
-        assert key in results["time_dependent_computes"].get_arraynames(), _msg
-        _msg = f'arrays for "{key}" do not match'
-        assert np.allclose(
-            value,
-            results["time_dependent_computes"].get_array(key),
-            rtol=1e-02,
-        ), _msg
+    _time_dependent_computes = {
+        key: results["time_dependent_computes"].get_array(key)
+        for key in results["time_dependent_computes"].get_arraynames()
+    }
 
-    assert "trajectories" in results, 'the "trajectories" node is not present'
-    _attributes = results["trajectories"].base.attributes.all
-    for key, value in reference_data.trajectories["attributes"].items():
-        assert key in _attributes, f'the key "{key}" is not present'
-        assert value == _attributes[key], f'the values for "{key}" do not match'
-    for key, value in reference_data.trajectories["step_data"].items():
-        _step_data = results["trajectories"].get_step_data(key).atom_fields
-        for sub_key, sub_value in value.items():
-            _msg = f'key "{sub_key}" not present'
-            assert sub_key in _step_data, _msg
-            _msg = f'data for key "{key}" does not match'
-            if sub_key != "element":
-                assert np.allclose(
-                    np.asarray(sub_value, dtype=float),
-                    np.asarray(_step_data[sub_key], dtype=float),
-                    rtol=1e-02,
-                ), _msg
-            else:
-                assert sub_value == _step_data[sub_key], _msg
+    ndarrays_regression.check(_time_dependent_computes)
 
 
 @pytest.mark.lammps_call
@@ -142,19 +102,19 @@ def test_lammps_base(
     "parameters,restart_parameters",
     [
         (
-            "md_parameters_npt",
+            "parameters_md_npt",
             "parameters_restart_full",
         ),
         (
-            "md_parameters_npt",
+            "parameters_md_npt",
             "parameters_restart_full_no_storage",
         ),
         (
-            "md_parameters_npt",
+            "parameters_md_npt",
             "parameters_restart_final",
         ),
         (
-            "md_parameters_npt",
+            "parameters_md_npt",
             "parameters_restart_intermediate",
         ),
     ],

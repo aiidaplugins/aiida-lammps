@@ -1,0 +1,8 @@
+final: '#---------------------Start of the write restart information---------------------#
+
+  write_restart restart.aiida
+
+  #----------------------End of the write restart information----------------------#
+
+  '
+intermediate: ''

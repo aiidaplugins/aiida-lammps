@@ -40,7 +40,6 @@ class LammpsBaseWorkChain(BaseRestartWorkChain):
             cls.setup,
             cls.validate_parameters,
             while_(cls.should_run_process)(
-                cls.prepare_process,
                 cls.run_process,
                 cls.inspect_process,
             ),
@@ -69,7 +68,6 @@ class LammpsBaseWorkChain(BaseRestartWorkChain):
         self.ctx.inputs = AttributeDict(
             self.exposed_inputs(LammpsBaseCalculation, "lammps")
         )
-        self.ctx.inputs.parameters = self.ctx.inputs.parameters.get_dict()
         self.ctx.inputs.settings = (
             self.ctx.inputs.settings.get_dict() if "settings" in self.ctx.inputs else {}
         )
@@ -92,7 +90,7 @@ class LammpsBaseWorkChain(BaseRestartWorkChain):
         if "parameters" in self.ctx.inputs:
             self.ctx.inputs.parameters = self.ctx.inputs.parameters.get_dict()
 
-            if not any(key in self.ctt.inputs.parameters for key in ["md", "minimize"]):
+            if not any(key in self.ctx.inputs.parameters for key in ["md", "minimize"]):
                 raise InputValidationError(
                     "If not using a script the type of calculation, either "
                     "'md' or 'minimize' must be given"

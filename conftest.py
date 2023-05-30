@@ -4,6 +4,7 @@ initialise a test database and profile
 from __future__ import annotations
 
 import collections
+from collections.abc import Mapping
 import os
 import pathlib
 import shutil
@@ -13,11 +14,17 @@ from typing import Any
 from aiida import orm
 from aiida.common.datastructures import CalcInfo
 from aiida.common.links import LinkType
+from aiida.common import AttributeDict, CalcInfo, LinkType, exceptions
 from aiida.engine import CalcJob
+from aiida.engine.utils import instantiate_process
+from aiida.manage.manager import get_manager
+from aiida.plugins import WorkflowFactory
+from aiida.plugins.entry_point import format_entry_point_string
 import numpy as np
 import pytest
 import yaml
 
+from aiida_lammps.data.potential import LammpsPotentialData
 from tests.utils import TEST_DIR, AiidaTestApp
 
 pytest_plugins = ["aiida.manage.tests.pytest_fixtures"]
@@ -64,6 +71,438 @@ def pytest_report_header(config):
 def filepath_tests() -> pathlib.Path:
     """Return the path to the tests folder."""
     return pathlib.Path(__file__).resolve().parent / "tests"
+def fixture_localhost(aiida_localhost):
+    """Return a localhost `Computer`."""
+    localhost = aiida_localhost
+    localhost.set_default_mpiprocs_per_machine(1)
+    return localhost
+
+
+@pytest.fixture
+def fixture_code(fixture_localhost):
+    """Return an ``InstalledCode`` instance configured to run calculations of given entry point on localhost."""
+
+    def _fixture_code(entry_point_name):
+
+        label = f"test.{entry_point_name}"
+
+        try:
+            return orm.load_code(label=label)
+        except exceptions.NotExistent:
+            return orm.InstalledCode(
+                label=label,
+                computer=fixture_localhost,
+                filepath_executable="/bin/true",
+                default_calc_job_plugin=entry_point_name,
+            )
+
+    return _fixture_code
+
+
+@pytest.fixture
+def parameters_minimize() -> AttributeDict:
+    """
+    Set of parameters for a minimization calculation
+
+    :return: parameters for a minimization calculation
+    :rtype: AttributeDict
+    """
+    parameters = AttributeDict()
+    parameters.control = AttributeDict()
+    parameters.control.units = "metal"
+    parameters.control.timestep = 1e-5
+    parameters.compute = {
+        "pe/atom": [{"type": [{"keyword": " ", "value": " "}], "group": "all"}],
+        "ke/atom": [{"type": [{"keyword": " ", "value": " "}], "group": "all"}],
+        "stress/atom": [{"type": ["NULL"], "group": "all"}],
+        "pressure": [{"type": ["thermo_temp"], "group": "all"}],
+    }
+
+    parameters.minimize = {
+        "style": "cg",
+        "energy_tolerance": 1e-5,
+        "force_tolerance": 1e-5,
+        "max_evaluations": 5000,
+        "max_iterations": 5000,
+    }
+
+    parameters.structure = {"atom_style": "atomic"}
+    parameters.potential = {}
+    parameters.thermo = {
+        "printing_rate": 100,
+        "thermo_printing": {
+            "step": True,
+            "pe": True,
+            "ke": True,
+            "press": True,
+            "pxx": True,
+            "pyy": True,
+            "pzz": True,
+        },
+    }
+    parameters.dump = {"dump_rate": 1000}
+
+    parameters.fix = {
+        "box/relax": [{"group": "all", "type": ["iso", 0.0, "vmax", 0.001]}]
+    }
+    parameters.restart = {"print_final": True}
+
+    return parameters
+
+
+@pytest.fixture
+def parameters_minimize_groups() -> AttributeDict:
+    """
+    Set of parameters for a minimization calculation using groups
+
+    :return: parameters for a minimization calculation
+    :rtype: AttributeDict
+    """
+    parameters = AttributeDict()
+    parameters.control = AttributeDict()
+    parameters.control.units = "metal"
+    parameters.control.timestep = 1e-5
+    parameters.compute = {
+        "pe/atom": [{"type": [{"keyword": " ", "value": " "}], "group": "all"}],
+        "ke/atom": [{"type": [{"keyword": " ", "value": " "}], "group": "all"}],
+        "stress/atom": [{"type": ["NULL"], "group": "all"}],
+        "pressure": [{"type": ["thermo_temp"], "group": "all"}],
+        "ke": [{"type": [{"keyword": " ", "value": " "}], "group": "test"}],
+    }
+
+    parameters.minimize = {
+        "style": "cg",
+        "energy_tolerance": 1e-5,
+        "force_tolerance": 1e-5,
+    }
+
+    parameters.structure = {
+        "atom_style": "atomic",
+        "groups": [{"name": "test", "args": ["type", 1]}],
+    }
+    parameters.potential = {}
+    parameters.thermo = {
+        "printing_rate": 100,
+        "thermo_printing": {
+            "step": True,
+            "pe": True,
+            "ke": True,
+            "press": True,
+            "pxx": True,
+            "pyy": True,
+            "pzz": True,
+        },
+    }
+    parameters.dump = {"dump_rate": 1000}
+
+    return parameters
+
+
+@pytest.fixture
+def parameters_md_nve() -> AttributeDict:
+    """
+    Set of parameters for a md calculation using the nve integration
+
+    :return: parameters for a md calculation
+    :rtype: AttributeDict
+    """
+    parameters = AttributeDict()
+    parameters.control = AttributeDict()
+    parameters.control.units = "metal"
+    parameters.control.timestep = 1e-5
+    parameters.compute = {
+        "pe/atom": [{"type": [{"keyword": " ", "value": " "}], "group": "all"}],
+        "ke/atom": [{"type": [{"keyword": " ", "value": " "}], "group": "all"}],
+        "stress/atom": [{"type": ["NULL"], "group": "all"}],
+        "pressure": [{"type": ["thermo_temp"], "group": "all"}],
+    }
+    parameters.md = {
+        "integration": {
+            "style": "nve",
+        },
+        "max_number_steps": 5000,
+    }
+
+    parameters.structure = {"atom_style": "atomic"}
+    parameters.potential = {}
+    parameters.thermo = {
+        "printing_rate": 1000,
+        "thermo_printing": {
+            "step": True,
+            "pe": True,
+            "ke": True,
+            "press": True,
+            "pxx": True,
+            "pyy": True,
+            "pzz": True,
+        },
+    }
+    parameters.dump = {"dump_rate": 1000}
+
+    return parameters
+
+
+@pytest.fixture
+def parameters_md_nvt() -> AttributeDict:
+    """
+    Set of parameters for a md calculation using the nvt integration
+
+    :return: parameters for a md calculation
+    :rtype: AttributeDict
+    """
+    parameters = AttributeDict()
+    parameters.control = AttributeDict()
+    parameters.control.units = "metal"
+    parameters.control.timestep = 1e-5
+    parameters.compute = {
+        "pe/atom": [{"type": [{"keyword": " ", "value": " "}], "group": "all"}],
+        "ke/atom": [{"type": [{"keyword": " ", "value": " "}], "group": "all"}],
+        "stress/atom": [{"type": ["NULL"], "group": "all"}],
+        "pressure": [{"type": ["thermo_temp"], "group": "all"}],
+    }
+    parameters.md = {
+        "integration": {
+            "style": "nvt",
+            "constraints": {
+                "temp": [400, 400, 100],
+            },
+        },
+        "max_number_steps": 5000,
+    }
+
+    parameters.structure = {"atom_style": "atomic"}
+    parameters.potential = {}
+    parameters.thermo = {
+        "printing_rate": 1000,
+        "thermo_printing": {
+            "step": True,
+            "pe": True,
+            "ke": True,
+            "press": True,
+            "pxx": True,
+            "pyy": True,
+            "pzz": True,
+        },
+    }
+    parameters.dump = {"dump_rate": 1000}
+
+    return parameters
+
+
+@pytest.fixture
+def parameters_md_npt() -> AttributeDict:
+    """
+    Set of parameters for a md calculation using the npt integration
+
+    :return: parameters for a md calculation
+    :rtype: AttributeDict
+    """
+    parameters = AttributeDict()
+    parameters.control = AttributeDict()
+    parameters.control.units = "metal"
+    parameters.control.timestep = 1e-5
+    parameters.compute = {
+        "pe/atom": [{"type": [{"keyword": " ", "value": " "}], "group": "all"}],
+        "ke/atom": [{"type": [{"keyword": " ", "value": " "}], "group": "all"}],
+        "stress/atom": [{"type": ["NULL"], "group": "all"}],
+        "pressure": [{"type": ["thermo_temp"], "group": "all"}],
+    }
+    parameters.md = {
+        "integration": {
+            "style": "npt",
+            "constraints": {
+                "temp": [400, 400, 100],
+                "iso": [0.0, 0.0, 1000.0],
+            },
+        },
+        "max_number_steps": 5000,
+        "velocity": [{"create": {"temp": 300, "seed": 1}, "group": "all"}],
+    }
+
+    parameters.structure = {"atom_style": "atomic"}
+    parameters.potential = {}
+    parameters.thermo = {
+        "printing_rate": 1000,
+        "thermo_printing": {
+            "step": True,
+            "pe": True,
+            "ke": True,
+            "press": True,
+            "pxx": True,
+            "pyy": True,
+            "pzz": True,
+        },
+    }
+    parameters.dump = {"dump_rate": 1000}
+
+    return parameters
+
+
+@pytest.fixture
+def parameters_restart_full() -> AttributeDict:
+    """Get the parameters when all the restart possibilities are considered
+
+    :return: get the parameters controlling the restart file generation
+    :rtype: AttributeDict
+    """
+    data = AttributeDict()
+    data.restart = AttributeDict()
+    data.restart.print_final = True
+    data.restart.print_intermediate = True
+    data.restart.num_steps = 1000
+    data.settings = AttributeDict()
+    data.settings.store_restart = True
+    return data
+
+
+@pytest.fixture
+def parameters_restart_full_no_storage() -> AttributeDict:
+    """Get the parameters when one is not storing the restartfile
+
+    :return: get the parameters controlling the restart file generation
+    :rtype: AttributeDict
+    """
+    data = AttributeDict()
+    data.restart = AttributeDict()
+    data.restart.print_final = True
+    data.restart.print_intermediate = True
+    data.restart.num_steps = 1000
+    return data
+
+
+@pytest.fixture
+def parameters_restart_final() -> AttributeDict:
+    """Get the parameters for the restart of only the final file
+
+    :return: get the parameters controlling the restart file generation
+    :rtype: AttributeDict
+    """
+    data = AttributeDict()
+    data.restart = AttributeDict()
+    data.restart.print_final = True
+    data.settings = AttributeDict()
+    data.settings.store_restart = True
+    return data
+
+
+@pytest.fixture
+def parameters_restart_intermediate() -> AttributeDict:
+    """Get the parameters for the restartf of only the intermediate file
+
+    :return: get the parameters controlling the restart file generation
+    :rtype: AttributeDict
+    """
+    data = AttributeDict()
+    data.restart = AttributeDict()
+    data.restart.print_intermediate = True
+    data.restart.num_steps = 1000
+    data.settings = AttributeDict()
+    data.settings.store_restart = True
+    return data
+
+
+@pytest.fixture
+def generate_structure() -> orm.StructureData:
+    """
+    Generates the structure for the calculation.
+
+    It will create a bcc structure in a square lattice.
+
+    :return: structure to be used in the calculation
+    :rtype: orm.StructureData
+    """
+
+    cell = [
+        [2.848116, 0.000000, 0.000000],
+        [0.000000, 2.848116, 0.000000],
+        [0.000000, 0.000000, 2.848116],
+    ]
+
+    positions = [
+        (0.0000000, 0.0000000, 0.0000000),
+        (0.5000000, 0.5000000, 0.5000000),
+    ]
+    fractional = True
+
+    symbols = ["Fe", "Fe"]
+    names = ["Fe1", "Fe2"]
+
+    structure = orm.StructureData(cell=cell)
+    for position, symbol, name in zip(positions, symbols, names):
+        if fractional:
+            position = np.dot(position, cell).tolist()
+        structure.append_atom(position=position, symbols=symbol, name=name)
+
+    return structure
+
+
+@pytest.fixture
+def get_potential_fe_eam() -> LammpsPotentialData:
+    """
+    Generate the potential to be used in the calculation.
+
+    Takes a potential form OpenKIM and stores it as a LammpsPotentialData object.
+
+    :return: potential to do the calculation
+    :rtype: LammpsPotentialData
+    """
+
+    potential_parameters = {
+        "species": ["Fe"],
+        "atom_style": "atomic",
+        "pair_style": "eam/fs",
+        "units": "metal",
+        "extra_tags": {
+            "publication_year": 2018,
+            "developer": ["Ronald E. Miller"],
+            "title": "EAM potential (LAMMPS cubic hermite tabulation) for Fe developed by Mendelev et al. (2003) v000",
+            "content_origin": "NIST IPRP: https: // www.ctcms.nist.gov/potentials/Fe.html",
+            "content_other_locations": None,
+            "data_method": "unknown",
+            "description": """This Fe EAM potential parameter file is from the NIST repository,
+            \"Fe_2.eam.fs\" as of the March 9, 2009 update.
+            It is similar to \"Fe_mm.eam.fs\" in the LAMMPS distribution dated 2007-06-11,
+            but gives different results for very small interatomic distances
+            (The LAMMPS potential is in fact the deprecated potential referred to in the March 9,
+            2009 update on the NIST repository).
+            The file header includes a note from the NIST contributor:
+            \"The potential was taken from v9_4_bcc (in C:\\SIMULATION.MD\\Fe\\Results\\ab_initio+Interstitials)\"
+            """,
+            "disclaimer": """According to the developer Giovanni Bonny
+            (as reported by the NIST IPRP), this potential was not stiffened and cannot
+            be used in its present form for collision cascades.
+            """,
+            "properties": None,
+            "source_citations": [
+                {
+                    "abstract": None,
+                    "author": "Mendelev, MI and Han, S and Srolovitz, DJ and Ackland, GJ and Sun, DY and Asta, M",
+                    "doi": "10.1080/14786430310001613264",
+                    "journal": "{Phil. Mag.}",
+                    "number": "{35}",
+                    "pages": "{3977-3994}",
+                    "recordkey": "MO_546673549085_000a",
+                    "recordprimary": "recordprimary",
+                    "recordtype": "article",
+                    "title": "{Development of new interatomic potentials appropriate for crystalline and liquid iron}",
+                    "volume": "{83}",
+                    "year": "{2003}",
+                }
+            ],
+        },
+    }
+
+    source = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)),
+        "tests/input_files/potentials/Fe_mm.eam.fs",
+    )
+
+    potential = LammpsPotentialData.get_or_create(
+        source=source,
+        **potential_parameters,
+    )
+
+    return potential
 
 
 @pytest.fixture(scope="function")
@@ -126,66 +565,167 @@ def generate_calc_job(tmp_path):
 
 
 @pytest.fixture
-def generate_calc_job_node(filepath_tests, aiida_computer_local, tmp_path):
-    """Create and return a :class:`aiida.orm.CalcJobNode` instance."""
+def generate_calc_job_node(fixture_localhost):
+    """Fixture to generate a mock `CalcJobNode` for testing parsers."""
 
     def flatten_inputs(inputs, prefix=""):
         """Flatten inputs recursively like :meth:`aiida.engine.processes.process::Process._flatten_inputs`."""
         flat_inputs = []
         for key, value in inputs.items():
-            if isinstance(value, collections.abc.Mapping):
+            if isinstance(value, Mapping):
                 flat_inputs.extend(flatten_inputs(value, prefix=prefix + key + "__"))
             else:
                 flat_inputs.append((prefix + key, value))
         return flat_inputs
 
-    def factory(
-        entry_point: str,
-        test_name: str,
-        inputs: dict = None,
-        retrieve_temporary_list: list[str] | None = None,
+    def _generate_calc_job_node(
+        entry_point_name="base",
+        computer=None,
+        test_name=None,
+        inputs=None,
+        attributes=None,
+        retrieve_temporary=None,
     ):
-        """Create and return a :class:`aiida.orm.CalcJobNode` instance."""
-        node = orm.CalcJobNode(
-            computer=aiida_computer_local(),
-            process_type=f"aiida.calculations:{entry_point}",
-        )
+        """Fixture to generate a mock `CalcJobNode` for testing parsers.
+
+        :param entry_point_name: entry point name of the calculation class
+        :param computer: a `Computer` instance
+        :param test_name: relative path of directory with test output files in the `fixtures/{entry_point_name}` folder.
+        :param inputs: any optional nodes to add as input links to the current CalcJobNode
+        :param attributes: any optional attributes to set on the node
+        :param retrieve_temporary: optional tuple of an absolute filepath of a temporary directory and a list of
+            filenames that should be written to this directory, which will serve as the `retrieved_temporary_folder`.
+            For now this only works with top-level files and does not support files nested in directories.
+        :return: `CalcJobNode` instance with an attached `FolderData` as the `retrieved` node.
+        """
+
+        if computer is None:
+            computer = fixture_localhost
+
+        filepath_folder = None
+
+        if test_name is not None:
+            basepath = os.path.dirname(os.path.abspath(__file__))
+            filepath_folder = os.path.join(basepath, "..", "..", "tests", test_name)
+
+        entry_point = format_entry_point_string("aiida.calculations", entry_point_name)
+
+        node = orm.CalcJobNode(computer=computer, process_type=entry_point)
+        node.base.attributes.set("input_filename", "input.in")
+        node.base.attributes.set("output_filename", "lammps_output")
+        node.set_option("resources", {"num_machines": 1, "num_mpiprocs_per_machine": 1})
+        node.set_option("max_wallclock_seconds", 1800)
+
+        if attributes:
+            node.base.attributes.set_many(attributes)
 
         if inputs:
+            metadata = inputs.pop("metadata", {})
+            options = metadata.get("options", {})
+
+            for name, option in options.items():
+                node.set_option(name, option)
+
             for link_label, input_node in flatten_inputs(inputs):
                 input_node.store()
                 node.base.links.add_incoming(
-                    input_node, link_type=LinkType.INPUT_CALC, link_label=link_label
+                    input_node,
+                    link_type=LinkType.INPUT_CALC,
+                    link_label=link_label,
                 )
 
         node.store()
 
-        filepath_retrieved = (
-            filepath_tests
-            / "parsers"
-            / "fixtures"
-            / entry_point.split(".")[-1]
-            / test_name
-        )
+        if retrieve_temporary:
+            dirpath, filenames = retrieve_temporary
+            for filename in filenames:
+                try:
+                    shutil.copy(
+                        os.path.join(filepath_folder, filename),
+                        os.path.join(dirpath, filename),
+                    )
+                except FileNotFoundError:
+                    pass  # To test the absence of files in the retrieve_temporary folder
 
-        retrieved = orm.FolderData()
-        retrieved.base.repository.put_object_from_tree(filepath_retrieved)
-        retrieved.base.links.add_incoming(
-            node, link_type=LinkType.CREATE, link_label="retrieved"
-        )
-        retrieved.store()
+        if filepath_folder:
+            retrieved = orm.FolderData()
+            retrieved.base.repository.put_object_from_tree(filepath_folder)
 
-        if retrieve_temporary_list:
-            for pattern in retrieve_temporary_list:
-                for filename in filepath_retrieved.glob(pattern):
-                    filepath = tmp_path / filename.relative_to(filepath_retrieved)
-                    filepath.write_bytes(filename.read_bytes())
+            # Remove files that are supposed to be only present in the retrieved temporary folder
+            if retrieve_temporary:
+                for filename in filenames:
+                    try:
+                        retrieved.base.repository.delete_object(filename)
+                    except OSError:
+                        pass  # To test the absence of files in the retrieve_temporary folder
 
-            return node, tmp_path
+            retrieved.base.links.add_incoming(
+                node, link_type=LinkType.CREATE, link_label="retrieved"
+            )
+            retrieved.store()
+
+            remote_folder = orm.RemoteData(computer=computer, remote_path="/tmp")
+            remote_folder.base.links.add_incoming(
+                node, link_type=LinkType.CREATE, link_label="remote_folder"
+            )
+            remote_folder.store()
 
         return node
 
-    return factory
+    return _generate_calc_job_node
+
+
+@pytest.fixture
+def generate_workchain():
+    """Generate an instance of a `WorkChain`."""
+
+    def _generate_workchain(entry_point, inputs):
+        """Generate an instance of a `WorkChain` with the given entry point and inputs.
+
+        :param entry_point: entry point name of the work chain subclass.
+        :param inputs: inputs to be passed to process construction.
+        :return: a `WorkChain` instance.
+        """
+
+        process_class = WorkflowFactory(entry_point)
+        runner = get_manager().get_runner()
+        process = instantiate_process(runner, process_class, **inputs)
+
+        return process
+
+    return _generate_workchain
+
+
+@pytest.fixture
+def generate_inputs_minimize(
+    fixture_code,
+    generate_structure,
+    get_potential_fe_eam,
+    parameters_minimize,
+):
+    """Generate default inputs for a `LammpsBaseCalculation."""
+
+    def _generate_inputs_minimize():
+        """Generate default inputs for a `LammpsBaseCalculation."""
+
+        options = AttributeDict()
+        options.resources = AttributeDict()
+        # Total number of machines used
+        options.resources.num_machines = 1
+        # Total number of mpi processes
+        options.resources.tot_num_mpiprocs = 2
+        options.max_wallclock_seconds = 1
+
+        inputs = {
+            "code": fixture_code("lammps.base"),
+            "structure": generate_structure,
+            "parameters": orm.Dict(dict=parameters_minimize),
+            "potential": get_potential_fe_eam,
+            "metadata": {"options": options},
+        }
+        return inputs
+
+    return _generate_inputs_minimize
 
 
 @pytest.fixture(scope="function")
