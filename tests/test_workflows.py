@@ -1,7 +1,11 @@
 from aiida import orm
 from aiida.common import AttributeDict, LinkType
+from aiida.engine import ProcessHandlerReport
 from plumpy import ProcessState
 import pytest
+
+from aiida_lammps.calculations.base import LammpsBaseCalculation
+from aiida_lammps.workflows.base import LammpsBaseWorkChain
 
 
 @pytest.fixture
@@ -25,7 +29,12 @@ def generate_workchain_base(
 
         process = generate_workchain(entry_point, inputs)
 
-        lammps_base_node = generate_calc_job_node(inputs={"parameters": orm.Dict()})
+        lammps_base_node = generate_calc_job_node(
+            inputs={
+                "parameters": orm.Dict(),
+                "metadata": {"options": LammpsBaseCalculation._DEFAULT_VARIABLES},
+            }
+        )
         process.ctx.iteration = 1
         process.ctx.children = [lammps_base_node]
 
@@ -51,3 +60,44 @@ def test_setup(generate_workchain_base):
     process.setup()
 
     assert isinstance(process.ctx.inputs, AttributeDict)
+
+
+def test_handle_unrecoverable_failure(generate_workchain_base):
+    """Test `LammpsBaseWorkChain.handle_unrecoverable_failure`."""
+    process = generate_workchain_base(
+        exit_code=LammpsBaseCalculation.exit_codes.ERROR_NO_RETRIEVED_FOLDER
+    )
+    process.setup()
+
+    result = process.handle_unrecoverable_failure(process.ctx.children[-1])
+    assert isinstance(result, ProcessHandlerReport)
+    assert result.do_break
+    assert (
+        result.exit_code == LammpsBaseWorkChain.exit_codes.ERROR_UNRECOVERABLE_FAILURE
+    )
+
+    result = process.inspect_process()
+    assert result == LammpsBaseWorkChain.exit_codes.ERROR_UNRECOVERABLE_FAILURE
+
+
+def test_handle_out_of_walltime(
+    generate_workchain_base, fixture_localhost, generate_remote_data
+):
+    """Test `LammpsBaseWorkChain.handle_out_of_walltime`."""
+    remote_data = generate_remote_data(computer=fixture_localhost, remote_path="/tmp")
+    process = generate_workchain_base(
+        exit_code=LammpsBaseCalculation.exit_codes.ERROR_OUT_OF_WALLTIME,
+        lammps_base_outputs={"remote_folder": remote_data},
+    )
+
+    process.setup()
+
+    _walltime = process.ctx.inputs.metadata.options["max_wallclock_seconds"]
+
+    result = process.handle_out_of_walltime(process.ctx.children[-1])
+    assert isinstance(result, ProcessHandlerReport)
+    assert process.ctx.inputs.metadata.options["max_wallclock_seconds"] > _walltime
+    assert result.do_break
+
+    result = process.inspect_process()
+    assert result.status == 0

@@ -132,21 +132,19 @@ class LammpsBaseWorkChain(BaseRestartWorkChain):
         :param calculation: node from the previous calculation
         :return: latest restartfile found or None
         """
+
+        _restartfile = calculation.get_metadata_inputs()["restart_filename"]
+
         restartfiles = [
             entry
-            for entry in calculation.remote_data.listdir()
-            if calculation.inputs.metadata.options.restart_filename in entry
+            for entry in calculation.outputs.remote_folder.listdir()
+            if _restartfile in entry
         ]
         if restartfiles:
             latest_file = restartfiles[
                 np.array(
                     [
-                        int(
-                            entry.replace(
-                                f"{calculation.inputs.metadata.options.restart_filename}",
-                                "",
-                            ).replace(".", "")
-                        )
+                        int(entry.replace(f"{_restartfile}", "").replace(".", ""))
                         for entry in restartfiles
                     ]
                 ).argmax()
@@ -206,7 +204,7 @@ class LammpsBaseWorkChain(BaseRestartWorkChain):
                         "Removing the velocity parameter from the MD control"
                     )
         if restart_type == RestartTypes.FROM_SCRATCH:
-            self.ctx.inputs.options["max_wallclock_seconds"] *= 1.50
+            self.ctx.inputs.metadata.options["max_wallclock_seconds"] *= 1.50
 
     @process_handler(priority=600)
     def handle_unrecoverable_failure(self, calculation):
@@ -243,7 +241,7 @@ class LammpsBaseWorkChain(BaseRestartWorkChain):
         3. Use the structure from the last step of the trajectory from the previous calculation.
         4. Restart from scratch
         """
-        self.logger.report("Walltime reached attempting restart")
+        self.report("Walltime reached attempting restart")
 
         latest_file = self._check_restart_in_remote(calculation=calculation)
         if "restartfile" in calculation.outputs:
@@ -307,13 +305,9 @@ class LammpsBaseWorkChain(BaseRestartWorkChain):
         """
 
         if calculation.exit_status == 401:
-            self.logger.report(
-                "Energy not converged during minimization, attempting restart"
-            )
+            self.report("Energy not converged during minimization, attempting restart")
         if calculation.exit_status == 402:
-            self.logger.report(
-                "Force not converged during minimization, attempting restart"
-            )
+            self.report("Force not converged during minimization, attempting restart")
         latest_file = self._check_restart_in_remote(calculation=calculation)
         if "restartfile" in calculation.outputs:
             self.set_restart_type(

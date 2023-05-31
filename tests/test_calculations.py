@@ -1,7 +1,5 @@
 """Test the aiida-lammps calculations."""
 import copy
-import io
-import textwrap
 
 from aiida import orm
 from aiida.common import AttributeDict
@@ -26,8 +24,8 @@ from . import utils as tests
 )
 def test_lammps_base(
     db_test_app,
-    generate_structure,  # pylint: disable=redefined-outer-name  # noqa: F811
-    get_potential_fe_eam,  # pylint: disable=redefined-outer-name  # noqa: F811
+    generate_structure,
+    get_potential_fe_eam,
     parameters,
     request,
     data_regression,
@@ -200,8 +198,8 @@ def test_lammps_restart_generation(
         )
         assert len(restartfiles) > 0, _msg
 
-    # Remove the velocity if pressent so that the simulation is not shaken at the start. This allows
-    # for comparizon between parameters from initial and final steps
+    # Remove the velocity if present so that the simulation is not shaken at the start. This allows
+    # for comparison between parameters from initial and final steps
     _parameters = copy.deepcopy(parameters)
     if "velocity" in _parameters["md"]:
         del _parameters["md"]["velocity"]
@@ -275,7 +273,7 @@ def test_lammps_base_settings_invalid(generate_calc_job, aiida_local_code_factor
 def test_lammps_base_settings(
     generate_calc_job,
     aiida_local_code_factory,
-    minimize_parameters,
+    parameters_minimize,
     get_potential_fe_eam,
     generate_structure,
 ):
@@ -283,7 +281,7 @@ def test_lammps_base_settings(
 
     inputs = {
         "code": aiida_local_code_factory("lammps.base", "bash"),
-        "parameters": orm.Dict(minimize_parameters),
+        "parameters": orm.Dict(parameters_minimize),
         "potential": get_potential_fe_eam,
         "structure": generate_structure,
         "settings": orm.Dict({"additional_cmdline_params": ["--option", "value"]}),

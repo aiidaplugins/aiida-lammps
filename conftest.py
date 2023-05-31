@@ -12,9 +12,9 @@ import tempfile
 from typing import Any
 
 from aiida import orm
+from aiida.common import AttributeDict, CalcInfo, LinkType, exceptions
 from aiida.common.datastructures import CalcInfo
 from aiida.common.links import LinkType
-from aiida.common import AttributeDict, CalcInfo, LinkType, exceptions
 from aiida.engine import CalcJob
 from aiida.engine.utils import instantiate_process
 from aiida.manage.manager import get_manager
@@ -24,6 +24,7 @@ import numpy as np
 import pytest
 import yaml
 
+from aiida_lammps.calculations.base import LammpsBaseCalculation
 from aiida_lammps.data.potential import LammpsPotentialData
 from tests.utils import TEST_DIR, AiidaTestApp
 
@@ -71,6 +72,9 @@ def pytest_report_header(config):
 def filepath_tests() -> pathlib.Path:
     """Return the path to the tests folder."""
     return pathlib.Path(__file__).resolve().parent / "tests"
+
+
+@pytest.fixture
 def fixture_localhost(aiida_localhost):
     """Return a localhost `Computer`."""
     localhost = aiida_localhost
@@ -527,6 +531,33 @@ def db_test_app(aiida_profile, pytestconfig):
 
 
 @pytest.fixture
+def generate_remote_data():
+    """Return a `RemoteData` node."""
+
+    def _generate_remote_data(computer, remote_path, entry_point_name=None):
+        """Return a `KpointsData` with a mesh of npoints in each direction."""
+
+        entry_point = format_entry_point_string("aiida.calculations", entry_point_name)
+
+        remote = orm.RemoteData(remote_path=remote_path)
+        remote.computer = computer
+
+        if entry_point_name is not None:
+            creator = orm.CalcJobNode(computer=computer, process_type=entry_point)
+            creator.set_option(
+                "resources", {"num_machines": 1, "num_mpiprocs_per_machine": 1}
+            )
+            remote.base.links.add_incoming(
+                creator, link_type=LinkType.CREATE, link_label="remote_folder"
+            )
+            creator.store()
+
+        return remote
+
+    return _generate_remote_data
+
+
+@pytest.fixture
 def generate_calc_job(tmp_path):
     """Create a :class:`aiida.engine.CalcJob` instance with the given inputs.
 
@@ -615,6 +646,7 @@ def generate_calc_job_node(fixture_localhost):
         node.base.attributes.set("output_filename", "lammps_output")
         node.set_option("resources", {"num_machines": 1, "num_mpiprocs_per_machine": 1})
         node.set_option("max_wallclock_seconds", 1800)
+        node.set_metadata_inputs(LammpsBaseCalculation._DEFAULT_VARIABLES)
 
         if attributes:
             node.base.attributes.set_many(attributes)

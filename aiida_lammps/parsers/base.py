@@ -219,19 +219,23 @@ class LammpsBaseParser(Parser):
         ):
 
             restartfiles = glob.glob(f"{temp_folder}/{restart_filename}*")
+
             if restartfiles:
-                latest_file = restartfiles[
-                    np.array(
-                        [
+
+                _files = []
+                for entry in restartfiles:
+                    try:
+                        _files.append(
                             int(
                                 entry.replace(
                                     f"{temp_folder}/{restart_filename}", ""
                                 ).replace(".", "")
                             )
-                            for entry in restartfiles
-                        ]
-                    ).argmax()
-                ]
+                        )
+                    except ValueError:
+                        _files.append(0)
+
+                latest_file = restartfiles[np.array(_files).argmax()]
                 with open(os.path.join(temp_folder, latest_file), mode="rb") as handle:
                     restart_file = orm.SinglefileData(handle)
                 self.out("restartfile", restart_file)

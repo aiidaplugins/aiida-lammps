@@ -1,12 +1,8 @@
 """
 Tests to aiida-lammps parsers.
 """
-import io
 import os
 from textwrap import dedent
-
-from aiida.orm import FolderData, SinglefileData
-from aiida.plugins import ParserFactory
 
 from aiida_lammps.parsers.parse_raw import parse_final_data, parse_logfile
 from .utils import TEST_DIR
