@@ -12,20 +12,20 @@ results:
     total_wall_time: 0:00:00
     total_wall_time_seconds: 0
     units_style: metal
-  final_c_pressure_all_aiida: 13762.773215068
-  final_c_pressure_all_aiida__1__: 13762.894337505
-  final_c_pressure_all_aiida__2__: 13822.12107946
-  final_c_pressure_all_aiida__3__: 13703.304228241
-  final_c_pressure_all_aiida__4__: 939.73155927797
-  final_c_pressure_all_aiida__5__: -1088.0821923913
-  final_c_pressure_all_aiida__6__: -1015.8719914897
-  final_etotal: -8.2053503697135
-  final_ke: 0.024355308644895
-  final_pe: -8.2297056783584
-  final_press: 13762.773215068
-  final_pxx: 13762.894337505
-  final_pyy: 13822.12107946
-  final_pzz: 13703.304228241
+  final_c_pressure_all_aiida: 13762.77
+  final_c_pressure_all_aiida__1__: 13762.89
+  final_c_pressure_all_aiida__2__: 13822.12
+  final_c_pressure_all_aiida__3__: 13703.3
+  final_c_pressure_all_aiida__4__: 939.73
+  final_c_pressure_all_aiida__5__: -1088.08
+  final_c_pressure_all_aiida__6__: -1015.87
+  final_etotal: -8.21
+  final_ke: 0.02
+  final_pe: -8.23
+  final_press: 13762.77
+  final_pxx: 13762.89
+  final_pyy: 13822.12
+  final_pzz: 13703.3
   final_step: 5000
 trajectories_attributes:
   aliases: null

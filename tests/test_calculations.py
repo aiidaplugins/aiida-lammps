@@ -75,11 +75,15 @@ def test_lammps_base(
     }
 
     data_regression.check(
-        {
-            "results": _results,
-            "trajectories_attributes": results["trajectories"].base.attributes.all,
-            "trajectories_steps": _trajectories_steps,
-        }
+        tests.recursive_round(
+            {
+                "results": _results,
+                "trajectories_attributes": results["trajectories"].base.attributes.all,
+                "trajectories_steps": _trajectories_steps,
+            },
+            2,
+            apply_lists=True,
+        )
     )
 
     assert (

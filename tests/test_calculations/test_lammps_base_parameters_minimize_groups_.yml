@@ -10,27 +10,27 @@ results:
     master_list_distance_cutoff: 7.3
     max_neighbors_atom: 2000
     minimization:
-      energy_relative_difference: 1.292815989862e-15
-      force_two_norm: 5.2206312e-15
+      energy_relative_difference: 0.0
+      force_two_norm: 0.0
       stop_criterion: energy tolerance
     total_wall_time: 0:00:00
     total_wall_time_seconds: 0
     units_style: metal
   final_c_ke_test_aiida: 0
-  final_c_pressure_all_aiida: 13557.476809284
-  final_c_pressure_all_aiida__1__: 13557.476809284
-  final_c_pressure_all_aiida__2__: 13557.476809284
-  final_c_pressure_all_aiida__3__: 13557.476809284
-  final_c_pressure_all_aiida__4__: 1.1043589972622e-10
-  final_c_pressure_all_aiida__5__: -9.9608850733452e-11
-  final_c_pressure_all_aiida__6__: -8.8541200651957e-11
-  final_etotal: -8.244128414237
+  final_c_pressure_all_aiida: 13557.48
+  final_c_pressure_all_aiida__1__: 13557.48
+  final_c_pressure_all_aiida__2__: 13557.48
+  final_c_pressure_all_aiida__3__: 13557.48
+  final_c_pressure_all_aiida__4__: 0.0
+  final_c_pressure_all_aiida__5__: -0.0
+  final_c_pressure_all_aiida__6__: -0.0
+  final_etotal: -8.24
   final_ke: 0
-  final_pe: -8.244128414237
-  final_press: 13557.476809284
-  final_pxx: 13557.476809284
-  final_pyy: 13557.476809284
-  final_pzz: 13557.476809284
+  final_pe: -8.24
+  final_press: 13557.48
+  final_pxx: 13557.48
+  final_pyy: 13557.48
+  final_pzz: 13557.48
   final_step: 1
 trajectories_attributes:
   aliases: null
