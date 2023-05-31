@@ -1003,3 +1003,28 @@ def get_lammps_potential_data(get_structure_data):
         return output_dict
 
     return _get_lammps_potential_data
+
+
+@pytest.fixture
+def generate_singlefile_data():
+    """Return a SinglefileData node"""
+
+    def _generate_singlefile_data(computer, label="restartfile", entry_point_name=None):
+        entry_point = format_entry_point_string("aiida.calculations", entry_point_name)
+
+        with open("README.md", mode="rb") as handler:
+            single_file = orm.SinglefileData(handler)
+
+        if entry_point_name is not None:
+            creator = orm.CalcJobNode(computer=computer, process_type=entry_point)
+            creator.set_option(
+                "resources", {"num_machines": 1, "num_mpiprocs_per_machine": 1}
+            )
+            single_file.base.links.add_incoming(
+                creator, link_type=LinkType.CREATE, link_label=label
+            )
+            creator.store()
+
+        return single_file
+
+    return _generate_singlefile_data

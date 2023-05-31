@@ -165,9 +165,12 @@ class LammpsBaseWorkChain(BaseRestartWorkChain):
         """
         if restart_type == RestartTypes.FROM_RESTARTFILE:
             self.ctx.inputs.input_restartfile = calculation.outputs.restartfile
-            timestep = int(
-                re.sub("[^0-9]", "", calculation.outputs.restartfile.filename)
-            )
+            try:
+                timestep = int(
+                    re.sub("[^0-9]", "", calculation.outputs.restartfile.filename)
+                )
+            except ValueError:
+                timestep = 0
 
             if "parameters" in self.ctx.inputs and "md" in self.ctx.inputs.parameters:
                 self.ctx.inputs.parameters["md"]["reset_timestep"] = timestep

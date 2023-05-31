@@ -101,3 +101,30 @@ def test_handle_out_of_walltime(
 
     result = process.inspect_process()
     assert result.status == 0
+
+
+def test_handle_minimization_not_converged(
+    generate_workchain_base,
+    fixture_localhost,
+    generate_remote_data,
+    generate_singlefile_data,
+):
+    """Test `LammpsBaseWorkChain.handle_minimization_not_converged`."""
+    remote_data = generate_remote_data(computer=fixture_localhost, remote_path="/tmp")
+    restartfile = generate_singlefile_data(computer=fixture_localhost)
+    process = generate_workchain_base(
+        exit_code=LammpsBaseCalculation.exit_codes.ERROR_ENERGY_NOT_CONVERGED,
+        lammps_base_outputs={"remote_folder": remote_data, "restartfile": restartfile},
+    )
+
+    process.setup()
+
+    _walltime = process.ctx.inputs.metadata.options["max_wallclock_seconds"]
+
+    result = process.handle_minimization_not_converged(process.ctx.children[-1])
+    assert isinstance(result, ProcessHandlerReport)
+    assert "input_restartfile" in process.ctx.inputs
+    assert result.do_break
+
+    result = process.inspect_process()
+    assert result.status == 0
