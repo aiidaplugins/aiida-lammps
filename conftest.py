@@ -26,7 +26,8 @@ import yaml
 
 from aiida_lammps.calculations.base import LammpsBaseCalculation
 from aiida_lammps.data.potential import LammpsPotentialData
-from tests.utils import TEST_DIR, AiidaTestApp
+from aiida_lammps.data.trajectory import LammpsTrajectory
+from tests.utils import TEST_DIR, AiidaTestApp, get_default_metadata
 
 pytest_plugins = ["aiida.manage.tests.pytest_fixtures"]
 
@@ -637,7 +638,7 @@ def generate_calc_job_node(fixture_localhost):
 
         if test_name is not None:
             basepath = os.path.dirname(os.path.abspath(__file__))
-            filepath_folder = os.path.join(basepath, "..", "..", "tests", test_name)
+            filepath_folder = os.path.join(TEST_DIR, test_name)
 
         entry_point = format_entry_point_string("aiida.calculations", entry_point_name)
 
@@ -1028,3 +1029,32 @@ def generate_singlefile_data():
         return single_file
 
     return _generate_singlefile_data
+
+
+@pytest.fixture
+def generate_lammps_trajectory():
+    """Return a LammpsTrajectory node"""
+
+    def _generate_lammps_trajectory(
+        computer, label="trajectory", entry_point_name=None
+    ):
+        entry_point = format_entry_point_string("aiida.calculations", entry_point_name)
+
+        with open(
+            os.path.join(TEST_DIR, "input_files", "trajectory.lammpstrj")
+        ) as handler:
+            trajectory = LammpsTrajectory(handler)
+
+        if entry_point_name is not None:
+            creator = orm.CalcJobNode(computer=computer, process_type=entry_point)
+            creator.set_option(
+                "resources", {"num_machines": 1, "num_mpiprocs_per_machine": 1}
+            )
+            trajectory.base.links.add_incoming(
+                creator, link_type=LinkType.CREATE, link_label=label
+            )
+            creator.store()
+
+        return trajectory
+
+    return _generate_lammps_trajectory

@@ -1,3 +1,4 @@
+"""Tests for the workflows in aiida-lammps"""
 from aiida import orm
 from aiida.common import AttributeDict, LinkType
 from aiida.engine import ProcessHandlerReport
@@ -6,12 +7,17 @@ import pytest
 
 from aiida_lammps.calculations.base import LammpsBaseCalculation
 from aiida_lammps.workflows.base import LammpsBaseWorkChain
+from .utils import get_default_metadata
 
 
 @pytest.fixture
 def generate_workchain_base(
-    generate_workchain, generate_inputs_minimize, generate_calc_job_node
+    generate_workchain,
+    generate_inputs_minimize,
+    generate_calc_job_node,
 ):
+    """Generate a LammpsBaseWorkChain node"""
+
     def _generate_workchain_base(
         exit_code=None,
         inputs=None,
@@ -32,7 +38,7 @@ def generate_workchain_base(
         lammps_base_node = generate_calc_job_node(
             inputs={
                 "parameters": orm.Dict(),
-                "metadata": {"options": LammpsBaseCalculation._DEFAULT_VARIABLES},
+                "metadata": get_default_metadata(),
             }
         )
         process.ctx.iteration = 1
@@ -65,7 +71,7 @@ def test_setup(generate_workchain_base):
 def test_handle_unrecoverable_failure(generate_workchain_base):
     """Test `LammpsBaseWorkChain.handle_unrecoverable_failure`."""
     process = generate_workchain_base(
-        exit_code=LammpsBaseCalculation.exit_codes.ERROR_NO_RETRIEVED_FOLDER
+        exit_code=LammpsBaseCalculation.exit_codes.ERROR_NO_RETRIEVED_FOLDER  # pylint: disable=no-member
     )
     process.setup()
 
@@ -73,20 +79,26 @@ def test_handle_unrecoverable_failure(generate_workchain_base):
     assert isinstance(result, ProcessHandlerReport)
     assert result.do_break
     assert (
-        result.exit_code == LammpsBaseWorkChain.exit_codes.ERROR_UNRECOVERABLE_FAILURE
+        result.exit_code
+        == LammpsBaseWorkChain.exit_codes.ERROR_UNRECOVERABLE_FAILURE  # pylint: disable=no-member
     )
 
     result = process.inspect_process()
-    assert result == LammpsBaseWorkChain.exit_codes.ERROR_UNRECOVERABLE_FAILURE
+    assert (
+        result
+        == LammpsBaseWorkChain.exit_codes.ERROR_UNRECOVERABLE_FAILURE  # pylint: disable=no-member
+    )
 
 
 def test_handle_out_of_walltime(
-    generate_workchain_base, fixture_localhost, generate_remote_data
+    generate_workchain_base,
+    fixture_localhost,
+    generate_remote_data,
 ):
     """Test `LammpsBaseWorkChain.handle_out_of_walltime`."""
     remote_data = generate_remote_data(computer=fixture_localhost, remote_path="/tmp")
     process = generate_workchain_base(
-        exit_code=LammpsBaseCalculation.exit_codes.ERROR_OUT_OF_WALLTIME,
+        exit_code=LammpsBaseCalculation.exit_codes.ERROR_OUT_OF_WALLTIME,  # pylint: disable=no-member
         lammps_base_outputs={"remote_folder": remote_data},
     )
 
@@ -103,6 +115,37 @@ def test_handle_out_of_walltime(
     assert result.status == 0
 
 
+def test_handle_out_of_walltime_from_trajectory(
+    generate_workchain_base,
+    fixture_localhost,
+    generate_remote_data,
+    generate_lammps_trajectory,
+):
+    """Test `LammpsBaseWorkChain.handle_out_of_walltime`."""
+    remote_data = generate_remote_data(computer=fixture_localhost, remote_path="/tmp")
+    trajectory = generate_lammps_trajectory(computer=fixture_localhost)
+    process = generate_workchain_base(
+        exit_code=LammpsBaseCalculation.exit_codes.ERROR_OUT_OF_WALLTIME,  # pylint: disable=no-member
+        lammps_base_outputs={"remote_folder": remote_data, "trajectory": trajectory},
+    )
+
+    process.setup()
+
+    _walltime = process.ctx.inputs.metadata.options["max_wallclock_seconds"]
+
+    result = process.handle_out_of_walltime(process.ctx.children[-1])
+    assert isinstance(result, ProcessHandlerReport)
+    assert process.ctx.inputs.metadata.options["max_wallclock_seconds"] == _walltime
+    assert (
+        process.ctx.inputs.structure.get_pymatgen()
+        == trajectory.get_step_structure(-1).get_pymatgen()
+    )
+    assert result.do_break
+
+    result = process.inspect_process()
+    assert result.status == 0
+
+
 def test_handle_minimization_not_converged(
     generate_workchain_base,
     fixture_localhost,
@@ -113,17 +156,43 @@ def test_handle_minimization_not_converged(
     remote_data = generate_remote_data(computer=fixture_localhost, remote_path="/tmp")
     restartfile = generate_singlefile_data(computer=fixture_localhost)
     process = generate_workchain_base(
-        exit_code=LammpsBaseCalculation.exit_codes.ERROR_ENERGY_NOT_CONVERGED,
+        exit_code=LammpsBaseCalculation.exit_codes.ERROR_ENERGY_NOT_CONVERGED,  # pylint: disable=no-member
         lammps_base_outputs={"remote_folder": remote_data, "restartfile": restartfile},
     )
 
     process.setup()
 
-    _walltime = process.ctx.inputs.metadata.options["max_wallclock_seconds"]
-
     result = process.handle_minimization_not_converged(process.ctx.children[-1])
     assert isinstance(result, ProcessHandlerReport)
     assert "input_restartfile" in process.ctx.inputs
+    assert result.do_break
+
+    result = process.inspect_process()
+    assert result.status == 0
+
+
+def test_handle_minimization_not_converged_from_trajectrory(
+    generate_workchain_base,
+    fixture_localhost,
+    generate_remote_data,
+    generate_lammps_trajectory,
+):
+    """Test `LammpsBaseWorkChain.handle_minimization_not_converged`."""
+    remote_data = generate_remote_data(computer=fixture_localhost, remote_path="/tmp")
+    trajectory = generate_lammps_trajectory(computer=fixture_localhost)
+    process = generate_workchain_base(
+        exit_code=LammpsBaseCalculation.exit_codes.ERROR_ENERGY_NOT_CONVERGED,  # pylint: disable=no-member
+        lammps_base_outputs={"remote_folder": remote_data, "trajectory": trajectory},
+    )
+
+    process.setup()
+
+    result = process.handle_minimization_not_converged(process.ctx.children[-1])
+    assert isinstance(result, ProcessHandlerReport)
+    assert (
+        process.ctx.inputs.structure.get_pymatgen()
+        == trajectory.get_step_structure(-1).get_pymatgen()
+    )
     assert result.do_break
 
     result = process.inspect_process()

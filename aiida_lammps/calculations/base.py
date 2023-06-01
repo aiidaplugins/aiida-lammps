@@ -361,17 +361,21 @@ class LammpsBaseCalculation(CalcJob):
         with folder.open(self._POTENTIAL_FILENAME, "w") as handle:
             handle.write(self.inputs.potential.get_content())
 
-        # Write the input file content. This function will also check the
-        # sanity of the passed parameters when comparing it to a schema
-        input_filecontent = generate_input_file(
-            potential=self.inputs.potential,
-            structure=self.inputs.structure,
-            parameters=_parameters,
-            restart_filename=_restart_filename,
-            trajectory_filename=_trajectory_filename,
-            variables_filename=_variables_filename,
-            read_restart_filename=_read_restart_filename,
-        )
+            # Write the potential to the remote folder
+            with folder.open(self._POTENTIAL_FILENAME, "w") as handle:
+                handle.write(self.inputs.potential.get_content())
+
+            # Write the input file content. This function will also check the
+            # sanity of the passed parameters when comparing it to a schema
+            input_filecontent = generate_input_file(
+                potential=self.inputs.potential,
+                structure=self.inputs.structure,
+                parameters=_parameters,
+                restart_filename=_restart_filename,
+                trajectory_filename=_trajectory_filename,
+                variables_filename=_variables_filename,
+                read_restart_filename=_read_restart_filename,
+            )
 
         # Get the name of the input file, and write it to the remote folder
         _input_filename = self.inputs.metadata.options.input_filename
