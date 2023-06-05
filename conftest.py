@@ -1010,7 +1010,11 @@ def get_lammps_potential_data(get_structure_data):
 def generate_singlefile_data():
     """Return a SinglefileData node"""
 
-    def _generate_singlefile_data(computer, label="restartfile", entry_point_name=None):
+    def _generate_singlefile_data(
+        computer: orm.Computer,
+        label: str = "restartfile",
+        entry_point_name: str = None,
+    ):
         entry_point = format_entry_point_string("aiida.calculations", entry_point_name)
 
         with open("README.md", mode="rb") as handler:
@@ -1036,7 +1040,9 @@ def generate_lammps_trajectory():
     """Return a LammpsTrajectory node"""
 
     def _generate_lammps_trajectory(
-        computer, label="trajectory", entry_point_name=None
+        computer: orm.Computer,
+        label: str = "trajectory",
+        entry_point_name: str = None,
     ):
         entry_point = format_entry_point_string("aiida.calculations", entry_point_name)
 
@@ -1058,3 +1064,34 @@ def generate_lammps_trajectory():
         return trajectory
 
     return _generate_lammps_trajectory
+
+
+@pytest.fixture
+def generate_lammps_results():
+    """Return a Lammps results node"""
+
+    def _generate_lammps_results(
+        computer: orm.Computer,
+        label: str = "results",
+        entry_point_name: str = None,
+        data: dict = None,
+    ):
+        entry_point = format_entry_point_string("aiida.calculations", entry_point_name)
+
+        if data:
+            _results = data
+        else:
+            _results = {"compute_variables": {}}
+        results = orm.Dict(_results)
+        if entry_point_name is not None:
+            creator = orm.CalcJobNode(computer=computer, process_type=entry_point)
+            creator.set_option(
+                "resources", {"num_machines": 1, "num_mpiprocs_per_machine": 1}
+            )
+            results.base.links.add_incoming(
+                creator, link_type=LinkType.CREATE, link_label=label
+            )
+            creator.store()
+        return results
+
+    return _generate_lammps_results

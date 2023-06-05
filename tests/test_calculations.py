@@ -5,10 +5,65 @@ from aiida import orm
 from aiida.common import AttributeDict
 from aiida.engine import run_get_node
 from aiida.plugins import CalculationFactory
+import jsonschema.exceptions
 import numpy as np
 import pytest
 
 from . import utils as tests
+
+
+def test_restart_conflict_error(
+    parameters_minimize,
+    generate_calc_job,
+    aiida_local_code_factory,
+    get_potential_fe_eam,
+    generate_structure,
+):
+    """Test the behaviour when one requests the storage of the restart without printing it"""
+
+    parameters = parameters_minimize
+    del parameters["restart"]
+
+    inputs = {
+        "code": aiida_local_code_factory("lammps.base", "bash"),
+        "structure": generate_structure,
+        "potential": get_potential_fe_eam,
+        "parameters": orm.Dict(parameters),
+        "metadata": {"options": {"resources": {"num_machines": 1}}},
+        "settings": orm.Dict(dict={"store_restart": True}),
+    }
+
+    with pytest.raises(
+        ValueError,
+        match=r"To store the restartfile one needs to indicate that either the final or intermediate restartfiles must be printed",
+    ):
+        generate_calc_job("lammps.base", inputs)
+
+
+def test_parameters_conflict_error(
+    parameters_minimize,
+    parameters_md_npt,
+    generate_calc_job,
+    aiida_local_code_factory,
+    get_potential_fe_eam,
+    generate_structure,
+):
+    """Test the behaviour when conflicting runs are given to the calculation"""
+    parameters = parameters_minimize
+    parameters["md"] = parameters_md_npt["md"]
+
+    inputs = {
+        "code": aiida_local_code_factory("lammps.base", "bash"),
+        "structure": generate_structure,
+        "potential": get_potential_fe_eam,
+        "parameters": orm.Dict(parameters),
+        "metadata": {"options": {"resources": {"num_machines": 1}}},
+    }
+
+    with pytest.raises(
+        jsonschema.exceptions.ValidationError,
+    ):
+        generate_calc_job("lammps.base", inputs)
 
 
 @pytest.mark.lammps_call

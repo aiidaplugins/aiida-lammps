@@ -2,14 +2,13 @@
 import re
 
 from aiida import orm
-from aiida.common import AttributeDict, InputValidationError
+from aiida.common import AttributeDict, NotExistentAttributeError
 from aiida.engine import (
     BaseRestartWorkChain,
     ProcessHandlerReport,
     process_handler,
     while_,
 )
-import numpy as np
 
 from aiida_lammps.calculations.base import LammpsBaseCalculation
 from aiida_lammps.utils import RestartTypes
@@ -38,7 +37,6 @@ class LammpsBaseWorkChain(BaseRestartWorkChain):
         spec.expose_outputs(LammpsBaseCalculation)
         spec.outline(
             cls.setup,
-            cls.validate_parameters,
             while_(cls.should_run_process)(
                 cls.run_process,
                 cls.inspect_process,
@@ -69,47 +67,12 @@ class LammpsBaseWorkChain(BaseRestartWorkChain):
             self.exposed_inputs(LammpsBaseCalculation, "lammps")
         )
         self.ctx.inputs.settings = (
-            self.ctx.inputs.settings.get_dict() if "settings" in self.ctx.inputs else {}
+            self.ctx.inputs.settings.get_dict()
+            if "settings" in self.ctx.inputs
+            else AttributeDict({})
         )
-
-    def validate_parameters(self):
-        """Validate the parameters for the workchain"""
-
         if "store_restart" in self.ctx.inputs:
             self.ctx.inputs.settings.store_restart = self.ctx.inputs.store_restart.value
-
-        if "script" not in self.ctx.inputs and any(
-            key not in self.ctx.inputs
-            for key in ["parameters", "potential", "structure"]
-        ):
-            raise InputValidationError(
-                "Unless `script` is specified the inputs `structure`, "
-                "`potential` and  `parameters` have to be specified."
-            )
-
-        if "parameters" in self.ctx.inputs:
-            self.ctx.inputs.parameters = self.ctx.inputs.parameters.get_dict()
-
-            if not any(key in self.ctx.inputs.parameters for key in ["md", "minimize"]):
-                raise InputValidationError(
-                    "If not using a script the type of calculation, either "
-                    "'md' or 'minimize' must be given"
-                )
-
-            _restart = any(
-                self.ctx.inputs.parameters.get("restart", {}).get(key, False)
-                for key in ["print_final", "print_intermediate"]
-            )
-            _store_restart = (
-                "store_restart" in self.ctx.inputs
-                and self.ctx.inputs.store_restart.value
-            )
-
-            if _store_restart and not _restart:
-                raise InputValidationError(
-                    "To store the restartfile one needs to indicate "
-                    "that either the final or intermediate restartfiles must be printed"
-                )
 
     def report_error_handled(self, calculation, action):
         """Report an action taken for a calculation that has failed.
@@ -133,24 +96,15 @@ class LammpsBaseWorkChain(BaseRestartWorkChain):
         :return: latest restartfile found or None
         """
 
-        _restartfile = calculation.get_metadata_inputs()["restart_filename"]
+        try:
 
-        restartfiles = [
-            entry
-            for entry in calculation.outputs.remote_folder.listdir()
-            if _restartfile in entry
-        ]
-        if restartfiles:
-            latest_file = restartfiles[
-                np.array(
-                    [
-                        int(entry.replace(f"{_restartfile}", "").replace(".", ""))
-                        for entry in restartfiles
-                    ]
-                ).argmax()
-            ]
-            return latest_file
-        return None
+            return (
+                calculation.outputs.results.get_dict()
+                .get("compute_variables", {})
+                .get("restartfile_name", None)
+            )
+        except NotExistentAttributeError:
+            return None
 
     def set_restart_type(self, restart_type, calculation):
         """
@@ -179,9 +133,8 @@ class LammpsBaseWorkChain(BaseRestartWorkChain):
                     "Removing the velocity parameter from the MD control"
                 )
         if restart_type == RestartTypes.FROM_STRUCTURE:
-            self.ctx.inputs.structure = (
-                calculation.outputs.trajectory.get_step_structure(-1)
-            )
+            self.ctx.inputs.structure = calculation.outputs.structure
+
             timestep = calculation.outputs.trajectory.time_steps[-1]
             if "parameters" in self.ctx.inputs and "md" in self.ctx.inputs.parameters:
                 self.ctx.inputs.parameters["md"]["reset_timestep"] = timestep
@@ -307,9 +260,9 @@ class LammpsBaseWorkChain(BaseRestartWorkChain):
         should always exist, if the calculation finished successfully.
         """
 
-        if calculation.exit_status == 401:
+        if LammpsBaseCalculation.exit_codes.ERROR_ENERGY_NOT_CONVERGED.status:
             self.report("Energy not converged during minimization, attempting restart")
-        if calculation.exit_status == 402:
+        if LammpsBaseCalculation.exit_codes.ERROR_FORCE_NOT_CONVERGED.status:
             self.report("Force not converged during minimization, attempting restart")
         latest_file = self._check_restart_in_remote(calculation=calculation)
         if "restartfile" in calculation.outputs:

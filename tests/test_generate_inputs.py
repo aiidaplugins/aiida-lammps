@@ -5,7 +5,18 @@ import pytest
 
 from aiida_lammps.data.potential import LammpsPotentialData
 from aiida_lammps.parsers import inputfile
+from aiida_lammps.validation.utils import validate_against_schema
 from .utils import TEST_DIR
+
+
+def validate_input_parameters(parameters: dict):
+    _file = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        "..",
+        "aiida_lammps/validation/schemas/lammps_schema.json",
+    )
+
+    validate_against_schema(data=parameters, filename=_file)
 
 
 @pytest.mark.parametrize(
@@ -22,7 +33,7 @@ def test_input_generate_minimize(
     """Test the generation of the input file for minimize calculations"""
     # pylint: disable=too-many-locals
 
-    inputfile.validate_input_parameters(parameters_minimize)
+    validate_input_parameters(parameters_minimize)
     # Generate the potential
     potential_information = get_lammps_potential_data(potential_type)
     potential = LammpsPotentialData.get_or_create(
@@ -64,7 +75,7 @@ def test_input_generate_md(
     """Test the generation of the input file for MD calculations"""
     # pylint: disable=too-many-locals
 
-    inputfile.validate_input_parameters(parameters_md_npt)
+    validate_input_parameters(parameters_md_npt)
     # Generate the potential
     potential_information = get_lammps_potential_data(potential_type)
     potential = LammpsPotentialData.get_or_create(
@@ -117,7 +128,7 @@ def test_input_generate_restart(
     if num_steps:
         parameters_md_npt["restart"]["num_steps"] = num_steps
 
-    inputfile.validate_input_parameters(parameters_md_npt)
+    validate_input_parameters(parameters_md_npt)
 
     # Generating the input file
     input_file = inputfile.write_restart_block(
@@ -127,20 +138,3 @@ def test_input_generate_restart(
     )
 
     data_regression.check(input_file)
-
-
-#    if print_final:
-#        assert "final" in input_file, "no final restart information generated"
-#        _msg = "reference value for the final restart does not match"
-#        assert input_file["final"] == restart_data["final"], _msg
-#    else:
-#        assert input_file["final"] == ""
-#
-#    if print_intermediate:
-#        assert (
-#            "intermediate" in input_file
-#        ), "no intermediate restart information generated"
-#        _msg = "reference value for the intermediate restart does not match"
-#        assert input_file["intermediate"] == restart_data["intermediate"], _msg
-#    else:
-#        assert input_file["intermediate"] == ""

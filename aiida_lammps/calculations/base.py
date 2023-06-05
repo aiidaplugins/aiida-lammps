@@ -65,6 +65,7 @@ class LammpsBaseCalculation(CalcJob):
             "parameters",
             valid_type=orm.Dict,
             required=False,
+            validator=cls.validate_parameters,
             help="Parameters that control the input script generated for the ``LAMMPS`` calculation",
         )
         spec.input(
@@ -89,37 +90,37 @@ class LammpsBaseCalculation(CalcJob):
         spec.input(
             "metadata.options.input_filename",
             valid_type=str,
-            default=cls._DEFAULT_VARIABLES.get("input_filename"),
+            default=cls._DEFAULT_VARIABLES["input_filename"],
         )
         spec.input(
             "metadata.options.structure_filename",
             valid_type=str,
-            default=cls._DEFAULT_VARIABLES.get("structure_filename"),
+            default=cls._DEFAULT_VARIABLES["structure_filename"],
         )
         spec.input(
             "metadata.options.output_filename",
             valid_type=str,
-            default=cls._DEFAULT_VARIABLES.get("output_filename"),
+            default=cls._DEFAULT_VARIABLES["output_filename"],
         )
         spec.input(
             "metadata.options.logfile_filename",
             valid_type=str,
-            default=cls._DEFAULT_VARIABLES.get("logfile_filename"),
+            default=cls._DEFAULT_VARIABLES["logfile_filename"],
         )
         spec.input(
             "metadata.options.variables_filename",
             valid_type=str,
-            default=cls._DEFAULT_VARIABLES.get("variables_filename"),
+            default=cls._DEFAULT_VARIABLES["variables_filename"],
         )
         spec.input(
             "metadata.options.trajectory_filename",
             valid_type=str,
-            default=cls._DEFAULT_VARIABLES.get("trajectory_filename"),
+            default=cls._DEFAULT_VARIABLES["trajectory_filename"],
         )
         spec.input(
             "metadata.options.restart_filename",
             valid_type=str,
-            default=cls._DEFAULT_VARIABLES.get("restart_filename"),
+            default=cls._DEFAULT_VARIABLES["restart_filename"],
         )
         spec.input(
             "metadata.options.parser_name",
@@ -246,7 +247,7 @@ class LammpsBaseCalculation(CalcJob):
                 )
 
     @classmethod
-    def validate_settings(cls, value, ctx):
+    def validate_settings(cls, value, ctx) -> str | None:
         """Validate the ``settings`` input."""
         if not value:
             return

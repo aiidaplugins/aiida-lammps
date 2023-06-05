@@ -94,6 +94,7 @@ def test_handle_out_of_walltime(
     generate_workchain_base,
     fixture_localhost,
     generate_remote_data,
+    generate_lammps_results,
 ):
     """Test `LammpsBaseWorkChain.handle_out_of_walltime`."""
     remote_data = generate_remote_data(computer=fixture_localhost, remote_path="/tmp")
@@ -126,7 +127,11 @@ def test_handle_out_of_walltime_from_trajectory(
     trajectory = generate_lammps_trajectory(computer=fixture_localhost)
     process = generate_workchain_base(
         exit_code=LammpsBaseCalculation.exit_codes.ERROR_OUT_OF_WALLTIME,  # pylint: disable=no-member
-        lammps_base_outputs={"remote_folder": remote_data, "trajectory": trajectory},
+        lammps_base_outputs={
+            "remote_folder": remote_data,
+            "trajectory": trajectory,
+            "structure": trajectory.get_step_structure(-1),
+        },
     )
 
     process.setup()
@@ -182,7 +187,11 @@ def test_handle_minimization_not_converged_from_trajectrory(
     trajectory = generate_lammps_trajectory(computer=fixture_localhost)
     process = generate_workchain_base(
         exit_code=LammpsBaseCalculation.exit_codes.ERROR_ENERGY_NOT_CONVERGED,  # pylint: disable=no-member
-        lammps_base_outputs={"remote_folder": remote_data, "trajectory": trajectory},
+        lammps_base_outputs={
+            "remote_folder": remote_data,
+            "trajectory": trajectory,
+            "structure": trajectory.get_step_structure(-1),
+        },
     )
 
     process.setup()
