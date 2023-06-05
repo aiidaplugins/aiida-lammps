@@ -247,7 +247,7 @@ class LammpsBaseCalculation(CalcJob):
                 )
 
     @classmethod
-    def validate_settings(cls, value, ctx) -> str | None:
+    def validate_settings(cls, value, ctx) -> Union[str, None]:
         """Validate the ``settings`` input."""
         if not value:
             return
