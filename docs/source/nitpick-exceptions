@@ -18,3 +18,4 @@ py:class aiida_lammps.parsers.parse_raw.trajectory.TRAJ_BLOCK
 py:exc aiida.common.StoringNotAllowed
 py:class Logger
 py:class AttributeDict
+py:class CalcJobNode
