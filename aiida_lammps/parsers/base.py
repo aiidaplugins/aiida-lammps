@@ -182,12 +182,15 @@ class LammpsBaseParser(Parser):
         This function tries to find which of those files are written by ``LAMMPS``
         and then store them in the database as ``orm.SinglefileData``.
 
-        :param parameters: _description_
+        :param parameters: set of variables for the lammps script generation
         :type parameters: dict
-        :param list_of_files: _description_
+        :param list_of_files: list of files retrieved
         :type list_of_files: list
-        :param temp_folder: _description_
+        :param temp_folder: name of the temporary folder where the temporary retrieved are
         :type temp_folder: Union[os.PathLike, str, None]
+
+        :return: Name of the found restartfile
+        :rtype: str
         """
         input_restart_filename = self.node.get_option("restart_filename")
 
@@ -229,7 +232,7 @@ class LammpsBaseParser(Parser):
                     except ValueError:
                         _files.append(0)
 
-                latest_file = restartfiles[np.array(_files).argmax()]
+                latest_file = os.path.basename(restartfiles[np.array(_files).argmax()])
                 restart_filename = latest_file
                 with open(os.path.join(temp_folder, latest_file), mode="rb") as handle:
                     restart_file = orm.SinglefileData(handle)
