@@ -27,9 +27,9 @@ Setting up Verlet run ...
   Current step  : 0
   Time step     : 0.005
 Per MPI rank memory allocation (min/avg/max) = 2.039 | 2.065 | 2.082 Mbytes
-   Step          Temp          E_pair         E_mol          TotEng         Press     
-         0   1.44          -6.7733681      0             -4.6133724     -5.0196717    
-      1000   0.70380068    -5.6761498      0             -4.6204508      0.70370101   
+   Step          Temp          E_pair         E_mol          TotEng         Press
+         0   1.44          -6.7733681      0             -4.6133724     -5.0196717
+      1000   0.70380068    -5.6761498      0             -4.6204508      0.70370101
 Loop time of 3.07792 on 120 procs for 1000 steps with 500000 atoms
 
 Performance: 140354.357 tau/day, 324.894 timesteps/s, 162.447 Matom-step/s
