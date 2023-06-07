@@ -137,40 +137,6 @@ def test_lammps_base(
                 assert sub_value == _step_data[sub_key], _msg
 
 
-def test_lammps_base_script(generate_calc_job, aiida_local_code_factory):
-    """Test the ``LammpsBaseCalculation`` with the ``script`` input."""
-    from aiida_lammps.calculations.base import LammpsBaseCalculation
-
-    inputs = {
-        "code": aiida_local_code_factory("lammps.base", "bash"),
-        "metadata": {"options": {"resources": {"num_machines": 1}}},
-    }
-
-    with pytest.raises(
-        ValueError,
-        match=r"Unless `script` is specified the inputs .* have to be specified.",
-    ):
-        generate_calc_job("lammps.base", inputs)
-
-    content = textwrap.dedent(
-        """
-        "velocity      all create 1.44 87287 loop geom
-        "pair_style    lj/cut 2.5
-        "pair_coeff    1 1 1.0 1.0 2.5
-        "neighbor      0.3 bin
-        "neigh_modify  delay 0 every 20 check no
-        "fix           1 all nve
-        "run           10000
-        """
-    )
-    stream = io.StringIO(content)
-    script = orm.SinglefileData(stream)
-
-    inputs["script"] = script
-    tmp_path, calc_info = generate_calc_job("lammps.base", inputs)
-    assert (tmp_path / LammpsBaseCalculation._INPUT_FILENAME).read_text() == content
-
-
 @pytest.mark.lammps_call
 @pytest.mark.parametrize(
     "parameters,restart_parameters",
@@ -342,13 +308,20 @@ def test_lammps_base_settings_invalid(generate_calc_job, aiida_local_code_factor
         generate_calc_job("lammps.base", inputs)
 
 
-def test_lammps_base_settings(generate_calc_job, aiida_local_code_factory):
+def test_lammps_base_settings(
+    generate_calc_job,
+    aiida_local_code_factory,
+    minimize_parameters,
+    get_potential_fe_eam,
+    generate_structure,
+):
     """Test the ``LammpsBaseCalculation`` with the ``settings`` input."""
-    from aiida_lammps.calculations.base import LammpsBaseCalculation
 
     inputs = {
         "code": aiida_local_code_factory("lammps.base", "bash"),
-        "script": orm.SinglefileData(io.StringIO("")),
+        "parameters": orm.Dict(minimize_parameters),
+        "potential": get_potential_fe_eam,
+        "structure": generate_structure,
         "settings": orm.Dict({"additional_cmdline_params": ["--option", "value"]}),
         "metadata": {"options": {"resources": {"num_machines": 1}}},
     }

@@ -48,12 +48,6 @@ class LammpsBaseCalculation(CalcJob):
     def define(cls, spec):
         super().define(spec)
         spec.input(
-            "script",
-            valid_type=orm.SinglefileData,
-            required=False,
-            help="Complete input script to use. If specified, `structure`, `potential` and `parameters` are ignored.",
-        )
-        spec.input(
             "structure",
             valid_type=orm.StructureData,
             required=False,
@@ -126,7 +120,6 @@ class LammpsBaseCalculation(CalcJob):
             default=cls._DEFAULT_RESTART_FILENAME,
         )
         spec.inputs["metadata"]["options"]["parser_name"].default = cls._DEFAULT_PARSER
-        spec.inputs.validator = cls.validate_inputs
 
         spec.output(
             "results",
@@ -214,17 +207,6 @@ class LammpsBaseCalculation(CalcJob):
         )
 
     @classmethod
-    def validate_inputs(cls, value, ctx):
-        """Validate the top-level inputs namespace."""
-        if "script" not in value and any(
-            key not in value for key in ("structure", "potential", "parameters")
-        ):
-            return (
-                "Unless `script` is specified the inputs `structure`, `potential` and "
-                "`parameters` have to be specified."
-            )
-
-    @classmethod
     def validate_settings(cls, value, ctx):
         """Validate the ``settings`` input."""
         if not value:
@@ -299,38 +281,34 @@ class LammpsBaseCalculation(CalcJob):
         retrieve_list += restart_data.get("retrieve_list", [])
         retrieve_temporary_list += restart_data.get("retrieve_temporary_list", [])
 
-        if "script" in self.inputs:
-            input_filecontent = self.inputs.script.get_content()
-        else:
+        # Generate the content of the structure file based on the input
+        # structure
+        structure_filecontent, _ = generate_lammps_structure(
+            self.inputs.structure,
+            self.inputs.potential.atom_style,
+        )
 
-            # Generate the content of the structure file based on the input
-            # structure
-            structure_filecontent, _ = generate_lammps_structure(
-                self.inputs.structure,
-                self.inputs.potential.atom_style,
-            )
+        # Get the name of the structure file and write it to the remote folder
+        _structure_filename = self.inputs.metadata.options.structure_filename
 
-            # Get the name of the structure file and write it to the remote folder
-            _structure_filename = self.inputs.metadata.options.structure_filename
+        with folder.open(_structure_filename, "w") as handle:
+            handle.write(structure_filecontent)
 
-            with folder.open(_structure_filename, "w") as handle:
-                handle.write(structure_filecontent)
+        # Write the potential to the remote folder
+        with folder.open(self._DEFAULT_POTENTIAL_FILENAME, "w") as handle:
+            handle.write(self.inputs.potential.get_content())
 
-            # Write the potential to the remote folder
-            with folder.open(self._DEFAULT_POTENTIAL_FILENAME, "w") as handle:
-                handle.write(self.inputs.potential.get_content())
-
-            # Write the input file content. This function will also check the
-            # sanity of the passed parameters when comparing it to a schema
-            input_filecontent = generate_input_file(
-                potential=self.inputs.potential,
-                structure=self.inputs.structure,
-                parameters=_parameters,
-                restart_filename=_restart_filename,
-                trajectory_filename=_trajectory_filename,
-                variables_filename=_variables_filename,
-                read_restart_filename=_read_restart_filename,
-            )
+        # Write the input file content. This function will also check the
+        # sanity of the passed parameters when comparing it to a schema
+        input_filecontent = generate_input_file(
+            potential=self.inputs.potential,
+            structure=self.inputs.structure,
+            parameters=_parameters,
+            restart_filename=_restart_filename,
+            trajectory_filename=_trajectory_filename,
+            variables_filename=_variables_filename,
+            read_restart_filename=_read_restart_filename,
+        )
 
         # Get the name of the input file, and write it to the remote folder
         _input_filename = self.inputs.metadata.options.input_filename

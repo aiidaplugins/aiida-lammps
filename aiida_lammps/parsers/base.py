@@ -92,8 +92,7 @@ class LammpsBaseParser(Parser):
         final_variables = None
         variables_filename = self.node.get_option("variables_filename")
         if variables_filename not in list_of_files:
-            if "script" not in self.node.inputs:
-                return self.exit_codes.ERROR_FINAL_VARIABLE_FILE_MISSING
+            return self.exit_codes.ERROR_FINAL_VARIABLE_FILE_MISSING
         else:
             final_variables = parse_final_data(
                 file_contents=self.node.outputs.retrieved.base.repository.get_object_content(
@@ -120,8 +119,7 @@ class LammpsBaseParser(Parser):
         # check trajectory file
         trajectory_filename = self.node.get_option("trajectory_filename")
         if trajectory_filename not in list_of_files:
-            if "script" not in self.node.inputs:
-                return self.exit_codes.ERROR_TRAJECTORY_FILE_MISSING
+            return self.exit_codes.ERROR_TRAJECTORY_FILE_MISSING
         else:
             with self.node.outputs.retrieved.base.repository.open(
                 trajectory_filename
