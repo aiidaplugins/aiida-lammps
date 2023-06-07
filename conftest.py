@@ -1,9 +1,9 @@
 """
 initialise a test database and profile
 """
+# pylint: disable=redefined-outer-name
 from __future__ import annotations
 
-import collections
 from collections.abc import Mapping
 import os
 import pathlib
@@ -13,8 +13,6 @@ from typing import Any
 
 from aiida import orm
 from aiida.common import AttributeDict, CalcInfo, LinkType, exceptions
-from aiida.common.datastructures import CalcInfo
-from aiida.common.links import LinkType
 from aiida.engine import CalcJob
 from aiida.engine.utils import instantiate_process
 from aiida.manage.manager import get_manager
@@ -27,7 +25,7 @@ import yaml
 from aiida_lammps.calculations.base import LammpsBaseCalculation
 from aiida_lammps.data.potential import LammpsPotentialData
 from aiida_lammps.data.trajectory import LammpsTrajectory
-from tests.utils import TEST_DIR, AiidaTestApp, get_default_metadata
+from tests.utils import TEST_DIR, AiidaTestApp
 
 pytest_plugins = ["aiida.manage.tests.pytest_fixtures"]
 
@@ -647,7 +645,9 @@ def generate_calc_job_node(fixture_localhost):
         node.base.attributes.set("output_filename", "lammps_output")
         node.set_option("resources", {"num_machines": 1, "num_mpiprocs_per_machine": 1})
         node.set_option("max_wallclock_seconds", 1800)
-        node.set_metadata_inputs(LammpsBaseCalculation._DEFAULT_VARIABLES)
+        node.set_metadata_inputs(
+            LammpsBaseCalculation._DEFAULT_VARIABLES  # pylint: disable=protected-access
+        )
 
         if attributes:
             node.base.attributes.set_many(attributes)
