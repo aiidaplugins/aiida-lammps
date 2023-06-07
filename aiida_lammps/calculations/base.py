@@ -10,7 +10,7 @@ import os
 from typing import Union
 
 from aiida import orm
-from aiida.common import datastructures, exceptions
+from aiida.common import datastructures
 from aiida.engine import CalcJob
 
 from aiida_lammps.data.potential import LammpsPotentialData
@@ -160,43 +160,53 @@ class LammpsBaseCalculation(CalcJob):
             help="The output structure.",
         )
         spec.exit_code(
-            350,
+            301,
             "ERROR_NO_RETRIEVED_FOLDER",
             message="the retrieved folder data node could not be accessed.",
             invalidates_cache=True,
         )
         spec.exit_code(
-            351,
+            302,
+            "ERROR_STDOUT_FILE_MISSING",
+            message="the stdout output file was not found",
+        )
+        spec.exit_code(
+            303,
+            "ERROR_STDERR_FILE_MISSING",
+            message="the stderr output file was not found",
+        )
+        spec.exit_code(
+            304,
+            "ERROR_OUTPUT_FILE_MISSING",
+            message="the output file is missing, it is possible that LAMMPS never ran",
+        )
+        spec.exit_code(
+            305,
             "ERROR_LOG_FILE_MISSING",
             message="the file with the lammps log was not found",
             invalidates_cache=True,
         )
         spec.exit_code(
-            352,
+            306,
             "ERROR_FINAL_VARIABLE_FILE_MISSING",
             message="the file with the final variables was not found",
             invalidates_cache=True,
         )
         spec.exit_code(
-            353,
+            307,
             "ERROR_TRAJECTORY_FILE_MISSING",
             message="the file with the trajectories was not found",
             invalidates_cache=True,
         )
         spec.exit_code(
-            354,
-            "ERROR_STDOUT_FILE_MISSING",
-            message="the stdout output file was not found",
-        )
-        spec.exit_code(
-            355,
-            "ERROR_STDERR_FILE_MISSING",
-            message="the stderr output file was not found",
-        )
-        spec.exit_code(
-            356,
+            308,
             "ERROR_RESTART_FILE_MISSING",
             message="the file with the restart information was not found",
+        )
+        spec.exit_code(
+            309,
+            "ERROR_PARSER_DECTECTED_LAMMPS_RUN_ERROR",
+            message="The parser dectected the lampps error :{error}",
         )
         spec.exit_code(
             400,
@@ -438,12 +448,12 @@ class LammpsBaseCalculation(CalcJob):
         # If there is a restartfile set its name to the input variables and
         # write it in the remote folder
         if "input_restartfile" in self.inputs:
-            _read_restart_filename = self._DEFAULT_VARIABLES.get("restart_filename")
+            _read_restart_filename = self.inputs.metadata.options.restart_filename
             local_copy_list.append(
                 (
                     self.inputs.input_restartfile.uuid,
                     self.inputs.input_restartfile.filename,
-                    self._DEFAULT_VARIABLES.get("restart_filename"),
+                    self.inputs.metadata.options.restart_filename,
                 )
             )
         else:
@@ -458,14 +468,8 @@ class LammpsBaseCalculation(CalcJob):
             # Setting the name here will mean that if the input file is generated from the parameters
             # that this name will be used
             _read_restart_filename = settings.pop(
-                "previous_restartfile", self._DEFAULT_VARIABLES.get("restart_filename")
+                "previous_restartfile", self.inputs.metadata.options.restart_filename
             )
-
-            if not _read_restart_filename in self.inputs.parent_folder.listdir():
-                raise exceptions.InputValidationError(
-                    f'The name "{_read_restart_filename}" for the restartfile is not present in the '
-                    f'remote folder "{self.input.parent_folder.uuid}"'
-                )
 
             if symlink:
                 # Symlink the old restart file to the new one in the current directory

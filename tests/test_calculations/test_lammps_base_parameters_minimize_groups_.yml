@@ -16,6 +16,9 @@ results:
     total_wall_time: 0:00:00
     total_wall_time_seconds: 0
     units_style: metal
+    warnings:
+    - 'WARNING: Using ''neigh_modify every 1 delay 0 check yes'' setting during minimization
+      (src/min.cpp:187)'
   final_c_ke_test_aiida: 0
   final_c_pressure_all_aiida: 13557.48
   final_c_pressure_all_aiida__1__: 13557.48

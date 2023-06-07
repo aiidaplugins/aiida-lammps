@@ -2,11 +2,13 @@
 
 from .final_data import parse_final_data
 from .lammps_log import parse_logfile
+from .lammps_output import parse_output_file
 from .trajectory import create_structure, iter_trajectories, parse_step
 
 __all__ = (
     "parse_logfile",
     "parse_final_data",
+    "parse_output_file",
     "parse_step",
     "create_structure",
     "iter_trajectories",

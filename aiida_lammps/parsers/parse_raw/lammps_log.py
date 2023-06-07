@@ -3,12 +3,11 @@
 # pylint: disable=fixme
 import ast
 import re
-from typing import Union
 
 import numpy as np
 
 
-def parse_logfile(filename: str = None, file_contents: str = None) -> Union[dict, dict]:
+def parse_logfile(filename: str = None, file_contents: str = None) -> dict:
     """
     Parse the log.lammps file.
 
@@ -21,7 +20,7 @@ def parse_logfile(filename: str = None, file_contents: str = None) -> Union[dict
     :param file_contents: contents of the lammps log file, defaults to None
     :type file_contents: str, optional
     :return: dictionary with the time dependent data, dictionary with the global data
-    :rtype: Union[dict, dict]
+    :rtype: dict
     """
     # pylint: disable=too-many-branches, too-many-locals
 
@@ -54,6 +53,7 @@ def parse_logfile(filename: str = None, file_contents: str = None) -> Union[dict
 
     for index, line in enumerate(data):
         line = line.strip()
+
         if "binsize" in line:
             global_parsed_data["binsize"] = ast.literal_eval(
                 line.split()[2].replace(",", "")
@@ -106,6 +106,7 @@ def parse_logfile(filename: str = None, file_contents: str = None) -> Union[dict
     _data = np.asarray(_data)
     for index, entry in enumerate(header_line):
         parsed_data[entry] = _data[:, index].tolist()
+
     return {"time_dependent": parsed_data, "global": global_parsed_data}
 
 

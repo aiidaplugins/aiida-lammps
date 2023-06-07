@@ -260,9 +260,13 @@ class LammpsBaseWorkChain(BaseRestartWorkChain):
         should always exist, if the calculation finished successfully.
         """
 
-        if LammpsBaseCalculation.exit_codes.ERROR_ENERGY_NOT_CONVERGED.status:
+        if (
+            LammpsBaseCalculation.exit_codes.ERROR_ENERGY_NOT_CONVERGED.status
+        ):  # pylint: disable=no-member
             self.report("Energy not converged during minimization, attempting restart")
-        if LammpsBaseCalculation.exit_codes.ERROR_FORCE_NOT_CONVERGED.status:
+        if (
+            LammpsBaseCalculation.exit_codes.ERROR_FORCE_NOT_CONVERGED.status
+        ):  # pylint: disable=no-member
             self.report("Force not converged during minimization, attempting restart")
         latest_file = self._check_restart_in_remote(calculation=calculation)
         if "restartfile" in calculation.outputs:

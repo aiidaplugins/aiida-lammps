@@ -15,7 +15,11 @@ from aiida.parsers.parser import Parser
 import numpy as np
 
 from aiida_lammps.data.trajectory import LammpsTrajectory
-from aiida_lammps.parsers.parse_raw import parse_final_data, parse_logfile
+from aiida_lammps.parsers.parse_raw import (
+    parse_final_data,
+    parse_logfile,
+    parse_output_file,
+)
 
 
 class LammpsBaseParser(Parser):
@@ -59,6 +63,23 @@ class LammpsBaseParser(Parser):
 
         list_of_files = out_folder.base.repository.list_object_names()
 
+        # Check the output file
+        outputfile_filename = self.node.get_option("output_filename")
+        if outputfile_filename not in list_of_files:
+            return self.exit_codes.ERROR_OUTPUT_FILE_MISSING
+        parsed_output = parse_output_file(
+            file_contents=self.node.outputs.retrieved.base.repository.get_object_content(
+                outputfile_filename
+            )
+        )
+
+        if parsed_output["errors"]:
+            for entry in parsed_output["errors"]:
+                self.logger.error(f"LAMMPS emmitted the error {entry}")
+                return self.exit_codes.ERROR_PARSER_DECTECTED_LAMMPS_RUN_ERROR.format(
+                    error=entry
+                )
+
         # check log file
         logfile_filename = self.node.get_option("logfile_filename")
         if logfile_filename not in list_of_files:
@@ -89,6 +110,11 @@ class LammpsBaseParser(Parser):
                     + parsed_time.tm_sec
                 )
                 global_data["total_wall_time_seconds"] = total_wall_time_seconds
+
+        if parsed_output["warnings"]:
+            global_data["warnings"] = parsed_output["warnings"]
+            for entry in parsed_output["warnings"]:
+                self.logger.warning(f"LAMMPS emmitted the warning {entry}")
 
         # check final variable file
         final_variables = None
