@@ -1,30 +1,30 @@
-"""Base parser for LAMMPS log output."""
+"""Base parser for LAMMPS output."""
 import time
 
 from aiida import orm
 from aiida.parsers.parser import Parser
 
 from aiida_lammps.calculations.raw import LammpsRawCalculation
-from aiida_lammps.parsers.parse_raw import parse_logfile
+from aiida_lammps.parsers.parse_raw import parse_outputfile
 
 
 class LammpsRawParser(Parser):
-    """Base parser for LAMMPS log output."""
+    """Base parser for LAMMPS output."""
 
     def parse(self, **kwargs):
         """Parse the contents of the output files stored in the ``retrieved`` output node."""
         retrieved = self.retrieved
         retrieved_filenames = retrieved.base.repository.list_object_names()
-        filename_log = LammpsRawCalculation.FILENAME_LOG
+        filename_out = LammpsRawCalculation.FILENAME_OUTPUT
 
-        if filename_log not in retrieved_filenames:
-            return self.exit_codes.ERROR_LOG_FILE_MISSING
+        if filename_out not in retrieved_filenames:
+            return self.exit_codes.ERROR_OUTFILE_MISSING
 
-        parsed_data = parse_logfile(
-            file_contents=retrieved.base.repository.get_object_content(filename_log)
+        parsed_data = parse_outputfile(
+            file_contents=retrieved.base.repository.get_object_content(filename_out)
         )
         if parsed_data is None:
-            return self.exit_codes.ERROR_PARSING_LOGFILE
+            return self.exit_codes.ERROR_PARSING_OUTFILE
 
         global_data = parsed_data["global"]
         results = {"compute_variables": global_data}

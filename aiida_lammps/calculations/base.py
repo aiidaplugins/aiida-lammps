@@ -31,8 +31,7 @@ class LammpsBaseCalculation(CalcJob):
     _INPUT_FILENAME = "input.in"
     _STRUCTURE_FILENAME = "structure.dat"
 
-    _DEFAULT_LOGFILE_FILENAME = "log.lammps"
-    _DEFAULT_OUTPUT_FILENAME = "lammps_output"
+    _DEFAULT_OUTPUT_FILENAME = "lammps.out"
     _DEFAULT_TRAJECTORY_FILENAME = "aiida_lammps.trajectory.dump"
     _DEFAULT_VARIABLES_FILENAME = "aiida_lammps.yaml"
     _DEFAULT_RESTART_FILENAME = "lammps.restart"
@@ -100,11 +99,6 @@ class LammpsBaseCalculation(CalcJob):
             default=cls._DEFAULT_OUTPUT_FILENAME,
         )
         spec.input(
-            "metadata.options.logfile_filename",
-            valid_type=str,
-            default=cls._DEFAULT_LOGFILE_FILENAME,
-        )
-        spec.input(
             "metadata.options.variables_filename",
             valid_type=str,
             default=cls._DEFAULT_VARIABLES_FILENAME,
@@ -125,7 +119,7 @@ class LammpsBaseCalculation(CalcJob):
             "results",
             valid_type=orm.Dict,
             required=True,
-            help="The data extracted from the lammps log file",
+            help="The data extracted from the lammps output file",
         )
         spec.output(
             "trajectories",
@@ -137,7 +131,7 @@ class LammpsBaseCalculation(CalcJob):
             "time_dependent_computes",
             valid_type=orm.ArrayData,
             required=True,
-            help="The data with the time dependent computes parsed from the lammps.log",
+            help="The data with the time dependent computes parsed from the lammps.out",
         )
         spec.output(
             "restartfile",
@@ -159,8 +153,8 @@ class LammpsBaseCalculation(CalcJob):
         )
         spec.exit_code(
             351,
-            "ERROR_LOG_FILE_MISSING",
-            message="the file with the lammps log was not found",
+            "ERROR_OUTFILE_MISSING",
+            message="the file with the lammps output was not found",
             invalidates_cache=True,
         )
         spec.exit_code(
@@ -197,8 +191,8 @@ class LammpsBaseCalculation(CalcJob):
         )
         spec.exit_code(
             1001,
-            "ERROR_PARSING_LOGFILE",
-            message="error parsing the log file has failed.",
+            "ERROR_PARSING_OUTFILE",
+            message="error parsing the output file has failed.",
         )
         spec.exit_code(
             1002,
@@ -241,9 +235,6 @@ class LammpsBaseCalculation(CalcJob):
         # Get the name of the output file
         _output_filename = self.inputs.metadata.options.output_filename
 
-        # Get the name of the logfile file
-        _logfile_filename = self.inputs.metadata.options.logfile_filename
-
         # Get the parameters dictionary so that they can be used for creating
         # the input file
         if "parameters" in self.inputs:
@@ -264,7 +255,6 @@ class LammpsBaseCalculation(CalcJob):
         retrieve_temporary_list = []
         retrieve_list = [
             _output_filename,
-            _logfile_filename,
             _variables_filename,
             _trajectory_filename,
         ]
@@ -316,7 +306,7 @@ class LammpsBaseCalculation(CalcJob):
         with folder.open(_input_filename, "w") as handle:
             handle.write(input_filecontent)
 
-        cmdline_params = ["-in", _input_filename, "-log", _logfile_filename]
+        cmdline_params = ["-in", _input_filename]
 
         if "settings" in self.inputs:
             settings = self.inputs.settings.get_dict()

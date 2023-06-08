@@ -6,10 +6,12 @@ results:
     - 60
     - 60
     binsize: 1.4
+    errors: []
     ghost_atom_cutoff: 2.8
     master_list_distance_cutoff: 2.8
     max_neighbors_atom: 2000
     steps_per_second: 324.894
     total_wall_time: 0:00:03
     total_wall_time_seconds: 3
-    units_style: lattice
+    units_style: lj
+    warnings: []
