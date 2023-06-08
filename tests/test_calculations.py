@@ -120,6 +120,13 @@ def test_lammps_base(
     ):
         del _results["compute_variables"]["steps_per_second"]
 
+    # Removing the line of code that produces the warning as it changes with the lammps version
+    if "compute_variables" in _results and "warnings" in _results["compute_variables"]:
+        for index, entry in enumerate(_results["compute_variables"]["warnings"]):
+            _results["compute_variables"]["warnings"][index] = (
+                entry.split("(src")[0].strip() if "(src" in entry else entry
+            )
+
     assert "trajectories" in results, 'the "trajectories" node is not present'
 
     _trajectories_steps = {
