@@ -6,6 +6,7 @@ results:
     - 1
     - 1
     binsize: 3.65
+    errors: []
     ghost_atom_cutoff: 7.3
     master_list_distance_cutoff: 7.3
     max_neighbors_atom: 2000

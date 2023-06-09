@@ -1,7 +1,7 @@
 """
 Base parser for LAMMPS calculations.
 
-It takes care of parsing the log.lammps file, the trajectory file and the
+It takes care of parsing the lammps.out file, the trajectory file and the
 yaml file with the final value of the variables printed in the ``thermo_style``.
 """
 import glob
@@ -15,18 +15,14 @@ from aiida.parsers.parser import Parser
 import numpy as np
 
 from aiida_lammps.data.trajectory import LammpsTrajectory
-from aiida_lammps.parsers.parse_raw import (
-    parse_final_data,
-    parse_logfile,
-    parse_output_file,
-)
+from aiida_lammps.parsers.parse_raw import parse_final_data, parse_outputfile
 
 
 class LammpsBaseParser(Parser):
     """
     Base parser for LAMMPS calculations.
 
-    It takes care of parsing the log.lammps file, the trajectory file and the
+    It takes care of parsing the lammps.out file, the trajectory file and the
     yaml file with the final value of the variables printed in the
     ``thermo_style``.
     """
@@ -40,7 +36,7 @@ class LammpsBaseParser(Parser):
         """
         Parse the files produced by lammps.
 
-        It takes care of parsing the log.lammps file, the trajectory file and the
+        It takes care of parsing the lammps.out file, the trajectory file and the
         yaml file with the final value of the variables printed in the
         ``thermo_style``.
         """
@@ -67,30 +63,18 @@ class LammpsBaseParser(Parser):
         outputfile_filename = self.node.get_option("output_filename")
         if outputfile_filename not in list_of_files:
             return self.exit_codes.ERROR_OUTPUT_FILE_MISSING
-        parsed_output = parse_output_file(
+        parsed_data = parse_outputfile(
             file_contents=self.node.outputs.retrieved.base.repository.get_object_content(
                 outputfile_filename
             )
         )
 
-        if parsed_output["errors"]:
-            for entry in parsed_output["errors"]:
-                self.logger.error(f"LAMMPS emmitted the error {entry}")
+        if parsed_data["global"]["errors"]:
+            for entry in parsed_data["global"]["errors"]:
+                self.logger.error(f"LAMMPS emitted the error {entry}")
                 return self.exit_codes.ERROR_PARSER_DECTECTED_LAMMPS_RUN_ERROR.format(
                     error=entry
                 )
-
-        # check log file
-        logfile_filename = self.node.get_option("logfile_filename")
-        if logfile_filename not in list_of_files:
-            return self.exit_codes.ERROR_LOG_FILE_MISSING
-        parsed_data = parse_logfile(
-            file_contents=self.node.outputs.retrieved.base.repository.get_object_content(
-                logfile_filename
-            )
-        )
-        if parsed_data is None:
-            return self.exit_codes.ERROR_PARSING_LOGFILE
 
         global_data = parsed_data["global"]
         arrays = parsed_data["time_dependent"]
@@ -111,10 +95,9 @@ class LammpsBaseParser(Parser):
                 )
                 global_data["total_wall_time_seconds"] = total_wall_time_seconds
 
-        if parsed_output["warnings"]:
-            global_data["warnings"] = parsed_output["warnings"]
-            for entry in parsed_output["warnings"]:
-                self.logger.warning(f"LAMMPS emmitted the warning {entry}")
+        if parsed_data["global"]["warnings"]:
+            for entry in parsed_data["global"]["warnings"]:
+                self.logger.warning(f"LAMMPS emitted the warning {entry}")
 
         # check final variable file
         final_variables = None
@@ -148,7 +131,7 @@ class LammpsBaseParser(Parser):
             ):
                 return self.exit_codes.ERROR_RESTART_FILE_MISSING
 
-        # Expose the results from the log.lammps outputs
+        # Expose the results from the lammps.out outputs
         self.out("results", orm.Dict(results))
 
         # Get the time-dependent outputs exposed as an ArrayData

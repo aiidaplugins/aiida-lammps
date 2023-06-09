@@ -12,7 +12,6 @@ class LammpsRawCalculation(CalcJob):
 
     FILENAME_INPUT = "input.in"
     FILENAME_OUTPUT = "lammps.out"
-    FILENAME_LOG = "lammps.log"
 
     @classmethod
     def define(cls, spec):
@@ -48,18 +47,18 @@ class LammpsRawCalculation(CalcJob):
             "results",
             valid_type=orm.Dict,
             required=True,
-            help="The data extracted from the lammps log file",
+            help="The data extracted from the lammps out file",
         )
         spec.exit_code(
             351,
-            "ERROR_LOG_FILE_MISSING",
-            message="the file with the lammps log was not found",
+            "ERROR_OUTFILE_MISSING",
+            message="the file with the lammps out was not found",
             invalidates_cache=True,
         )
         spec.exit_code(
             1001,
-            "ERROR_PARSING_LOGFILE",
-            message="parsing the log file has failed.",
+            "ERROR_PARSING_OUTFILE",
+            message="parsing the output file has failed.",
         )
 
     @classmethod
@@ -85,7 +84,6 @@ class LammpsRawCalculation(CalcJob):
         :param folder: A temporary folder on the local file system.
         :returns: A :class:`aiida.common.datastructures.CalcInfo` instance.
         """
-        filename_log = self.FILENAME_LOG
         filename_input = self.inputs.metadata.options.input_filename
         filename_output = self.inputs.metadata.options.output_filename
         filenames = (
@@ -109,13 +107,13 @@ class LammpsRawCalculation(CalcJob):
             provenance_exclude_list.append(filename)
 
         codeinfo = CodeInfo()
-        codeinfo.cmdline_params = ["-in", filename_input, "-log", filename_log]
+        codeinfo.cmdline_params = ["-in", filename_input]
         codeinfo.code_uuid = self.inputs.code.uuid
         codeinfo.stdout_name = self.inputs.metadata.options.output_filename
 
         calcinfo = CalcInfo()
         calcinfo.provenance_exclude_list = provenance_exclude_list
-        calcinfo.retrieve_list = [filename_output, filename_log]
+        calcinfo.retrieve_list = [filename_output]
         calcinfo.codes_info = [codeinfo]
 
         return calcinfo

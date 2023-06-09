@@ -6,12 +6,14 @@ results:
     - 1
     - 1
     binsize: 3.65
+    errors: []
     ghost_atom_cutoff: 7.3
     master_list_distance_cutoff: 7.3
     max_neighbors_atom: 2000
     total_wall_time: 0:00:00
     total_wall_time_seconds: 0
     units_style: metal
+    warnings: []
   final_c_pressure_all_aiida: 13557.48
   final_c_pressure_all_aiida__1__: 13557.48
   final_c_pressure_all_aiida__2__: 13557.48
