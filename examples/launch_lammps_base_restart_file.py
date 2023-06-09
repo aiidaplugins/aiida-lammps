@@ -239,7 +239,7 @@ if __name__ == "__main__":
     _parameters.structure = {"atom_style": "atomic"}
     # Parameters used to pass special information about the potential
     _parameters.potential = {}
-    # Parameters controlling the global values written directly to the log
+    # Parameters controlling the global values written directly to the output
     _parameters.thermo = {
         "printing_rate": 100,
         "thermo_printing": {

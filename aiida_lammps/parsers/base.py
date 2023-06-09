@@ -1,7 +1,7 @@
 """
 Base parser for LAMMPS calculations.
 
-It takes care of parsing the log.lammps file, the trajectory file and the
+It takes care of parsing the lammps.out file, the trajectory file and the
 yaml file with the final value of the variables printed in the ``thermo_style``.
 """
 import glob
@@ -15,14 +15,14 @@ from aiida.parsers.parser import Parser
 import numpy as np
 
 from aiida_lammps.data.trajectory import LammpsTrajectory
-from aiida_lammps.parsers.parse_raw import parse_final_data, parse_logfile
+from aiida_lammps.parsers.parse_raw import parse_final_data, parse_outputfile
 
 
 class LammpsBaseParser(Parser):
     """
     Base parser for LAMMPS calculations.
 
-    It takes care of parsing the log.lammps file, the trajectory file and the
+    It takes care of parsing the lammps.out file, the trajectory file and the
     yaml file with the final value of the variables printed in the
     ``thermo_style``.
     """
@@ -36,7 +36,7 @@ class LammpsBaseParser(Parser):
         """
         Parse the files produced by lammps.
 
-        It takes care of parsing the log.lammps file, the trajectory file and the
+        It takes care of parsing the lammps.out file, the trajectory file and the
         yaml file with the final value of the variables printed in the
         ``thermo_style``.
         """
@@ -59,17 +59,17 @@ class LammpsBaseParser(Parser):
 
         list_of_files = out_folder.base.repository.list_object_names()
 
-        # check log file
-        logfile_filename = self.node.get_option("logfile_filename")
-        if logfile_filename not in list_of_files:
-            return self.exit_codes.ERROR_LOG_FILE_MISSING
-        parsed_data = parse_logfile(
+        # check output file
+        output_filename = self.node.get_option("output_filename")
+        if output_filename not in list_of_files:
+            return self.exit_codes.ERROR_OUTFILE_MISSING
+        parsed_data = parse_outputfile(
             file_contents=self.node.outputs.retrieved.base.repository.get_object_content(
-                logfile_filename
+                output_filename
             )
         )
         if parsed_data is None:
-            return self.exit_codes.ERROR_PARSING_LOGFILE
+            return self.exit_codes.ERROR_PARSING_OUTFILE
 
         global_data = parsed_data["global"]
         arrays = parsed_data["time_dependent"]
@@ -93,18 +93,17 @@ class LammpsBaseParser(Parser):
         variables_filename = self.node.get_option("variables_filename")
         if variables_filename not in list_of_files:
             return self.exit_codes.ERROR_FINAL_VARIABLE_FILE_MISSING
-        else:
-            final_variables = parse_final_data(
-                file_contents=self.node.outputs.retrieved.base.repository.get_object_content(
-                    variables_filename
-                )
+        final_variables = parse_final_data(
+            file_contents=self.node.outputs.retrieved.base.repository.get_object_content(
+                variables_filename
             )
-            if final_variables is None:
-                return self.exit_codes.ERROR_PARSING_FINAL_VARIABLES
+        )
+        if final_variables is None:
+            return self.exit_codes.ERROR_PARSING_FINAL_VARIABLES
 
-            results.update(**final_variables)
+        results.update(**final_variables)
 
-        # Expose the results from the log.lammps outputs
+        # Expose the results from the lammps.out outputs
         self.out("results", orm.Dict(results))
 
         # Get the time-dependent outputs exposed as an ArrayData
@@ -120,14 +119,13 @@ class LammpsBaseParser(Parser):
         trajectory_filename = self.node.get_option("trajectory_filename")
         if trajectory_filename not in list_of_files:
             return self.exit_codes.ERROR_TRAJECTORY_FILE_MISSING
-        else:
-            with self.node.outputs.retrieved.base.repository.open(
-                trajectory_filename
-            ) as handle:
-                lammps_trajectory = LammpsTrajectory(handle)
+        with self.node.outputs.retrieved.base.repository.open(
+            trajectory_filename
+        ) as handle:
+            lammps_trajectory = LammpsTrajectory(handle)
 
-            self.out("trajectories", lammps_trajectory)
-            self.out("structure", lammps_trajectory.get_step_structure(-1))
+        self.out("trajectories", lammps_trajectory)
+        self.out("structure", lammps_trajectory.get_step_structure(-1))
 
         # check stdout
         if self.node.get_option("scheduler_stdout") not in list_of_files:

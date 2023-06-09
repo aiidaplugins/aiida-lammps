@@ -802,9 +802,9 @@ def write_thermo_block(
 
     This will take all the global computes which were generated during the calculation
     plus the 'common' thermodynamic parameters set by LAMMPS and set them so that
-    they are printed to the LAMMPS log file.
+    they are printed to the LAMMPS output file.
 
-    :param parameters_thermo: user defined parameters to control the log data.
+    :param parameters_thermo: user defined parameters to control the output data.
     :type parameters_thermo: dict
     :param parameters_compute: computes that will be applied to the calculation
     :type parameters_compute: dict
