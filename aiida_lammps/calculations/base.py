@@ -33,7 +33,7 @@ class LammpsBaseCalculation(CalcJob):
     _DEFAULT_VARIABLES = {
         "input_filename": "input.in",
         "structure_filename": "structure.dat",
-        "output_filename": "lammps_output",
+        "output_filename": "lammps.out",
         "logfile_filename": "log.lammps",
         "variables_filename": "aiida_lammps.yaml",
         "trajectory_filename": "aiida_lammps.trajectory.dump",
@@ -200,8 +200,8 @@ class LammpsBaseCalculation(CalcJob):
         )
         spec.exit_code(
             309,
-            "ERROR_PARSER_DECTECTED_LAMMPS_RUN_ERROR",
-            message="The parser dectected the lampps error :{error}",
+            "ERROR_PARSER_DETECTED_LAMMPS_RUN_ERROR",
+            message="The parser detected the lampps error :{error}",
         )
         spec.exit_code(
             400,
