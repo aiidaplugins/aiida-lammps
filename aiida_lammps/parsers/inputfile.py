@@ -21,7 +21,6 @@ import numpy as np
 
 from aiida_lammps.data.potential import LammpsPotentialData
 from aiida_lammps.parsers.utils import flatten, generate_header
-from aiida_lammps.validation.utils import validate_against_schema
 
 
 def generate_input_file(
@@ -74,9 +73,6 @@ def generate_input_file(
     :rtype: str
     """
     # pylint: disable=too-many-locals, too-many-arguments
-
-    # Validate the inputs
-    validate_input_parameters(parameters)
 
     # Set the maximum number of steps
     max_number_steps = 0
@@ -175,26 +171,6 @@ def generate_input_file(
         + restart_block["final"]
     )
     return input_file
-
-
-def validate_input_parameters(parameters: dict = None):
-    """
-    Validate the input parameters and compares them against a schema.
-
-    Takes the input parameters dictionaries that will be used to generate the
-    LAMMPS input parameter and will be checked against a schema for validation.
-
-    :param parameters: dictionary with the input parameters, defaults to None
-    :type parameters: dict, optional
-    """
-
-    _file = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)),
-        "..",
-        "validation/schemas/lammps_schema.json",
-    )
-
-    validate_against_schema(data=parameters, filename=_file)
 
 
 def write_control_block(parameters_control: dict) -> str:
@@ -405,6 +381,11 @@ def write_md_block(parameters_md: dict) -> str:
         style=parameters_md["integration"].get("style", "nve"),
         integration_parameters=parameters_md["integration"].get("constraints"),
     )
+    time_step = (
+        join_keywords(parameters_md["reset_timestep"])
+        if "reset_timestep" in parameters_md
+        else 0
+    )
 
     md_block = generate_header("Start of the MD information")
     _key = parameters_md["integration"].get("style", "nve")
@@ -413,10 +394,10 @@ def write_md_block(parameters_md: dict) -> str:
         md_block += (
             f'{generate_velocity_string(parameters_velocity=parameters_md["velocity"])}'
         )
-    md_block += "reset_timestep 0\n"
-    if parameters_md.get("run_style", "verlet") == "rspa":
+    md_block += f"reset_timestep {time_step}\n"
+    if parameters_md.get("run_style", "verlet") == "respa":
         md_block += f'run_style {parameters_md.get("run_style", "verlet")} '
-        md_block += f'{join_keywords(parameters_md["rspa_options"])}\n'
+        md_block += f'{join_keywords(parameters_md["respa_options"])}\n'
     else:
         md_block += f'run_style {parameters_md.get("run_style", "verlet")}\n'
     md_block += f'run {parameters_md.get("max_number_steps", 100)}\n'

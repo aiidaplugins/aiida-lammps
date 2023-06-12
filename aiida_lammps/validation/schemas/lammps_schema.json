@@ -558,6 +558,9 @@
                     "required": [
                         "style"
                     ]
+                },
+                "reset_timestep": {
+                    "type": "array"
                 }
             }
         },

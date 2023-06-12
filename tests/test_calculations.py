@@ -1,55 +1,90 @@
 """Test the aiida-lammps calculations."""
 import copy
-import io
-import textwrap
 
 from aiida import orm
 from aiida.common import AttributeDict
 from aiida.engine import run_get_node
 from aiida.plugins import CalculationFactory
+import jsonschema.exceptions
 import numpy as np
 import pytest
 
-from aiida_lammps.fixtures.calculations import (
-    md_parameters_npt,
-    md_parameters_nve,
-    md_parameters_nvt,
-    md_reference_data_npt,
-    md_reference_data_nve,
-    md_reference_data_nvt,
-    minimize_groups_reference_data,
-    minimize_parameters,
-    minimize_parameters_groups,
-    minimize_reference_data,
-)
-from aiida_lammps.fixtures.data import generate_structure, get_potential_fe_eam
-from aiida_lammps.fixtures.inputs import (
-    parameters_restart_final,
-    parameters_restart_full,
-    parameters_restart_full_no_storage,
-    parameters_restart_intermediate,
-)
 from . import utils as tests
+
+
+def test_restart_conflict_error(
+    parameters_minimize,
+    generate_calc_job,
+    aiida_local_code_factory,
+    get_potential_fe_eam,
+    generate_structure,
+):
+    """Test the behaviour when one requests the storage of the restart without printing it"""
+
+    parameters = parameters_minimize
+    del parameters["restart"]
+
+    inputs = {
+        "code": aiida_local_code_factory("lammps.base", "bash"),
+        "structure": generate_structure,
+        "potential": get_potential_fe_eam,
+        "parameters": orm.Dict(parameters),
+        "metadata": {"options": {"resources": {"num_machines": 1}}},
+        "settings": orm.Dict(dict={"store_restart": True}),
+    }
+
+    with pytest.raises(
+        ValueError,
+        match=r"To store the restartfile one needs to indicate that either the final or intermediate restartfiles must be printed",
+    ):
+        generate_calc_job("lammps.base", inputs)
+
+
+def test_parameters_conflict_error(
+    parameters_minimize,
+    parameters_md_npt,
+    generate_calc_job,
+    aiida_local_code_factory,
+    get_potential_fe_eam,
+    generate_structure,
+):
+    """Test the behaviour when conflicting runs are given to the calculation"""
+    parameters = parameters_minimize
+    parameters["md"] = parameters_md_npt["md"]
+
+    inputs = {
+        "code": aiida_local_code_factory("lammps.base", "bash"),
+        "structure": generate_structure,
+        "potential": get_potential_fe_eam,
+        "parameters": orm.Dict(parameters),
+        "metadata": {"options": {"resources": {"num_machines": 1}}},
+    }
+
+    with pytest.raises(
+        jsonschema.exceptions.ValidationError,
+    ):
+        generate_calc_job("lammps.base", inputs)
 
 
 @pytest.mark.lammps_call
 @pytest.mark.parametrize(
-    "parameters,reference_data",
+    "parameters",
     [
-        ("minimize_parameters", "minimize_reference_data"),
-        ("minimize_parameters_groups", "minimize_groups_reference_data"),
-        ("md_parameters_nve", "md_reference_data_nve"),
-        ("md_parameters_nvt", "md_reference_data_nvt"),
-        ("md_parameters_npt", "md_reference_data_npt"),
+        ("parameters_minimize"),
+        ("parameters_minimize_groups"),
+        ("parameters_md_nve"),
+        ("parameters_md_nvt"),
+        ("parameters_md_npt"),
     ],
 )
 def test_lammps_base(
     db_test_app,
-    generate_structure,  # pylint: disable=redefined-outer-name  # noqa: F811
-    get_potential_fe_eam,  # pylint: disable=redefined-outer-name  # noqa: F811
+    generate_structure,
+    get_potential_fe_eam,
     parameters,
-    reference_data,
     request,
+    data_regression,
+    ndarrays_regression,
 ):
     """
     Set of tests for the lammps.base calculation
@@ -78,63 +113,52 @@ def test_lammps_base(
 
     assert "results" in results, 'the "results" node not present'
 
-    reference_data = request.getfixturevalue(reference_data)
+    _results = results["results"].get_dict()
+    if (
+        "compute_variables" in _results
+        and "steps_per_second" in _results["compute_variables"]
+    ):
+        del _results["compute_variables"]["steps_per_second"]
 
-    for key, value in reference_data.results.items():
-        _msg = f'key "{key}" not present'
-        assert key in results["results"], _msg
-        _msg = f'value for "{key}" does not match'
-        _results = results["results"].get_dict()
-        if isinstance(_results[key], (int, float)):
-            assert np.isclose(
-                value,
-                _results[key],
-                rtol=1e-03,
-            ), _msg
-        if isinstance(_results[key], dict):
-            for sub_key, sub_value in reference_data.results[key].items():
-                assert sub_key in _results[key], f'key "{sub_key}" not present'
-                if sub_key != "steps_per_second":
-                    assert (
-                        sub_value == _results[key][sub_key]
-                    ), f'value for key "{sub_key}" doe not match'
+    # Removing the line of code that produces the warning as it changes with the lammps version
+    if "compute_variables" in _results and "warnings" in _results["compute_variables"]:
+        for index, entry in enumerate(_results["compute_variables"]["warnings"]):
+            _results["compute_variables"]["warnings"][index] = (
+                entry.split("(src")[0].strip() if "(src" in entry else entry
+            )
+
+    assert "trajectories" in results, 'the "trajectories" node is not present'
+
+    _trajectories_steps = {
+        key: results["trajectories"].get_step_data(key).atom_fields
+        for key in range(len(results["trajectories"].time_steps))
+    }
+
+    data_regression.check(
+        tests.recursive_round(
+            {
+                "results": _results,
+                "trajectories_attributes": results["trajectories"].base.attributes.all,
+                "trajectories_steps": _trajectories_steps,
+            },
+            2,
+            apply_lists=True,
+        )
+    )
 
     assert (
         "time_dependent_computes" in results
     ), 'the "time_dependent_computes" node is not present'
 
-    _msg = "No time dependet computes obtained even when expected"
+    _msg = "No time dependent computes obtained even when expected"
     assert len(results["time_dependent_computes"].get_arraynames()) > 0, _msg
 
-    for key, value in reference_data.time_dependent_computes.items():
-        _msg = f'key "{key}" not present'
-        assert key in results["time_dependent_computes"].get_arraynames(), _msg
-        _msg = f'arrays for "{key}" do not match'
-        assert np.allclose(
-            value,
-            results["time_dependent_computes"].get_array(key),
-            rtol=1e-02,
-        ), _msg
+    _time_dependent_computes = {
+        key: results["time_dependent_computes"].get_array(key)
+        for key in results["time_dependent_computes"].get_arraynames()
+    }
 
-    assert "trajectories" in results, 'the "trajectories" node is not present'
-    _attributes = results["trajectories"].base.attributes.all
-    for key, value in reference_data.trajectories["attributes"].items():
-        assert key in _attributes, f'the key "{key}" is not present'
-        assert value == _attributes[key], f'the values for "{key}" do not match'
-    for key, value in reference_data.trajectories["step_data"].items():
-        _step_data = results["trajectories"].get_step_data(key).atom_fields
-        for sub_key, sub_value in value.items():
-            _msg = f'key "{sub_key}" not present'
-            assert sub_key in _step_data, _msg
-            _msg = f'data for key "{key}" does not match'
-            if sub_key != "element":
-                assert np.allclose(
-                    np.asarray(sub_value, dtype=float),
-                    np.asarray(_step_data[sub_key], dtype=float),
-                    rtol=1e-02,
-                ), _msg
-            else:
-                assert sub_value == _step_data[sub_key], _msg
+    ndarrays_regression.check(_time_dependent_computes)
 
 
 @pytest.mark.lammps_call
@@ -142,19 +166,19 @@ def test_lammps_base(
     "parameters,restart_parameters",
     [
         (
-            "md_parameters_npt",
+            "parameters_md_npt",
             "parameters_restart_full",
         ),
         (
-            "md_parameters_npt",
+            "parameters_md_npt",
             "parameters_restart_full_no_storage",
         ),
         (
-            "md_parameters_npt",
+            "parameters_md_npt",
             "parameters_restart_final",
         ),
         (
-            "md_parameters_npt",
+            "parameters_md_npt",
             "parameters_restart_intermediate",
         ),
     ],
@@ -236,8 +260,8 @@ def test_lammps_restart_generation(
         )
         assert len(restartfiles) > 0, _msg
 
-    # Remove the velocity if pressent so that the simulation is not shaken at the start. This allows
-    # for comparizon between parameters from initial and final steps
+    # Remove the velocity if present so that the simulation is not shaken at the start. This allows
+    # for comparison between parameters from initial and final steps
     _parameters = copy.deepcopy(parameters)
     if "velocity" in _parameters["md"]:
         del _parameters["md"]["velocity"]
@@ -311,7 +335,7 @@ def test_lammps_base_settings_invalid(generate_calc_job, aiida_local_code_factor
 def test_lammps_base_settings(
     generate_calc_job,
     aiida_local_code_factory,
-    minimize_parameters,
+    parameters_minimize,
     get_potential_fe_eam,
     generate_structure,
 ):
@@ -319,7 +343,7 @@ def test_lammps_base_settings(
 
     inputs = {
         "code": aiida_local_code_factory("lammps.base", "bash"),
-        "parameters": orm.Dict(minimize_parameters),
+        "parameters": orm.Dict(parameters_minimize),
         "potential": get_potential_fe_eam,
         "structure": generate_structure,
         "settings": orm.Dict({"additional_cmdline_params": ["--option", "value"]}),

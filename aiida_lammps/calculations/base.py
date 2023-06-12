@@ -7,15 +7,17 @@ is generated depending on the parameters provided, the type of potential,
 the input structure and whether or not a restart file is provided.
 """
 import os
+from typing import Union
 
 from aiida import orm
-from aiida.common import datastructures, exceptions
+from aiida.common import datastructures
 from aiida.engine import CalcJob
 
 from aiida_lammps.data.potential import LammpsPotentialData
 from aiida_lammps.data.trajectory import LammpsTrajectory
 from aiida_lammps.parsers.inputfile import generate_input_file
 from aiida_lammps.parsers.utils import generate_lammps_structure
+from aiida_lammps.validation.utils import validate_against_schema
 
 
 class LammpsBaseCalculation(CalcJob):
@@ -28,17 +30,18 @@ class LammpsBaseCalculation(CalcJob):
     the input structure and whether or not a restart file is provided.
     """
 
-    _INPUT_FILENAME = "input.in"
-    _STRUCTURE_FILENAME = "structure.dat"
+    _DEFAULT_VARIABLES = {
+        "input_filename": "input.in",
+        "structure_filename": "structure.dat",
+        "output_filename": "lammps.out",
+        "logfile_filename": "log.lammps",
+        "variables_filename": "aiida_lammps.yaml",
+        "trajectory_filename": "aiida_lammps.trajectory.dump",
+        "restart_filename": "lammps.restart",
+        "parser_name": "lammps.base",
+    }
 
-    _DEFAULT_OUTPUT_FILENAME = "lammps.out"
-    _DEFAULT_TRAJECTORY_FILENAME = "aiida_lammps.trajectory.dump"
-    _DEFAULT_VARIABLES_FILENAME = "aiida_lammps.yaml"
-    _DEFAULT_RESTART_FILENAME = "lammps.restart"
-    _DEFAULT_POTENTIAL_FILENAME = "potential.dat"
-    _DEFAULT_READ_RESTART_FILENAME = "aiida_lammps.restart"
-
-    _DEFAULT_PARSER = "lammps.base"
+    _POTENTIAL_FILENAME = "potential.dat"
 
     # In restarts, will not copy but use symlinks
     _default_symlink_usage = True
@@ -62,6 +65,7 @@ class LammpsBaseCalculation(CalcJob):
             "parameters",
             valid_type=orm.Dict,
             required=False,
+            validator=cls.validate_parameters,
             help="Parameters that control the input script generated for the ``LAMMPS`` calculation",
         )
         spec.input(
@@ -86,34 +90,39 @@ class LammpsBaseCalculation(CalcJob):
         spec.input(
             "metadata.options.input_filename",
             valid_type=str,
-            default=cls._INPUT_FILENAME,
+            default=cls._DEFAULT_VARIABLES["input_filename"],
         )
         spec.input(
             "metadata.options.structure_filename",
             valid_type=str,
-            default=cls._STRUCTURE_FILENAME,
+            default=cls._DEFAULT_VARIABLES["structure_filename"],
         )
         spec.input(
             "metadata.options.output_filename",
             valid_type=str,
-            default=cls._DEFAULT_OUTPUT_FILENAME,
+            default=cls._DEFAULT_VARIABLES["output_filename"],
         )
         spec.input(
             "metadata.options.variables_filename",
             valid_type=str,
-            default=cls._DEFAULT_VARIABLES_FILENAME,
+            default=cls._DEFAULT_VARIABLES["variables_filename"],
         )
         spec.input(
             "metadata.options.trajectory_filename",
             valid_type=str,
-            default=cls._DEFAULT_TRAJECTORY_FILENAME,
+            default=cls._DEFAULT_VARIABLES["trajectory_filename"],
         )
         spec.input(
             "metadata.options.restart_filename",
             valid_type=str,
-            default=cls._DEFAULT_RESTART_FILENAME,
+            default=cls._DEFAULT_VARIABLES["restart_filename"],
         )
-        spec.inputs["metadata"]["options"]["parser_name"].default = cls._DEFAULT_PARSER
+        spec.input(
+            "metadata.options.parser_name",
+            valid_type=str,
+            default=cls._DEFAULT_VARIABLES["parser_name"],
+        )
+        spec.inputs.validator = cls.validate_inputs
 
         spec.output(
             "results",
@@ -146,48 +155,68 @@ class LammpsBaseCalculation(CalcJob):
             help="The output structure.",
         )
         spec.exit_code(
-            350,
+            301,
             "ERROR_NO_RETRIEVED_FOLDER",
             message="the retrieved folder data node could not be accessed.",
             invalidates_cache=True,
         )
         spec.exit_code(
-            351,
-            "ERROR_OUTFILE_MISSING",
-            message="the file with the lammps output was not found",
+            302,
+            "ERROR_STDOUT_FILE_MISSING",
+            message="the stdout output file was not found",
+        )
+        spec.exit_code(
+            303,
+            "ERROR_STDERR_FILE_MISSING",
+            message="the stderr output file was not found",
+        )
+        spec.exit_code(
+            304,
+            "ERROR_OUTPUT_FILE_MISSING",
+            message="the output file is missing, it is possible that LAMMPS never ran",
+        )
+        spec.exit_code(
+            305,
+            "ERROR_LOG_FILE_MISSING",
+            message="the file with the lammps log was not found",
             invalidates_cache=True,
         )
         spec.exit_code(
-            352,
+            306,
             "ERROR_FINAL_VARIABLE_FILE_MISSING",
             message="the file with the final variables was not found",
             invalidates_cache=True,
         )
         spec.exit_code(
-            353,
+            307,
             "ERROR_TRAJECTORY_FILE_MISSING",
             message="the file with the trajectories was not found",
             invalidates_cache=True,
         )
         spec.exit_code(
-            354,
-            "ERROR_STDOUT_FILE_MISSING",
-            message="the stdout output file was not found",
-        )
-        spec.exit_code(
-            355,
-            "ERROR_STDERR_FILE_MISSING",
-            message="the stderr output file was not found",
-        )
-        spec.exit_code(
-            356,
+            308,
             "ERROR_RESTART_FILE_MISSING",
             message="the file with the restart information was not found",
         )
         spec.exit_code(
-            357,
-            "ERROR_CALCULATION_DID_NOT_FINISH",
-            message="The calculation did not finish properly but an intermediate restartfile was found",
+            309,
+            "ERROR_PARSER_DETECTED_LAMMPS_RUN_ERROR",
+            message="The parser detected the lampps error :{error}",
+        )
+        spec.exit_code(
+            400,
+            "ERROR_OUT_OF_WALLTIME",
+            message="The calculation stopped prematurely because it ran out of walltime.",
+        )
+        spec.exit_code(
+            401,
+            "ERROR_ENERGY_NOT_CONVERGED",
+            message="The energy tolerance was not reached at minimization.",
+        )
+        spec.exit_code(
+            402,
+            "ERROR_FORCE_NOT_CONVERGED",
+            message="The force tolerance was not reached at minimization.",
         )
         spec.exit_code(
             1001,
@@ -201,7 +230,29 @@ class LammpsBaseCalculation(CalcJob):
         )
 
     @classmethod
-    def validate_settings(cls, value, ctx):
+    def validate_inputs(cls, value, ctx) -> Union[str, None]:
+        """Validate the top-level inputs namespace."""
+        if "parameters" in value:
+
+            _restart = any(
+                value["parameters"].get_dict().get("restart", {}).get(key, False)
+                for key in ["print_final", "print_intermediate"]
+            )
+            if "settings" in value:
+                _store_restart = (
+                    value["settings"].get_dict().get("store_restart", False)
+                )
+            else:
+                _store_restart = False
+
+            if _store_restart and not _restart:
+                return (
+                    "To store the restartfile one needs to indicate "
+                    "that either the final or intermediate restartfiles must be printed"
+                )
+
+    @classmethod
+    def validate_settings(cls, value, ctx) -> Union[str, None]:
         """Validate the ``settings`` input."""
         if not value:
             return
@@ -216,6 +267,30 @@ class LammpsBaseCalculation(CalcJob):
                 "Invalid value for `additional_cmdline_params`, should be "
                 f"list of strings but got: {additional_cmdline_params}"
             )
+
+    @classmethod
+    def validate_parameters(cls, value, ctx) -> Union[str, None]:
+        """
+        Validate the input parameters and compares them against a schema.
+
+        Takes the input parameters dictionaries that will be used to generate the
+        LAMMPS input parameter and will be checked against a schema for validation.
+        """
+
+        parameters = value.get_dict()
+        if not any(key in parameters for key in ["md", "minimize"]):
+            return (
+                "If not using a script the type of calculation, either "
+                "'md' or 'minimize' must be given"
+            )
+
+        _file = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            "..",
+            "validation/schemas/lammps_schema.json",
+        )
+
+        validate_against_schema(data=parameters, filename=_file)
 
     def prepare_for_submission(self, folder):
         """
@@ -285,7 +360,7 @@ class LammpsBaseCalculation(CalcJob):
             handle.write(structure_filecontent)
 
         # Write the potential to the remote folder
-        with folder.open(self._DEFAULT_POTENTIAL_FILENAME, "w") as handle:
+        with folder.open(self._POTENTIAL_FILENAME, "w") as handle:
             handle.write(self.inputs.potential.get_content())
 
         # Write the input file content. This function will also check the
@@ -360,12 +435,12 @@ class LammpsBaseCalculation(CalcJob):
         # If there is a restartfile set its name to the input variables and
         # write it in the remote folder
         if "input_restartfile" in self.inputs:
-            _read_restart_filename = self._DEFAULT_READ_RESTART_FILENAME
+            _read_restart_filename = self.inputs.metadata.options.restart_filename
             local_copy_list.append(
                 (
                     self.inputs.input_restartfile.uuid,
                     self.inputs.input_restartfile.filename,
-                    self._DEFAULT_READ_RESTART_FILENAME,
+                    self.inputs.metadata.options.restart_filename,
                 )
             )
         else:
@@ -380,14 +455,8 @@ class LammpsBaseCalculation(CalcJob):
             # Setting the name here will mean that if the input file is generated from the parameters
             # that this name will be used
             _read_restart_filename = settings.pop(
-                "previous_restartfile", self._DEFAULT_RESTART_FILENAME
+                "previous_restartfile", self.inputs.metadata.options.restart_filename
             )
-
-            if not _read_restart_filename in self.inputs.parent_folder.listdir():
-                raise exceptions.InputValidationError(
-                    f'The name "{_read_restart_filename}" for the restartfile is not present in the '
-                    f'remote folder "{self.input.parent_folder.uuid}"'
-                )
 
             if symlink:
                 # Symlink the old restart file to the new one in the current directory

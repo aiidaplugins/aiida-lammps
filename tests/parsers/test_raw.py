@@ -3,9 +3,13 @@
 from aiida.plugins import ParserFactory
 
 
-def test_default(generate_calc_job_node, data_regression):
+def test_default(generate_calc_job_node, data_regression, fixture_localhost):
     """Test parsing a default output case."""
-    node = generate_calc_job_node("lammps.raw", "default")
+    node = generate_calc_job_node(
+        computer=fixture_localhost,
+        entry_point_name="lammps.raw",
+        test_name="parsers/fixtures/raw/default",
+    )
     parser = ParserFactory("lammps.raw")
     results, calcfunction = parser.parse_from_node(node, store_provenance=False)
 
@@ -14,9 +18,13 @@ def test_default(generate_calc_job_node, data_regression):
     data_regression.check({"results": results["results"].get_dict()})
 
 
-def test_alt_timing_info(generate_calc_job_node, data_regression):
+def test_alt_timing_info(generate_calc_job_node, data_regression, fixture_localhost):
     """Test parsing an alt output case."""
-    node = generate_calc_job_node("lammps.raw", "alt")
+    node = generate_calc_job_node(
+        computer=fixture_localhost,
+        entry_point_name="lammps.raw",
+        test_name="parsers/fixtures/raw/alt",
+    )
     parser = ParserFactory("lammps.raw")
     results, calcfunction = parser.parse_from_node(node, store_provenance=False)
 
