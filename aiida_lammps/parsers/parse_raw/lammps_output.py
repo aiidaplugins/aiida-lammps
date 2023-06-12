@@ -41,9 +41,6 @@ def parse_outputfile(
     if file_contents is not None:
         data = file_contents.split("\n")
 
-    for index, line in enumerate(data):
-        line = line.strip()
-
     header_line_position = -1
     header_line = ""
     _data = []
