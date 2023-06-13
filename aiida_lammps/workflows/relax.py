@@ -305,13 +305,13 @@ class LammpsRelaxWorkChain(WorkChain):
         # If the user has passed information about the fix box/relax remove them
         if (
             "fix" in self.ctx.inputs.lammps.parameters
-            and "box/relax" in self.ctx.inputs.lampps.parameters["fix"]
+            and "box/relax" in self.ctx.inputs.lammps.parameters["fix"]
         ):
             self.logger.warning(
                 "Overriding 'fix box/relax' in the ``parameters`` with the values "
                 "used in the inputs"
             )
-            del self.ctx.inputs.lampps.parameters["fix"]["box/relax"]
+            del self.ctx.inputs.lammps.parameters["fix"]["box/relax"]
 
         # Check if the volume is allowed to change, then apply the fix box/relax
         # This is only called if the volume is allowed to change, since one cannot vary only the

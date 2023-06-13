@@ -1,4 +1,5 @@
 """Tests for the workflows in aiida-lammps"""
+#pylint: disable=redefined-outer-name
 from aiida import orm
 from aiida.common import AttributeDict, LinkType
 from aiida.engine import ProcessHandlerReport
@@ -60,6 +61,35 @@ def generate_workchain_base(
     return _generate_workchain_base
 
 
+@pytest.fixture
+def generate_workchain_relax(generate_workchain, generate_inputs_minimize,):
+    """Generate a LammpsRelaxWorkChain node"""
+    def _generate_workchain_relax(
+        exit_code=None,
+        inputs=None,
+        return_inputs=False,
+        lammps_base_outputs=None,
+    ):
+
+        entry_point = "lammps.relax"
+
+        if inputs is None:
+
+            _inputs = generate_inputs_minimize()
+            _parameters = _inputs["parameters"].get_dict()
+
+            del _parameters['minimize']
+            _inputs["parameters"] = orm.Dict(_parameters)
+
+            inputs = {"lammps": _inputs}
+
+        process = generate_workchain(entry_point, inputs)
+
+        return process
+
+    return _generate_workchain_relax
+
+
 def test_setup(generate_workchain_base):
     """Test `LammpsBaseWorkChain.setup`."""
     process = generate_workchain_base()
@@ -94,7 +124,6 @@ def test_handle_out_of_walltime(
     generate_workchain_base,
     fixture_localhost,
     generate_remote_data,
-    generate_lammps_results,
 ):
     """Test `LammpsBaseWorkChain.handle_out_of_walltime`."""
     remote_data = generate_remote_data(computer=fixture_localhost, remote_path="/tmp")
@@ -206,3 +235,12 @@ def test_handle_minimization_not_converged_from_trajectrory(
 
     result = process.inspect_process()
     assert result.status == 0
+
+
+def test_setup_relax(generate_workchain_relax):
+    """Test `LammpsRelaxWorkChain.setup`."""
+    process = generate_workchain_relax()
+    process.setup()
+
+    assert isinstance(process.ctx.inputs, AttributeDict)
+    assert "box/relax" not in process.ctx.inputs.lammps.parameters["fix"]
