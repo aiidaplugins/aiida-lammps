@@ -236,10 +236,6 @@ class LammpsRelaxWorkChain(WorkChain):
 
     def setup(self):
         """Setting up the context for the calculation"""
-        print("IN SETUP")
-
-        print(self.inputs)
-
         self.ctx.inputs = AttributeDict(
             self.exposed_inputs(LammpsBaseWorkChain, namespace="lammps")
         )
@@ -325,9 +321,8 @@ class LammpsRelaxWorkChain(WorkChain):
         inputs = self.ctx.inputs
         inputs.lammps.parameters = orm.Dict(inputs.lammps.parameters)
 
-        print("BEFORE SUBMISSION")
-
         workchain = self.submit(LammpsBaseWorkChain, **inputs)
+        self.report(f'Launching LammpsBaseWorkChain<{workchain.pk}>')
         return ToContext(workchains=append_(workchain))
 
     def results(self):
