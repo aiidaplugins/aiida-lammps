@@ -148,7 +148,8 @@ class LammpsRelaxWorkChain(WorkChain):
 
         parameters = value.get_dict()
         if not any(key in parameters for key in ["md", "minimize"]):
-            # Set a dummy value just so that the validation passes, the real parameters will be filled later
+            # Set a dummy value just so that the validation passes, the real parameters will
+            # be filled later
             parameters["minimize"] = {}
 
         _file = os.path.join(
@@ -266,22 +267,19 @@ class LammpsRelaxWorkChain(WorkChain):
         # This is only called if the volume is allowed to change, since one cannot vary only the
         # shape without varying the volume
         if self.inputs.relax.volume.value:
-            self.ctx.inputs.lammps.parameters.update(
-                {"fix": {"box/relax": self.generate_fix_box_relax()}}
-            )
+            self._update_fix_parameters("box/relax", self._generate_fix_box_relax())
 
         if not self.inputs.relax.positions.value:
-            self.ctx.inputs.lammps.parameters.update(
-                {"fix": {"setforce": [{"group": "all", "type": [0.0, 0.0, 0.0]}]}}
-            )
+            self._update_fix_parameters("setforce", [{"group": "all", "type": [0.0, 0.0, 0.0]}])
+
         if "minimize" in self.ctx.inputs.lammps.parameters:
             self.logger.warning(
                 "Entry for 'minimize' was found in the ``parameters`` overiding with the values in the inputs"
             )
 
-        self.ctx.inputs.lammps.parameters["minimize"] = self.generate_minimize_block()
+        self.ctx.inputs.lammps.parameters["minimize"] = self._generate_minimize_block()
 
-    def generate_minimize_block(self) -> AttributeDict:
+    def _generate_minimize_block(self) -> AttributeDict:
         """Generate the minimization block for the parameters"""
         minimize = AttributeDict()
         minimize.style = self.inputs.relax.algo.value
@@ -292,7 +290,7 @@ class LammpsRelaxWorkChain(WorkChain):
 
         return minimize
 
-    def generate_fix_box_relax(self) -> list:
+    def _generate_fix_box_relax(self) -> list:
         """Generate the parameters needed for the fix box/relax depending on the inputs given.
 
         :return: list with the information about fix the box/relax
@@ -318,6 +316,19 @@ class LammpsRelaxWorkChain(WorkChain):
             _box_fix_dict["type"].append("nreset")
             _box_fix_dict["type"].append(self.inputs.relax.nreset.value)
         return [_box_fix_dict]
+
+    def _update_fix_parameters(self, key:str, value:list):
+        """Update the fix dictionary to take into account the cases in which it might not exits
+
+        :param key: type of fix to be added
+        :type key: str
+        :param value: list containing the fix parameters
+        :type value: list
+        """
+        if 'fix' not in self.ctx.inputs.lammps.parameters:
+            self.ctx.inputs.lammps.parameters["fix"] = {}
+        self.ctx.inputs.lammps.parameters["fix"][key] = value
+
 
     def run_relax(self):
         """Run the `LammpsBaseWorkChain` fo run a relax `LammpsBaseCalculation`"""
