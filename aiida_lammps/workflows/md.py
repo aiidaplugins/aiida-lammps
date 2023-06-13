@@ -114,10 +114,10 @@ class LammpsMDWorkChain(WorkChain):
                 {"respa_options": value["md"]["respa_options"].get_list()}
             )
 
-        if not any(key in parameters for key in ["md", "minimize"]):
+        if "minimize" in parameters:
             # Set a dummy value just so that the validation passes, the real parameters will
             # be filled later
-            parameters["md"] = {}
+            del parameters["minimize"]
 
         _file = os.path.join(
             os.path.dirname(os.path.abspath(__file__)),
