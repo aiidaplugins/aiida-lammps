@@ -5,7 +5,8 @@ from typing import Union
 
 from aiida import orm
 from aiida.common import AttributeDict
-from aiida.engine import ToContext, WorkChain, append_
+from aiida.common.exceptions import NotExistent
+from aiida.engine import ToContext, WorkChain, append_, while_
 
 from aiida_lammps.validation.utils import validate_against_schema
 from aiida_lammps.workflows.base import LammpsBaseWorkChain
@@ -127,13 +128,45 @@ class LammpsRelaxWorkChain(WorkChain):
             Reset the reference cell every this many minimizer iterations
             """,
         )
+        spec.input(
+            'relax.meta_convergence',
+            valid_type=orm.Bool,
+            default=lambda: orm.Bool(True),
+            help="""
+            If `True` the workchain will perform a meta-convergence on the cell volume.
+            """
+        )
+        spec.input(
+            'relax.max_meta_convergence_iterations',
+            valid_type=orm.Int,
+            default=lambda: orm.Int(5),
+            help="""
+            The maximum number of variable cell relax iterations in the meta convergence cycle.
+            """
+        )
+        spec.input(
+            'relax.volume_convergence',
+            valid_type=orm.Float,
+            default=lambda: orm.Float(0.01),
+            help="""
+            The volume difference threshold between two consecutive meta convergence iterations.
+            """
+        )
         spec.inputs.validator = cls.validate_inputs
         spec.outline(
             cls.setup,
-            cls.run_relax,
+            while_(cls.should_run_relax)(
+                cls.run_relax,
+                cls.inspect_relax,
+            ),
             cls.results,
         )
         spec.expose_outputs(LammpsBaseWorkChain)
+        spec.exit_code(
+            403,
+            'ERROR_SUB_PROCESS_FAILED',
+            message="The underlying LammpsBaseWorkChain failed",
+        )
         # yapf: enable
 
     @classmethod
@@ -246,6 +279,18 @@ class LammpsRelaxWorkChain(WorkChain):
 
         self.ctx.inputs.lammps.parameters = self.inputs.lammps.parameters.get_dict()
 
+        self.ctx.current_structure = self.inputs.lammps.structure
+        self.ctx.current_cell_volume = None
+        self.ctx.iteration = 0
+        self.ctx.is_converged = False
+        self.ctx.meta_convergence = self.inputs.relax.meta_convergence.value
+
+        if self.ctx.meta_convergence and not self.inputs.relax.volume.value:
+            self.report(
+                "The volume of the cell cannot change. Turning the meta convvergence off"
+            )
+            self.ctx.meta_convergence = False
+
         # Remove any entry referring to possible molecular dynamics parameters
         if "md" in self.ctx.inputs.lammps.parameters:
             self.logger.warning(
@@ -259,7 +304,8 @@ class LammpsRelaxWorkChain(WorkChain):
             and "box/relax" in self.ctx.inputs.lampps.parameters["fix"]
         ):
             self.logger.warning(
-                "Overriding 'fix box/relax' in the ``parameters`` with the values used in the inputs"
+                "Overriding 'fix box/relax' in the ``parameters`` with the values "
+                "used in the inputs"
             )
             del self.ctx.inputs.lampps.parameters["fix"]["box/relax"]
 
@@ -270,11 +316,14 @@ class LammpsRelaxWorkChain(WorkChain):
             self._update_fix_parameters("box/relax", self._generate_fix_box_relax())
 
         if not self.inputs.relax.positions.value:
-            self._update_fix_parameters("setforce", [{"group": "all", "type": [0.0, 0.0, 0.0]}])
+            self._update_fix_parameters(
+                "setforce", [{"group": "all", "type": [0.0, 0.0, 0.0]}]
+            )
 
         if "minimize" in self.ctx.inputs.lammps.parameters:
             self.logger.warning(
-                "Entry for 'minimize' was found in the ``parameters`` overiding with the values in the inputs"
+                "Entry for 'minimize' was found in the ``parameters`` "
+                "overiding with the values in the inputs"
             )
 
         self.ctx.inputs.lammps.parameters["minimize"] = self._generate_minimize_block()
@@ -317,7 +366,7 @@ class LammpsRelaxWorkChain(WorkChain):
             _box_fix_dict["type"].append(self.inputs.relax.nreset.value)
         return [_box_fix_dict]
 
-    def _update_fix_parameters(self, key:str, value:list):
+    def _update_fix_parameters(self, key: str, value: list):
         """Update the fix dictionary to take into account the cases in which it might not exits
 
         :param key: type of fix to be added
@@ -325,22 +374,104 @@ class LammpsRelaxWorkChain(WorkChain):
         :param value: list containing the fix parameters
         :type value: list
         """
-        if 'fix' not in self.ctx.inputs.lammps.parameters:
+        if "fix" not in self.ctx.inputs.lammps.parameters:
             self.ctx.inputs.lammps.parameters["fix"] = {}
         self.ctx.inputs.lammps.parameters["fix"][key] = value
 
+    def should_run_relax(self):
+        """Return whether a relaxation workchain should be run"""
+        return (
+            not self.ctx.is_converged
+            and self.ctx.iteration < self.inputs.relax.max_meta_convergence_iterations.value
+        )
 
     def run_relax(self):
         """Run the `LammpsBaseWorkChain` fo run a relax `LammpsBaseCalculation`"""
+        self.ctx.iteration += 1
         inputs = self.ctx.inputs
+        inputs.lammps.structure = self.ctx.current_structure
         inputs.lammps.parameters = orm.Dict(inputs.lammps.parameters)
+
+        inputs.lammps.metadata.call_link_label = f"iteration_{self.ctx.iteration:02d}"
 
         workchain = self.submit(LammpsBaseWorkChain, **inputs)
         self.report(f"Launching LammpsBaseWorkChain<{workchain.pk}>")
         return ToContext(workchains=append_(workchain))
 
+    def inspect_relax(self):
+        """Check the current state of the relaxation"""
+        workchain = self.ctx.workchains[-1]
+
+        if workchain.is_excepted or workchain.is_killed:
+            self.report(
+                f"The underlying LammpsBaseWorkChain<{workchain.pk}> was excepted or killed"
+            )
+            return self.exit_codes.ERROR_SUB_PROCESS_FAILED  # pylint: disable=no-member
+
+        if workchain.is_failed:
+            self.report(
+                f"The underlying LammpsBaseWorkChain<{workchain.pk}> failed with "
+                f"exit status {workchain.exit_status}"
+            )
+
+        try:
+            structure = workchain.outputs.structure
+        except NotExistent:
+            self.report(
+                f"The underlying LammpsBaseWorkChain<{workchain.pk}> did not produce as structure"
+            )
+            return self.exit_codes.ERROR_SUB_PROCESS_FAILED  # pylint: disable=no-member
+
+        prev_cell_volume = self.ctx.current_cell_volume
+        curr_cell_volume = structure.get_cell_volume()
+
+        self.ctx.current_structure = structure
+
+        self.report(
+            f"After iteration {self.ctx.iteration} the cell volume of the relaxed structure "
+            f"is {curr_cell_volume:.4e}"
+        )
+
+        # After first iteration, simply set the cell volume and restart the next base workchain
+        if not prev_cell_volume:
+            self.ctx.current_cell_volume = curr_cell_volume
+
+            # If meta convergence is switched off we are done
+            if not self.ctx.meta_convergence:
+                self.ctx.is_converged = True
+            return
+
+        volume_tolerance = self.inputs.relax.volume_convergence.value
+        volume_relative_difference = (
+            abs(prev_cell_volume - curr_cell_volume) / prev_cell_volume
+        )
+
+        if volume_relative_difference < volume_tolerance:
+            self.ctx.is_converged = True
+            self.report(
+                f"The relative volume relative difference {volume_relative_difference:.4e} "
+                f"smaller than the tolerance {volume_tolerance:.4e}"
+            )
+        else:
+            self.report(
+                "The current relative cell volume relative difference "
+                f"{volume_relative_difference:.4e} is larger thant the tolerance {volume_tolerance:.4e}"
+            )
+
+        self.ctx.current_cell_colume = curr_cell_volume
+        return
+
     def results(self):
         """Attach the output parameters and structure of the last workchain to the outputs."""
+
+        if (
+            self.ctx.is_converged
+            and self.ctx.iteration
+            <= self.inputs.relax.max_meta_convergence_iterations.value
+        ):
+            self.report(f"Workchain completed after {self.ctx.iteration} iterations")
+        else:
+            self.report("Maximum number of meta convergence iterations exceeded")
 
         final_relax_workchain = self.ctx.workchains[-1]
 
