@@ -205,7 +205,7 @@ class LammpsRelaxWorkChain(WorkChain):
 
         _supported_algorithms = ["cg", "htfn", "sd", "quickmin", "fire"]
 
-        if _algo not in (_supported_algorithms):
+        if _algo not in _supported_algorithms:
             return f"Invalid/unsupported relaxation method, {_algo} not in {_supported_algorithms}"
 
     @classmethod
@@ -233,7 +233,7 @@ class LammpsRelaxWorkChain(WorkChain):
         """Validate the global inputs of the calculation"""
 
         def _all_equal(iterable):
-
+            """Check if all the entries for an iterable are equal"""
             _group = groupby(iterable)
             return next(_group, True) and not next(_group, False)
 
@@ -391,7 +391,7 @@ class LammpsRelaxWorkChain(WorkChain):
         )
 
     def run_relax(self):
-        """Run the `LammpsBaseWorkChain` fo run a relax `LammpsBaseCalculation`"""
+        """Run the `LammpsBaseWorkChain` to run a relax `LammpsBaseCalculation`"""
         self.ctx.iteration += 1
         inputs = self.ctx.inputs
         inputs.lammps.structure = self.ctx.current_structure

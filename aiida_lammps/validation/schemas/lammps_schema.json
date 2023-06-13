@@ -143,7 +143,7 @@
                         "respa"
                     ]
                 },
-                "rspa_options": {
+                "respa_options": {
                     "type": "array"
                 },
                 "max_number_steps": {
