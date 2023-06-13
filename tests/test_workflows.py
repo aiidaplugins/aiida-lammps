@@ -1,5 +1,5 @@
 """Tests for the workflows in aiida-lammps"""
-#pylint: disable=redefined-outer-name
+# pylint: disable=redefined-outer-name
 from aiida import orm
 from aiida.common import AttributeDict, LinkType
 from aiida.engine import ProcessHandlerReport
@@ -62,8 +62,12 @@ def generate_workchain_base(
 
 
 @pytest.fixture
-def generate_workchain_relax(generate_workchain, generate_inputs_minimize,):
+def generate_workchain_relax(
+    generate_workchain,
+    generate_inputs_minimize,
+):
     """Generate a LammpsRelaxWorkChain node"""
+
     def _generate_workchain_relax(
         exit_code=None,
         inputs=None,
@@ -78,7 +82,7 @@ def generate_workchain_relax(generate_workchain, generate_inputs_minimize,):
             _inputs = generate_inputs_minimize()
             _parameters = _inputs["parameters"].get_dict()
 
-            del _parameters['minimize']
+            del _parameters["minimize"]
             _inputs["parameters"] = orm.Dict(_parameters)
 
             inputs = {"lammps": _inputs}
