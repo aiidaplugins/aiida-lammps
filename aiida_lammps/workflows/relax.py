@@ -199,6 +199,9 @@ class LammpsRelaxWorkChain(WorkChain):
             _group = groupby(iterable)
             return next(_group, True) and not next(_group, False)
 
+        if value["relax"]["volume"].value and "target_pressure" not in value["relax"]:
+            return "When relaxing the cell the ``target_pressure`` must be given"
+
         if (
             value["relax"]["volume"].value
             and value["relax"]["shape"].value
@@ -263,14 +266,14 @@ class LammpsRelaxWorkChain(WorkChain):
         # This is only called if the volume is allowed to change, since one cannot vary only the
         # shape without varying the volume
         if self.inputs.relax.volume.value:
-            self.ctx.inputs.lammps.parameters["fix"][
-                "box/relax"
-            ] = self.generate_fix_box_relax()
+            self.ctx.inputs.lammps.parameters.update(
+                {"fix": {"box/relax": self.generate_fix_box_relax()}}
+            )
 
         if not self.inputs.relax.positions.value:
-            self.ctx.inputs.lammps.parameters["fix"]["setforce"] = [
-                {"group": "all", "type": [0.0, 0.0, 0.0]}
-            ]
+            self.ctx.inputs.lammps.parameters.update(
+                {"fix": {"setforce": [{"group": "all", "type": [0.0, 0.0, 0.0]}]}}
+            )
         if "minimize" in self.ctx.inputs.lammps.parameters:
             self.logger.warning(
                 "Entry for 'minimize' was found in the ``parameters`` overiding with the values in the inputs"
@@ -298,12 +301,12 @@ class LammpsRelaxWorkChain(WorkChain):
         _box_fix_dict = {"group": "all", "type": []}
         # If only the volume is relaxed
         if self.inputs.relax.volume.value and not self.inputs.relax.shape.value:
-            _pressure = self.inputs.relax.pressure_target.get_dict().values()[-1]
+            _pressure = list(self.inputs.relax.target_pressure.get_dict().values())[-1]
             _box_fix_dict["type"].append("iso")
             _box_fix_dict["type"].append(_pressure)
         # If volume and shape are relaxed
         if self.inputs.relax.volume.value and self.inputs.relax.shape.value:
-            for key, value in self.inputs.relax.pressure_target.get_dict().items():
+            for key, value in self.inputs.relax.target_pressure.get_dict().items():
                 _box_fix_dict["type"].append(key)
                 _box_fix_dict["type"].append(value)
         # If one wants to restrict how much the volume can change in each iteration
@@ -322,7 +325,7 @@ class LammpsRelaxWorkChain(WorkChain):
         inputs.lammps.parameters = orm.Dict(inputs.lammps.parameters)
 
         workchain = self.submit(LammpsBaseWorkChain, **inputs)
-        self.report(f'Launching LammpsBaseWorkChain<{workchain.pk}>')
+        self.report(f"Launching LammpsBaseWorkChain<{workchain.pk}>")
         return ToContext(workchains=append_(workchain))
 
     def results(self):
