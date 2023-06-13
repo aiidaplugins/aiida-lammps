@@ -25,7 +25,9 @@ class LammpsRelaxWorkChain(WorkChain):
             "lammps.parameters",
             valid_type=orm.Dict,
             validator=cls._validate_parameters,
-            help="Parameters that control the input script generated for the ``LAMMPS`` calculation",
+            help="""
+            Parameters that control the input script generated for the ``LAMMPS`` calculation
+            """,
         )
         spec.input(
             "relax.algo",
@@ -43,7 +45,8 @@ class LammpsRelaxWorkChain(WorkChain):
             valid_type=orm.Bool,
             default=lambda: orm.Bool(False),
             help="""
-            Whether or not relaxation of the volume will be performed by using the ``box/relax`` fix from LAMMPS.
+            Whether or not relaxation of the volume will be performed by using the ``box/relax``
+            fix from LAMMPS.
             """,
         )
         spec.input(
@@ -52,7 +55,8 @@ class LammpsRelaxWorkChain(WorkChain):
             valid_type=orm.Bool,
             default=lambda: orm.Bool(False),
             help="""
-            Whether or not the shape of the cell will be relaxed by using the ``box/relax`` fix from LAMMPS.
+            Whether or not the shape of the cell will be relaxed by using the ``box/relax``
+            fix from LAMMPS.
             """,
         )
         spec.input(
@@ -202,7 +206,7 @@ class LammpsRelaxWorkChain(WorkChain):
         _supported_algorithms = ["cg", "htfn", "sd", "quickmin", "fire"]
 
         if _algo not in (_supported_algorithms):
-            return f"Invalid or unsupported relaxation method, {_algo} not one of {_supported_algorithms}"
+            return f"Invalid/unsupported relaxation method, {_algo} not in {_supported_algorithms}"
 
     @classmethod
     def _validate_pressure_dictionary(cls, value, ctx) -> Union[str, None]:
@@ -382,7 +386,8 @@ class LammpsRelaxWorkChain(WorkChain):
         """Return whether a relaxation workchain should be run"""
         return (
             not self.ctx.is_converged
-            and self.ctx.iteration < self.inputs.relax.max_meta_convergence_iterations.value
+            and self.ctx.iteration
+            < self.inputs.relax.max_meta_convergence_iterations.value
         )
 
     def run_relax(self):
@@ -455,7 +460,8 @@ class LammpsRelaxWorkChain(WorkChain):
         else:
             self.report(
                 "The current relative cell volume relative difference "
-                f"{volume_relative_difference:.4e} is larger thant the tolerance {volume_tolerance:.4e}"
+                f"{volume_relative_difference:.4e} is larger than the "
+                f"tolerance {volume_tolerance:.4e}"
             )
 
         self.ctx.current_cell_colume = curr_cell_volume
