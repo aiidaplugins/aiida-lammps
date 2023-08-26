@@ -270,7 +270,7 @@ class LammpsRelaxWorkChain(WorkChain):
             and value["relax"]["nreset"].value > value["relax"]["steps"].value
         ):
             return (
-                "Requesting that the reference cell is reseted a number of steps: "
+                "Requesting that the reference cell is reset a number of steps: "
                 f"{value['relax']['nreset'].value} larger than the number of steps of the "
                 f"simulation: {value['relax']['steps'].value}"
             )
@@ -291,7 +291,7 @@ class LammpsRelaxWorkChain(WorkChain):
 
         if self.ctx.meta_convergence and not self.inputs.relax.volume.value:
             self.report(
-                "The volume of the cell cannot change. Turning the meta convvergence off"
+                "The volume of the cell cannot change. Turning the meta convergence off"
             )
             self.ctx.meta_convergence = False
 
@@ -327,7 +327,7 @@ class LammpsRelaxWorkChain(WorkChain):
         if "minimize" in self.ctx.inputs.lammps.parameters:
             self.logger.warning(
                 "Entry for 'minimize' was found in the ``parameters`` "
-                "overiding with the values in the inputs"
+                "overriding with the values in the inputs"
             )
 
         self.ctx.inputs.lammps.parameters["minimize"] = self._generate_minimize_block()
@@ -464,7 +464,7 @@ class LammpsRelaxWorkChain(WorkChain):
                 f"tolerance {volume_tolerance:.4e}"
             )
 
-        self.ctx.current_cell_colume = curr_cell_volume
+        self.ctx.current_cell_volume = curr_cell_volume
         return
 
     def results(self):

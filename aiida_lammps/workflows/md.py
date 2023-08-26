@@ -145,7 +145,7 @@ class LammpsMDWorkChain(WorkChain):
         if "md" in self.ctx.inputs.lammps.parameters:
             self.logger.warning(
                 "Entry for 'md' was found in the ``parameters`` "
-                "overiding with the values in the inputs"
+                "overriding with the values in the inputs"
             )
         self.ctx.inputs.lammps.parameters["md"] = self._generate_md_block()
 

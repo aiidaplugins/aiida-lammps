@@ -390,7 +390,7 @@ def parameters_restart_final() -> AttributeDict:
 
 @pytest.fixture
 def parameters_restart_intermediate() -> AttributeDict:
-    """Get the parameters for the restartf of only the intermediate file
+    """Get the parameters for the restartfile of only the intermediate file
 
     :return: get the parameters controlling the restart file generation
     :rtype: AttributeDict
@@ -736,10 +736,10 @@ def generate_inputs_minimize(
     get_potential_fe_eam,
     parameters_minimize,
 ):
-    """Generate default inputs for a `LammpsBaseCalculation."""
+    """Generate default inputs for a `LammpsBaseCalculation` doing a minimization calculation."""
 
     def _generate_inputs_minimize():
-        """Generate default inputs for a `LammpsBaseCalculation."""
+        """Generate default inputs for a `LammpsBaseCalculation` doing a minimization calculation."""
 
         options = AttributeDict()
         options.resources = AttributeDict()
@@ -759,6 +759,31 @@ def generate_inputs_minimize(
         return inputs
 
     return _generate_inputs_minimize
+
+
+@pytest.fixture
+def generate_inputs_md(
+    fixture_code, generate_structure, get_potential_fe_eam, parameters_md_nve
+):
+    """Generate default inputs for a `LammpsBaseCalculation` doing a NVE MD calculation."""
+
+    def _generate_inputs_md():
+        """Generate default inputs for a `LammpsBaseCalculation` doing a NVE MD calculation."""
+        options = AttributeDict()
+        options.resources = AttributeDict()
+        options.resources.num_machines = 1
+        options.resources.tot_num_mpiprocs = 2
+        options.max_wallclock_seconds = 1
+        inputs = {
+            "code": fixture_code("lammps.base"),
+            "structure": generate_structure,
+            "parameters": orm.Dict(dict=parameters_md_nve),
+            "potential": get_potential_fe_eam,
+            "metadata": {"options": options},
+        }
+        return inputs
+
+    return _generate_inputs_md
 
 
 @pytest.fixture(scope="function")
