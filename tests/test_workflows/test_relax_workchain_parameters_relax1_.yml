@@ -1,0 +1,149 @@
+results:
+  compute_variables:
+    bin: standard
+    bins:
+    - 1
+    - 1
+    - 1
+    binsize: 3.65
+    errors: []
+    ghost_atom_cutoff: 7.3
+    master_list_distance_cutoff: 7.3
+    max_neighbors_atom: 2000
+    minimization:
+      energy_relative_difference: 0.0
+      force_two_norm: 0.54
+      stop_criterion: energy tolerance
+    total_wall_time: 0:00:00
+    total_wall_time_seconds: 0
+    units_style: metal
+    warnings:
+    - 'WARNING: Using ''neigh_modify every 1 delay 0 check yes'' setting during minimization'
+    - 'WARNING: Energy due to 1 extra global DOFs will be included in minimizer energies'
+  final_c_pressure_all_aiida: 12479.53
+  final_c_pressure_all_aiida__1__: 12479.53
+  final_c_pressure_all_aiida__2__: 12479.53
+  final_c_pressure_all_aiida__3__: 12479.53
+  final_c_pressure_all_aiida__4__: -0.0
+  final_c_pressure_all_aiida__5__: 0.0
+  final_c_pressure_all_aiida__6__: 0.0
+  final_etotal: -8.24
+  final_ke: 0
+  final_pe: -8.24
+  final_press: 12479.53
+  final_pxx: 12479.53
+  final_pyy: 12479.53
+  final_pzz: 12479.53
+  final_step: 1
+trajectories_attributes:
+  aliases: null
+  compression_method: 8
+  elements:
+  - Fe
+  field_names:
+  - c_ke_atom_all_aiida
+  - c_pe_atom_all_aiida
+  - c_stress_atom_all_aiida__1__
+  - c_stress_atom_all_aiida__2__
+  - c_stress_atom_all_aiida__3__
+  - c_stress_atom_all_aiida__4__
+  - c_stress_atom_all_aiida__5__
+  - c_stress_atom_all_aiida__6__
+  - element
+  - id
+  - type
+  - x
+  - y
+  - z
+  number_atoms: 2
+  number_steps: 2
+  timestep_filename: timesteps.txt
+  trajectory_filename: trajectory.zip
+  zip_prefix: step-
+trajectories_steps:
+  0:
+    c_ke_atom_all_aiida:
+    - '0.0000000000'
+    - '0.0000000000'
+    c_pe_atom_all_aiida:
+    - '-4.1220929519'
+    - '-4.1220929519'
+    c_stress_atom_all_aiida__1__:
+    - '-150430.9585047998'
+    - '-150430.9585047990'
+    c_stress_atom_all_aiida__2__:
+    - '-150430.9585047997'
+    - '-150430.9585047991'
+    c_stress_atom_all_aiida__3__:
+    - '-150430.9585047995'
+    - '-150430.9585047988'
+    c_stress_atom_all_aiida__4__:
+    - '0.0000000001'
+    - '0.0000000001'
+    c_stress_atom_all_aiida__5__:
+    - '0.0000000002'
+    - '0.0000000000'
+    c_stress_atom_all_aiida__6__:
+    - '0.0000000001'
+    - '0.0000000000'
+    element:
+    - Fe
+    - Fe
+    id:
+    - '1'
+    - '2'
+    type:
+    - '1'
+    - '1'
+    x:
+    - '2.8482584058'
+    - '1.4240580000'
+    y:
+    - '2.8482584058'
+    - '1.4240580000'
+    z:
+    - '2.8482584058'
+    - '1.4240580000'
+  1:
+    c_ke_atom_all_aiida:
+    - '0.0000000000'
+    - '0.0000000000'
+    c_pe_atom_all_aiida:
+    - '-4.1221205389'
+    - '-4.1221205389'
+    c_stress_atom_all_aiida__1__:
+    - '-144245.3932050727'
+    - '-144245.3932050756'
+    c_stress_atom_all_aiida__2__:
+    - '-144245.3932050726'
+    - '-144245.3932050756'
+    c_stress_atom_all_aiida__3__:
+    - '-144245.3932050728'
+    - '-144245.3932050758'
+    c_stress_atom_all_aiida__4__:
+    - '0.0000000003'
+    - '0.0000000001'
+    c_stress_atom_all_aiida__5__:
+    - '-0.0000000001'
+    - '-0.0000000001'
+    c_stress_atom_all_aiida__6__:
+    - '-0.0000000000'
+    - '-0.0000000002'
+    element:
+    - Fe
+    - Fe
+    id:
+    - '1'
+    - '2'
+    type:
+    - '1'
+    - '1'
+    x:
+    - '2.8484008116'
+    - '1.4240579858'
+    y:
+    - '2.8484008116'
+    - '1.4240579858'
+    z:
+    - '2.8484008116'
+    - '1.4240579858'

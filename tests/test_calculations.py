@@ -317,10 +317,19 @@ def test_lammps_restart_generation(
     ), _msg
 
 
-def test_lammps_base_settings_invalid(generate_calc_job, aiida_local_code_factory):
+def test_lammps_base_settings_invalid(
+    generate_calc_job,
+    aiida_local_code_factory,
+    generate_structure,
+    get_potential_fe_eam,
+    parameters_minimize,
+):
     """Test the validation of the ``settings`` input."""
     inputs = {
         "code": aiida_local_code_factory("lammps.base", "bash"),
+        "structure": generate_structure,
+        "potential": get_potential_fe_eam,
+        "parameters": orm.Dict(parameters_minimize),
         "settings": orm.Dict({"additional_cmdline_params": ["--option", 1]}),
         "metadata": {"options": {"resources": {"num_machines": 1}}},
     }

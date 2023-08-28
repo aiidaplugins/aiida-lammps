@@ -52,27 +52,24 @@ class LammpsBaseCalculation(CalcJob):
         spec.input(
             "structure",
             valid_type=orm.StructureData,
-            required=False,
             help="Structure used in the ``LAMMPS`` calculation",
         )
         spec.input(
             "potential",
             valid_type=LammpsPotentialData,
-            required=False,
             help="Potential used in the ``LAMMPS`` calculation",
         )
         spec.input(
             "parameters",
             valid_type=orm.Dict,
-            required=False,
-            validator=cls.validate_parameters,
+            validator=cls._validate_parameters,
             help="Parameters that control the input script generated for the ``LAMMPS`` calculation",
         )
         spec.input(
             "settings",
             valid_type=orm.Dict,
             required=False,
-            validator=cls.validate_settings,
+            validator=cls._validate_settings,
             help="Additional settings that control the ``LAMMPS`` calculation",
         )
         spec.input(
@@ -122,7 +119,7 @@ class LammpsBaseCalculation(CalcJob):
             valid_type=str,
             default=cls._DEFAULT_VARIABLES["parser_name"],
         )
-        spec.inputs.validator = cls.validate_inputs
+        spec.inputs.validator = cls._validate_inputs
 
         spec.output(
             "results",
@@ -230,7 +227,8 @@ class LammpsBaseCalculation(CalcJob):
         )
 
     @classmethod
-    def validate_inputs(cls, value, ctx) -> Union[str, None]:
+    def _validate_inputs(cls, value, ctx) -> Union[str, None]:
+        # pylint: disable=unused-argument, inconsistent-return-statements
         """Validate the top-level inputs namespace."""
         if "parameters" in value:
 
@@ -252,7 +250,8 @@ class LammpsBaseCalculation(CalcJob):
                 )
 
     @classmethod
-    def validate_settings(cls, value, ctx) -> Union[str, None]:
+    def _validate_settings(cls, value, ctx) -> Union[str, None]:
+        # pylint: disable=unused-argument, inconsistent-return-statements
         """Validate the ``settings`` input."""
         if not value:
             return
@@ -269,7 +268,8 @@ class LammpsBaseCalculation(CalcJob):
             )
 
     @classmethod
-    def validate_parameters(cls, value, ctx) -> Union[str, None]:
+    def _validate_parameters(cls, value, ctx) -> Union[str, None]:
+        # pylint: disable=unused-argument,inconsistent-return-statements
         """
         Validate the input parameters and compares them against a schema.
 

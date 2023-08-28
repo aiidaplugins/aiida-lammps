@@ -73,7 +73,8 @@ docs = [
 
 [project.entry-points."aiida.workflows"]
 "lammps.base" = "aiida_lammps.workflows.base:LammpsBaseWorkChain"
-
+"lammps.relax" = "aiida_lammps.workflows.relax:LammpsRelaxWorkChain"
+"lammps.md" = "aiida_lammps.workflows.md:LammpsMDWorkChain"
 
 [tool.flit.module]
 name = "aiida_lammps"
