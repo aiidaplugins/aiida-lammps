@@ -39,11 +39,11 @@ To install a stable version from pypi:
 pip install aiida-lammps
 ```
 
-To install the development version:
+To install from source:
 
 ```shell
 git clone https://github.com/aiidaplugins/aiida-lammps.git
-pip install aiida-lammps
+pip install -e aiida-lammps
 ```
 
 ## Built-in Potential Support
