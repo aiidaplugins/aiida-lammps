@@ -14,7 +14,6 @@ class LennardJones(PotentialAbstract):
         return None
 
     def get_input_potential_lines(self):
-
         cut = np.max([float(i.split()[2]) for i in self.data.values()])
 
         lammps_input_text = "pair_style  lj/cut {}\n".format(cut)

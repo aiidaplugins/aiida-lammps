@@ -144,7 +144,7 @@ def get_default_metadata(
 
 
 def recursive_round(ob, dp, apply_lists=False):
-    """ map a function on to all values of a nested dictionary """
+    """map a function on to all values of a nested dictionary"""
     if isinstance(ob, Mapping):
         return {k: recursive_round(v, dp, apply_lists) for k, v in ob.items()}
     elif apply_lists and isinstance(ob, (list, tuple)):

@@ -87,7 +87,6 @@ def get_structure_data():
     def _get_structure_data(pkey):
         """return test structure data"""
         if pkey == "Fe":
-
             cell = [
                 [2.848116, 0.000000, 0.000000],
                 [0.000000, 2.848116, 0.000000],
@@ -104,7 +103,6 @@ def get_structure_data():
             names = ["Fe1", "Fe2"]
 
         elif pkey == "Ar":
-
             cell = [
                 [3.987594, 0.000000, 0.000000],
                 [-1.993797, 3.453358, 0.000000],
@@ -117,7 +115,6 @@ def get_structure_data():
             fractional = True
 
         elif pkey == "GaN":
-
             cell = [
                 [3.1900000572, 0, 0],
                 [-1.5950000286, 2.762621076, 0],
@@ -135,7 +132,6 @@ def get_structure_data():
             symbols = names = ["Ga", "Ga", "N", "N"]
 
         elif pkey == "pyrite":
-
             cell = [
                 [5.38, 0.000000, 0.000000],
                 [0.000000, 5.38, 0.000000],
@@ -241,7 +237,6 @@ def get_potential_data(get_structure_data):
             output_dict = {"initial_energy": -8.2441284, "energy": -8.2448702}
 
         elif pkey == "lennard-jones":
-
             structure = get_structure_data("Ar")
 
             # Example LJ parameters for Argon. These may not be accurate at all
@@ -258,7 +253,6 @@ def get_potential_data(get_structure_data):
             }
 
         elif pkey == "tersoff":
-
             structure = get_structure_data("GaN")
 
             potential_dict = {
@@ -277,7 +271,6 @@ def get_potential_data(get_structure_data):
             output_dict = {"initial_energy": -18.109886, "energy": -18.110852}
 
         elif pkey == "reaxff":
-
             from aiida_lammps.common.reaxff_convert import (
                 filter_by_species,
                 read_lammps_format,

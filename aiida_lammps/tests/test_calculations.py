@@ -13,7 +13,6 @@ def get_lammps_version(code):
 
 
 def get_calc_parameters(lammps_version, plugin_name, units, potential_type):
-
     if potential_type == "reaxff":
         output_variables = ["temp", "etotal", "c_reax[1]"]
         thermo_keywords = ["c_reax[1]"]

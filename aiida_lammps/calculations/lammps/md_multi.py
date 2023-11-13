@@ -44,7 +44,6 @@ class MdMultiCalculation(BaseLammpsCalculation):
         system_filename,
         restart_filename,
     ):
-
         pdict = parameter_data.get_dict()
         version_date = convert_date_string(pdict.get("lammps_version", "11 Aug 2017"))
         lammps_input_file = ""
@@ -109,7 +108,6 @@ class MdMultiCalculation(BaseLammpsCalculation):
         current_computes = []
 
         for stage_id, stage_dict in enumerate(pdict.get("stages")):
-
             stage_name = stage_dict.get("name")
             if stage_name in stage_names:
                 raise ValueError("non-unique stage name: {}".format(stage_name))

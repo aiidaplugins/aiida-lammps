@@ -78,7 +78,6 @@ class LammpsTrajectory(Data):
         with tempfile.NamedTemporaryFile() as temp_handle:
             with ZipFile(temp_handle, "w", self._compression_method) as zip_file:
                 for step_id, traj_step in enumerate(iter_trajectories(fileobj)):
-
                     # extract data to store in attributes
                     time_steps.append(traj_step.timestep)
                     if number_atoms is None:

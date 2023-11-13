@@ -8,7 +8,6 @@ import numpy as np
 from aiida_lammps.data.potential import EmpiricalPotential
 
 if __name__ == "__main__":
-
     load_profile()
 
     codename = "lammps_md@stern"

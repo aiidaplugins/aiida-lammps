@@ -42,7 +42,6 @@ class MdCalculation(BaseLammpsCalculation):
         system_filename,
         restart_filename,
     ):
-
         pdict = parameter_data.get_dict()
         version_date = convert_date_string(pdict.get("lammps_version", "11 Aug 2017"))
 

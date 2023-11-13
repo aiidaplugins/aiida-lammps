@@ -225,7 +225,6 @@ def parse_quasiparticle_data(qp_file):
 
 
 def parse_dynaphopy_output(file):
-
     thermal_properties = None
 
     with open(file, "r") as handle:
@@ -247,7 +246,6 @@ def parse_dynaphopy_output(file):
 
     phonons = {}
     for i, index in enumerate(indices[:-1]):
-
         fragment = data_lines[indices[i] : indices[i + 1]]
         if "kipped" in fragment:
             continue

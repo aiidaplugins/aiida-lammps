@@ -7,7 +7,6 @@ import numpy as np
 from aiida_lammps.data.potential import EmpiricalPotential
 
 if __name__ == "__main__":
-
     from aiida import load_profile  # noqa: F401
 
     load_profile()

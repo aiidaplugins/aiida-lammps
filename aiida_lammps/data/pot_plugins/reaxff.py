@@ -90,7 +90,6 @@ class Reaxff(PotentialAbstract):
         return None
 
     def get_external_content(self):
-
         fmap = {self.potential_fname: self.get_potential_file_content()}
         content = self.get_control_file_content()
         if content:
@@ -98,7 +97,6 @@ class Reaxff(PotentialAbstract):
         return fmap
 
     def get_input_potential_lines(self):
-
         control = self.data.get("control", {})
 
         lammps_input_text = "pair_style reax/c {} ".format(

@@ -107,7 +107,6 @@ def generate_lammps_structure(
     filestring += "Atoms\n\n"
 
     for site_index, (pos, site) in enumerate(zip(positions, structure.sites)):
-
         kind_id = kind_name_id_map[site.kind_name]
 
         if atom_style == "atomic":

@@ -30,7 +30,6 @@ def get_supercell(structure, supercell_shape):
 
 
 def get_force_constants(force_constants):
-
     force_constants = force_constants.get_array("force_constants")
 
     fc_shape = force_constants.shape
@@ -45,7 +44,6 @@ def get_force_constants(force_constants):
 
 
 def structure_to_poscar(structure):
-
     atom_type_unique = np.unique(
         [site.kind_name for site in structure.sites], return_index=True
     )[1]
@@ -66,7 +64,6 @@ def structure_to_poscar(structure):
 
 
 def parameters_to_input_file(parameters_object):
-
     parameters = parameters_object.get_dict()
     input_file = "STRUCTURE FILE POSCAR\nPOSCAR\n\n"
     input_file += "FORCE CONSTANTS\nFORCE_CONSTANTS\n\n"

@@ -19,7 +19,6 @@ def generate_dynaphopy_input(
     force_sets_filename="FORCE_SETS",
     use_sets=False,
 ):
-
     parameters = parameters_object.get_dict()
     input_file = "STRUCTURE FILE POSCAR\n{}\n\n".format(poscar_name)
 
@@ -43,7 +42,6 @@ def generate_dynaphopy_input(
 
 
 class CombinateCalculation(BaseLammpsCalculation):
-
     _POSCAR_NAME = "POSCAR"
     _INPUT_FORCE_CONSTANTS = "FORCE_CONSTANTS"
     _INPUT_FORCE_SETS = "FORCE_SETS"
@@ -80,7 +78,6 @@ class CombinateCalculation(BaseLammpsCalculation):
         system_filename,
         restart_filename,
     ):
-
         random_number = np.random.randint(10000000)
 
         lammps_input_file = "units           {0}\n".format(potential_data.default_units)
@@ -110,7 +107,6 @@ class CombinateCalculation(BaseLammpsCalculation):
         return lammps_input_file
 
     def prepare_extra_files(self, tempfolder, potential_object):
-
         if "fore_constants" in self.inputs:
             force_constants = self.inputs.force_constants
         else:

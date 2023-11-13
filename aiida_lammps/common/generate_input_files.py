@@ -2,7 +2,6 @@ import numpy as np
 
 
 def get_trajectory_txt(trajectory):
-
     cell = trajectory.get_cells()[0]
 
     a = np.linalg.norm(cell[0])
@@ -54,7 +53,6 @@ def get_trajectory_txt(trajectory):
 
 
 def parameters_to_input_file(parameters_object):
-
     parameters = parameters_object.get_dict()
     input_file = "STRUCTURE FILE POSCAR\nPOSCAR\n\n"
     input_file += "FORCE CONSTANTS\nFORCE_CONSTANTS\n\n"

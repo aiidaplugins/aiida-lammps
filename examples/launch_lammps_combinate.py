@@ -7,7 +7,6 @@ from aiida.plugins import CalculationFactory
 import numpy as np
 
 if __name__ == "__main__":
-
     from aiida import load_profile  # noqa: F401
 
     load_profile()

@@ -44,7 +44,6 @@ def get_traj_force():
     "plugin_name", ["lammps.force", "lammps.optimize", "lammps.md", "lammps.md.multi"]
 )
 def test_missing_log(db_test_app, plugin_name):
-
     retrieved = FolderData()
 
     calc_node = db_test_app.generate_calcjob_node(plugin_name, retrieved)
@@ -66,7 +65,6 @@ def test_missing_log(db_test_app, plugin_name):
     "plugin_name", ["lammps.force", "lammps.optimize", "lammps.md", "lammps.md.multi"]
 )
 def test_missing_traj(db_test_app, plugin_name):
-
     retrieved = FolderData()
     retrieved.put_object_from_filelike(StringIO(get_log()), "log.lammps")
     retrieved.put_object_from_filelike(StringIO(""), "_scheduler-stdout.txt")
@@ -91,7 +89,6 @@ def test_missing_traj(db_test_app, plugin_name):
     "plugin_name", ["lammps.force", "lammps.optimize", "lammps.md", "lammps.md.multi"]
 )
 def test_empty_log(db_test_app, plugin_name):
-
     retrieved = FolderData()
     for filename in [
         "log.lammps",
@@ -123,7 +120,6 @@ def test_empty_log(db_test_app, plugin_name):
     "plugin_name", ["lammps.force", "lammps.optimize", "lammps.md", "lammps.md.multi"]
 )
 def test_empty_traj(db_test_app, plugin_name):
-
     retrieved = FolderData()
     retrieved.put_object_from_filelike(StringIO(get_log()), "log.lammps")
     for filename in [
@@ -154,7 +150,6 @@ def test_empty_traj(db_test_app, plugin_name):
     "plugin_name", ["lammps.force", "lammps.optimize", "lammps.md", "lammps.md.multi"]
 )
 def test_run_error(db_test_app, plugin_name):
-
     retrieved = FolderData()
     retrieved.put_object_from_filelike(StringIO(get_log()), "log.lammps")
     retrieved.put_object_from_filelike(

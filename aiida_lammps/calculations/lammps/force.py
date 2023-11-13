@@ -35,7 +35,6 @@ class ForceCalculation(BaseLammpsCalculation):
         system_filename,
         restart_filename,
     ):
-
         version_date = convert_date_string(
             parameter_data.get_attribute("lammps_version", "11 Aug 2017")
         )
