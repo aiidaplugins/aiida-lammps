@@ -2,10 +2,12 @@
 [![Coverage Status](https://codecov.io/gh/aiidaplugins/aiida-lammps/branch/master/graph/badge.svg)](https://codecov.io/gh/aiidaplugins/aiida-lammps)
 [![PyPI](https://img.shields.io/pypi/v/aiida-lammps.svg)](https://pypi.python.org/pypi/aiida-lammps/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
+[![Docs status](https://readthedocs.org/projects/aiida-lammps/badge)](http://aiida-lammps.readthedocs.io/)
 
 # AiiDA LAMMPS plugin
 
-A LAMMPS plugin for the [AiiDA](http://aiida-core.readthedocs.io/) framework.
+An [AiiDA](http://aiida-core.readthedocs.io/) plugin for the classical molecular dynamics code [LAMMPS](https://www.lammps.org).
+
 This plugin contains 2 types of calculations:
 
 - `lammps.base`: Calculation making use of parameter based input generation for single stage LAMMPS calculations.
@@ -48,9 +50,9 @@ pip install -e aiida-lammps
 
 ## Built-in Potential Support
 
-The `lammps.base` calculation and associated workflows make use of the ``LammpsPotentialData`` data structure which is created by passing apotential file, plus some labelling parameters to it.
+The `lammps.base` calculation and associated workflows make use of the ``LammpsPotentialData`` data structure which is created by passing a potential file, plus some labelling parameters to it.
 
-This data strcuture can be used to handle the following potential types:
+This data structure can be used to handle the following potential types:
 
 - Single file potentials: Any potential that can be stored in a single file, e.g. [EAM](https://docs.lammps.org/pair_eam.html), [MEAM](https://docs.lammps.org/pair_meam.html), [Tersoff](https://docs.lammps.org/pair_tersoff.html) and [ReaxFF](https://docs.lammps.org/pair_reaxff.html).
 - Directly parametrized potentials: Potentials whose parameters are directly given via ``pair_coeff`` in the input file, e.g [Born](https://docs.lammps.org/pair_born_gauss.html), [Lennard-Jones](https://docs.lammps.org/pair_line_lj.html) and [Yukawa](https://docs.lammps.org/pair_yukawa.html). These parameters should be written into a file that is then stored into a ``LammpsPotentialData`` node.
@@ -105,7 +107,7 @@ pytest --lammps-workdir "test_workdir"
 
 ### Pre-commit
 
-The code is formatted and linted using [pre-commit](https://pre-commit.com/), so that the code conform to the standars. One must simply install the repository with the `pre-commit` extra dependencies:
+The code is formatted and linted using [pre-commit](https://pre-commit.com/), so that the code conform to the standard. One must simply install the repository with the `pre-commit` extra dependencies:
 
 ```shell
 cd aiida-lammps
@@ -118,8 +120,11 @@ or to automate runs, triggered before each commit:
 pre-commit install
 ```
 
-The pre-commit can also be run in an isolated enviroment via `tox` with:
+The pre-commit can also be run in an isolated environment via `tox` with:
 
 ```shell
 tox -e pre-commit
 ```
+
+## License
+The `aiida-lammps` plugin package is released under the MIT license. See the `LICENSE.txt` file for more details.
