@@ -125,7 +125,7 @@ commands =
 	 mkdir -p {toxworkdir}/.aiida
 	 pytest --lammps-exec lmp_serial {posargs}
 	 rm -r {toxworkdir}/.aiida
-extras = testing
+extras = tests
 
 [testenv:pre-commit]
 allowlist_externals = bash

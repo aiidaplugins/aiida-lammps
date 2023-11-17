@@ -29,7 +29,7 @@ $ tox -e py37
 or directly:
 
 ```shell
-$ pip install .[testing]
+$ pip install .[tests]
 $ pytest -v
 ```
 
