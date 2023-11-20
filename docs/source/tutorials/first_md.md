@@ -142,7 +142,7 @@ The parameters have several sections which control different behavior of the cal
 - `compute` section specifies which parameters will be calculated and printed to file during the LAMMPS simulation ([see compute command](https://docs.lammps.org/compute.html)).
 - `structure`: controls aspects related to the structure handling in {{ LAMMPS }}.
 - `thermo`: controls which global thermodynamic information will be calculated and written to file ([see thermo command](https://docs.lammps.org/thermo.html)).
-- `md`: controls how the molecular dynamics calculations are performed. Controlling which type of ensemble will be used, eg. [npt](https://docs.lammps.org/fix_nh.html#fix-npt-command), [nvt](https://docs.lammps.org/fix_nh.html#fix-nvt-command), [nve](https://docs.lammps.org/fix_nve.html) as well as initial thermalization parameters such as the [velocities](https://docs.lammps.org/velocity.html) of the particles. 
+- `md`: controls how the molecular dynamics calculations are performed. Controlling which type of ensemble will be used, eg. [npt](https://docs.lammps.org/fix_nh.html#fix-npt-command), [nvt](https://docs.lammps.org/fix_nh.html#fix-nvt-command), [nve](https://docs.lammps.org/fix_nve.html) as well as initial thermalization parameters such as the [velocities](https://docs.lammps.org/velocity.html) of the particles.
 
 Lastly one needs to define the computational resources needed to perform the calculation
 ```python
