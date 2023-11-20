@@ -24,6 +24,12 @@ topics/workflows/index
 
 ```{toctree}
 :hidden: true
+:caption: Development information
+developers/index
+```
+
+```{toctree}
+:hidden: true
 :caption: Reference
 reference/api/index
 ```
@@ -96,7 +102,7 @@ In this version a major refactoring of the entire plugin has been done so that r
 
 New potential data structures and calculations have been introduced with the aim of improving the flexibility of the plugin.
 
-The same basic types of calculations than were previously supported (optimization and molecular dynamics) are still possible with examples for [optimization](users/example_minimize.md) and [molecular dynamics](users/example_md.md) being given in the documentation.
+The same basic types of calculations than were previously supported (optimization and molecular dynamics) are still possible with examples for [optimization](tutorials/first_relaxation.md) and [molecular dynamics](tutorials/first_md.md) being given in the documentation.
 :::
 
 ## Capabilities

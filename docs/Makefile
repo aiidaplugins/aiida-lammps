@@ -19,9 +19,13 @@ ALLSPHINXOPTS   = -n -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) 
 # the i18n builder cannot share the environment and doctrees with the others
 I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) source
 
-.PHONY: all help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest coverage gettext customdefault
+.PHONY: all help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest coverage gettext default
 
-customdefault:
+default:
+	$(SPHINXBUILD) -b html -nW $(ALLSPHINXOPTS) $(BUILDDIR)/html
+
+# Same as 'default' but does not exit at the first warning
+debug:
 	$(SPHINXBUILD) -b html -nW --keep-going $(ALLSPHINXOPTS) $(BUILDDIR)/html
 
 all: clean html view
