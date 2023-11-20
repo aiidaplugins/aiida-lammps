@@ -5,7 +5,7 @@ In ``aiida-lammps`` the potential file is stored in the `LammpsPotentialData` da
 
 To demonstrate how this works one can [download](https://openkim.org/id/EAM_Dynamo_Mendelev_2003_Fe__MO_546673549085_000) a potential from the OpenKIM database, after the file has been downloaded one can generate a dictionary with the metadata of the potential to tag it in the ``AiiDA`` database.
 
-```{code-block} python
+```python
 potential_parameters = {
     'species': ['Fe'],  # Which species can be treated by this potential (required)
     'atom_style': 'atomic', # Which kind of atomic style is associated with this potential (required)
@@ -53,7 +53,7 @@ potential_parameters = {
 Certain tags are required, and must be provided to be able to upload the potential to the database. This is because they identify which ``pair_style`` is associated with the potential, which atomic species can be treated with it, etc. The rest of the tags, in this example are filled so that they follow the [OpenKIM](https://openkim.org/doc/schema/kimspec/) standard as that is the place where the potential was obtained. If another database is used or if it is a homemade potential, these tags can be used to facilitate the querying of the potential.
 
 Then the potential can be uploaded to the database
-```{code-block} python
+```python
 from aiida_lamps.data.potential import LammpsPotentialData
 
 potential = LammpsPotentialData.get_or_create(
@@ -65,9 +65,9 @@ potential = LammpsPotentialData.get_or_create(
 
 The ``get_or_create`` method is based on the one by [aiida-pseudo](https://github.com/aiidateam/aiida-pseudo/blob/master/aiida_pseudo/data/pseudo/pseudo.py), which will calculate the md5 sum of the file and check the database for another file with the same [md5 hash](https://en.wikipedia.org/wiki/MD5), if such entry is found, that potential is used instead. This avoids the unnecessary replication of potential data nodes whenever one tries to upload a previously uploaded potential.
 
-```{note}
+:::{note}
 When calculating the md5 hash the program will look at the contents of the file, so that even if a minor change is done (that should not affect the result of a calculation), the checksum will be different and hence a new potential node will be created.
-```
+:::
 
 ## Potentials without files
 In ``LAMMPS`` certain [pair_style](https://docs.lammps.org/pair_style.html) such as the Lenard-Johns potential do not read their parameters from an auxiliary file, if not they are directly written to the main input file. In ``aiida-lammps`` to standardize the potential storage in the database these kinds of potentials are expected to be also be stored as a file. The format expected for these kinds of potentials is simply the coefficients that one would normally write the in the ``LAMMPS`` input file. The input file generator will then generate the necessary lines for the input file depending on the potential ``pair_style``.

@@ -2,7 +2,7 @@
 
 The behavior of the ``aiida-lammps`` calculation can be controlled by collecting ``LAMMPS`` simulation parameters in a dictionary
 
-```{code-block} python
+```python
 parameters = {
     'md': {
         'velocity': [{'group': 'all', 'create': {'temp': 300}}],
@@ -75,9 +75,10 @@ The dictionary is separated into several nested dictionaries that control differ
     * ``print_intermediate``: whether or not to print restart files throughout the run at regular intervals, equivalent to the [restart](https://docs.lammps.org/restart.html) ``LAMMPS`` command (default: ``False``).
     * ``num_steps``: however often the restart file is written if ``print_intermediate`` is used (default: ``max_number_steps*0.1``).
 
-```{note}
+:::{note}
 As the restart files can be very large, they are by default not printed, nor stored in the database. Even when one prints them with the ``print_final`` and/or ``print_intermediate`` they are not retrieved and are only kept in the remote folder. The storage of the restart file can be controlled via the ``store_restart=True``(``store_restart=False``) to store(not-store) option in the ``settings`` dictionary.
-```
+:::
+
 ## Compute parameters
 When asking ``aiida-lammps`` to calculate a certain ``compute`` its ``LAMMPS`` name will be automatically generated following the pattern ``compute_name_group_name_aiida`` where ``compute_name`` is the ``LAMMPS`` name of the compute, e.g. ``pe/atom`` with the difference than the ``/`` character is replaced by ``_`` and ``group_name`` is the name of the group to which the compute is applied. All global computes are printed to the ``lammps.out`` and all site dependent quantities are printed to the trajectory file. These computes can then be accessed as outputs of the simulation.
 

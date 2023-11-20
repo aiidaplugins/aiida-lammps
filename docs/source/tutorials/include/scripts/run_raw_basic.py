@@ -7,9 +7,12 @@ the working directory ``data.rhodo``. This example shows how to add such additio
 import io
 import textwrap
 
-from aiida import engine, orm, plugins
 
-script = orm.SinglefileData(
+from aiida.plugins import CalculationFactory
+from aiida.engine import run
+from aiida.orm import SinglefileData, load_code
+
+script = SinglefileData(
     io.StringIO(
         textwrap.dedent(
             """
@@ -44,7 +47,7 @@ script = orm.SinglefileData(
         )
     )
 )
-data = orm.SinglefileData(
+data = SinglefileData(
     io.StringIO(
         textwrap.dedent(
             """
@@ -61,12 +64,16 @@ data = orm.SinglefileData(
     )
 )
 
-builder = plugins.CalculationFactory("lammps.raw").get_builder()
-builder.code = orm.load_code("lammps-23.06.2022@localhost")
+builder = CalculationFactory("lammps.raw").get_builder()
+builder.code = load_code("lammps@localhost")
 builder.script = script
 builder.files = {"data": data}
 builder.filenames = {"data": "data.rhodo"}
 builder.metadata.options = {"resources": {"num_machines": 1}}
-_, node = engine.run_get_node(builder)
+results, node = run.run_get_node(builder)
 
-print(f"Calculation node: {node}")
+print(
+    f"Calculation: {node.process_class}<{node.pk}> {node.process_state.value} [{node.exit_status}]"
+)
+print(f"Results: {results}")
+assert node.is_finished_ok, f"{node} failed: [{node.exit_status}] {node.exit_message}"
