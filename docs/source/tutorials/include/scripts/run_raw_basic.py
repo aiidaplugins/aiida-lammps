@@ -7,10 +7,9 @@ the working directory ``data.rhodo``. This example shows how to add such additio
 import io
 import textwrap
 
-
-from aiida.plugins import CalculationFactory
 from aiida.engine import run
 from aiida.orm import SinglefileData, load_code
+from aiida.plugins import CalculationFactory
 
 script = SinglefileData(
     io.StringIO(
