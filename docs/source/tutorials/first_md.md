@@ -179,25 +179,26 @@ The `outputs` is a dictionary containing the output nodes produced by the calcul
 ```python
 print(outputs)
 {
-    'results': <Dict: uuid: 1dfa9349-7397-48ab-8a02-df267e3504bb (pk: 77503)>,
-    'time_dependent_computes': <ArrayData: uuid: 6ec8947f-2a82-4c7a-898a-dd058d8e914e (pk: 77504)>,
-    'trajectories': <LammpsTrajectory: uuid: 8755ba9d-6145-43ea-88fe-3a53a753e5eb (pk: 77505)>,
-    'structure': <StructureData: uuid: 11cb6a62-01b6-464f-a737-9774f9baa9b7 (pk: 77506)>,
-    'remote_folder': <RemoteData: uuid: 00f6ed4d-c026-4f1e-8d82-032b6ec4603c (pk: 77501)>,
-    'retrieved': <FolderData: uuid: 7a5fea76-f007-4109-971d-082c8db38993 (pk: 77502)>
+    'remote_folder': <RemoteData: uuid: 4d5ffdc5-2935-478a-bbc3-2b5ac5bcd663 (pk: 77519)>,
+    'retrieved': <FolderData: uuid: e2dc6535-d954-470d-9ea9-c330b289f0d1 (pk: 77520)>,
+    'results': <Dict: uuid: ff724a1f-c24f-4dae-907f-7883a4770c69 (pk: 77521)>,
+    'time_dependent_computes': <ArrayData: uuid: d8150b46-8c2c-4a23-b039-7ef2a3e50554 (pk: 77522)>,
+    'trajectories': <LammpsTrajectory: uuid: f7af7031-6cd9-4adc-936e-27bdd358210e (pk: 77523)>,
+    'structure': <StructureData: uuid: 4bc51630-358d-4f1f-89ed-972bbd37d51e (pk: 77524)>,
 }
 ```
 
 The `results` node is a dictionary that will contain the final result of the calculated thermodynamic variables as well as general information about the calculation status
 
 ```python
-print(results.get_dict())
+print(outputs['results'].get_dict())
 {
-    'final_ke': 0,
-    'final_pe': -8.2418066986197,
-    'final_pxx': -27037.610112703,
-    'final_pyy': -27037.610112703,
-    'final_pzz': -27037.610112703,
+    'final_ke': 0.024456795122703,
+    'final_pe': -8.2274854545799,
+    'final_pxx': -26539.404872624,
+    'final_pyy': -25646.583264533,
+    'final_pzz': -25646.563988137,
+    'final_step': 5000,
     ...
 }
 ```

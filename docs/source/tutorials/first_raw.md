@@ -27,7 +27,7 @@ First import the required classes and functions:
 
 ```python
 from aiida.plugins import CalculationFactory
-from aiida.engine import run
+from aiida import engine
 from aiida.orm import SinglefileData, load_code
 ```
 
@@ -86,23 +86,17 @@ script = SinglefileData(
 builder.script = script
 ```
 
-As one can notice the script wants to read a file named `data.rhodo` via the [`read_data`](https://docs.lammps.org/read_data.html) command. One can pass any set of files that the script might need by first storing them as `SinglefileData` nodes and the passing them to the builder as follows:
+As one can notice the script wants to read a file named `data.rhodo` via the [`read_data`](https://docs.lammps.org/read_data.html) command. One can pass any set of files that the script might need, in this case a file stored in the lammps repository that is downloaded using the [requests library](https://docs.python-requests.org/en/latest/index.html), by first storing them as `SinglefileData` nodes and the passing them to the builder as follows:
 
 ```python
-data = orm.SinglefileData(
+import requests
+data = SinglefileData(
     io.StringIO(
-        textwrap.dedent(
-            """
-            LAMMPS data file from restart file: timestep = 5000, procs = 1
-
-            32000 atoms
-            27723 bonds
-            40467 angles
-            56829 dihedrals
-            1034 impropers
-            ...
-            """
-        )
+		textwrap.dedent(
+			requests.get(
+				"https://raw.githubusercontent.com/lammps/lammps/develop/bench/data.rhodo"
+			).text
+		)
     )
 )
 builder.files = {"data": data}
@@ -129,7 +123,7 @@ builder.metadata.options = {
 Now as all the needed parameters have been defined the calculation can bse launched using the process builder:
 
 ```python
-outputs, node = run.get_node(builder)
+outputs, node = engine.get_node(builder)
 ```
 
 Once the calculation is finished `run.get_node` will return the outputs produced and the calculation node, `outputs` and `node` respectively.
@@ -142,3 +136,43 @@ node.exit_status
 ```
 
 If the result is different from zero it means that a problem was encountered in the calculation. This might indicate that some output is not present, that the calculation failed due to a transitory issue, an input problem, etc.
+
+The `outputs` is a dictionary containing the output nodes produced by the calculation:
+
+```python
+print(outputs)
+{
+    'remote_folder': <RemoteData: uuid: 70b075de-1597-4997-a4c1-7a86af790dfb (pk: 77529)>,
+    'retrieved': <FolderData: uuid: 83b32034-7eef-4f0b-b567-f312a46cc2d3 (pk: 77530)>,
+    'results': <Dict: uuid: c0fc582e-16b3-464f-8627-3023baebc459 (pk: 77531)>
+}
+```
+
+The `results` node is a dictionary that will contain some basic parsed information from the data written to the stdout
+
+
+```python
+print(outputs['results'].get_dict())
+{
+    'compute_variables': {
+        'bin': 'standard',
+        'bins': [10, 13, 13],
+        'errors': [],
+        'binsize': 6,
+        'warnings': [],
+        'units_style': 'real',
+        'total_wall_time': '0:00:20',
+        'steps_per_second': 5.046,
+        'ghost_atom_cutoff': 12,
+        'max_neighbors_atom': 2000,
+        'total_wall_time_seconds': 20,
+        'master_list_distance_cutoff': 12
+    }
+}
+```
+
+The complete output that was written by {{ LAMMPS }} to stdout, can be retrieved as follows:
+
+```python
+results['retrieved'].base.repository.get_object_content('lammps.out')
+```

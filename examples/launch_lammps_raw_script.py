@@ -8,6 +8,7 @@ import io
 import textwrap
 
 from aiida import engine, orm, plugins
+import requests
 
 script = orm.SinglefileData(
     io.StringIO(
@@ -47,16 +48,10 @@ script = orm.SinglefileData(
 data = orm.SinglefileData(
     io.StringIO(
         textwrap.dedent(
-            """
-            LAMMPS data file from restart file: timestep = 5000, procs = 1
-
-            32000 atoms
-            27723 bonds
-            40467 angles
-            56829 dihedrals
-            1034 impropers
-            ...
-            """
+            requests.get(
+                "https://raw.githubusercontent.com/lammps/lammps/develop/bench/data.rhodo",
+                timeout=20,
+            ).text
         )
     )
 )

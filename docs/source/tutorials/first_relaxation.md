@@ -187,7 +187,7 @@ print(outputs)
 The `results` node is a dictionary that will contain the final result of the calculated thermodynamic variables as well as general information about the calculation status
 
 ```python
-print(results.get_dict())
+print(outputs['results'].get_dict())
 {
     'final_ke': 0,
     'final_pe': -8.2418066986197,

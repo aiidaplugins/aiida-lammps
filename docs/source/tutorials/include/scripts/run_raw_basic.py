@@ -1,3 +1,4 @@
+#!/usr/bin/env runaiida
 """Run a LAMMPS calculation with additional input files
 
 The example input script is taken from https://www.lammps.org/inputs/in.rhodo.txt and is an example benchmark script for
@@ -7,9 +8,10 @@ the working directory ``data.rhodo``. This example shows how to add such additio
 import io
 import textwrap
 
-from aiida.engine import run
+from aiida import engine
 from aiida.orm import SinglefileData, load_code
 from aiida.plugins import CalculationFactory
+import requests
 
 script = SinglefileData(
     io.StringIO(
@@ -49,16 +51,10 @@ script = SinglefileData(
 data = SinglefileData(
     io.StringIO(
         textwrap.dedent(
-            """
-            LAMMPS data file from restart file: timestep = 5000, procs = 1
-
-            32000 atoms
-            27723 bonds
-            40467 angles
-            56829 dihedrals
-            1034 impropers
-            ...
-            """
+            requests.get(
+                "https://raw.githubusercontent.com/lammps/lammps/develop/bench/data.rhodo",
+                timeout=20,
+            ).text
         )
     )
 )
@@ -69,7 +65,7 @@ builder.script = script
 builder.files = {"data": data}
 builder.filenames = {"data": "data.rhodo"}
 builder.metadata.options = {"resources": {"num_machines": 1}}
-results, node = run.run_get_node(builder)
+results, node = engine.run_get_node(builder)
 
 print(
     f"Calculation: {node.process_class}<{node.pk}> {node.process_state.value} [{node.exit_status}]"
