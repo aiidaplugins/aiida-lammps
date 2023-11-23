@@ -60,7 +60,7 @@ import requests
 import io
 
 # Download the potential from the repository and store it as a BytesIO object
-_stream = io.BytesIO(requests.get('https://openkim.org/files/MO_546673549085_000/Fe_2.eam.fs').text.encode('ascii'))
+_stream = io.BytesIO(requests.get('https://openkim.org/files/MO_546673549085_000/Fe_2.eam.fs', timeout=20).text.encode('utf-8'))
 
 # Set the metadata for the potential
 potential_parameters = {

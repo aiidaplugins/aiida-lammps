@@ -48,16 +48,11 @@ script = SinglefileData(
         )
     )
 )
-data = SinglefileData(
-    io.StringIO(
-        textwrap.dedent(
-            requests.get(
-                "https://raw.githubusercontent.com/lammps/lammps/develop/bench/data.rhodo",
-                timeout=20,
-            ).text
-        )
-    )
+request = requests.get(
+    "https://raw.githubusercontent.com/lammps/lammps/develop/bench/data.rhodo",
+    timeout=20,
 )
+data = SinglefileData(io.StringIO(request.text))
 
 builder = CalculationFactory("lammps.raw").get_builder()
 builder.code = load_code("lammps@localhost")

@@ -29,7 +29,7 @@ The package can be installed either from the Python Package Index {{ PyPI }} or 
 :::{tab-item} PyPI
 Installing via {{ PyPI }} can be done making use of the Python package manager {{ pip }}:
 
-```shell
+```console
 pip install aiida-lammps
 ```
 
@@ -39,7 +39,7 @@ This will install the latest release version available in {{ PyPI }}. Other rele
 :::{tab-item} Source
 To install from source one needs to clone the repository and then install the package making use of {{ pip }}:
 
-```shell
+```console
 git clone https://github.com/aiidaplugins/aiida-lammps.git
 pip install -e aiida-lammps
 ```

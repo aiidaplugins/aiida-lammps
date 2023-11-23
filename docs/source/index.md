@@ -38,7 +38,7 @@ reference/api/index
 
 # AiiDA LAMMPS Plugin
 
-{{ aiida_lammps }} is a Python package that allows the workflow management and data provenance tracking framework [AiiDA](http://aiida-core.readthedocs.io/) run {{ LAMMPS }} calculations.
+{{ aiida_lammps }} is a Python package that allows the workflow management and data provenance tracking framework [AiiDA](http://aiida-core.readthedocs.io/) to run {{ LAMMPS }} calculations.
 
 {{ LAMMPS }} is a classical molecular dynamics (MD) code with a focus on materials modeling, it is used broadly inside the MD community due to its flexibility, and in-built capability to generate complex workflows in its input script.
 
@@ -109,6 +109,6 @@ The same basic types of calculations than were previously supported (optimizatio
 
 {{ aiida_lammps }} has been designed in such a way that the base ``Calculation`` method can run a single-phase LAMMPS calculation with as much flexibility as possible, with multi-stage runs being handled by specially designed  ``WorkChains`` instead.
 
-### What does this implies?
+### What does this imply?
 
 Instead of relying on the internal {{ LAMMPS }} scripting language to treat loops, multiple phases, definition of custom variables, etc., those tasks are off loaded to the AiiDA workchains, allowing one to make use of the provenance tracking, automated data storage and caching capabilities of AiiDA.

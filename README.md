@@ -96,7 +96,7 @@ conda install lammps==2019.06.05
 You can specify a different executable name for LAMMPS with:
 
 ```shell
-tox -e py37 -- --lammps-exec lmp_exec
+tox -e 3.9-aiida_lammps -- --lammps-exec lmp_exec
 ```
 
 To output the results of calcjob executions to a specific directory:

@@ -1,4 +1,4 @@
-# `LammpsPotentialData`
+# ``LammpsPotentialData``
 
 The potential is one of the most important pieces of data in a MD simulation, since it controls how the atoms interact with each other.
 In ``aiida-lammps`` the potential file is stored in the `LammpsPotentialData` data type, which will store the entire potential file in the database, and add certain attributes so that the data node is easily queryable for later usage. These attributes have been chosen so that they resemble the [OpenKIM](https://openkim.org/doc/schema/kimspec/) standard as much as possible.

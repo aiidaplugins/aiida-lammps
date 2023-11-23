@@ -90,15 +90,8 @@ As one can notice the script wants to read a file named `data.rhodo` via the [`r
 
 ```python
 import requests
-data = SinglefileData(
-    io.StringIO(
-		textwrap.dedent(
-			requests.get(
-				"https://raw.githubusercontent.com/lammps/lammps/develop/bench/data.rhodo"
-			).text
-		)
-    )
-)
+request = requests.get("https://raw.githubusercontent.com/lammps/lammps/develop/bench/data.rhodo")
+data = SinglefileData(io.StringIO(request.text))
 builder.files = {"data": data}
 builder.filenames = {"data": "data.rhodo"}
 ```
