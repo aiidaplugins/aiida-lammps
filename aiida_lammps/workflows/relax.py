@@ -1,4 +1,4 @@
-"""Workflow for the relaxation of a structure using the minimization proceedure in LAMMPS."""
+"""Workflow for the relaxation of a structure using the minimization procedure in LAMMPS."""
 from itertools import groupby
 import os
 from typing import Union
@@ -36,7 +36,7 @@ class LammpsRelaxWorkChain(WorkChain):
             default=lambda: orm.Str("cg"),
             validator=cls._validate_relaxation_algorithms,
             help="""
-            The algorithm to be used suring relaxation.
+            The algorithm to be used during relaxation.
             """,
         )
         spec.input(

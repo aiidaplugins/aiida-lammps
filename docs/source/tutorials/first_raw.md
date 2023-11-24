@@ -10,10 +10,10 @@ myst:
 
 # Raw LAMMPS calculation
 
-Sometimes transforming a {{ LAMMPS }} script into a set of parameters that can be passed as a dictionary to {{ aiida_lammps }} can be very complicated or impossible. That is why the `LammpsRawCalculation` is included, as it gives a way to pass a functioning {{ LAMMPS }} script to {{ aiida_lammps }} and run it via AiiDA. This will store the calculation in the AiiDA provenance graph and perform some basic parsing functions. However, as a great deal of the information needed to be able to parse the data is not present (due to the lack of parameters passed to the calculation engine) many of the automatic parsing done in the `LammpsBaseCalculation` is not performed in this case.
+Sometimes transforming a {{ LAMMPS }} script into a set of parameters that can be passed as a dictionary to {{ aiida_lammps }} can be very complicated or impossible. That is why the {class}`~aiida_lammps.calculations.raw.LammpsRawCalculation` is included, as it gives a way to pass a functioning {{ LAMMPS }} script to {{ aiida_lammps }} and run it via AiiDA. This will store the calculation in the AiiDA provenance graph and perform some basic parsing functions. However, as a great deal of the information needed to be able to parse the data is not present (due to the lack of parameters passed to the calculation engine) many of the automatic parsing done in the {class}`~aiida_lammps.calculations.base.LammpsBaseCalculation` is not performed in this case.
 
 :::{note}
-The usage of the `LammpsRawCalculation` also introduces difficulties with regards to the querying of results. With the `LammpsBaseCalculation` one passes several nodes, parameters, structure and potential which can be used in the AiiDA query engine to get specific calculations. As these do not exist for the `LammpsRawCalculation` the querying can be severely limited.
+The usage of the {class}`~aiida_lammps.calculations.raw.LammpsRawCalculation` also introduces difficulties with regards to the querying of results. With the {class}`~aiida_lammps.calculations.base.LammpsBaseCalculation` one passes several nodes, parameters, structure and potential which can be used in the AiiDA query engine to get specific calculations. As these do not exist for the {class}`~aiida_lammps.calculations.raw.LammpsRawCalculation` the querying can be severely limited.
 :::
 
 :::{tip}
@@ -43,7 +43,7 @@ builder.code = code
 
 The process builder can be used to assign and automatically validate the inputs that will be used for the calculation.
 
-For the raw calculation the most important piece is to pass the LAMMPS script that will be run. To be able to pass it to AiiDA one needs to store it as a `SinglefileData` node, which basically stores a file in the AiiDA provenance graph. When a `LammpsRawCalculation` is submitted this file will be copied **exactly** in the machine performing the calculation.
+For the raw calculation the most important piece is to pass the LAMMPS script that will be run. To be able to pass it to AiiDA one needs to store it as a {class}`~aiida.orm.nodes.data.singlefile.SinglefileData` node, which basically stores a file in the AiiDA provenance graph. When a {class}`~aiida_lammps.calculations.raw.LammpsRawCalculation` is submitted this file will be copied **exactly** in the machine performing the calculation.
 ```python
 import io
 import textwrap
@@ -86,7 +86,7 @@ script = SinglefileData(
 builder.script = script
 ```
 
-As one can notice the script wants to read a file named `data.rhodo` via the [`read_data`](https://docs.lammps.org/read_data.html) command. One can pass any set of files that the script might need, in this case a file stored in the lammps repository that is downloaded using the [requests library](https://docs.python-requests.org/en/latest/index.html), by first storing them as `SinglefileData` nodes and the passing them to the builder as follows:
+As one can notice the script wants to read a file named `data.rhodo` via the [`read_data`](https://docs.lammps.org/read_data.html) command. One can pass any set of files that the script might need, in this case a file stored in the lammps repository that is downloaded using the [requests library](https://docs.python-requests.org/en/latest/index.html), by first storing them as {class}`~aiida.orm.nodes.data.singlefile.SinglefileData` nodes and the passing them to the builder as follows:
 
 ```python
 import requests

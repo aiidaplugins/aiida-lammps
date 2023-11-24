@@ -1,6 +1,18 @@
+---
+myst:
+  substitutions:
+    aiida_lammps: '`aiida-lammps`'
+    LAMMPS: '[LAMMPS](https://lammps.org)'
+    AiiDA: '[AiiDA](https://www.aiida.net/)'
+    pair_style: '[pair-style](https://docs.lammps.org/pair_style.html)'
+---
+
+
+(topics-data-parameters)=
+
 # Parameters
 
-The behavior of the ``aiida-lammps`` calculation can be controlled by collecting ``LAMMPS`` simulation parameters in a dictionary
+The behavior of the {{ aiida_lammps }} calculation can be controlled by collecting {{ LAMMPS }} simulation parameters in a dictionary
 
 ```python
 parameters = {
@@ -36,10 +48,10 @@ parameters = {
 }
 ```
 
-The dictionary is separated into several nested dictionaries that control different behaviors of the ``LAMMPS`` simulation:
+The dictionary is separated into several nested dictionaries that control different behaviors of the {{ LAMMPS }} simulation:
 - ``control``: takes keywords specifying global simulation parameters:
-    * ``units``: ``LAMMPS`` [units](https://docs.lammps.org/units.html) used in the calculation (default: ``si``).
-    * ``timestep``: [time step](https://docs.lammps.org/timestep.html) used in the simulation, it depends on the units used (default: ``LAMMPS`` default dependent on units parameter).
+    * ``units``: {{ LAMMPS }} [units](https://docs.lammps.org/units.html) used in the calculation (default: ``si``).
+    * ``timestep``: [time step](https://docs.lammps.org/timestep.html) used in the simulation, it depends on the units used (default: {{ LAMMPS }} default dependent on units parameter).
     * ``newton``: it controls whether the Newton's third law is [turned on or off](https://docs.lammps.org/newton.html) for the calculation (default: ``on``).
     * ``processors``: specifies how [processors](https://docs.lammps.org/processors.html) are mapped to the simulation box (default: ignore the command).
 - ``structure``: variables controlling structure options:
@@ -52,11 +64,11 @@ The dictionary is separated into several nested dictionaries that control differ
     * ``neighbor_modify``: set of options that [modify](https://docs.lammps.org/neigh_modify.html) the pairwise neighbor list generation (default: skip parameter).
 - ``dump``: controls parameters regarding the printing of the site dependent quantities:
     * ``dump_rate``: how often are the site dependent quantities printed to file (default: 10).
-- ``compute``: set of lists containing information about which ``LAMMPS`` [computes](https://docs.lammps.org/compute.html) should be calculated. For each ``LAMMPS`` command one passes a list of dictionaries, each dictionary has a ``type`` key containing the options of the compute and ``group`` a key specifying over which group the compute is acting on.
-- ``fix``: set of list containing information about which ``LAMMPS`` [fixes](https://docs.lammps.org/fix.html) should be calculated.  For each ``LAMMPS`` command one passes a list of dictionaries, each dictionary has a ``type`` key containing the options of the fixes and ``group`` a key specifying over which group the fix is acting on.
+- ``compute``: set of lists containing information about which {{ LAMMPS }} [computes](https://docs.lammps.org/compute.html) should be calculated. For each {{ LAMMPS }} command one passes a list of dictionaries, each dictionary has a ``type`` key containing the options of the compute and ``group`` a key specifying over which group the compute is acting on.
+- ``fix``: set of list containing information about which {{ LAMMPS }} [fixes](https://docs.lammps.org/fix.html) should be calculated.  For each {{ LAMMPS }} command one passes a list of dictionaries, each dictionary has a ``type`` key containing the options of the fixes and ``group`` a key specifying over which group the fix is acting on.
 - ``thermo``: set of variables indicating which global parameters (printed in the ``lammps.out``) should be printed:
     * ``printing_rate``: how often should the parameters be written to the ``lammps.out`` (default: 1000)
-    * ``thermo_printing``: dictionary containing which ``LAMMPS`` internal [variables](https://docs.lammps.org/thermo_style.html) are printed to the ``lammps.out``. The keys are the names of ``LAMMPS`` parameters and the value is a boolean on whether to print it or not.
+    * ``thermo_printing``: dictionary containing which {{ LAMMPS }} internal [variables](https://docs.lammps.org/thermo_style.html) are printed to the ``lammps.out``. The keys are the names of {{ LAMMPS }} parameters and the value is a boolean on whether to print it or not.
 - ``md``: set of variables controlling a molecular dynamics simulation (exclusionary with ``minimize`` key word):
     * ``max_number_steps``: maximum number of steps for the molecular dynamics simulation (default: 100)
     * ``run_style``: type of molecular dynamics algorithm (default: ``verlet``).
@@ -70,9 +82,9 @@ The dictionary is separated into several nested dictionaries that control differ
     * ``force_tolerance``: tolerance for the force minimization (default: 1e-4).
     * ``max_iterations``: maximum number of iterations (default: 1000).
     * ``max_evaluations``: maximum number of evaluations (default: 1000).
-- ``restart``: set of variables controlling the printing of the binary file to [restart](https://docs.lammps.org/Howto_restart.html)  a ``LAMMPS`` calculation.
+- ``restart``: set of variables controlling the printing of the binary file to [restart](https://docs.lammps.org/Howto_restart.html)  a {{ LAMMPS }} calculation.
     * ``print_final``: whether or not to print a restart file at the end of the calculation, equivalent to setting [write_restart](https://docs.lammps.org/write_restart.html) at the end of the calculation (default: ``False``).
-    * ``print_intermediate``: whether or not to print restart files throughout the run at regular intervals, equivalent to the [restart](https://docs.lammps.org/restart.html) ``LAMMPS`` command (default: ``False``).
+    * ``print_intermediate``: whether or not to print restart files throughout the run at regular intervals, equivalent to the [restart](https://docs.lammps.org/restart.html) {{ LAMMPS }} command (default: ``False``).
     * ``num_steps``: however often the restart file is written if ``print_intermediate`` is used (default: ``max_number_steps*0.1``).
 
 :::{note}
@@ -80,7 +92,7 @@ As the restart files can be very large, they are by default not printed, nor sto
 :::
 
 ## Compute parameters
-When asking ``aiida-lammps`` to calculate a certain ``compute`` its ``LAMMPS`` name will be automatically generated following the pattern ``compute_name_group_name_aiida`` where ``compute_name`` is the ``LAMMPS`` name of the compute, e.g. ``pe/atom`` with the difference than the ``/`` character is replaced by ``_`` and ``group_name`` is the name of the group to which the compute is applied. All global computes are printed to the ``lammps.out`` and all site dependent quantities are printed to the trajectory file. These computes can then be accessed as outputs of the simulation.
+When asking {{ aiida_lammps }} to calculate a certain ``compute`` its {{ LAMMPS }} name will be automatically generated following the pattern ``compute_name_group_name_aiida`` where ``compute_name`` is the ``LAMMPS`` name of the compute, e.g. ``pe/atom`` with the difference than the ``/`` character is replaced by ``_`` and ``group_name`` is the name of the group to which the compute is applied. All global computes are printed to the ``lammps.out`` and all site dependent quantities are printed to the trajectory file. These computes can then be accessed as outputs of the simulation.
 
 ## Input validation
-``LAMMPS`` has a quite large amount of possible parameters which can be passed into it to control its behavior. Many of these options are incompatible which can cause the ``LAMMPS`` simulation to fail. To try to catch as many as possible of these possible conflicts the ``aiida-lammps`` input is validated against a [JSON schema](https://json-schema.org/understanding-json-schema/index.html), that checks that the provided input parameters fulfill this schema as much as possible, e.g. it checks that only ``LAMMPS`` computes can be passed to the ``compute`` block, etc. Due to the large amount and variety of options for each compute/fixes these options are not thoroughly checked, only the name of the compute itself is checked.
+{{ LAMMPS }} has a quite large amount of possible parameters which can be passed into it to control its behavior. Many of these options are incompatible which can cause the {{ LAMMPS }} simulation to fail. To try to catch as many as possible of these possible conflicts the {{ aiida_lammps }} input is validated against a [JSON schema](https://json-schema.org/understanding-json-schema/index.html), that checks that the provided input parameters fulfill this schema as much as possible, e.g. it checks that only {{ LAMMPS }} computes can be passed to the ``compute`` block, etc. Due to the large amount and variety of options for each compute/fixes these options are not thoroughly checked, only the name of the compute itself is checked.

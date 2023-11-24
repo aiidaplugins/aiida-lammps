@@ -1,10 +1,9 @@
 ---
 myst:
   substitutions:
-    README.md of the repository: '`README.md` of the repository'
-    aiida-core documentation: '`aiida-core` documentation'
     aiida_lammps: '`aiida-lammps`'
     LAMMPS: '[LAMMPS](https://lammps.org)'
+    AiiDA: '[AiiDA](https://www.aiida.net/)'
 ---
 
 ```{toctree}
@@ -38,7 +37,7 @@ reference/api/index
 
 # AiiDA LAMMPS Plugin
 
-{{ aiida_lammps }} is a Python package that allows the workflow management and data provenance tracking framework [AiiDA](http://aiida-core.readthedocs.io/) to run {{ LAMMPS }} calculations.
+{{ aiida_lammps }} is a Python package that allows the workflow management and data provenance tracking framework {{ AiiDA }} to run {{ LAMMPS }} calculations.
 
 {{ LAMMPS }} is a classical molecular dynamics (MD) code with a focus on materials modeling, it is used broadly inside the MD community due to its flexibility, and in-built capability to generate complex workflows in its input script.
 
