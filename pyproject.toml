@@ -36,10 +36,10 @@ Documentation = "https://aiida-lammps.readthedocs.io"
 Source = "https://github.com/aiidaplugins/aiida-lammps"
 
 [project.optional-dependencies]
-testing = [
-    "attrs>=17.4.0",
-    "pgtest",
-    "pytest",
+tests = [
+    'pgtest~=1.3',
+    'pytest~=6.0',
+    'pytest-regressions~=2.3',
     "pytest-cov",
     "coverage",
     "pytest-timeout",
@@ -47,15 +47,21 @@ testing = [
 ]
 
 pre-commit = [
-    "aiida-core[pre-commit]~=2.2",
-    "tox>=3.23.0",
-    "virtualenv>20"
+    'pre-commit~=2.17',
+    'pylint~=2.17.2',
+    'pylint-aiida~=0.1.1',
+    'toml',
 ]
 
 docs = [
-    "myst-parser~=0.15.0",
-    "sphinx-external-toc",
-    "sphinx-copybutton",
+    'sphinx~=6.2.1',
+    'sphinx-copybutton~=0.5.2',
+    'sphinx-book-theme~=1.0.1',
+    'sphinx-click~=4.4.0',
+    'sphinx-design~=0.4.1',
+    'sphinxcontrib-details-directive~=0.1.0',
+    'sphinx-autoapi~=3.0',
+    'myst_parser~=1.0.0',
     "furo"
 ]
 
@@ -119,7 +125,7 @@ commands =
 	 mkdir -p {toxworkdir}/.aiida
 	 pytest --lammps-exec lmp_serial {posargs}
 	 rm -r {toxworkdir}/.aiida
-extras = testing
+extras = tests
 
 [testenv:pre-commit]
 allowlist_externals = bash
@@ -130,14 +136,20 @@ extras =
 
 [testenv:docs-{clean,update}]
 extras = docs
+description =
+    clean: Build the documentation (remove any existing build)
+    update: Build the documentation (modify any existing build)
+passenv = RUN_APIDOC
+setenv =
+    update: RUN_APIDOC = False
+changedir = docs
 allowlist_externals =
+    make
     rm
     echo
 commands =
-    clean: rm -rf docs/_build
-    clean: rm -rf docs/source/reference/apidoc
-    sphinx-build -n -W --keep-going -c docs/source docs/source docs/_build
-commands_post = echo "open docs/_build/index.html"
+    clean: make clean
+    make debug
 
 [pytest]
 addopts = --ignore=setup.py

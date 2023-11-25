@@ -1,0 +1,58 @@
+.logo-table td {
+    padding: 20px 10px;
+}
+
+.center {
+    text-align: center;
+    max-width: 90%;
+}
+
+.bigfont {
+    font-size: 140%;
+}
+
+.navbar-brand {
+    padding: 0;
+    padding-top: 0.5rem;
+}
+
+img.logo__image {
+    max-height: 180px;
+    padding-left: 1.5rem;
+    padding-bottom: 1rem;
+}
+
+.navbar-icon-links i.fa-brands {
+    font-size: 40px!important;
+}
+
+img.aiida-sidebar-logo {
+    height: 40px!important;
+}
+
+img.aiida-logo {
+    width: 20px;
+    padding-bottom: 3px;
+}
+
+.fa {
+    color: var(--pst-color-primary);
+}
+
+.bd-search {
+    padding: 0 1rem;
+}
+
+.tutor-footer {
+    padding-top: 0rem;
+    border-top: none!important;
+}
+
+.footer-table {
+    margin-bottom: 0rem;
+    border-color: transparent;
+}
+
+.footer-table td:last-child {
+    text-align: right;
+}

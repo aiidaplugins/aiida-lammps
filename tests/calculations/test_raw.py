@@ -1,3 +1,4 @@
+"""Test the `LammpsRawCalculation`"""
 import io
 import textwrap
 
@@ -26,12 +27,12 @@ def test_script(generate_calc_job, aiida_local_code_factory):
         "script": orm.SinglefileData(io.StringIO(content)),
     }
 
-    tmp_path, calc_info = generate_calc_job("lammps.raw", inputs)
+    tmp_path, _ = generate_calc_job("lammps.raw", inputs)
     assert (tmp_path / LammpsRawCalculation.FILENAME_INPUT).read_text() == content
 
 
 def test_files_invalid(generate_calc_job, aiida_local_code_factory):
-    """Test the ``files`` input valdiation.
+    """Test the ``files`` input validation.
 
     The list of filenames that will be used to write to the working directory needs to be unique.
     """
@@ -81,7 +82,7 @@ def test_files(generate_calc_job, aiida_local_code_factory):
 
 
 def test_filenames_invalid(generate_calc_job, aiida_local_code_factory):
-    """Test the ``filenames`` input valdiation.
+    """Test the ``filenames`` input validation.
 
     The list of filenames that will be used to write to the working directory needs to be unique.
     """

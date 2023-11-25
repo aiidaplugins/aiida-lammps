@@ -27,7 +27,7 @@ def generate_input_file(
     parameters: dict,
     potential: LammpsPotentialData,
     structure: orm.StructureData,
-    trajectory_filename: str = "aiida_lampps.trajectory.dump",
+    trajectory_filename: str = "aiida_lammps.trajectory.dump",
     restart_filename: str = "lammps.restart",
     potential_filename: str = "potential.dat",
     structure_filename: str = "structure.dat",
@@ -45,14 +45,14 @@ def generate_input_file(
         command is used to overwrite the structure and set the velocity and
         other parameters from a previous calculation.
 
-    :param parameters: calculation paramters used to control the LAMMPS calculation
+    :param parameters: calculation parameters used to control the LAMMPS calculation
     :type parameters: dict
     :param potential: potential used during the LAMMPS calculation
     :type potential: LammpsPotentialData
     :param structure: structure used during the LAMMPS calculation
     :type structure: orm.StructureData
     :param trajectory_filename: filename used to write the trajectory information,
-        defaults to 'aiida_lampps.trajectory.dump'
+        defaults to 'aiida_lammps.trajectory.dump'
     :type trajectory_filename: str, optional
     :param restart_filename: filename used to write the restart information,
         defaults to 'restart.aiida'
@@ -973,7 +973,7 @@ def generate_id_tag(name: str = None, group: str = None) -> str:
     """Generate an id tag for fixes and/or computes.
 
     To standardize the naming of computes and/or fixes and to ensure that one
-    can programatically recreate them their name will consist of the name of the fix/compute
+    can programmatically recreate them their name will consist of the name of the fix/compute
     with the group at which is applied appended plus the aiida keyword. Of this
     way one can always regenerate these tags by knowing which fix/computes
     were asked of the calculation.

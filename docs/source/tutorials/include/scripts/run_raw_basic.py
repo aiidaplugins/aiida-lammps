@@ -1,3 +1,4 @@
+#!/usr/bin/env runaiida
 """Run a LAMMPS calculation with additional input files
 
 The example input script is taken from https://www.lammps.org/inputs/in.rhodo.txt and is an example benchmark script for
@@ -7,10 +8,12 @@ the working directory ``data.rhodo``. This example shows how to add such additio
 import io
 import textwrap
 
-from aiida import engine, orm, plugins
+from aiida import engine
+from aiida.orm import SinglefileData, load_code
+from aiida.plugins import CalculationFactory
 import requests
 
-script = orm.SinglefileData(
+script = SinglefileData(
     io.StringIO(
         textwrap.dedent(
             """
@@ -51,12 +54,16 @@ request = requests.get(
 )
 data = SinglefileData(io.StringIO(request.text))
 
-builder = plugins.CalculationFactory("lammps.raw").get_builder()
-builder.code = orm.load_code("lammps-23.06.2022@localhost")
+builder = CalculationFactory("lammps.raw").get_builder()
+builder.code = load_code("lammps@localhost")
 builder.script = script
 builder.files = {"data": data}
 builder.filenames = {"data": "data.rhodo"}
 builder.metadata.options = {"resources": {"num_machines": 1}}
-_, node = engine.run_get_node(builder)
+results, node = engine.run_get_node(builder)
 
-print(f"Calculation node: {node}")
+print(
+    f"Calculation: {node.process_class}<{node.pk}> {node.process_state.value} [{node.exit_status}]"
+)
+print(f"Results: {results}")
+assert node.is_finished_ok, f"{node} failed: [{node.exit_status}] {node.exit_message}"

@@ -2,7 +2,7 @@
 Base class for the LAMMPS potentials.
 
 This class allows the storage/recovering of LAMMPS potentials, it allows
-one to store any LAMMPS potential as a ``SinglefileData`` object, which can
+one to store any LAMMPS potential as a :py:class:`~aiida.orm.nodes.data.singlefile.SinglefileData` object, which can
 then be either written to the LAMMPS input script and/or to a file, where
 it can be easily read by LAMMPS. This distinction depends on the assigned
 ``pair_style`` which require different ``pair_coeff`` entries in the input
@@ -140,7 +140,7 @@ class LammpsPotentialData(orm.SinglefileData):
     Base class for the LAMMPS potentials.
 
     This class allows the storage/recovering of LAMMPS potentials, it allows
-    one to store any LAMMPS potential as a ``SinglefileData`` object, which can
+    one to store any LAMMPS potential as a :py:class:`~aiida.orm.nodes.data.singlefile.SinglefileData` object, which can
     then be either written to the LAMMPS input script and/or to a file, where
     it can be easily read by LAMMPS. This distinction depends on the assigned
     ``pair_style`` which require different ``pair_coeff`` entries in the input
