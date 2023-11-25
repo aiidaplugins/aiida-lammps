@@ -259,12 +259,21 @@ class LammpsBaseCalculation(CalcJob):
         settings = value.get_dict()
         additional_cmdline_params = settings.get("additional_cmdline_params", [])
 
+        additional_retrieve_list = settings.get("additional_retrieve_list", [])
+
         if not isinstance(additional_cmdline_params, list) or any(
             not isinstance(e, str) for e in additional_cmdline_params
         ):
             return (
                 "Invalid value for `additional_cmdline_params`, should be "
                 f"list of strings but got: {additional_cmdline_params}"
+            )
+        if not isinstance(additional_retrieve_list, list) or any(
+            not isinstance(e, str) for e in additional_retrieve_list
+        ):
+            return (
+                "Invalid value for `additional_retrieve_list`, should be "
+                f"list of strings but got: {additional_retrieve_list}"
             )
 
     @classmethod
@@ -405,6 +414,7 @@ class LammpsBaseCalculation(CalcJob):
         calcinfo.retrieve_temporary_list = retrieve_temporary_list
         # Set the files that must be retrieved
         calcinfo.retrieve_list = retrieve_list
+        calcinfo.retrieve_list += settings.get("additional_retrieve_list", [])
         # Set the information of the code into the calculation datastructure
         calcinfo.codes_info = [codeinfo]
 
