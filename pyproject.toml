@@ -47,7 +47,7 @@ tests = [
 ]
 
 pre-commit = [
-    'pre-commit~=2.17',
+    'pre-commit~=3.5',
     'pylint~=2.17.2',
     'pylint-aiida~=0.1.1',
     'toml',
