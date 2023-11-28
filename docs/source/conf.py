@@ -90,7 +90,6 @@ myst_substitutions = {
 html_theme = "sphinx_book_theme"  # pylint: disable=invalid-name
 html_title = f"v{__version__}"  # pylint: disable=invalid-name
 html_theme_options = {
-    "announcement": "This documentation is in development!",
     "repository_url": "https://github.com/aiidaplugins/aiida-lammps",
     "github_url": "https://github.com/aiidaplugins/aiida-lammps",
     "use_edit_page_button": True,

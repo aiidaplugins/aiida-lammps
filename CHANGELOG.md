@@ -1,5 +1,36 @@
 # Changelog
 
+## v1.0.0 2023-11-28
+
+✨ Support for aiida-core >= 2.0.0
+
+- drop support for python<3.8
+- fix deprecation watnings
+
+♻️ Refactoring of the plugin
+- Removed the old Calculation interfaces and replaced them by a more flexible instances, either by passing a set of parameters that describe a single stage `LAMMPS` run (`LammpsBaseCalculation`) or by passing the input script directly (`LammpsRawCalculation`).
+- Removed the old potential dataclasses, changed them by the `LammpsPotential` class where a potential file can be passed and tagged with a set of attributes to improve qurying.
+- Improved the parsing to better handle errors, custom global and site dependent computes.
+- Documentation style chaned to MysT
+- Coding style changed to black.
+
+
+✨ Added `LammpsRawCalculation`
+This is a `CalcJob` that can handle calculations in which the `LAMMPS` input script and necessary files are explicitly given.
+
+✨ Added `LammpsBaseCalculation`
+This is a `CalcJob` that takes a set of parameters and constructs the `LAMMPS` input file for a single stage calculation.
+
+✨ Added `LammpsBaseWorkChain`
+A `WorkChain` wrapper for the `LammpsBaseCalculation` to harness the `BaseRestartWorkchain` from `aiida-core` and allow error correction and automatic restarting of the calculation.
+
+✨ Added `LammpsMDWorkChain`
+A `WorkChain` that deals specifically with MD runs in `LAMMPS`.
+
+✨ Added `LammpsRelaxWorkChain`
+A `WOrkChain` that deals with structural optimization via the `minimize` method in `LAMMPS`.
+
+
 ## v0.8.0  2020-09-29
 
 ✨ Support for aiida-core >= 1.4.0
