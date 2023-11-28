@@ -4,6 +4,7 @@ Tests to aiida-lammps parsers.
 import os
 
 from aiida.plugins import ParserFactory
+
 from aiida_lammps.parsers.parse_raw import parse_final_data, parse_outputfile
 from .utils import TEST_DIR
 

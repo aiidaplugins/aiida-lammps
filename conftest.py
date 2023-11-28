@@ -1031,7 +1031,7 @@ def generate_singlefile_data():
     def _generate_singlefile_data(
         computer: orm.Computer,
         label: str = "restartfile",
-        entry_point_name: Optional[str] = None,
+        entry_point_name: str | None = None,
     ):
         entry_point = format_entry_point_string("aiida.calculations", entry_point_name)
 
@@ -1060,7 +1060,7 @@ def generate_lammps_trajectory():
     def _generate_lammps_trajectory(
         computer: orm.Computer,
         label: str = "trajectory",
-        entry_point_name: Optional[str] = None,
+        entry_point_name: str | None = None,
     ):
         entry_point = format_entry_point_string("aiida.calculations", entry_point_name)
 
@@ -1091,8 +1091,8 @@ def generate_lammps_results():
     def _generate_lammps_results(
         computer: orm.Computer,
         label: str = "results",
-        entry_point_name: Optional[str] = None,
-        data: Optional[dict] = None,
+        entry_point_name: str | None = None,
+        data: dict | None = None,
     ):
         entry_point = format_entry_point_string("aiida.calculations", entry_point_name)
 
