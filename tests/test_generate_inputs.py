@@ -6,7 +6,6 @@ import pytest
 from aiida_lammps.data.potential import LammpsPotentialData
 from aiida_lammps.parsers import inputfile
 from aiida_lammps.validation.utils import validate_against_schema
-from .utils import TEST_DIR
 
 
 def validate_input_parameters(parameters: dict):

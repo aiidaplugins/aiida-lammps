@@ -14,7 +14,7 @@ from builtins import ValueError
 import json
 import os
 import re
-from typing import Union
+from typing import Optional, Union
 
 from aiida import orm
 import numpy as np
@@ -32,7 +32,7 @@ def generate_input_file(
     potential_filename: str = "potential.dat",
     structure_filename: str = "structure.dat",
     variables_filename: str = "aiida_lammps.yaml",
-    read_restart_filename: str = None,
+    read_restart_filename: Optional[str] = None,
 ) -> str:
     """
     Generate the text for the lammps input file.
@@ -317,7 +317,6 @@ def write_structure_block(
         for _group in parameters_structure["groups"]:
             # Check if the given type name corresponds to the ones assigned to the atom types
             if "type" in _group["args"]:
-
                 _subset = _group["args"][_group["args"].index("type") + 1 :]
 
                 if not all(kind in kind_name_id_map.values() for kind in _subset):
@@ -631,7 +630,7 @@ def generate_integration_options(
 
 def write_fix_block(
     parameters_fix: dict,
-    group_names: list = None,
+    group_names: Optional[list] = None,
 ) -> str:
     """
     Generate the input block with the fix options.
@@ -663,9 +662,9 @@ def write_fix_block(
     for key, value in parameters_fix.items():
         for entry in value:
             _group = entry.get("group", "all")
-            if _group not in group_names + ["all"]:
+            if _group not in [*group_names, "all"]:
                 raise ValueError(
-                    f'group name "{_group}" is not the defined groups {group_names + ["all"]}'
+                    f'group name "{_group}" is not the defined groups {[*group_names, "all"]}'
                 )
             fix_block += f"fix {generate_id_tag(key, _group)} {_group} {key} "
             fix_block += f'{join_keywords(entry["type"])}\n'
@@ -675,7 +674,7 @@ def write_fix_block(
 
 def write_compute_block(
     parameters_compute: dict,
-    group_names: list = None,
+    group_names: Optional[list] = None,
 ) -> str:
     """
     Generate the input block with the compute options.
@@ -701,7 +700,7 @@ def write_compute_block(
     for key, value in parameters_compute.items():
         for entry in value:
             _group = entry.get("group", "all")
-            if _group not in group_names + ["all"]:
+            if _group not in [*group_names, "all"]:
                 raise ValueError(f'group name "{_group}" is not the defined groups')
             compute_block += f"compute {generate_id_tag(key, _group)} {_group} {key} "
             compute_block += f'{join_keywords(entry["type"])}\n'
@@ -713,8 +712,8 @@ def write_dump_block(
     parameters_dump: dict,
     trajectory_filename: str,
     atom_style: str,
-    parameters_compute: dict = None,
-    kind_symbols: list = None,
+    parameters_compute: Optional[dict] = None,
+    kind_symbols: Optional[list] = None,
 ) -> str:
     """Generate the block with dumps commands.
 
@@ -777,7 +776,7 @@ def write_dump_block(
 
 def write_thermo_block(
     parameters_thermo: dict,
-    parameters_compute: dict = None,
+    parameters_compute: Optional[dict] = None,
 ) -> Union[str, list]:
     """Generate the block with the thermo command.
 
@@ -826,13 +825,13 @@ def write_thermo_block(
     else:
         fixed_thermo = [key for key, value in computes_printing.items() if value]
         if "step" not in fixed_thermo:
-            fixed_thermo = ["step"] + fixed_thermo
+            fixed_thermo = ["step", *fixed_thermo]
         if "etotal" not in fixed_thermo:
-            fixed_thermo = fixed_thermo + ["etotal"]
+            fixed_thermo = [*fixed_thermo, "etotal"]
 
     if fixed_thermo.index("step") != 0:
         fixed_thermo.remove("step")
-        fixed_thermo = ["step"] + fixed_thermo
+        fixed_thermo = ["step", *fixed_thermo]
 
     thermo_block = generate_header("Start of the Thermo information")
     thermo_block += (
@@ -866,7 +865,6 @@ def write_restart_block(
     restart_block = {"final": "", "intermediate": ""}
 
     if "print_final" in parameters_restart and parameters_restart["print_final"]:
-
         restart_block["final"] += generate_header(
             "Start of the write restart information"
         )
@@ -879,7 +877,6 @@ def write_restart_block(
         "print_intermediate" in parameters_restart
         and parameters_restart["print_intermediate"]
     ):
-
         restart_block["intermediate"] += generate_header(
             "Start of the intermediate write restart information"
         )
@@ -969,7 +966,7 @@ def generate_printing_string(
     return " ".join(_string)
 
 
-def generate_id_tag(name: str = None, group: str = None) -> str:
+def generate_id_tag(name: Optional[str] = None, group: Optional[str] = None) -> str:
     """Generate an id tag for fixes and/or computes.
 
     To standardize the naming of computes and/or fixes and to ensure that one

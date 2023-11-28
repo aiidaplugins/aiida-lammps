@@ -243,7 +243,7 @@ class LammpsRelaxWorkChain(WorkChain):
         if (
             value["relax"]["volume"].value
             and value["relax"]["shape"].value
-            and not "target_pressure" in value["relax"]
+            and "target_pressure" not in value["relax"]
         ):
             return (
                 "When relaxing the shape and the volume at the same time one needs to give the "
@@ -254,13 +254,13 @@ class LammpsRelaxWorkChain(WorkChain):
             value["relax"]["volume"].value
             and not value["relax"]["shape"].value
             and "target_pressure" in value["relax"]
+            and not _all_equal(value["relax"]["target_pressure"].get_dict().values())
         ):
-            if not _all_equal(value["relax"]["target_pressure"].get_dict().values()):
-                return (
-                    "Requesting a volume relaxation without shape optimization, the values of "
-                    "``target_pressure`` should all be equal or be just one value, instead "
-                    f"got {value.relax.target_pressure.get_dict()}"
-                )
+            return (
+                "Requesting a volume relaxation without shape optimization, the values of "
+                "``target_pressure`` should all be equal or be just one value, instead "
+                f"got {value.relax.target_pressure.get_dict()}"
+            )
 
         if value["relax"]["shape"].value and not value["relax"]["volume"].value:
             return "Cannot vary only the shape while keeping the shape constant."

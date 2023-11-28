@@ -23,7 +23,7 @@ import io
 import json
 import os
 import pathlib
-from typing import BinaryIO, List, Optional, Union
+from typing import Any, BinaryIO, ClassVar, Dict, List, Optional, Union
 import warnings
 
 from aiida import orm, plugins
@@ -164,7 +164,7 @@ class LammpsPotentialData(orm.SinglefileData):
         "lammps_potentials.json",
     )
 
-    _extra_keys = {
+    _extra_keys: ClassVar[Dict[str, Any]] = {
         "title": {"validator": _validate_string},
         "developer": {"validator": _validate_string_list},
         "publication_year": {"validator": _validate_datetime},
@@ -190,12 +190,12 @@ class LammpsPotentialData(orm.SinglefileData):
     def get_or_create(
         cls,
         source: Union[str, pathlib.Path, BinaryIO],
-        filename: str = None,
-        pair_style: str = None,
-        species: list = None,
-        atom_style: str = None,
-        units: str = None,
-        extra_tags: dict = None,
+        filename: Optional[str] = None,
+        pair_style: Optional[str] = None,
+        species: Optional[list] = None,
+        atom_style: Optional[str] = None,
+        units: Optional[str] = None,
+        extra_tags: Optional[dict] = None,
     ):
         """
         Get lammps potential data node from database or create a new one.
@@ -290,7 +290,7 @@ class LammpsPotentialData(orm.SinglefileData):
         ) and not cls.is_readable_byte_stream(source):
             raise TypeError(
                 "`source` should be a `str` or `pathlib.Path` filepath on "
-                + f"disk or a stream of bytes, got: {source}"
+                f"disk or a stream of bytes, got: {source}"
             )
 
         if isinstance(source, (str, pathlib.Path)):
@@ -328,7 +328,7 @@ class LammpsPotentialData(orm.SinglefileData):
         """
         if pair_style is None:
             raise TypeError("The pair_style of the potential must be provided.")
-        if pair_style not in self.default_potential_info.keys():
+        if pair_style not in self.default_potential_info:
             raise KeyError(f'The pair_style "{pair_style}" is not valid')
         self.base.attributes.set("pair_style", pair_style)
 
@@ -440,12 +440,12 @@ class LammpsPotentialData(orm.SinglefileData):
     def set_file(
         self,
         source: Union[str, pathlib.Path, BinaryIO],
-        filename: str = None,
-        pair_style: str = None,
-        species: list = None,
-        atom_style: str = None,
-        units: str = None,
-        extra_tags: dict = None,
+        filename: Optional[str] = None,
+        pair_style: Optional[str] = None,
+        species: Optional[list] = None,
+        atom_style: Optional[str] = None,
+        units: Optional[str] = None,
+        extra_tags: Optional[dict] = None,
         **kwargs,
     ):
         """Set the file content.

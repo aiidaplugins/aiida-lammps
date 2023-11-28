@@ -9,6 +9,7 @@ import pytest
 
 from aiida_lammps.calculations.base import LammpsBaseCalculation
 from aiida_lammps.workflows.base import LammpsBaseWorkChain
+
 from .utils import get_default_metadata, recursive_round
 
 
@@ -26,7 +27,6 @@ def generate_workchain_base(
         return_inputs=False,
         lammps_base_outputs=None,
     ):
-
         entry_point = "lammps.base"
 
         if inputs is None:
@@ -75,11 +75,9 @@ def generate_workchain_relax(
         return_inputs=False,
         lammps_base_outputs=None,
     ):
-
         entry_point = "lammps.relax"
 
         if inputs is None:
-
             _inputs = generate_inputs_minimize()
             _parameters = _inputs["parameters"].get_dict()
 
@@ -142,14 +140,12 @@ def test_handle_unrecoverable_failure(generate_workchain_base):
     assert isinstance(result, ProcessHandlerReport)
     assert result.do_break
     assert (
-        result.exit_code
-        == LammpsBaseWorkChain.exit_codes.ERROR_UNRECOVERABLE_FAILURE  # pylint: disable=no-member
+        result.exit_code == LammpsBaseWorkChain.exit_codes.ERROR_UNRECOVERABLE_FAILURE  # pylint: disable=no-member
     )
 
     result = process.inspect_process()
     assert (
-        result
-        == LammpsBaseWorkChain.exit_codes.ERROR_UNRECOVERABLE_FAILURE  # pylint: disable=no-member
+        result == LammpsBaseWorkChain.exit_codes.ERROR_UNRECOVERABLE_FAILURE  # pylint: disable=no-member
     )
 
 

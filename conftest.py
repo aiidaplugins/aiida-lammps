@@ -5,11 +5,12 @@ initialise a test database and profile
 from __future__ import annotations
 
 from collections.abc import Mapping
+from contextlib import suppress
 import os
 import pathlib
 import shutil
 import tempfile
-from typing import Any, Optional
+from typing import Any
 
 from aiida import orm
 from aiida.common import AttributeDict, CalcInfo, LinkType, exceptions
@@ -516,10 +517,7 @@ def db_test_app(aiida_profile, pytestconfig):
     }
 
     test_workdir = get_work_directory(pytestconfig)
-    if test_workdir:
-        work_directory = test_workdir
-    else:
-        work_directory = tempfile.mkdtemp()
+    work_directory = test_workdir if test_workdir else tempfile.mkdtemp()
 
     yield AiidaTestApp(work_directory, executables, environment=aiida_profile)
     aiida_profile.clear_profile()
@@ -634,7 +632,7 @@ def generate_calc_job_node(fixture_localhost):
         filepath_folder = None
 
         if test_name is not None:
-            basepath = os.path.dirname(os.path.abspath(__file__))
+            os.path.dirname(os.path.abspath(__file__))
             filepath_folder = os.path.join(TEST_DIR, test_name)
         entry_point = format_entry_point_string("aiida.calculations", entry_point_name)
 
@@ -670,13 +668,12 @@ def generate_calc_job_node(fixture_localhost):
         if retrieve_temporary:
             dirpath, filenames = retrieve_temporary
             for filename in filenames:
-                try:
+                with suppress(FileNotFoundError):
+                    # To test the absence of files in the retrieve_temporary folder
                     shutil.copy(
                         os.path.join(filepath_folder, filename),
                         os.path.join(dirpath, filename),
                     )
-                except FileNotFoundError:
-                    pass  # To test the absence of files in the retrieve_temporary folder
 
         if filepath_folder:
             retrieved = orm.FolderData()
@@ -684,10 +681,9 @@ def generate_calc_job_node(fixture_localhost):
             # Remove files that are supposed to be only present in the retrieved temporary folder
             if retrieve_temporary:
                 for filename in filenames:
-                    try:
+                    with suppress(OSError):
+                        # To test the absence of files in the retrieve_temporary folder
                         retrieved.base.repository.delete_object(filename)
-                    except OSError:
-                        pass  # To test the absence of files in the retrieve_temporary folder
 
             retrieved.base.links.add_incoming(
                 node, link_type=LinkType.CREATE, link_label="retrieved"
@@ -1096,10 +1092,7 @@ def generate_lammps_results():
     ):
         entry_point = format_entry_point_string("aiida.calculations", entry_point_name)
 
-        if data:
-            _results = data
-        else:
-            _results = {"compute_variables": {}}
+        _results = data if data else {"compute_variables": {}}
         results = orm.Dict(_results)
         if entry_point_name is not None:
             creator = orm.CalcJobNode(computer=computer, process_type=entry_point)

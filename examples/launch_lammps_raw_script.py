@@ -49,7 +49,7 @@ request = requests.get(
     "https://raw.githubusercontent.com/lammps/lammps/develop/bench/data.rhodo",
     timeout=20,
 )
-data = SinglefileData(io.StringIO(request.text))
+data = orm.SinglefileData(io.StringIO(request.text))
 
 builder = plugins.CalculationFactory("lammps.raw").get_builder()
 builder.code = orm.load_code("lammps-23.06.2022@localhost")

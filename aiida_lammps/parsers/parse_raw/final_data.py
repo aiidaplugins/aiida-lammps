@@ -1,9 +1,13 @@
 """Set of functions to parse the files containing the final variables printed by LAMMPS"""
 
+from typing import Optional
+
 import yaml
 
 
-def parse_final_data(filename: str = None, file_contents: str = None) -> dict:
+def parse_final_data(
+    filename: Optional[str] = None, file_contents: Optional[str] = None
+) -> dict:
     """
     Read the yaml file with the global final data.
 

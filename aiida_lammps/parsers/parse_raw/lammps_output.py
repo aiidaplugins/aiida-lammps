@@ -2,13 +2,13 @@
 # pylint: disable=fixme
 import ast
 import re
-from typing import Union
+from typing import Optional, Union
 
 import numpy as np
 
 
 def parse_outputfile(
-    filename: str = None, file_contents: str = None
+    filename: Optional[str] = None, file_contents: Optional[str] = None
 ) -> Union[dict, dict]:
     """
     Parse the lammps output file file, this is the redirected screen output.
@@ -30,7 +30,6 @@ def parse_outputfile(
         return None
 
     if filename is not None:
-
         try:
             with open(filename) as handler:
                 data = handler.read()
@@ -110,9 +109,13 @@ def parse_outputfile(
             header_line = [
                 re.sub("[^a-zA-Z0-9_]", "__", entry) for entry in line.split()
             ]
-        if header_line_position > 0 and index != header_line_position and not end_found:
-            if not line.split()[0].replace(".", "", 1).isdigit():
-                end_found = True
+        if (
+            header_line_position > 0
+            and index != header_line_position
+            and not end_found
+            and not line.split()[0].replace(".", "", 1).isdigit()
+        ):
+            end_found = True
         if header_line_position > 0 and index != header_line_position and not end_found:
             _data.append([ast.literal_eval(entry) for entry in line.split()])
     _data = np.asarray(_data)

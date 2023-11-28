@@ -97,7 +97,6 @@ class LammpsBaseWorkChain(BaseRestartWorkChain):
         """
 
         try:
-
             return (
                 calculation.outputs.results.get_dict()
                 .get("compute_variables", {})
@@ -143,7 +142,6 @@ class LammpsBaseWorkChain(BaseRestartWorkChain):
                     "Removing the velocity parameter from the MD control"
                 )
         if restart_type == RestartTypes.FROM_REMOTEFOLDER:
-
             latest_file = self._check_restart_in_remote(calculation=calculation)
 
             if latest_file is not None:
