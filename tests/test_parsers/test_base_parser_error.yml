@@ -1,0 +1,6 @@
+results:
+  compute_variables:
+    errors:
+    - command: 'Last command: read_data       data.rhodo'
+      message: 'ERROR: Cannot open file data.rhodo: No such file or directory (src/read_data.cpp:331)'
+    warnings: []

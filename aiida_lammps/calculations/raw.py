@@ -50,6 +50,11 @@ class LammpsRawCalculation(CalcJob):
             help="The data extracted from the lammps out file",
         )
         spec.exit_code(
+            309,
+            "ERROR_PARSER_DETECTED_LAMMPS_RUN_ERROR",
+            message="The parser detected the lammps error :{error}",
+        )
+        spec.exit_code(
             351,
             "ERROR_OUTFILE_MISSING",
             message="the file with the lammps out was not found",

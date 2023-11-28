@@ -232,13 +232,13 @@ def test_lammps_restart_generation(
     else:
         # Check that if the file was not asked to be stored that it is not stored
         assert (
-            not "restartfile" in results
+            "restartfile" not in results
         ), "The restartfile is stored even when it was not requested"
         if restart_parameters.restart.get("print_final", False):
             _msg = "The restartfile is in the retrieved folder even when it was not requested"
             assert (
-                not node.get_option("restart_filename")
-                in results["retrieved"].base.repository.list_object_names()
+                node.get_option("restart_filename")
+                not in results["retrieved"].base.repository.list_object_names()
             ), _msg
 
     # Check that the final restartfile is printed

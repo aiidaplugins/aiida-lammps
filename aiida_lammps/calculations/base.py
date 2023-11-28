@@ -198,7 +198,7 @@ class LammpsBaseCalculation(CalcJob):
         spec.exit_code(
             309,
             "ERROR_PARSER_DETECTED_LAMMPS_RUN_ERROR",
-            message="The parser detected the lampps error :{error}",
+            message="The parser detected the lammps error :{error}",
         )
         spec.exit_code(
             400,
