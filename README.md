@@ -107,11 +107,10 @@ pytest --lammps-workdir "test_workdir"
 
 ### Pre-commit
 
-The code is formatted and linted using [pre-commit](https://pre-commit.com/), so that the code conform to the standard. One must simply install the repository with the `pre-commit` extra dependencies:
+The code is formatted and linted using [pre-commit](https://pre-commit.com/), so that the code conform to the standard:
 
 ```shell
 cd aiida-lammps
-pip install -e .[pre-commit]
 pre-commit run --all
 ```
 or to automate runs, triggered before each commit:
@@ -120,11 +119,6 @@ or to automate runs, triggered before each commit:
 pre-commit install
 ```
 
-The pre-commit can also be run in an isolated environment via `tox` with:
-
-```shell
-tox -e pre-commit
-```
-
 ## License
-The `aiida-lammps` plugin package is released under the MIT license. See the `LICENSE.txt` file for more details.
+
+The `aiida-lammps` plugin package is released under the MIT license. See the `LICENSE` file for more details.

@@ -131,9 +131,8 @@ class LammpsRawCalculation(CalcJob):
             # namespace, falling back to the filename of the ``SinglefileData`` node if not defined.
             filename = filenames.get(key, node.filename)
 
-            with folder.open(filename, "wb") as target:
-                with node.open(mode="rb") as source:
-                    shutil.copyfileobj(source, target)
+            with folder.open(filename, "wb") as target, node.open(mode="rb") as source:
+                shutil.copyfileobj(source, target)
 
             provenance_exclude_list.append(filename)
 

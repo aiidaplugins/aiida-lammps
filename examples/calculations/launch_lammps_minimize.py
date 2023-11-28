@@ -148,7 +148,6 @@ def main(
 
 
 if __name__ == "__main__":
-
     # Get the structure that will be used in the calculation
     STRUCTURE = generate_structure()
     # Get the potential that will be used in the calculation

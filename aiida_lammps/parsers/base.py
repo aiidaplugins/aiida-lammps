@@ -208,16 +208,18 @@ class LammpsBaseParser(Parser):
 
         restart_filename = ""
 
-        if parameters.get("restart", {}).get("print_final", False):
-            if input_restart_filename in list_of_files:
-                with self.node.outputs.retrieved.base.repository.open(
-                    input_restart_filename,
-                    mode="rb",
-                ) as handle:
-                    restart_file = orm.SinglefileData(handle)
-                self.out("restartfile", restart_file)
-                restart_found = True
-                restart_filename = input_restart_filename
+        if (
+            parameters.get("restart", {}).get("print_final", False)
+            and input_restart_filename in list_of_files
+        ):
+            with self.node.outputs.retrieved.base.repository.open(
+                input_restart_filename,
+                mode="rb",
+            ) as handle:
+                restart_file = orm.SinglefileData(handle)
+            self.out("restartfile", restart_file)
+            restart_found = True
+            restart_filename = input_restart_filename
 
         if (
             parameters.get("restart", {}).get("print_intermediate", False)

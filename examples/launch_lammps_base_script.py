@@ -43,7 +43,6 @@ def main(
 
 
 if __name__ == "__main__":
-
     # Get the lammps code defined in AiiDA database
     CODE = orm.load_code("lammps-23.06.2022@localhost")
     # Define the parameters for the resources requested for the calculation

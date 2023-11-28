@@ -3,6 +3,7 @@ import os
 
 from aiida_lammps.data.trajectory import LammpsTrajectory
 from aiida_lammps.parsers.parse_raw import create_structure, iter_trajectories
+
 from .utils import TEST_DIR, recursive_round
 
 
@@ -19,9 +20,7 @@ def test_iter_trajectories(data_regression):
     data_regression.check(output)
 
 
-def test_create_structure(
-    db_test_app, data_regression
-):  # pylint: disable=unused-argument
+def test_create_structure(db_test_app, data_regression):  # pylint: disable=unused-argument
     """Test that one can create an structure from a trajectory step"""
     path = os.path.join(TEST_DIR, "input_files", "trajectory.lammpstrj")
     with open(path) as handle:
@@ -33,27 +32,21 @@ def test_create_structure(
     )
 
 
-def test_lammps_trajectory_data(
-    db_test_app, data_regression
-):  # pylint: disable=unused-argument
+def test_lammps_trajectory_data(db_test_app, data_regression):  # pylint: disable=unused-argument
     """Test that one can generate a trajectory from a file"""
     path = os.path.join(TEST_DIR, "input_files", "trajectory.lammpstrj")
     data = LammpsTrajectory(path)
     data_regression.check(data.base.attributes.all)
 
 
-def test_lammpstraj_get_step_string(
-    db_test_app, file_regression
-):  # pylint: disable=unused-argument
+def test_lammpstraj_get_step_string(db_test_app, file_regression):  # pylint: disable=unused-argument
     """Get the step information from a trajectory data file"""
     path = os.path.join(TEST_DIR, "input_files", "trajectory.lammpstrj")
     data = LammpsTrajectory(path)
     file_regression.check(data.get_step_string(-1))
 
 
-def test_lammpstraj_get_step_struct(
-    db_test_app, data_regression
-):  # pylint: disable=unused-argument
+def test_lammpstraj_get_step_struct(db_test_app, data_regression):  # pylint: disable=unused-argument
     """Get the structure data for a given trajectory step"""
     path = os.path.join(TEST_DIR, "input_files", "trajectory.lammpstrj")
     data = LammpsTrajectory(path)

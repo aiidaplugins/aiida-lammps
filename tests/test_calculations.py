@@ -185,8 +185,8 @@ def test_lammps_base(
 )
 def test_lammps_restart_generation(
     db_test_app,
-    generate_structure,  # pylint: disable=redefined-outer-name  # noqa: F811
-    get_potential_fe_eam,  # pylint: disable=redefined-outer-name  # noqa: F811
+    generate_structure,  # pylint: disable=redefined-outer-name
+    get_potential_fe_eam,  # pylint: disable=redefined-outer-name
     parameters,
     restart_parameters,
     request,

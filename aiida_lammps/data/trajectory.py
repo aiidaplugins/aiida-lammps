@@ -90,7 +90,6 @@ class LammpsTrajectory(orm.Data):
                 self._compression_method,
             ) as zip_file:
                 for step_id, trajectory_step in enumerate(iter_trajectories(fileobj)):
-
                     # extract data to store in attributes
                     time_steps.append(trajectory_step.timestep)
                     if number_atoms is None:
@@ -135,13 +134,13 @@ class LammpsTrajectory(orm.Data):
 
         self.base.attributes.set("number_steps", len(time_steps))
         self.base.attributes.set("number_atoms", number_atoms)
-        self.base.attributes.set("field_names", list(sorted(field_names)))
+        self.base.attributes.set("field_names", sorted(field_names))
         self.base.attributes.set("trajectory_filename", self._trajectory_filename)
         self.base.attributes.set("timestep_filename", self._timestep_filename)
         self.base.attributes.set("zip_prefix", self._zip_prefix)
         self.base.attributes.set("compression_method", self._compression_method)
         self.base.attributes.set("aliases", aliases)
-        self.base.attributes.set("elements", list(sorted(elements)))
+        self.base.attributes.set("elements", sorted(elements))
 
     @property
     def number_steps(self):
@@ -199,14 +198,12 @@ class LammpsTrajectory(orm.Data):
         with self.base.repository.open(
             self.base.attributes.get("trajectory_filename"),
             mode="rb",
-        ) as handle:
-            with ZipFile(
-                handle,
-                "r",
-                self.base.attributes.get("compression_method"),
-            ) as zip_file:
-                with zip_file.open(zip_name, "r") as step_file:
-                    content = step_file.read()
+        ) as handle, ZipFile(
+            handle,
+            "r",
+            self.base.attributes.get("compression_method"),
+        ) as zip_file, zip_file.open(zip_name, "r") as step_file:
+            content = step_file.read()
         return content.decode("utf8")
 
     def get_step_data(self, step_idx):
@@ -224,17 +221,16 @@ class LammpsTrajectory(orm.Data):
         with self.base.repository.open(
             self.base.attributes.get("trajectory_filename"),
             mode="rb",
-        ) as handle:
-            with ZipFile(
-                handle,
-                "r",
-                self.base.attributes.get("compression_method"),
-            ) as zip_file:
-                for step_idx in steps:
-                    zip_name = f'{self.base.attributes.get("zip_prefix")}{step_idx}'
-                    with zip_file.open(zip_name) as step_file:
-                        content = step_file.read()
-                        yield content
+        ) as handle, ZipFile(
+            handle,
+            "r",
+            self.base.attributes.get("compression_method"),
+        ) as zip_file:
+            for step_idx in steps:
+                zip_name = f'{self.base.attributes.get("zip_prefix")}{step_idx}'
+                with zip_file.open(zip_name) as step_file:
+                    content = step_file.read()
+                    yield content
 
     def get_step_structure(
         self,

@@ -7,7 +7,7 @@ is generated depending on the parameters provided, the type of potential,
 the input structure and whether or not a restart file is provided.
 """
 import os
-from typing import Union
+from typing import ClassVar, Dict, Union
 
 from aiida import orm
 from aiida.common import datastructures
@@ -30,7 +30,7 @@ class LammpsBaseCalculation(CalcJob):
     the input structure and whether or not a restart file is provided.
     """
 
-    _DEFAULT_VARIABLES = {
+    _DEFAULT_VARIABLES: ClassVar[Dict[str, str]] = {
         "input_filename": "input.in",
         "structure_filename": "structure.dat",
         "output_filename": "lammps.out",
@@ -325,10 +325,7 @@ class LammpsBaseCalculation(CalcJob):
         else:
             _parameters = {}
 
-        if "settings" in self.inputs:
-            settings = self.inputs.settings.get_dict()
-        else:
-            settings = {}
+        settings = self.inputs.settings.get_dict() if "settings" in self.inputs else {}
 
         # Set the remote copy list and the symlink so that if one needs to use restartfiles from
         # a previous calculations one can do so without problems
