@@ -98,11 +98,11 @@ class LammpsRawCalculation(CalcJob):
         additional_retrieve_list = settings.get("additional_retrieve_list", [])
 
         if not isinstance(additional_retrieve_list, list) or any(
-            not isinstance(e, str) for e in additional_retrieve_list
+            not isinstance(e, (str, tuple)) for e in additional_retrieve_list
         ):
             return (
                 "Invalid value for `additional_retrieve_list`, should be "
-                f"list of strings but got: {additional_retrieve_list}"
+                f"list of strings or of tuples but got: {additional_retrieve_list}"
             )
 
     def prepare_for_submission(self, folder: Folder) -> CalcInfo:
@@ -122,7 +122,6 @@ class LammpsRawCalculation(CalcJob):
             handle.write(self.inputs.script.get_content())
 
         for key, node in self.inputs.get("files", {}).items():
-
             # The filename with which the file is written to the working directory is defined by the ``filenames`` input
             # namespace, falling back to the filename of the ``SinglefileData`` node if not defined.
             filename = filenames.get(key, node.filename)

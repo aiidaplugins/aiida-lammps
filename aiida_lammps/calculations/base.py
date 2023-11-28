@@ -231,7 +231,6 @@ class LammpsBaseCalculation(CalcJob):
         # pylint: disable=unused-argument, inconsistent-return-statements
         """Validate the top-level inputs namespace."""
         if "parameters" in value:
-
             _restart = any(
                 value["parameters"].get_dict().get("restart", {}).get(key, False)
                 for key in ["print_final", "print_intermediate"]
@@ -269,11 +268,11 @@ class LammpsBaseCalculation(CalcJob):
                 f"list of strings but got: {additional_cmdline_params}"
             )
         if not isinstance(additional_retrieve_list, list) or any(
-            not isinstance(e, str) for e in additional_retrieve_list
+            not isinstance(e, (str, tuple)) for e in additional_retrieve_list
         ):
             return (
                 "Invalid value for `additional_retrieve_list`, should be "
-                f"list of strings but got: {additional_retrieve_list}"
+                f"list of strings or of tuples but got: {additional_retrieve_list}"
             )
 
     @classmethod

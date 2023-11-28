@@ -23,7 +23,7 @@ This is a subclass of the {class}`~aiida_lammps.workflows.base.LammpsBaseWorkCha
 - **lammps.structure**, ({class}`~aiida.orm.nodes.data.structure.StructureData`) - Structure used in the ``LAMMPS`` calculation.
 - **lammps.potential**, ({class}`~aiida_lammps.data.potential.LammpsPotentialData`) - Potential used in the ``LAMMPS`` calculation. See [](#topics-data-potential).
 - **lammps.parameters**, ({class}`~aiida.orm.nodes.data.dict.Dict`) - Parameters that control the input script generated for the ``LAMMPS`` calculation. See [](#topics-data-parameters).
-- **lammps.settings**, ({class}`~aiida.orm.nodes.data.dict.Dict`), *optional* - Additional settings that control the ``LAMMPS`` calculation.
+- **lammps.settings**, ({class}`~aiida.orm.nodes.data.dict.Dict`), *optional* - Additional settings that control the ``LAMMPS`` calculation. One can control if extra filess will be copied to the repository by specifying `settings["additional_retrieve_list"] = ["foo", "bar"]`. It is also possible to do pattern matching via [globs patterns](https://en.wikipedia.org/wiki/Glob_%28programming%29) by `settings["additional_retrieve_list"] = [('path/sub/*c.txt', '.', None)]`, for more information see the [pattern matching](https://aiida.readthedocs.io/projects/aiida-core/en/latest/topics/calculations/usage.html#pattern-matching) in the `aiida-core` documentation.
 - **lammps.input_restartfile** ({class}`~aiida.orm.nodes.data.singlefile.SinglefileData`), *optional* - Input restart file to continue from a previous ``LAMMPS`` calculation.
 - **lammps.parent_folder**, ({class}`~aiida.orm.nodes.data.remote.base.RemoteData`), *optional* - An optional working directory of a previously completed calculation to restart from.
 - **store_restart**, ({{ Bool }}), *optional* - Whether to store the restart file in the repository. Defaults to `False`.
@@ -58,4 +58,4 @@ LAMMPS can produce binary restart files which contain all the atomic positions, 
 - **structure**, ({class}`~aiida.orm.nodes.data.structure.StructureData`), *optional* - The output structure of the calculation.
 - **remote_folder**, ({class}`~aiida.orm.nodes.data.remote.base.RemoteData`) - Folder in the remote machine where the calculation was performed.
 - **remote_stash**, ({class}`~aiida.orm.nodes.data.remote.stash.base.RemoteStashData`), *optional* – Contents of the stash.source_list option are stored in this remote folder after job completion.
-- **retrieved**, ({class}`~aiida.orm.nodes.data.folder.FolderData`) - Files that are retrieved by the daemon will be stored in this node. By default the stdout and stderr of the scheduler will be added, but one can add more by specifying them in `settings["additional_retrieve_list"] = ["foo", "bar"]`.
+- **retrieved**, ({class}`~aiida.orm.nodes.data.folder.FolderData`) - Files that are retrieved by the daemon will be stored in this node. By default the stdout and stderr of the scheduler will be added.
