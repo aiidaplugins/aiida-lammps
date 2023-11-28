@@ -1,5 +1,6 @@
 """Plugin with minimal interface to run LAMMPS."""
 import shutil
+from typing import Union
 
 from aiida import orm
 from aiida.common.datastructures import CalcInfo, CodeInfo
@@ -33,6 +34,13 @@ class LammpsRawCalculation(CalcJob):
             serializer=orm.to_aiida_type,
             required=False,
             help="Optional namespace to specify with which filenames the files of ``files`` input should be written.",
+        )
+        spec.input(
+            "settings",
+            valid_type=orm.Dict,
+            required=False,
+            validator=cls._validate_settings,
+            help="Additional settings that control the ``LAMMPS`` calculation",
         )
         spec.inputs["metadata"]["options"][
             "input_filename"
@@ -83,6 +91,25 @@ class LammpsRawCalculation(CalcJob):
                 "namespace to explicitly define unique filenames for each file."
             )
 
+    @classmethod
+    def _validate_settings(cls, value, ctx) -> Union[str, None]:
+        # pylint: disable=unused-argument, inconsistent-return-statements
+        """Validate the ``settings`` input."""
+        if not value:
+            return
+
+        settings = value.get_dict()
+
+        additional_retrieve_list = settings.get("additional_retrieve_list", [])
+
+        if not isinstance(additional_retrieve_list, list) or any(
+            not isinstance(e, (str, tuple)) for e in additional_retrieve_list
+        ):
+            return (
+                "Invalid value for `additional_retrieve_list`, should be "
+                f"list of strings or of tuples but got: {additional_retrieve_list}"
+            )
+
     def prepare_for_submission(self, folder: Folder) -> CalcInfo:
         """Prepare the calculation for submission.
 
@@ -100,7 +127,6 @@ class LammpsRawCalculation(CalcJob):
             handle.write(self.inputs.script.get_content())
 
         for key, node in self.inputs.get("files", {}).items():
-
             # The filename with which the file is written to the working directory is defined by the ``filenames`` input
             # namespace, falling back to the filename of the ``SinglefileData`` node if not defined.
             filename = filenames.get(key, node.filename)
@@ -119,6 +145,10 @@ class LammpsRawCalculation(CalcJob):
         calcinfo = CalcInfo()
         calcinfo.provenance_exclude_list = provenance_exclude_list
         calcinfo.retrieve_list = [filename_output]
+        if "settings" in self.inputs:
+            calcinfo.retrieve_list += self.inputs.settings.get_dict().get(
+                "additional_retrieve_list", []
+            )
         calcinfo.codes_info = [codeinfo]
 
         return calcinfo
