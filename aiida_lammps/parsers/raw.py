@@ -27,9 +27,11 @@ class LammpsRawParser(Parser):
             return self.exit_codes.ERROR_PARSING_OUTFILE
 
         if parsed_data["global"]["errors"]:
+            # Output the data for checking what was parsed
+            self.out("results", orm.Dict({"compute_variables": parsed_data["global"]}))
             for entry in parsed_data["global"]["errors"]:
                 self.logger.error(f"LAMMPS emitted the error {entry}")
-                return self.exit_codes.ERROR_PARSER_DECTECTED_LAMMPS_RUN_ERROR.format(
+                return self.exit_codes.ERROR_PARSER_DETECTED_LAMMPS_RUN_ERROR.format(
                     error=entry
                 )
 

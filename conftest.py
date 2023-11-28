@@ -9,7 +9,7 @@ import os
 import pathlib
 import shutil
 import tempfile
-from typing import Any
+from typing import Any, Optional
 
 from aiida import orm
 from aiida.common import AttributeDict, CalcInfo, LinkType, exceptions
@@ -86,7 +86,6 @@ def fixture_code(fixture_localhost):
     """Return an ``InstalledCode`` instance configured to run calculations of given entry point on localhost."""
 
     def _fixture_code(entry_point_name):
-
         label = f"test.{entry_point_name}"
 
         try:
@@ -637,12 +636,11 @@ def generate_calc_job_node(fixture_localhost):
         if test_name is not None:
             basepath = os.path.dirname(os.path.abspath(__file__))
             filepath_folder = os.path.join(TEST_DIR, test_name)
-
         entry_point = format_entry_point_string("aiida.calculations", entry_point_name)
 
         node = orm.CalcJobNode(computer=computer, process_type=entry_point)
         node.base.attributes.set("input_filename", "input.in")
-        node.base.attributes.set("output_filename", "lammps_output")
+        node.base.attributes.set("output_filename", "lammps.out")
         node.set_option("resources", {"num_machines": 1, "num_mpiprocs_per_machine": 1})
         node.set_option("max_wallclock_seconds", 1800)
         node.set_metadata_inputs(
@@ -683,7 +681,6 @@ def generate_calc_job_node(fixture_localhost):
         if filepath_folder:
             retrieved = orm.FolderData()
             retrieved.base.repository.put_object_from_tree(filepath_folder)
-
             # Remove files that are supposed to be only present in the retrieved temporary folder
             if retrieve_temporary:
                 for filename in filenames:
@@ -793,7 +790,6 @@ def get_structure_data():
     def _get_structure_data(pkey):
         """return test structure data"""
         if pkey == "Fe":
-
             cell = [
                 [2.848116, 0.000000, 0.000000],
                 [0.000000, 2.848116, 0.000000],
@@ -810,7 +806,6 @@ def get_structure_data():
             names = ["Fe1", "Fe2"]
 
         elif pkey == "Ar":
-
             cell = [
                 [3.987594, 0.000000, 0.000000],
                 [-1.993797, 3.453358, 0.000000],
@@ -826,7 +821,6 @@ def get_structure_data():
             fractional = True
 
         elif pkey == "GaN":
-
             cell = [
                 [3.1900000572, 0, 0],
                 [-1.5950000286, 2.762621076, 0],
@@ -844,7 +838,6 @@ def get_structure_data():
             symbols = names = ["Ga", "Ga", "N", "N"]
 
         elif pkey == "pyrite":
-
             cell = [
                 [5.38, 0.000000, 0.000000],
                 [0.000000, 5.38, 0.000000],
@@ -1038,7 +1031,7 @@ def generate_singlefile_data():
     def _generate_singlefile_data(
         computer: orm.Computer,
         label: str = "restartfile",
-        entry_point_name: str = None,
+        entry_point_name: Optional[str] = None,
     ):
         entry_point = format_entry_point_string("aiida.calculations", entry_point_name)
 
@@ -1067,7 +1060,7 @@ def generate_lammps_trajectory():
     def _generate_lammps_trajectory(
         computer: orm.Computer,
         label: str = "trajectory",
-        entry_point_name: str = None,
+        entry_point_name: Optional[str] = None,
     ):
         entry_point = format_entry_point_string("aiida.calculations", entry_point_name)
 
@@ -1098,8 +1091,8 @@ def generate_lammps_results():
     def _generate_lammps_results(
         computer: orm.Computer,
         label: str = "results",
-        entry_point_name: str = None,
-        data: dict = None,
+        entry_point_name: Optional[str] = None,
+        data: Optional[dict] = None,
     ):
         entry_point = format_entry_point_string("aiida.calculations", entry_point_name)
 

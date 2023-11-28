@@ -58,7 +58,6 @@ class LammpsBaseParser(Parser):
             return self.exit_codes.ERROR_NO_RETRIEVED_FOLDER
 
         list_of_files = out_folder.base.repository.list_object_names()
-
         # Check the output file
         outputfile_filename = self.node.get_option("output_filename")
         if outputfile_filename not in list_of_files:
@@ -70,9 +69,11 @@ class LammpsBaseParser(Parser):
         )
 
         if parsed_data["global"]["errors"]:
+            # Output the data for checking what was parsed
+            self.out("results", orm.Dict({"compute_variables": parsed_data["global"]}))
             for entry in parsed_data["global"]["errors"]:
                 self.logger.error(f"LAMMPS emitted the error {entry}")
-                return self.exit_codes.ERROR_PARSER_DECTECTED_LAMMPS_RUN_ERROR.format(
+                return self.exit_codes.ERROR_PARSER_DETECTED_LAMMPS_RUN_ERROR.format(
                     error=entry
                 )
 
@@ -223,11 +224,9 @@ class LammpsBaseParser(Parser):
             and not restart_found
             and temp_folder
         ):
-
             restartfiles = glob.glob(f"{temp_folder}/{input_restart_filename}*")
 
             if restartfiles:
-
                 _files = []
                 for entry in restartfiles:
                     try:
