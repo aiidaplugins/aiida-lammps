@@ -1,11 +1,15 @@
 # Changelog
 
+## v1.0.1 2023-11-28
+
+Minor internal improvements to the code base
+
 ## v1.0.0 2023-11-28
 
-✨ Support for aiida-core >= 2.0.0
+⬆️ Support for aiida-core >= 2.0.0
 
 - drop support for python<3.8
-- fix deprecation watnings
+- fix deprecation warnings
 
 ♻️ Refactoring of the plugin
 - Removed the old Calculation interfaces and replaced them by a more flexible instances, either by passing a set of parameters that describe a single stage `LAMMPS` run (`LammpsBaseCalculation`) or by passing the input script directly (`LammpsRawCalculation`).
