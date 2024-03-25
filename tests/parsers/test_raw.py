@@ -1,4 +1,5 @@
 """Tests for the :mod:`aiida_lammps.parsers.raw` module."""
+
 # pylint: disable=redefined-outer-name
 from aiida.plugins import ParserFactory
 

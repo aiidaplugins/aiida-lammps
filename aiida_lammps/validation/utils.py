@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 """Utility functions for validating JSON objects against schemas."""
+
 import json
 import os
 from typing import Union

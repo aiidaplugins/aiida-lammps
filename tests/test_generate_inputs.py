@@ -1,4 +1,5 @@
 """Functions to tests the input file generation"""
+
 import os
 
 import pytest

@@ -1,4 +1,5 @@
 """Tests for the workflows in aiida-lammps"""
+
 # pylint: disable=redefined-outer-name
 from aiida import orm
 from aiida.common import AttributeDict, LinkType

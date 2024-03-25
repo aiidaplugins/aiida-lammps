@@ -1,4 +1,5 @@
 """Tests for the aiida-lammps trajectory data type"""
+
 import os
 
 from aiida_lammps.data.trajectory import LammpsTrajectory

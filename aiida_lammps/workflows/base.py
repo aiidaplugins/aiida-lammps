@@ -1,4 +1,5 @@
 """Workchain to run a LAMMPS calculation with automated error handling and restarts."""
+
 import re
 
 from aiida import orm

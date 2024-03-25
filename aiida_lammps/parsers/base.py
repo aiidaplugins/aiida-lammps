@@ -4,6 +4,7 @@ Base parser for LAMMPS calculations.
 It takes care of parsing the lammps.out file, the trajectory file and the
 yaml file with the final value of the variables printed in the ``thermo_style``.
 """
+
 import glob
 import os
 import time

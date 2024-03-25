@@ -1,4 +1,5 @@
 """General utility functions for aiida-lammps"""
+
 import enum
 
 from aiida import __version__ as aiida_version_

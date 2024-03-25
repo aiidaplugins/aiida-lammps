@@ -1,4 +1,5 @@
 """Test the functionality of the lammps potential data object"""
+
 import os
 
 import pytest

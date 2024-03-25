@@ -1,6 +1,7 @@
 """
 Sets up an example for the calculation of bcc Fe using ``aiida-lammps``.
 """
+
 from aiida import orm
 from aiida.common.extendeddicts import AttributeDict
 from aiida.engine import run_get_node
