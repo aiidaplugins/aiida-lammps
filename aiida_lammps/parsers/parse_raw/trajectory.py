@@ -1,5 +1,5 @@
-"""Set of functions to parse the LAMMPS dump output.
-"""
+"""Set of functions to parse the LAMMPS dump output."""
+
 # pylint: disable=fixme
 from collections import namedtuple
 import re

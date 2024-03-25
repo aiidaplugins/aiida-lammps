@@ -1,4 +1,5 @@
 """Set of functions to parse the unformatted output file from LAMMPS"""
+
 # pylint: disable=fixme
 import ast
 import re
@@ -96,9 +97,9 @@ def parse_outputfile(
                 line.strip().split("=")[-1].strip()
             )
         if "Energy initial, next-to-last, final" in line:
-            global_parsed_data["minimization"][
-                "energy_relative_difference"
-            ] = _calculate_energy_tolerance(data[index + 1])
+            global_parsed_data["minimization"]["energy_relative_difference"] = (
+                _calculate_energy_tolerance(data[index + 1])
+            )
         if "Force two-norm initial, final" in line:
             global_parsed_data["minimization"]["force_two_norm"] = float(
                 line.strip().split("=")[-1].split()[-1].strip()

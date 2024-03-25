@@ -1,4 +1,5 @@
 """Utility functions for the handling of the input files"""
+
 from collections.abc import Iterable
 from typing import Optional, Union
 

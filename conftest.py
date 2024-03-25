@@ -1,6 +1,7 @@
 """
 initialise a test database and profile
 """
+
 # pylint: disable=redefined-outer-name
 from __future__ import annotations
 

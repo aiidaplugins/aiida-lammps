@@ -4,6 +4,7 @@ The example input script is taken from https://www.lammps.org/inputs/in.rhodo.tx
 the official benchmarks of LAMMPS. It is a simple MD simulation of a protein. It requires an additional input file in
 the working directory ``data.rhodo``. This example shows how to add such additional input files.
 """
+
 import io
 import textwrap
 

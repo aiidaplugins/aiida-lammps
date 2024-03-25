@@ -1,4 +1,5 @@
 """Test the aiida-lammps calculations."""
+
 import copy
 
 from aiida import orm
