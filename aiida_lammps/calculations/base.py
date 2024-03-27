@@ -41,7 +41,7 @@ class LammpsBaseCalculation(CalcJob):
         "parser_name": "lammps.base",
     }
 
-    _POTENTIAL_FILENAME = "potential.dat"
+    _POTENTIAL_FILENAME = "potential.pth"
 
     # In restarts, will not copy but use symlinks
     _default_symlink_usage = True
@@ -365,8 +365,12 @@ class LammpsBaseCalculation(CalcJob):
             handle.write(structure_filecontent)
 
         # Write the potential to the remote folder
-        with folder.open(self._POTENTIAL_FILENAME, "w") as handle:
-            handle.write(self.inputs.potential.get_content())
+        # with folder.open(self._POTENTIAL_FILENAME, "w") as handle:
+        #     handle.write(self.inputs.potential.get_content())
+        
+        with folder.open(self._POTENTIAL_FILENAME, 'wb') as handle1:
+            with self.inputs.potential.open(mode='rb') as handle2:    
+                handle1.write(handle2.read())
 
         # Write the input file content. This function will also check the
         # sanity of the passed parameters when comparing it to a schema
@@ -374,6 +378,7 @@ class LammpsBaseCalculation(CalcJob):
             potential=self.inputs.potential,
             structure=self.inputs.structure,
             parameters=_parameters,
+            potential_filename=self._POTENTIAL_FILENAME,
             restart_filename=_restart_filename,
             trajectory_filename=_trajectory_filename,
             variables_filename=_variables_filename,
