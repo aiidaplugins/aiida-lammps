@@ -28,6 +28,8 @@
         "wavepacket"
     ],
     "pair_style": {
+        "allegro":{"units": "metal", "atom_style": "atomic", "read_from_file": true},
+        "nequip":{"units": "metal", "atom_style": "atomic", "read_from_file": true},
         "adp":{"units": "unknown", "atom_style": "atomic", "read_from_file": true},
         "agni":{"units": "unknown", "atom_style": "atomic", "read_from_file": true},
         "airebo":{"units": "unknown", "atom_style": "atomic", "read_from_file": true},
