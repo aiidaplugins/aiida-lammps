@@ -367,9 +367,9 @@ class LammpsBaseCalculation(CalcJob):
         # Write the potential to the remote folder
         # with folder.open(self._POTENTIAL_FILENAME, "w") as handle:
         #     handle.write(self.inputs.potential.get_content())
-        
-        with folder.open(self._POTENTIAL_FILENAME, 'wb') as handle1:
-            with self.inputs.potential.open(mode='rb') as handle2:    
+
+        with folder.open(self._POTENTIAL_FILENAME, "wb") as handle1:
+            with self.inputs.potential.open(mode="rb") as handle2:
                 handle1.write(handle2.read())
 
         # Write the input file content. This function will also check the
