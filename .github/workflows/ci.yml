@@ -30,12 +30,16 @@ jobs:
         include:
           - python-version: "3.9"
             lammps-version: "2020.12.24"
+          - python-version: "3.9"
+            lammps-version: "2023.08.02"
           - python-version: "3.10"
-            lammps-version: "2021.09.29"
+            lammps-version: "2022.06.23"
+          - python-version: "3.10"
+            lammps-version: "2023.08.02"
           - python-version: "3.11"
-            lammps-version: "2021.09.29"
+            lammps-version: "2022.06.23"
           - python-version: "3.12"
-            lammps-version: "2021.09.29"
+            lammps-version: "2024.02.07"
 
     runs-on: ubuntu-latest
 
