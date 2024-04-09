@@ -5,30 +5,33 @@ build-backend = "flit_core.buildapi"
 [project]
 name = "aiida-lammps"
 dynamic = ["version", "description"]
-authors = [{name = "Chris Sewell", email = "chrisj_sewell@hotmail.com"}, {name = "Jonathan Chico", email = "jonathan.chico@sandvik.com"}]
+authors = [
+    { name = "Chris Sewell", email = "chrisj_sewell@hotmail.com" },
+    { name = "Jonathan Chico", email = "jonathan.chico@sandvik.com" },
+]
 readme = "README.md"
-license = {file = "LICENSE"}
+license = { file = "LICENSE" }
 classifiers = [
     "Development Status :: 4 - Beta",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
     "Topic :: Scientific/Engineering :: Chemistry",
     "Topic :: Scientific/Engineering :: Physics",
-    "Framework :: AiiDA"
+    "Framework :: AiiDA",
 ]
 keywords = ["aiida", "workflows", "lammps"]
 requires-python = ">=3.8"
 dependencies = [
     "aiida-core[atomic_tools]>=2.0.0,<3.0.0",
     "importlib_resources",
-    "jsonschema",
+    "jsonschema~=3.2.0",
     "numpy",
     "packaging",
-    "python-dateutil"
+    "python-dateutil",
 ]
 
 [project.urls]
@@ -43,7 +46,7 @@ tests = [
     "pytest-cov",
     "coverage",
     "pytest-timeout",
-    "pytest-regressions"
+    "pytest-regressions",
 ]
 
 pre-commit = [
@@ -62,7 +65,7 @@ docs = [
     'sphinxcontrib-details-directive~=0.1.0',
     'sphinx-autoapi~=3.0',
     'myst_parser~=1.0.0',
-    "furo"
+    "furo",
 ]
 
 [project.entry-points."aiida.calculations"]
@@ -86,15 +89,12 @@ docs = [
 name = "aiida_lammps"
 
 [tool.flit.sdist]
-exclude = [
-    "docs/",
-    "tests/",
-]
+exclude = ["docs/", "tests/"]
 
 [tool.coverage.run]
 # Configuration of [coverage.py](https://coverage.readthedocs.io)
 # reporting which lines of your plugin are covered by tests
-source=["aiida_lammps"]
+source = ["aiida_lammps"]
 
 [tool.isort]
 skip = ["venv"]
@@ -112,7 +112,7 @@ profile = "black"
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = pre-commit,{3.8,3.9,3.10}-aiida_lammps
+envlist = pre-commit,{3.9,3.10,3.11}-aiida_lammps
 requires = virtualenv >= 20
 isolated_build = True
 

@@ -14,7 +14,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4.5.0
         with:
-          python-version: "3.8"
+          python-version: "3.9"
       - name: Make sure virtualevn>20 is installed, which will yield newer pip and possibility to pin pip version.
         run: pip install "virtualenv>20"
       - name: Install Tox
@@ -29,10 +29,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - python-version: "3.8"
-            lammps-version: "2020.12.24"
-            backend: django
-          - python-version: "3.8"
+          - python-version: "3.9"
             lammps-version: "2020.12.24"
             backend: sqlalchemy
           - python-version: "3.9"
@@ -86,7 +83,7 @@ jobs:
           tox -e ${{ matrix.python-version }}-aiida_lammps -- tests/ --cov=./aiida_lammps --cov-append --cov-report=xml --cov-report=term-missing
 
       - name: Upload to Codecov
-        if: matrix.python-version == 3.8
+        if: matrix.python-version == 3.9
         uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -105,7 +102,7 @@ jobs:
       - name: Set up Python 3.8
         uses: actions/setup-python@v4.5.0
         with:
-          python-version: "3.8"
+          python-version: "3.9"
       - name: install flit
         run: |
           pip install flit~=3.4
