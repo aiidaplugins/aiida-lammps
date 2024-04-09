@@ -4,11 +4,11 @@ It is recommended to use tox to run the build (see tox.ini):
 `tox -e docs-clean` and `tox -e docs-update`,
 or directly: `sphinx-build -n -W --keep-going docs/source docs/_build`
 """
+
 import pathlib
 import time
 
-from aiida.manage.configuration import load_documentation_profile
-
+from aiida.manage.configuration import Profile, load_profile
 from aiida_lammps import __version__
 
 # -- AiiDA-related setup --------------------------------------------------
@@ -16,7 +16,7 @@ from aiida_lammps import __version__
 # Load the dummy profile even if we are running locally, this way the
 # documentation will succeed even if the current
 # default profile of the AiiDA installation does not use a Django backend.
-load_documentation_profile()
+load_profile(Profile("docs", {"process_control": {}, "storage": {}}))
 
 project = "AiiDA LAMMPS"
 copyright = f"2021-{time.localtime().tm_year}, AiiDA Team. All rights reserved"

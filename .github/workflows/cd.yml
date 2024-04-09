@@ -83,7 +83,7 @@ jobs:
           tox -e ${{ matrix.python-version }}-aiida_lammps -- tests/ --cov=./aiida_lammps --cov-append --cov-report=xml --cov-report=term-missing
 
       - name: Upload to Codecov
-        if: matrix.python-version == 3.9
+        if: matrix.python-version == 3.10
         uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
