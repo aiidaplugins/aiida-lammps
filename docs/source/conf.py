@@ -9,6 +9,7 @@ import pathlib
 import time
 
 from aiida.manage.configuration import Profile, load_profile
+
 from aiida_lammps import __version__
 
 # -- AiiDA-related setup --------------------------------------------------
