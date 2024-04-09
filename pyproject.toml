@@ -19,12 +19,13 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering :: Chemistry",
     "Topic :: Scientific/Engineering :: Physics",
     "Framework :: AiiDA",
 ]
 keywords = ["aiida", "workflows", "lammps"]
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 dependencies = [
     "aiida-core[atomic_tools]~=2.3",
     "importlib_resources",
