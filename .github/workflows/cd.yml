@@ -39,8 +39,6 @@ jobs:
             lammps-version: "2023.08.02"
           - python-version: "3.11"
             lammps-version: "2022.06.23"
-          - python-version: "3.12"
-            lammps-version: "2024.02.07"
 
     runs-on: ubuntu-latest
 
