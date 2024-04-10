@@ -32,7 +32,7 @@ The test suite can be run in an isolated, virtual environment using `tox` (see `
 
 ```console
 pip install tox
-tox -e 3.8-aiida_lammps
+tox -e 3.9-aiida_lammps
 ```
 
 or directly:
@@ -57,7 +57,7 @@ conda install lammps==2019.06.05
 You can specify a different executable name for LAMMPS with:
 
 ```console
-tox -e 3.8-aiida_lammps -- --lammps-exec lmp_exec
+tox -e 3.9-aiida_lammps -- --lammps-exec lmp_exec
 ```
 
 To output the results of calcjob executions to a specific directory:
