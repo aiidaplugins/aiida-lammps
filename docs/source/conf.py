@@ -46,7 +46,7 @@ intersphinx_mapping = {
 
 # Settings for the `autoapi.extenstion` automatically generating API docs
 filepath_docs = pathlib.Path(__file__).parent.parent
-filepath_src = filepath_docs.parent / "aiida_lammps"
+filepath_src = filepath_docs.parent / "src/aiida_lammps"
 autoapi_type = "python"
 autoapi_dirs = [filepath_src]
 autoapi_ignore = [filepath_src / "*cli*"]
