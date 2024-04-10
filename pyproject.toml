@@ -95,7 +95,7 @@ exclude = ["docs/", "tests/"]
 [tool.coverage.run]
 # Configuration of [coverage.py](https://coverage.readthedocs.io)
 # reporting which lines of your plugin are covered by tests
-source = ["src/aiida_lammps"]
+source = ["src"]
 
 [tool.isort]
 skip = ["venv"]
