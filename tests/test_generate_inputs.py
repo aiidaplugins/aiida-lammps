@@ -13,7 +13,7 @@ def validate_input_parameters(parameters: dict):
     _file = os.path.join(
         os.path.dirname(os.path.abspath(__file__)),
         "..",
-        "aiida_lammps/validation/schemas/lammps_schema.json",
+        "src/aiida_lammps/validation/schemas/lammps_schema.json",
     )
 
     validate_against_schema(data=parameters, filename=_file)
