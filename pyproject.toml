@@ -97,6 +97,7 @@ exclude = ["docs/", "tests/"]
 # reporting which lines of your plugin are covered by tests
 source = ["src"]
 
+
 [tool.isort]
 skip = ["venv"]
 # Force imports to be sorted by module, independent of import type
