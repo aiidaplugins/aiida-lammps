@@ -118,6 +118,15 @@ def parameters_minimize() -> AttributeDict:
         "ke/atom": [{"type": [{"keyword": " ", "value": " "}], "group": "all"}],
         "stress/atom": [{"type": ["NULL"], "group": "all"}],
         "pressure": [{"type": ["thermo_temp"], "group": "all"}],
+        "property/atom": [
+            {
+                "type": [
+                    {"keyword": " ", "value": "fx"},
+                    {"keyword": " ", "value": "fy"},
+                ],
+                "group": "all",
+            }
+        ],
     }
 
     parameters.minimize = {
@@ -170,6 +179,15 @@ def parameters_minimize_groups() -> AttributeDict:
         "stress/atom": [{"type": ["NULL"], "group": "all"}],
         "pressure": [{"type": ["thermo_temp"], "group": "all"}],
         "ke": [{"type": [{"keyword": " ", "value": " "}], "group": "test"}],
+        "property/atom": [
+            {
+                "type": [
+                    {"keyword": " ", "value": "fx"},
+                    {"keyword": " ", "value": "fy"},
+                ],
+                "group": "all",
+            }
+        ],
     }
 
     parameters.minimize = {
@@ -217,6 +235,15 @@ def parameters_md_nve() -> AttributeDict:
         "ke/atom": [{"type": [{"keyword": " ", "value": " "}], "group": "all"}],
         "stress/atom": [{"type": ["NULL"], "group": "all"}],
         "pressure": [{"type": ["thermo_temp"], "group": "all"}],
+        "property/atom": [
+            {
+                "type": [
+                    {"keyword": " ", "value": "fx"},
+                    {"keyword": " ", "value": "fy"},
+                ],
+                "group": "all",
+            }
+        ],
     }
     parameters.md = {
         "integration": {
@@ -261,6 +288,15 @@ def parameters_md_nvt() -> AttributeDict:
         "ke/atom": [{"type": [{"keyword": " ", "value": " "}], "group": "all"}],
         "stress/atom": [{"type": ["NULL"], "group": "all"}],
         "pressure": [{"type": ["thermo_temp"], "group": "all"}],
+        "property/atom": [
+            {
+                "type": [
+                    {"keyword": " ", "value": "fx"},
+                    {"keyword": " ", "value": "fy"},
+                ],
+                "group": "all",
+            }
+        ],
     }
     parameters.md = {
         "integration": {
@@ -308,6 +344,15 @@ def parameters_md_npt() -> AttributeDict:
         "ke/atom": [{"type": [{"keyword": " ", "value": " "}], "group": "all"}],
         "stress/atom": [{"type": ["NULL"], "group": "all"}],
         "pressure": [{"type": ["thermo_temp"], "group": "all"}],
+        "property/atom": [
+            {
+                "type": [
+                    {"keyword": " ", "value": "fx"},
+                    {"keyword": " ", "value": "fy"},
+                ],
+                "group": "all",
+            }
+        ],
     }
     parameters.md = {
         "integration": {
