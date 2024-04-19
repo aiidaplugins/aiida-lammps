@@ -122,6 +122,53 @@
                         "large"
                     ]
                 }
+            },
+            "dimension":{
+                "type": "integer",
+                "propertyNames":{
+                    "enum": [1,2,3]
+                }
+            },
+            "boundary":{
+                "type": "array",
+                "minItems": 3,
+                "maxItems": 3,
+                "items": [
+                    {
+                        "description": "boundary conditions along the a-direction",
+                        "type": "string",
+                        "enum": [
+                            "p",
+                            "f",
+                            "s",
+                            "m",
+                            "pp",
+                            "pf",
+                            "ps",
+                            "pm",
+                            "fp",
+                            "ff",
+                            "fs",
+                            "fm",
+                            "sp",
+                            "sf",
+                            "ss",
+                            "sm",
+                            "mp",
+                            "mf",
+                            "ms",
+                            "mm"
+                        ]
+                    },
+                    {
+                        "description": "boundary conditions along the b-direction",
+                        "type": "string"
+                    },
+                    {
+                        "description": "boundary conditions along the c-direction",
+                        "type": "string"
+                    }
+                ]
             }
         }
     },

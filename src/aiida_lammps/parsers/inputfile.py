@@ -14,7 +14,7 @@ from builtins import ValueError
 import json
 import os
 import re
-from typing import Union
+from typing import Any, Dict, Optional, Union
 
 from aiida import orm
 import numpy as np
@@ -24,7 +24,7 @@ from aiida_lammps.parsers.utils import flatten, generate_header
 
 
 def generate_input_file(
-    parameters: dict,
+    parameters: Dict[str, Any],
     potential: LammpsPotentialData,
     structure: orm.StructureData,
     trajectory_filename: str = "aiida_lammps.trajectory.dump",
@@ -32,7 +32,7 @@ def generate_input_file(
     potential_filename: str = "potential.dat",
     structure_filename: str = "structure.dat",
     variables_filename: str = "aiida_lammps.yaml",
-    read_restart_filename: str = None,
+    read_restart_filename: Optional[str] = None,
 ) -> str:
     """
     Generate the text for the lammps input file.
@@ -271,7 +271,7 @@ def write_potential_block(
 
 
 def write_structure_block(
-    parameters_structure: dict,
+    parameters_structure: Dict[str, Any],
     structure: orm.StructureData,
     structure_filename: str,
 ) -> Union[str, list]:
@@ -305,12 +305,21 @@ def write_structure_block(
     structure_block = generate_header("Start of the Structure information")
     structure_block += f'box tilt {parameters_structure.get("box_tilt", "small")}\n'
 
-    structure_block += f'dimension {structure.get_dimensionality()["dim"]}\n'
-    structure_block += "boundary "
-    for _bound in ["pbc1", "pbc2", "pbc3"]:
-        structure_block += f'{"p" if structure.base.attributes.all[_bound] else "f"} '
-    structure_block += "\n"
+    # Set the dimensions of the structure
+    if "dimension" in parameters_structure:
+        structure_block += f"dimension {parameters_structure['dimension']}\n"
+    else:
+        structure_block += f"dimension {structure.get_dimensionality()['dim']}\n"
+
+    # Set the boundary conditions of the structure
+    if "boundary" in parameters_structure:
+        structure_block += f"boundary {' '.join(parameters_structure['boundary'])} \n"
+    else:
+        structure_block += f"boundary {' '.join(['p' if entry else 'f' for entry in structure.pbc])} \n"
+
+    # Set the atom style for the structure
     structure_block += f'atom_style {parameters_structure["atom_style"]}\n'
+    # Write the command to read the structure from a file
     structure_block += f"read_data {structure_filename}\n"
     # Set the groups which will be used for the calculations
     if "groups" in parameters_structure:
