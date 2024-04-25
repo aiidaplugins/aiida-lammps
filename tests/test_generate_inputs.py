@@ -1,4 +1,5 @@
 """Functions to tests the input file generation"""
+
 import os
 
 import pytest
@@ -20,20 +21,26 @@ def validate_input_parameters(parameters: dict):
 
 
 @pytest.mark.parametrize(
-    "potential_type",
-    ["eam_alloy"],
+    "potential_type,override_parameters",
+    [("eam_alloy", True), ("eam_alloy", False)],
 )
 def test_input_generate_minimize(
     db_test_app,  # pylint: disable=unused-argument
     parameters_minimize,
     get_lammps_potential_data,
+    structure_parameters,
     potential_type,
+    override_parameters,
     file_regression,
 ):
     """Test the generation of the input file for minimize calculations"""
     # pylint: disable=too-many-locals
-
-    validate_input_parameters(parameters_minimize)
+    if override_parameters:
+        _parameters = parameters_minimize
+        _parameters["structure"].update(structure_parameters)
+    else:
+        _parameters = parameters_minimize
+    validate_input_parameters(_parameters)
     # Generate the potential
     potential_information = get_lammps_potential_data(potential_type)
     potential = LammpsPotentialData.get_or_create(
@@ -41,11 +48,12 @@ def test_input_generate_minimize(
         filename=potential_information["filename"],
         **potential_information["parameters"],
     )
+
     # Generating the structure
     structure = potential_information["structure"]
     # Generating the input file
     input_file = inputfile.generate_input_file(
-        parameters=parameters_minimize,
+        parameters=_parameters,
         potential=potential,
         structure=structure,
         trajectory_filename="temp.dump",
