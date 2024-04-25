@@ -15,7 +15,7 @@ from builtins import ValueError
 import json
 import os
 import re
-from typing import Any, Dict, List, Optional, Union, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from aiida import orm
 import numpy as np
