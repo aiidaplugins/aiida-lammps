@@ -126,7 +126,7 @@
             "dimension":{
                 "type": "integer",
                 "propertyNames":{
-                    "enum": [1,2,3]
+                    "enum": [2,3]
                 }
             },
             "boundary":{
