@@ -1,11 +1,19 @@
 # Changelog
 
+## v1.0.2 2024-04-26
+
+- Fixing an issue in which some LAMMPS vectorial properties were not working properly.
+- Changed how the formatting of the dump command is done to prevent issues from vectorial quantities with undetermined size.
+- Added the capability to override the dimension and boundary commands in LAMMPS.
+- Pinning the version of jsonschema to avoid issues with python>=3.9.
+
+
 ## v1.0.0 2023-11-28
 
 ✨ Support for aiida-core >= 2.0.0
 
 - drop support for python<3.8
-- fix deprecation watnings
+- fix deprecation warnings
 
 ♻️ Refactoring of the plugin
 - Removed the old Calculation interfaces and replaced them by a more flexible instances, either by passing a set of parameters that describe a single stage `LAMMPS` run (`LammpsBaseCalculation`) or by passing the input script directly (`LammpsRawCalculation`).
