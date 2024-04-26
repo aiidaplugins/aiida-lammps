@@ -10,11 +10,12 @@ Certain blocks are conditionally called, e.g. if no fixes are specified the
 fixes block is never called, on the other hand the control block is always
 called since it is necessary for the functioning of LAMMPS.
 """
+
 from builtins import ValueError
 import json
 import os
 import re
-from typing import Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from aiida import orm
 import numpy as np
@@ -24,7 +25,7 @@ from aiida_lammps.parsers.utils import flatten, generate_header
 
 
 def generate_input_file(
-    parameters: dict,
+    parameters: Dict[str, Any],
     potential: LammpsPotentialData,
     structure: orm.StructureData,
     trajectory_filename: str = "aiida_lammps.trajectory.dump",
@@ -32,7 +33,7 @@ def generate_input_file(
     potential_filename: str = "potential.dat",
     structure_filename: str = "structure.dat",
     variables_filename: str = "aiida_lammps.yaml",
-    read_restart_filename: str = None,
+    read_restart_filename: Optional[str] = None,
 ) -> str:
     """
     Generate the text for the lammps input file.
@@ -173,7 +174,7 @@ def generate_input_file(
     return input_file
 
 
-def write_control_block(parameters_control: dict) -> str:
+def write_control_block(parameters_control: Dict[str, Any]) -> str:
     """
     Generate the input block with global control options.
 
@@ -214,7 +215,7 @@ def write_control_block(parameters_control: dict) -> str:
 def write_potential_block(
     potential: LammpsPotentialData,
     structure: orm.StructureData,
-    parameters_potential: dict,
+    parameters_potential: Dict[str, Any],
     potential_file: str,
 ) -> str:
     """
@@ -271,10 +272,10 @@ def write_potential_block(
 
 
 def write_structure_block(
-    parameters_structure: dict,
+    parameters_structure: Dict[str, Any],
     structure: orm.StructureData,
     structure_filename: str,
-) -> Union[str, list]:
+) -> Tuple[str, List[str]]:
     """
     Generate the input block with the structure options.
 
@@ -285,19 +286,19 @@ def write_structure_block(
 
     :param parameters_structure: set of user defined parameters relating to the
         structure.
-    :type parameters_structure: dict
+    :type parameters_structure: Dict[str, Any]
     :param structure: structure that will be studied
     :type structure: orm.StructureData
     :param structure_filename: name of the file where the structure will be
         written so that LAMMPS can read it
     :type structure_filename: str
     :return: block with the structural information and list of groups present
-    :rtype: Union[str, list]
+    :rtype: Tuple[str, List[str]]
     """
 
-    group_names = []
+    group_names: List[str] = []
 
-    kind_name_id_map = {}
+    kind_name_id_map: Dict[str, int] = {}
     for site in structure.sites:
         if site.kind_name not in kind_name_id_map:
             kind_name_id_map[site.kind_name] = len(kind_name_id_map) + 1
@@ -305,12 +306,21 @@ def write_structure_block(
     structure_block = generate_header("Start of the Structure information")
     structure_block += f'box tilt {parameters_structure.get("box_tilt", "small")}\n'
 
-    structure_block += f'dimension {structure.get_dimensionality()["dim"]}\n'
-    structure_block += "boundary "
-    for _bound in ["pbc1", "pbc2", "pbc3"]:
-        structure_block += f'{"p" if structure.base.attributes.all[_bound] else "f"} '
-    structure_block += "\n"
+    # Set the dimensions of the structure
+    if "dimension" in parameters_structure:
+        structure_block += f"dimension {parameters_structure['dimension']}\n"
+    else:
+        structure_block += f"dimension {structure.get_dimensionality()['dim']}\n"
+
+    # Set the boundary conditions of the structure
+    if "boundary" in parameters_structure:
+        structure_block += f"boundary {' '.join(parameters_structure['boundary'])} \n"
+    else:
+        structure_block += f"boundary {' '.join(['p' if entry else 'f' for entry in structure.pbc])} \n"
+
+    # Set the atom style for the structure
     structure_block += f'atom_style {parameters_structure["atom_style"]}\n'
+    # Write the command to read the structure from a file
     structure_block += f"read_data {structure_filename}\n"
     # Set the groups which will be used for the calculations
     if "groups" in parameters_structure:
@@ -332,7 +342,7 @@ def write_structure_block(
     return structure_block, group_names
 
 
-def write_minimize_block(parameters_minimize: dict) -> str:
+def write_minimize_block(parameters_minimize: Dict[str, Union[str, float, int]]) -> str:
     """
     Generate the input block with the minimization options.
 
@@ -358,7 +368,7 @@ def write_minimize_block(parameters_minimize: dict) -> str:
     return minimize_block
 
 
-def write_md_block(parameters_md: dict) -> str:
+def write_md_block(parameters_md: Dict[str, Any]) -> str:
     """
     Generate the input block with the MD options.
 
@@ -407,7 +417,7 @@ def write_md_block(parameters_md: dict) -> str:
 
 
 def write_final_variables_block(
-    fixed_thermo: list,
+    fixed_thermo: List[str],
     final_file: str = "aiida_lammps.yaml",
 ) -> str:
     """
@@ -446,7 +456,7 @@ def write_final_variables_block(
     return variables_block
 
 
-def generate_velocity_string(parameters_velocity: dict) -> str:
+def generate_velocity_string(parameters_velocity: List[Dict[str, Any]]) -> str:
     """
     Generate the velocity string for the MD block.
 
@@ -465,7 +475,7 @@ def generate_velocity_string(parameters_velocity: dict) -> str:
             options += f'velocity {entry.get("group", "all")} create'
             options += f' {entry["create"].get("temp")}'
             options += (
-                f' {entry["create"].get("seed", np.random.randint(1e4))} {_options}\n'
+                f' {entry["create"].get("seed", np.random.randint(10000))} {_options}\n'
             )
         if "set" in entry:
             options += f'velocity {entry.get("group", "all")} set'
@@ -488,7 +498,7 @@ def generate_velocity_string(parameters_velocity: dict) -> str:
     return options
 
 
-def generate_velocity_options(options_velocity: dict) -> str:
+def generate_velocity_options(options_velocity: Dict[str, Any]) -> str:
     """
     Generate the options string for every velocity.
 
@@ -511,7 +521,7 @@ def generate_velocity_options(options_velocity: dict) -> str:
 
 def generate_integration_options(
     style: str,
-    integration_parameters: dict,
+    integration_parameters: Dict[str, Any],
 ) -> str:
     """
     Create a string with the integration options.
@@ -602,22 +612,25 @@ def generate_integration_options(
         for _option in temperature_options:
             if _option in integration_parameters:
                 _value = integration_parameters.get(_option)
-                _value = [str(val) for val in _value]
-                options += f' {_option} {" ".join(_value) if isinstance(_value, list) else _value} '
+                if _value:
+                    _value = [str(val) for val in _value]
+                    options += f' {_option} {" ".join(_value) if isinstance(_value, list) else _value} '
     # Set the options that depend on the pressure
     if style in pressure_dependent:
         for _option in pressure_options:
             if _option in integration_parameters:
                 _value = integration_parameters.get(_option)
-                _value = [str(val) for val in _value]
-                options += f' {_option} {" ".join(_value) if isinstance(_value, list) else _value} '
+                if _value:
+                    _value = [str(val) for val in _value]
+                    options += f' {_option} {" ".join(_value) if isinstance(_value, list) else _value} '
     # Set the options that depend on the 'uef' parameters
     if style in uef_dependent:
         for _option in uef_options:
             if _option in integration_parameters:
                 _value = integration_parameters.get(_option)
-                _value = [str(val) for val in _value]
-                options += f' {_option} {" ".join(_value) if isinstance(_value, list) else _value} '
+                if _value:
+                    _value = [str(val) for val in _value]
+                    options += f' {_option} {" ".join(_value) if isinstance(_value, list) else _value} '
     # Set the options that depend on the 'nve/limit' parameters
     if style in ["nve/limit"]:
         options += f' {integration_parameters.get("xmax", 0.1)} '
@@ -630,8 +643,8 @@ def generate_integration_options(
 
 
 def write_fix_block(
-    parameters_fix: dict,
-    group_names: list = None,
+    parameters_fix: Dict[str, Any],
+    group_names: Optional[List[str]] = None,
 ) -> str:
     """
     Generate the input block with the fix options.
@@ -674,8 +687,8 @@ def write_fix_block(
 
 
 def write_compute_block(
-    parameters_compute: dict,
-    group_names: list = None,
+    parameters_compute: Dict[str, Any],
+    group_names: Optional[List[str]] = None,
 ) -> str:
     """
     Generate the input block with the compute options.
@@ -710,11 +723,11 @@ def write_compute_block(
 
 
 def write_dump_block(
-    parameters_dump: dict,
+    parameters_dump: Dict[str, Any],
     trajectory_filename: str,
     atom_style: str,
-    parameters_compute: dict = None,
-    kind_symbols: list = None,
+    kind_symbols: List[str],
+    parameters_compute: Optional[Dict[str, Any]] = None,
 ) -> str:
     """Generate the block with dumps commands.
 
@@ -743,19 +756,20 @@ def write_dump_block(
 
     computes_list = []
 
-    for key, value in parameters_compute.items():
-        for entry in value:
-            _locality = _compute_variables[key]["locality"]
-            _printable = _compute_variables[key]["printable"]
+    if parameters_compute:
+        for key, value in parameters_compute.items():
+            for entry in value:
+                _locality = _compute_variables[key]["locality"]
+                _printable = _compute_variables[key]["printable"]
 
-            if _locality == "local" and _printable:
-                computes_list.append(
-                    generate_printing_string(
-                        name=key,
-                        group=entry["group"],
-                        calculation_type="compute",
+                if _locality == "local" and _printable:
+                    computes_list.append(
+                        generate_printing_string(
+                            name=key,
+                            group=entry["group"],
+                            calculation_type="compute",
+                        )
                     )
-                )
 
     num_double = len(list(flatten([compute.split() for compute in computes_list])))
     num_double += 3
@@ -776,9 +790,9 @@ def write_dump_block(
 
 
 def write_thermo_block(
-    parameters_thermo: dict,
-    parameters_compute: dict = None,
-) -> Union[str, list]:
+    parameters_thermo: Dict[str, Any],
+    parameters_compute: Optional[Dict[str, Any]] = None,
+) -> Tuple[str, List[str]]:
     """Generate the block with the thermo command.
 
     This will take all the global computes which were generated during the calculation
@@ -805,19 +819,20 @@ def write_thermo_block(
 
     computes_list = []
 
-    for key, value in parameters_compute.items():
-        for entry in value:
-            _locality = _compute_variables[key]["locality"]
-            _printable = _compute_variables[key]["printable"]
+    if parameters_compute:
+        for key, value in parameters_compute.items():
+            for entry in value:
+                _locality = _compute_variables[key]["locality"]
+                _printable = _compute_variables[key]["printable"]
 
-            if _locality == "global" and _printable:
-                computes_list.append(
-                    generate_printing_string(
-                        name=key,
-                        group=entry["group"],
-                        calculation_type="compute",
+                if _locality == "global" and _printable:
+                    computes_list.append(
+                        generate_printing_string(
+                            name=key,
+                            group=entry["group"],
+                            calculation_type="compute",
+                        )
                     )
-                )
 
     computes_printing = parameters_thermo.get("thermo_printing", None)
 
@@ -849,8 +864,8 @@ def write_thermo_block(
 
 
 def write_restart_block(
-    parameters_restart: dict, restart_filename: str, max_number_steps: int
-) -> dict:
+    parameters_restart: Dict[str, Any], restart_filename: str, max_number_steps: int
+) -> Dict[str, Any]:
     """Generate the block to write the restart file.
 
     :param parameters_restart: set of parameters controlling the printing of the restartfile
@@ -969,7 +984,7 @@ def generate_printing_string(
     return " ".join(_string)
 
 
-def generate_id_tag(name: str = None, group: str = None) -> str:
+def generate_id_tag(name: str, group: str) -> str:
     """Generate an id tag for fixes and/or computes.
 
     To standardize the naming of computes and/or fixes and to ensure that one
@@ -989,7 +1004,7 @@ def generate_id_tag(name: str = None, group: str = None) -> str:
     return f"{name.replace('/','_')}_{group}_aiida"
 
 
-def join_keywords(value: list) -> str:
+def join_keywords(value: List[Any]) -> str:
     """
     Generate a string for the compute/fix options.
 
@@ -1008,9 +1023,11 @@ def join_keywords(value: list) -> str:
 
     return " ".join(
         [
-            f"{entry['keyword']} {entry['value']}"
-            if isinstance(entry, dict)
-            else f"{entry}"
+            (
+                f"{entry['keyword']} {entry['value']}"
+                if isinstance(entry, dict)
+                else f"{entry}"
+            )
             for entry in value
         ]
     )

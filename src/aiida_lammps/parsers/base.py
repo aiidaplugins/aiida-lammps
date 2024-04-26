@@ -7,7 +7,7 @@ yaml file with the final value of the variables printed in the ``thermo_style``.
 import glob
 import os
 import time
-from typing import Union
+from typing import Any, Dict, List, Union
 
 from aiida import orm
 from aiida.common import exceptions
@@ -178,8 +178,8 @@ class LammpsBaseParser(Parser):
 
     def parse_restartfile(
         self,
-        parameters: dict,
-        list_of_files: list,
+        parameters: Dict[str, Any],
+        list_of_files: List[str],
         temp_folder: Union[os.PathLike, str, None],
     ) -> str:
         """
@@ -247,8 +247,8 @@ class LammpsBaseParser(Parser):
                 self.out("restartfile", restart_file)
         return restart_filename
 
-    def check_convergence(self, global_data: dict):
-        """Check for the convergence of the calculaiton in the case of a minimization run"""
+    def check_convergence(self, global_data: Dict[str, Any]):
+        """Check for the convergence of the calculation in the case of a minimization run"""
         _etol = global_data.get("minimization", {}).get(
             "energy_relative_difference", None
         )

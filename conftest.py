@@ -1,6 +1,7 @@
 """
 initialise a test database and profile
 """
+
 # pylint: disable=redefined-outer-name
 from __future__ import annotations
 
@@ -13,7 +14,7 @@ from typing import Any, Optional
 
 from aiida import orm
 from aiida.common import AttributeDict, CalcInfo, LinkType, exceptions
-from aiida.engine import CalcJob
+from aiida.engine import CalcJob, Process
 from aiida.engine.utils import instantiate_process
 from aiida.manage.manager import get_manager
 from aiida.plugins import WorkflowFactory
@@ -65,6 +66,12 @@ def pytest_report_header(config):
         f'LAMMPS Executable: {shutil.which(config.getoption("lammps_exec") or "lammps")}',
         f'LAMMPS Work Directory: {config.getoption("lammps_workdir") or "<TEMP>"}',
     ]
+
+
+@pytest.fixture
+def structure_parameters() -> AttributeDict:
+    parameteters = AttributeDict({"dimension": 2, "boundary": ["p", "p", "f"]})
+    return parameteters
 
 
 @pytest.fixture
@@ -612,7 +619,7 @@ def generate_calc_job(tmp_path):
         entry_point_name: str,
         inputs: dict[str, Any] | None = None,
         return_process: bool = False,
-    ) -> tuple[pathlib.Path, CalcInfo] | CalcJob:
+    ) -> tuple[pathlib.Path, CalcInfo] | Process:
         """Create a :class:`aiida.engine.CalcJob` instance with the given inputs.
 
         :param entry_point_name: The entry point name of the calculation job plugin to run.
