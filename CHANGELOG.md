@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.0.2 2024-04-26
+
+- Fixing an issue in which some LAMMPS vectorial properties were not working properly.
+- Changed how the formatting of the dump command is done to prevent issues from vectorial quantities with undetermined size.
+- Added the capability to override the dimension and boundary commands in LAMMPS.
+- Pinning the version of jsonschema to avoid issues with python>=3.9.
+
 ## v1.0.1 2023-11-28
 
 Minor internal improvements to the code base
