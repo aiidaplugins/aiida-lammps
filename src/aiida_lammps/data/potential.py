@@ -23,7 +23,7 @@ import io
 import json
 import os
 import pathlib
-from typing import Any, BinaryIO, ClassVar, Dict, List, Optional, Union
+from typing import Any, BinaryIO, ClassVar, Optional, Union
 import warnings
 
 from aiida import orm, plugins
@@ -47,7 +47,7 @@ def _validate_string(data: str) -> str:
     return data
 
 
-def _validate_string_list(data: Union[str, List[str]]) -> List[str]:
+def _validate_string_list(data: Union[str, list[str]]) -> list[str]:
     """
     Validate the a list of strings
 
@@ -86,7 +86,7 @@ def _validate_datetime(data: Union[str, int, float, datetime.datetime]) -> int:
     return data
 
 
-def _validate_sources(data: Union[dict, List[dict]]) -> List[dict]:
+def _validate_sources(data: Union[dict, list[dict]]) -> list[dict]:
     """
     Validate the sources for the potential.
 
@@ -164,7 +164,7 @@ class LammpsPotentialData(orm.SinglefileData):
         "lammps_potentials.json",
     )
 
-    _extra_keys: ClassVar[Dict[str, Any]] = {
+    _extra_keys: ClassVar[dict[str, Any]] = {
         "title": {"validator": _validate_string},
         "developer": {"validator": _validate_string_list},
         "publication_year": {"validator": _validate_datetime},

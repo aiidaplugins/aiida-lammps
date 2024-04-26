@@ -1,6 +1,7 @@
 """
 initialise a test database and profile
 """
+
 # pylint: disable=redefined-outer-name
 from __future__ import annotations
 
@@ -14,18 +15,18 @@ from typing import Any
 
 from aiida import orm
 from aiida.common import AttributeDict, CalcInfo, LinkType, exceptions
-from aiida.engine import CalcJob
+from aiida.engine import Process
 from aiida.engine.utils import instantiate_process
 from aiida.manage.manager import get_manager
 from aiida.plugins import WorkflowFactory
 from aiida.plugins.entry_point import format_entry_point_string
+from aiida_lammps.calculations.base import LammpsBaseCalculation
+from aiida_lammps.data.potential import LammpsPotentialData
+from aiida_lammps.data.trajectory import LammpsTrajectory
 import numpy as np
 import pytest
 import yaml
 
-from aiida_lammps.calculations.base import LammpsBaseCalculation
-from aiida_lammps.data.potential import LammpsPotentialData
-from aiida_lammps.data.trajectory import LammpsTrajectory
 from tests.utils import TEST_DIR, AiidaTestApp
 
 pytest_plugins = ["aiida.manage.tests.pytest_fixtures"]
@@ -66,6 +67,12 @@ def pytest_report_header(config):
         f'LAMMPS Executable: {shutil.which(config.getoption("lammps_exec") or "lammps")}',
         f'LAMMPS Work Directory: {config.getoption("lammps_workdir") or "<TEMP>"}',
     ]
+
+
+@pytest.fixture
+def structure_parameters() -> AttributeDict:
+    parameteters = AttributeDict({"dimension": 2, "boundary": ["p", "p", "f"]})
+    return parameteters
 
 
 @pytest.fixture
@@ -119,6 +126,15 @@ def parameters_minimize() -> AttributeDict:
         "ke/atom": [{"type": [{"keyword": " ", "value": " "}], "group": "all"}],
         "stress/atom": [{"type": ["NULL"], "group": "all"}],
         "pressure": [{"type": ["thermo_temp"], "group": "all"}],
+        "property/atom": [
+            {
+                "type": [
+                    {"keyword": " ", "value": "fx"},
+                    {"keyword": " ", "value": "fy"},
+                ],
+                "group": "all",
+            }
+        ],
     }
 
     parameters.minimize = {
@@ -171,6 +187,15 @@ def parameters_minimize_groups() -> AttributeDict:
         "stress/atom": [{"type": ["NULL"], "group": "all"}],
         "pressure": [{"type": ["thermo_temp"], "group": "all"}],
         "ke": [{"type": [{"keyword": " ", "value": " "}], "group": "test"}],
+        "property/atom": [
+            {
+                "type": [
+                    {"keyword": " ", "value": "fx"},
+                    {"keyword": " ", "value": "fy"},
+                ],
+                "group": "all",
+            }
+        ],
     }
 
     parameters.minimize = {
@@ -218,6 +243,15 @@ def parameters_md_nve() -> AttributeDict:
         "ke/atom": [{"type": [{"keyword": " ", "value": " "}], "group": "all"}],
         "stress/atom": [{"type": ["NULL"], "group": "all"}],
         "pressure": [{"type": ["thermo_temp"], "group": "all"}],
+        "property/atom": [
+            {
+                "type": [
+                    {"keyword": " ", "value": "fx"},
+                    {"keyword": " ", "value": "fy"},
+                ],
+                "group": "all",
+            }
+        ],
     }
     parameters.md = {
         "integration": {
@@ -262,6 +296,15 @@ def parameters_md_nvt() -> AttributeDict:
         "ke/atom": [{"type": [{"keyword": " ", "value": " "}], "group": "all"}],
         "stress/atom": [{"type": ["NULL"], "group": "all"}],
         "pressure": [{"type": ["thermo_temp"], "group": "all"}],
+        "property/atom": [
+            {
+                "type": [
+                    {"keyword": " ", "value": "fx"},
+                    {"keyword": " ", "value": "fy"},
+                ],
+                "group": "all",
+            }
+        ],
     }
     parameters.md = {
         "integration": {
@@ -309,6 +352,15 @@ def parameters_md_npt() -> AttributeDict:
         "ke/atom": [{"type": [{"keyword": " ", "value": " "}], "group": "all"}],
         "stress/atom": [{"type": ["NULL"], "group": "all"}],
         "pressure": [{"type": ["thermo_temp"], "group": "all"}],
+        "property/atom": [
+            {
+                "type": [
+                    {"keyword": " ", "value": "fx"},
+                    {"keyword": " ", "value": "fy"},
+                ],
+                "group": "all",
+            }
+        ],
     }
     parameters.md = {
         "integration": {
@@ -565,7 +617,7 @@ def generate_calc_job(tmp_path):
         entry_point_name: str,
         inputs: dict[str, Any] | None = None,
         return_process: bool = False,
-    ) -> tuple[pathlib.Path, CalcInfo] | CalcJob:
+    ) -> tuple[pathlib.Path, CalcInfo] | Process:
         """Create a :class:`aiida.engine.CalcJob` instance with the given inputs.
 
         :param entry_point_name: The entry point name of the calculation job plugin to run.

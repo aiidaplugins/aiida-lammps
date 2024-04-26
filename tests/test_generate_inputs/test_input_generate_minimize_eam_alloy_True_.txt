@@ -6,8 +6,8 @@ timestep 1e-05
 #-------------------------End of the Control information-------------------------#
 #-----------------------Start of the Structure information-----------------------#
 box tilt small
-dimension 3
-boundary p p p 
+dimension 2
+boundary p p f 
 atom_style atomic
 read_data structure.dat
 #------------------------End of the Structure information------------------------#

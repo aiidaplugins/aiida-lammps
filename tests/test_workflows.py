@@ -4,11 +4,10 @@ from aiida import orm
 from aiida.common import AttributeDict, LinkType
 from aiida.engine import ProcessHandlerReport, run_get_node
 from aiida.plugins import WorkflowFactory
-from plumpy import ProcessState
-import pytest
-
 from aiida_lammps.calculations.base import LammpsBaseCalculation
 from aiida_lammps.workflows.base import LammpsBaseWorkChain
+from plumpy import ProcessState
+import pytest
 
 from .utils import get_default_metadata, recursive_round
 

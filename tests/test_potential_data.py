@@ -1,11 +1,10 @@
 """Test the functionality of the lammps potential data object"""
 import os
 
-import pytest
-import yaml
-
 from aiida_lammps.data.potential import LammpsPotentialData
 from aiida_lammps.parsers import inputfile
+import pytest
+import yaml
 
 from .utils import TEST_DIR
 

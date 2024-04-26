@@ -3,9 +3,8 @@ import io
 import textwrap
 
 from aiida import orm
-import pytest
-
 from aiida_lammps.calculations.raw import LammpsRawCalculation
+import pytest
 
 
 def test_script(generate_calc_job, aiida_local_code_factory):
