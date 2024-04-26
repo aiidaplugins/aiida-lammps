@@ -768,8 +768,8 @@ def write_dump_block(
     dump_block += f'{" ".join(computes_list)}\n'
     dump_block += "dump_modify aiida sort id\n"
     dump_block += f'dump_modify aiida element {" ".join(kind_symbols)}\n'
-    dump_block += "dump_modify aiida format line "
-    dump_block += f'"%6d %4d %4s {" ".join(["%16.10f"]*num_double)}"\n'
+    dump_block += "dump_modify aiida format int ' %d ' \n"
+    dump_block += "dump_modify aiida format float ' %16.10e ' \n"
     dump_block += generate_header("End of the Dump information")
 
     return dump_block
