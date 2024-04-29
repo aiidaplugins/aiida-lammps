@@ -29,7 +29,7 @@ requires-python = ">=3.9"
 dependencies = [
     "aiida-core[atomic_tools]~=2.3",
     "importlib_resources",
-    "jsonschema~=3.2.0",
+    "jsonschema~=4.21.1",
     "numpy",
     "packaging",
     "python-dateutil",
