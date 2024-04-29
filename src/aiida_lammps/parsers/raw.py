@@ -1,4 +1,5 @@
 """Base parser for LAMMPS output."""
+
 import time
 
 from aiida import orm

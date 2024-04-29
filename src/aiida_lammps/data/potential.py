@@ -16,6 +16,7 @@ The potentials are also tagged by following the KIM-API
 `schema <https://openkim.org/doc/schema/kimspec/>`_, as to make them more easy
 to track and as compatible as possible to the KIM schema.
 """
+
 import datetime
 
 # pylint: disable=arguments-differ, too-many-public-methods
@@ -421,7 +422,7 @@ class LammpsPotentialData(orm.SinglefileData):
         :raises ValueError: If the value of the entry does not match the possible values
         """
         for key, value in self._extra_keys.items():
-            _value = extra_tags.get(key, None)
+            _value = extra_tags.get(key)
             _accepted_values = value.get("values", None)
             _validator = value.get("validator", None)
             if _value is not None and _validator is not None:

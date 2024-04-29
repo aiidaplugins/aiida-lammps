@@ -833,7 +833,7 @@ def write_thermo_block(
                         )
                     )
 
-    computes_printing = parameters_thermo.get("thermo_printing", None)
+    computes_printing = parameters_thermo.get("thermo_printing")
 
     if computes_printing is None or not computes_printing:
         fixed_thermo = ["step", "temp", "epair", "emol", "etotal", "press"]
@@ -879,7 +879,7 @@ def write_restart_block(
 
     restart_block = {"final": "", "intermediate": ""}
 
-    if "print_final" in parameters_restart and parameters_restart["print_final"]:
+    if parameters_restart.get("print_final"):
         restart_block["final"] += generate_header(
             "Start of the write restart information"
         )
@@ -888,16 +888,13 @@ def write_restart_block(
             "End of the write restart information"
         )
 
-    if (
-        "print_intermediate" in parameters_restart
-        and parameters_restart["print_intermediate"]
-    ):
+    if parameters_restart.get("print_intermediate"):
         restart_block["intermediate"] += generate_header(
             "Start of the intermediate write restart information"
         )
-        restart_block[
-            "intermediate"
-        ] += f"restart {parameters_restart.get('num_steps', int(max_number_steps/10))} {restart_filename}\n"
+        restart_block["intermediate"] += (
+            f"restart {parameters_restart.get('num_steps', int(max_number_steps/10))} {restart_filename}\n"
+        )
         restart_block["intermediate"] += generate_header(
             "End of the intermediate write restart information"
         )

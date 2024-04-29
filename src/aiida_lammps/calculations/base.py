@@ -6,6 +6,7 @@ and then use them to generate the ``LAMMPS`` input file. The input file
 is generated depending on the parameters provided, the type of potential,
 the input structure and whether or not a restart file is provided.
 """
+
 import os
 from typing import ClassVar, Union
 

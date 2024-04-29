@@ -1,4 +1,5 @@
 """Test the functionality of the lammps potential data object"""
+
 import os
 
 from aiida_lammps.data.potential import LammpsPotentialData

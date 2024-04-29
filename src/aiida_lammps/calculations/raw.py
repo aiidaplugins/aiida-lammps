@@ -1,4 +1,5 @@
 """Plugin with minimal interface to run LAMMPS."""
+
 import shutil
 from typing import Union
 

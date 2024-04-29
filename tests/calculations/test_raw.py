@@ -1,4 +1,5 @@
 """Test the `LammpsRawCalculation`"""
+
 import io
 import textwrap
 

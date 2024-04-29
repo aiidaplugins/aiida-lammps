@@ -4,6 +4,7 @@ Data structure for storing LAMMPS trajectories.
 The idea is that each of the steps of the simulation are stored as ZIP files
 which can then be easily accessed by the user.
 """
+
 # pylint: disable=too-many-ancestors
 import io
 import tempfile
@@ -195,14 +196,18 @@ class LammpsTrajectory(orm.Data):
         """Return the content string, for a specific trajectory step."""
         step_idx = list(range(self.number_steps))[step_idx]
         zip_name = f'{self.base.attributes.get("zip_prefix")}{step_idx}'
-        with self.base.repository.open(
-            self.base.attributes.get("trajectory_filename"),
-            mode="rb",
-        ) as handle, ZipFile(
-            handle,
-            "r",
-            self.base.attributes.get("compression_method"),
-        ) as zip_file, zip_file.open(zip_name, "r") as step_file:
+        with (
+            self.base.repository.open(
+                self.base.attributes.get("trajectory_filename"),
+                mode="rb",
+            ) as handle,
+            ZipFile(
+                handle,
+                "r",
+                self.base.attributes.get("compression_method"),
+            ) as zip_file,
+            zip_file.open(zip_name, "r") as step_file,
+        ):
             content = step_file.read()
         return content.decode("utf8")
 
@@ -218,14 +223,17 @@ class LammpsTrajectory(orm.Data):
         elif isinstance(steps, int):
             steps = range(0, self.number_steps, steps)
 
-        with self.base.repository.open(
-            self.base.attributes.get("trajectory_filename"),
-            mode="rb",
-        ) as handle, ZipFile(
-            handle,
-            "r",
-            self.base.attributes.get("compression_method"),
-        ) as zip_file:
+        with (
+            self.base.repository.open(
+                self.base.attributes.get("trajectory_filename"),
+                mode="rb",
+            ) as handle,
+            ZipFile(
+                handle,
+                "r",
+                self.base.attributes.get("compression_method"),
+            ) as zip_file,
+        ):
             for step_idx in steps:
                 zip_name = f'{self.base.attributes.get("zip_prefix")}{step_idx}'
                 with zip_file.open(zip_name) as step_file:
