@@ -5,6 +5,7 @@ official benchmarks of LAMMPS. It is a simple NVE simulation of a Lennard-Jones 
 script for the ``script`` input of the ``LammpsBaseCalculation``, other inputs, such as ``structure`` and ``potential``
 no longer have to be specified.
 """
+
 import io
 import textwrap
 

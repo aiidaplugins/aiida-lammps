@@ -1,4 +1,5 @@
 """Workflow for a molecular dynamics simulation in LAMMPS."""
+
 import os
 from typing import Union
 

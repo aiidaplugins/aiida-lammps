@@ -1,6 +1,7 @@
 """
 Tests to aiida-lammps parsers.
 """
+
 import os
 
 from aiida.plugins import ParserFactory

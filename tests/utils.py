@@ -1,4 +1,5 @@
 """Set of functions to test the aiida-lammps functionality."""
+
 from collections.abc import Mapping
 from contextlib import contextmanager
 import distutils.spawn

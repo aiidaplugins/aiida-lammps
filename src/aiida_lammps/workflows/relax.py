@@ -1,4 +1,5 @@
 """Workflow for the relaxation of a structure using the minimization procedure in LAMMPS."""
+
 from itertools import groupby
 import os
 from typing import Union
