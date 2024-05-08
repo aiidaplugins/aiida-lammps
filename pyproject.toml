@@ -62,7 +62,7 @@ docs = [
     "furo",
 ]
 
-pre-commit = ['pre-commit~=2.17']
+pre-commit = ['pre-commit~=3.7']
 
 [project.entry-points."aiida.calculations"]
 "lammps.base" = "aiida_lammps.calculations.base:LammpsBaseCalculation"
