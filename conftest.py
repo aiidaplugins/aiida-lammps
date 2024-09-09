@@ -20,13 +20,13 @@ from aiida.engine.utils import instantiate_process
 from aiida.manage.manager import get_manager
 from aiida.plugins import WorkflowFactory
 from aiida.plugins.entry_point import format_entry_point_string
-from aiida_lammps.calculations.base import LammpsBaseCalculation
-from aiida_lammps.data.potential import LammpsPotentialData
-from aiida_lammps.data.trajectory import LammpsTrajectory
 import numpy as np
 import pytest
 import yaml
 
+from aiida_lammps.calculations.base import LammpsBaseCalculation
+from aiida_lammps.data.potential import LammpsPotentialData
+from aiida_lammps.data.trajectory import LammpsTrajectory
 from tests.utils import TEST_DIR, AiidaTestApp
 
 pytest_plugins = ["aiida.manage.tests.pytest_fixtures"]

@@ -2,10 +2,11 @@
 
 import os
 
-from aiida_lammps.data.potential import LammpsPotentialData
-from aiida_lammps.parsers import inputfile
 import pytest
 import yaml
+
+from aiida_lammps.data.potential import LammpsPotentialData
+from aiida_lammps.parsers import inputfile
 
 from .utils import TEST_DIR
 

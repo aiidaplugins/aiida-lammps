@@ -1,7 +1,8 @@
 """Test the structure generation in aiida-lammps"""
 
-from aiida_lammps.parsers.utils import generate_lammps_structure
 import pytest
+
+from aiida_lammps.parsers.utils import generate_lammps_structure
 
 
 @pytest.mark.parametrize(
