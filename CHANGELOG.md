@@ -1,5 +1,7 @@
 # Changelog
 
+- Fixing an issue in the documentation caused by the fact that the molecular dynamics module file was called md, causing a confusion on whether it was the file extension of the actual file name. Changes the name of the file `src/aiida_lammps/workflows/md.py` for `src/aiida_lammps/workflows/molecular_dynamics.py`
+
 ## v1.0.2 2024-04-26
 
 - Fixing an issue in which some LAMMPS vectorial properties were not working properly.
