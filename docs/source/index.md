@@ -30,7 +30,7 @@ developers/index
 ```{toctree}
 :hidden: true
 :caption: Reference
-reference/api/index
+apidocs/index
 ```
 
 
