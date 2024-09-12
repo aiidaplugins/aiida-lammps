@@ -114,6 +114,9 @@
                     ]
                 }
             },
+            "atom_modify": {
+                "type": "array"
+            },
             "box_tilt": {
                 "type": "string",
                 "propertyNames": {
