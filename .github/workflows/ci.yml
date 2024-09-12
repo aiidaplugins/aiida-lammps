@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4.1.7
       - name: Set up Python
-        uses: actions/setup-python@v5.1.0
+        uses: actions/setup-python@v5.2.0
         with:
           python-version: "3.9"
       - name: Make sure virtualevn>20 is installed, which will yield newer pip and possibility to pin pip version.
@@ -126,7 +126,7 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4.1.7
       - name: Set up Python 3.8
-        uses: actions/setup-python@v5.1.0
+        uses: actions/setup-python@v5.2.0
         with:
           python-version: "3.8"
       - name: install flit
