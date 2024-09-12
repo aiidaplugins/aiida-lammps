@@ -190,6 +190,7 @@
         "buck/mdf":{"units": "unknown", "atom_style": "atomic", "read_from_file": false},
         "lennard/mdf":{"units": "unknown", "atom_style": "atomic", "read_from_file": false},
         "mace":{"units": "unknown", "atom_style": "atomic", "read_from_file": true},
+        "mace no_domain_decomposition":{"units": "unknown", "atom_style": "atomic", "read_from_file": true},
         "meam":{"units": "unknown", "atom_style": "atomic", "read_from_file": true},
         "meam/spline":{"units": "unknown", "atom_style": "atomic", "read_from_file": true},
         "meam/sw/spline":{"units": "unknown", "atom_style": "atomic", "read_from_file": true},
