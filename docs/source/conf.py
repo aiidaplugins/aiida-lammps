@@ -24,15 +24,17 @@ AUTHOR = "AiiDA Team"
 VERSION = __version__
 
 extensions = [
+    "myst_parser",
     "sphinx.ext.mathjax",
     "sphinx.ext.intersphinx",
     "sphinx.ext.viewcode",
     "sphinx_copybutton",
+    "sphinx.ext.autodoc",
     "sphinx_click.ext",
     "sphinx_design",
-    "myst_parser",
+    "autodoc2",
+    "sphinx.ext.napoleon",
     "aiida.sphinxext",
-    "autoapi.extension",
 ]
 
 intersphinx_mapping = {
@@ -43,7 +45,7 @@ intersphinx_mapping = {
 }
 
 
-# Settings for the `autoapi.extenstion` automatically generating API docs
+# Settings for the `autoapi.extension` automatically generating API docs
 filepath_docs = pathlib.Path(__file__).parent.parent
 filepath_src = filepath_docs.parent / "src/aiida_lammps"
 autoapi_type = "python"
@@ -52,6 +54,26 @@ autoapi_ignore = [filepath_src / "*cli*"]
 autoapi_root = str(filepath_docs / "source" / "reference" / "api" / "auto")
 autoapi_keep_files = True
 autoapi_add_toctree_entry = False
+
+autodoc2_packages = [
+    {
+        "path": "../../src/aiida_lammps",
+        "exclude_files": ["_docs.py"],
+        "auto_mode": True,
+    }
+]
+autodoc2_hidden_objects = ["dunder", "private", "inherited"]
+autodoc2_replace_annotations = [
+    ("re.Pattern", "typing.Pattern"),
+    ("markdown_it.MarkdownIt", "markdown_it.main.MarkdownIt"),
+]
+autodoc2_replace_bases = [
+    ("sphinx.directives.SphinxDirective", "sphinx.util.docutils.SphinxDirective"),
+]
+autodoc2_docstring_parser_regexes = [
+    ("myst_parser", "myst"),
+    (r"myst_parser\.setup", "myst"),
+]
 
 # Settings for the `sphinx_copybutton` extension
 copybutton_selector = "div:not(.no-copy)>div.highlight pre"
