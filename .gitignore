@@ -45,3 +45,4 @@ pip-wheel-metadata
 docs/_build/
 docs/build
 docs/source/reference/api
+docs/source/apidocs
