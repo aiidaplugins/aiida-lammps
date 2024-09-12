@@ -320,6 +320,12 @@ def write_structure_block(
 
     # Set the atom style for the structure
     structure_block += f'atom_style {parameters_structure["atom_style"]}\n'
+
+    # Set the atom modify for the structure
+    if "atom_modify" in parameters_structure:
+        structure_block += "atom_modify"
+        structure_block += (f' {parameters_structure["atom_modify"]}\n'
+    )
     # Write the command to read the structure from a file
     structure_block += f"read_data {structure_filename}\n"
     # Set the groups which will be used for the calculations
