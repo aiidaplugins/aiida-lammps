@@ -72,7 +72,7 @@ def _validate_datetime(data: Union[str, int, float, datetime.datetime]) -> int:
     """
     Validate and transform dates into integers
 
-    :param data: representation of a year
+    param data: representation of a year
     :type data: Union[str,int,float, datetime.datetime]
     :raises TypeError: raise if the data is not of type str, int, float or datetime.datetime
     :return: integer representing a year
@@ -87,7 +87,9 @@ def _validate_datetime(data: Union[str, int, float, datetime.datetime]) -> int:
     return data
 
 
-def _validate_sources(data: Union[dict, list[dict]]) -> list[dict]:
+def _validate_sources(
+    data: Union[dict[str, Any], list[dict[str, Any]]],
+) -> list[dict[str, Any]]:
     """
     Validate the sources for the potential.
 
@@ -95,19 +97,17 @@ def _validate_sources(data: Union[dict, list[dict]]) -> list[dict]:
     the citation for a potential.
 
     :param data: citation data for a potential
-    :type data: Union[dict, List[dict]]
+    :type data: Union[dict, List[dict[str, Any]]]
     :raises TypeError: raises if the data is not a dict or list of dicts
     :raises TypeError: raises if not all the entries in the list are dicts
     :return: list of references for a potential
-    :rtype: List[dict]
+    :rtype: List[dict[str, Any]]
     """
 
-    def _validate_single_source(source: dict) -> dict:
+    def _validate_single_source(source: dict[str, Any]) -> dict[str, Any]:
         """
         Validate a single potential citation data
-
         This will check if certain keys exists and add them to the citation data
-
         :param source: citation data for a potential
         :type source: dict
         :return: validated potential data
@@ -140,21 +140,12 @@ class LammpsPotentialData(orm.SinglefileData):
     """
     Base class for the LAMMPS potentials.
 
-    This class allows the storage/recovering of LAMMPS potentials, it allows
-    one to store any LAMMPS potential as a :py:class:`~aiida.orm.nodes.data.singlefile.SinglefileData` object, which can
-    then be either written to the LAMMPS input script and/or to a file, where
-    it can be easily read by LAMMPS. This distinction depends on the assigned
-    ``pair_style`` which require different ``pair_coeff`` entries in the input
-    file.
-
-    Based on the
-    `pseudo <https://github.com/aiidateam/aiida-pseudo/blob/master/aiida_pseudo/data/pseudo/pseudo.py>`_
-    class written by Sebaastian Huber.
-
-    The potentials are also tagged by following the KIM-API
-    `schema <https://openkim.org/doc/schema/kimspec/>`_, as to make them more easy
-    to track and as compatible as possible to the KIM schema.
-    """  # pylint: disable=line-too-long
+    This class allows the storage/recovering of LAMMPS potentials, it allows one to store any LAMMPS potential as a
+    :py:class:`~aiida.orm.nodes.data.singlefile.SinglefileData` object, which can then be either written to the LAMMPS
+    input script and/or to a file, where it can be easily read by LAMMPS.
+    This distinction depends on the assigned ``pair_style`` which require different ``pair_coeff`` entries in
+    the input file.
+    """
 
     # pylint: disable=too-many-arguments, too-many-ancestors
     _key_element = "element"
@@ -221,10 +212,8 @@ class LammpsPotentialData(orm.SinglefileData):
         :param extra_tags: Dictionary with extra information to tag the
             potential, based on the KIM schema.
         :type extra_tags: dict
-        :return: instance of ``LammpsPotentialData``, stored if taken from
-            database, unstored otherwise.
-        :raises TypeError: if the source is not a ``str``, ``pathlib.Path``
-            instance or binary stream.
+        :return: instance of ``LammpsPotentialData``, stored if taken from database, unstored otherwise.
+        :raises TypeError: if the source is not a ``str``, ``pathlib.Path`` instance or binary stream.
         :raises FileNotFoundError: if the source is a filepath but does not exist.
         """
         # pylint: disable=too-many-arguments
@@ -253,9 +242,10 @@ class LammpsPotentialData(orm.SinglefileData):
         return potential
 
     @classmethod
-    def get_entry_point_name(cls):
+    def get_entry_point_name(cls) -> str:
         """Return the entry point name associated with this data class.
         :return: the entry point name.
+        :rtype: str
         """
         _, entry_point = plugins.entry_point.get_entry_point_from_class(
             cls.__module__,
@@ -268,8 +258,9 @@ class LammpsPotentialData(orm.SinglefileData):
         """Return if object is a readable filelike object in binary mode or stream of bytes.
 
         :param stream: the object to analyze.
-        :returns: True if ``stream`` appears to be a readable filelike object
+        :return: True if ``stream`` appears to be a readable filelike object
             in binary mode, False otherwise.
+        :rtype: bool
         """
         return isinstance(stream, io.BytesIO) or (
             hasattr(stream, "read") and hasattr(stream, "mode") and "b" in stream.mode
@@ -285,6 +276,8 @@ class LammpsPotentialData(orm.SinglefileData):
         :raises TypeError: if the source is not a ``str``, ``pathlib.Path``
             instance or binary stream.
         :raises FileNotFoundError: if the source is a filepath but does not exist.
+        :return: byte stream with the potential information
+        :rtype: BinaryIO
         """
         if not isinstance(
             source, (str, pathlib.Path)
@@ -545,10 +538,10 @@ class LammpsPotentialData(orm.SinglefileData):
         return self.base.attributes.get("pair_style")
 
     @property
-    def species(self) -> list:
+    def species(self) -> list[str]:
         """Return the list of species which this potential can be used for.
         :return: The list of chemical species which are contained in this potential.
-        :rtype: list
+        :rtype: list[str]
         """
         return self.base.attributes.get("species")
 
@@ -579,7 +572,7 @@ class LammpsPotentialData(orm.SinglefileData):
         return self.base.attributes.get("content_origin")
 
     @property
-    def content_other_locations(self) -> Union[str, list]:
+    def content_other_locations(self) -> Union[str, list[str]]:
         """
         Return other locations where the potential can be found.
 
@@ -587,7 +580,7 @@ class LammpsPotentialData(orm.SinglefileData):
         to other location(s) where the content is available.
 
         :return: other locations where the potential can be found.
-        :rtype: Union[str, list]
+        :rtype: Union[str, list[str]]
         """
         return self.base.attributes.get("content_other_locations")
 
@@ -621,7 +614,7 @@ class LammpsPotentialData(orm.SinglefileData):
         return self.base.attributes.get("description")
 
     @property
-    def developer(self) -> Union[str, list]:
+    def developer(self) -> Union[str, list[str]]:
         """
         Return the developer information of this potential.
 
@@ -632,7 +625,7 @@ class LammpsPotentialData(orm.SinglefileData):
         of an interatomic model or a specific parameter set for it.
 
         :return: developer information of this potential
-        :rtype: Union[str, list]
+        :rtype: Union[str, list[str]]
         """
         return self.base.attributes.get("developer")
 
@@ -651,14 +644,14 @@ class LammpsPotentialData(orm.SinglefileData):
         return self.base.attributes.get("disclaimer")
 
     @property
-    def properties(self) -> Union[str, list]:
+    def properties(self) -> Union[str, list[str]]:
         """
         Return the properties for which this potential was devised.
 
         As based in the KIM schema. A list of properties reported by a KIM Item.
 
         :return: properties fow which this potential was devised.
-        :rtype: Union[str, list]
+        :rtype: Union[str, list[str]]
         """
         return self.base.attributes.get("properties")
 
@@ -675,7 +668,7 @@ class LammpsPotentialData(orm.SinglefileData):
         return self.base.attributes.get("publication_year")
 
     @property
-    def source_citations(self) -> Union[str, list]:
+    def source_citations(self) -> Union[str, list[str]]:
         """
         Return the citation where the potential was originally published.
 
@@ -683,7 +676,7 @@ class LammpsPotentialData(orm.SinglefileData):
         corresponding to primary published work(s) describing the KIM Item.
 
         :return: the citation where the potential was originally published.
-        :rtype: Union[str, list]
+        :rtype: Union[str, list[str]]
         """
         return self.base.attributes.get("source_citations")
 

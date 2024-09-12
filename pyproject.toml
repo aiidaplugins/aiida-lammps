@@ -60,6 +60,7 @@ docs = [
     'sphinx-autoapi~=3.0',
     'myst_parser~=3.0.1',
     "furo",
+    "sphinx-autodoc2"
 ]
 
 pre-commit = ['pre-commit~=3.7']
@@ -79,7 +80,7 @@ pre-commit = ['pre-commit~=3.7']
 [project.entry-points."aiida.workflows"]
 "lammps.base" = "aiida_lammps.workflows.base:LammpsBaseWorkChain"
 "lammps.relax" = "aiida_lammps.workflows.relax:LammpsRelaxWorkChain"
-"lammps.md" = "aiida_lammps.workflows.md:LammpsMDWorkChain"
+"lammps.md" = "aiida_lammps.workflows.molecular_dynamics:LammpsMDWorkChain"
 
 [tool.flit.module]
 name = "aiida_lammps"
