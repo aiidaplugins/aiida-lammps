@@ -4,8 +4,9 @@ import io
 import textwrap
 
 from aiida import orm
-from aiida_lammps.calculations.raw import LammpsRawCalculation
 import pytest
+
+from aiida_lammps.calculations.raw import LammpsRawCalculation
 
 
 def test_script(generate_calc_job, aiida_local_code_factory):

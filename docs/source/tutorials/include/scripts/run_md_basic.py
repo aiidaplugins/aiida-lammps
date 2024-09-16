@@ -3,9 +3,10 @@ import io
 
 from aiida.engine import run
 from aiida.orm import Dict, StructureData, load_code
-from aiida_lammps.data.potential import LammpsPotentialData
 from ase.build import bulk
 import requests
+
+from aiida_lammps.data.potential import LammpsPotentialData
 
 # Load the code configured for ``lmp``. Make sure to replace
 # this string with the label used in the code setup.

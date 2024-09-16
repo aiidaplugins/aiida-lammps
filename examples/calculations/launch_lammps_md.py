@@ -6,8 +6,9 @@ from aiida import orm
 from aiida.common.extendeddicts import AttributeDict
 from aiida.engine import run_get_node
 from aiida.plugins import CalculationFactory
-from aiida_lammps.data.potential import LammpsPotentialData
 import numpy as np
+
+from aiida_lammps.data.potential import LammpsPotentialData
 
 
 def generate_structure() -> orm.StructureData:
