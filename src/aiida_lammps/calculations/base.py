@@ -366,8 +366,12 @@ class LammpsBaseCalculation(CalcJob):
             handle.write(structure_filecontent)
 
         # Write the potential to the remote folder
-        with folder.open(self._POTENTIAL_FILENAME, "w") as handle:
-            handle.write(self.inputs.potential.get_content())
+        with folder.open(self._POTENTIAL_FILENAME, "wb") as handle:
+            # Read the contents of the potential file in binary mode
+            with self.inputs.potential.open(mode="rb") as potential_handle:
+                potential_content = potential_handle.read()
+
+            handle.write(potential_content)
 
         # Write the input file content. This function will also check the
         # sanity of the passed parameters when comparing it to a schema
