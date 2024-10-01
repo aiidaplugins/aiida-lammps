@@ -121,7 +121,7 @@ class LammpsBaseParser(Parser):
             _restartfile_name = self.parse_restartfile(
                 parameters=parameters,
                 list_of_files=list_of_files,
-                temp_folder=kwargs.get("retrieved_temporary_folder", None),
+                temp_folder=kwargs.get("retrieved_temporary_folder"),
             )
 
             if _restartfile_name:
