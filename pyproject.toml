@@ -63,7 +63,7 @@ docs = [
     "sphinx-autodoc2"
 ]
 
-pre-commit = ['pre-commit~=3.7']
+pre-commit = ['pre-commit~=4.0']
 
 [project.entry-points."aiida.calculations"]
 "lammps.base" = "aiida_lammps.calculations.base:LammpsBaseCalculation"
