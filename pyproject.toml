@@ -23,9 +23,9 @@ classifiers = [
 keywords = ["aiida", "workflows", "lammps"]
 requires-python = ">=3.8"
 dependencies = [
-    "aiida-core[atomic_tools]>=2.0.0,<3.0.0",
+    "aiida-core[atomic_tools]~=2.3",
     "importlib_resources",
-    "jsonschema",
+    "jsonschema~=3.2.0",
     "numpy",
     "packaging",
     "python-dateutil"
