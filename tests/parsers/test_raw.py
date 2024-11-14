@@ -18,7 +18,10 @@ def test_default(generate_calc_job_node, data_regression, fixture_localhost):
     assert calcfunction.is_finished_ok, calcfunction.exit_message
     data_regression.check({"results": results["results"].get_dict()})
 
-def test_double_thermo_style(generate_calc_job_node, data_regression, fixture_localhost):
+
+def test_double_thermo_style(
+    generate_calc_job_node, data_regression, fixture_localhost
+):
     """Test parsing a double thermo_style output case."""
     node = generate_calc_job_node(
         computer=fixture_localhost,
