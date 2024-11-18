@@ -1,0 +1,17 @@
+results:
+  compute_variables:
+    bin: standard
+    bins:
+    - 3
+    - 3
+    - 3
+    binsize: 7.5
+    errors: []
+    ghost_atom_cutoff: 15
+    master_list_distance_cutoff: 15
+    max_neighbors_atom: 2000
+    steps_per_second: 2190.659
+    total_wall_time: 0:00:54
+    total_wall_time_seconds: 54
+    units_style: real
+    warnings: []

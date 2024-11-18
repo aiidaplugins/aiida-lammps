@@ -106,6 +106,8 @@ def parse_outputfile(
             )
 
         if line.startswith("Step"):
+            _data = []
+            end_found = False
             header_line_position = index
             header_line = [
                 re.sub("[^a-zA-Z0-9_]", "__", entry) for entry in line.split()
