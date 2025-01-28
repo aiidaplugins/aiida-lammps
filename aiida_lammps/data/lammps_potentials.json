@@ -29,6 +29,10 @@
     ],
     "pair_style": {
         "allegro":{"units": "metal", "newton":"on", "atom_style": "atomic", "read_from_file": true},
+        "allegro3232":{"units": "metal", "newton":"on", "atom_style": "atomic", "read_from_file": true},
+        "allegro3264":{"units": "metal", "newton":"on", "atom_style": "atomic", "read_from_file": true},
+        "allegro6464":{"units": "metal", "newton":"on", "atom_style": "atomic", "read_from_file": true},
+        "allegro6432":{"units": "metal", "newton":"on", "atom_style": "atomic", "read_from_file": true},
         "nequip":{"units": "metal", "newton":"off", "atom_style": "atomic", "read_from_file": true},
         "adp":{"units": "unknown", "atom_style": "atomic", "read_from_file": true},
         "agni":{"units": "unknown", "atom_style": "atomic", "read_from_file": true},
