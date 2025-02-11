@@ -201,13 +201,13 @@ def write_control_block(parameters_control: dict[str, Any]) -> str:
     _time = default_timestep[parameters_control.get("units", "si")]
     control_block = generate_header("Start of the Control information")
     control_block += "clear\n"
-    control_block += f'units {parameters_control.get("units", "si")}\n'
-    control_block += f'newton {parameters_control.get("newton", "on")}\n'
+    control_block += f"units {parameters_control.get('units', 'si')}\n"
+    control_block += f"newton {parameters_control.get('newton', 'on')}\n"
     if "processors" in parameters_control:
         control_block += (
-            f'processors {join_keywords(parameters_control["processors"])}\n'
+            f"processors {join_keywords(parameters_control['processors'])}\n"
         )
-    control_block += f'timestep {parameters_control.get("timestep", _time)}\n'
+    control_block += f"timestep {parameters_control.get('timestep', _time)}\n"
     control_block += generate_header("End of the Control information")
     return control_block
 
@@ -245,27 +245,27 @@ def write_potential_block(
     potential_block = generate_header("Start of Potential information")
     potential_block += f"pair_style {potential.pair_style}"
     potential_block += (
-        f' {" ".join(parameters_potential.get("potential_style_options", [""]))}\n'
+        f" {' '.join(parameters_potential.get('potential_style_options', ['']))}\n"
     )
 
     if default_potential[potential.pair_style].get("read_from_file"):
-        potential_block += f'pair_coeff * * {potential_file} {" ".join(kind_symbols)}\n'
+        potential_block += f"pair_coeff * * {potential_file} {' '.join(kind_symbols)}\n"
     if not default_potential[potential.pair_style].get("read_from_file"):
         data = [
             line
             for line in potential.get_content().split("\n")
             if not line.startswith("#") and line
         ]
-        potential_block += f'pair_coeff * * {" ".join(data)}\n'
+        potential_block += f"pair_coeff * * {' '.join(data)}\n"
 
     if "neighbor" in parameters_potential:
         potential_block += (
-            f'neighbor {join_keywords(parameters_potential["neighbor"])}\n'
+            f"neighbor {join_keywords(parameters_potential['neighbor'])}\n"
         )
     if "neighbor_modify" in parameters_potential:
         potential_block += "neigh_modify"
         potential_block += (
-            f' {join_keywords(parameters_potential["neighbor_modify"])}\n'
+            f" {join_keywords(parameters_potential['neighbor_modify'])}\n"
         )
     potential_block += generate_header("End of Potential information")
     return potential_block
@@ -304,7 +304,7 @@ def write_structure_block(
             kind_name_id_map[site.kind_name] = len(kind_name_id_map) + 1
 
     structure_block = generate_header("Start of the Structure information")
-    structure_block += f'box tilt {parameters_structure.get("box_tilt", "small")}\n'
+    structure_block += f"box tilt {parameters_structure.get('box_tilt', 'small')}\n"
 
     # Set the dimensions of the structure
     if "dimension" in parameters_structure:
@@ -319,12 +319,12 @@ def write_structure_block(
         structure_block += f"boundary {' '.join(['p' if entry else 'f' for entry in structure.pbc])} \n"
 
     # Set the atom style for the structure
-    structure_block += f'atom_style {parameters_structure["atom_style"]}\n'
+    structure_block += f"atom_style {parameters_structure['atom_style']}\n"
 
     # Set the atom modify for the structure
     if "atom_modify" in parameters_structure:
         structure_block += "atom_modify"
-        structure_block += f' {parameters_structure["atom_modify"]}\n'
+        structure_block += f" {parameters_structure['atom_modify']}\n"
     # Write the command to read the structure from a file
     structure_block += f"read_data {structure_filename}\n"
     # Set the groups which will be used for the calculations
@@ -338,7 +338,7 @@ def write_structure_block(
                     raise ValueError("atom type not defined")
             # Set the current group
             structure_block += (
-                f'group {_group["name"]} {join_keywords(_group["args"])}\n'
+                f"group {_group['name']} {join_keywords(_group['args'])}\n"
             )
             # Store the name of the group for later usage
             group_names.append(_group["name"])
@@ -362,11 +362,11 @@ def write_minimize_block(parameters_minimize: dict[str, Union[str, float, int]])
     """
 
     minimize_block = generate_header("Start of the Minimization information")
-    minimize_block += f'min_style {parameters_minimize.get("style", "cg")}\n'
-    minimize_block += f'minimize {parameters_minimize.get("energy_tolerance", 1e-4)}'
-    minimize_block += f' {parameters_minimize.get("force_tolerance", 1e-4)}'
-    minimize_block += f' {parameters_minimize.get("max_iterations", 1000)}'
-    minimize_block += f' {parameters_minimize.get("max_evaluations", 1000)}\n'
+    minimize_block += f"min_style {parameters_minimize.get('style', 'cg')}\n"
+    minimize_block += f"minimize {parameters_minimize.get('energy_tolerance', 1e-4)}"
+    minimize_block += f" {parameters_minimize.get('force_tolerance', 1e-4)}"
+    minimize_block += f" {parameters_minimize.get('max_iterations', 1000)}"
+    minimize_block += f" {parameters_minimize.get('max_evaluations', 1000)}\n"
     minimize_block += generate_header("End of the Minimization information")
 
     return minimize_block
@@ -403,18 +403,18 @@ def write_md_block(parameters_md: dict[str, Any]) -> str:
 
     md_block = generate_header("Start of the MD information")
     _key = parameters_md["integration"].get("style", "nve")
-    md_block += f'fix {generate_id_tag(_key, "all")} all {_key}{integration_options}\n'
+    md_block += f"fix {generate_id_tag(_key, 'all')} all {_key}{integration_options}\n"
     if "velocity" in parameters_md:
         md_block += (
-            f'{generate_velocity_string(parameters_velocity=parameters_md["velocity"])}'
+            f"{generate_velocity_string(parameters_velocity=parameters_md['velocity'])}"
         )
     md_block += f"reset_timestep {time_step}\n"
     if parameters_md.get("run_style", "verlet") == "respa":
-        md_block += f'run_style {parameters_md.get("run_style", "verlet")} '
-        md_block += f'{join_keywords(parameters_md["respa_options"])}\n'
+        md_block += f"run_style {parameters_md.get('run_style', 'verlet')} "
+        md_block += f"{join_keywords(parameters_md['respa_options'])}\n"
     else:
-        md_block += f'run_style {parameters_md.get("run_style", "verlet")}\n'
-    md_block += f'run {parameters_md.get("max_number_steps", 100)}\n'
+        md_block += f"run_style {parameters_md.get('run_style', 'verlet')}\n"
+    md_block += f"run {parameters_md.get('max_number_steps', 100)}\n"
     md_block += generate_header("End of the MD information")
 
     return md_block
@@ -476,29 +476,29 @@ def generate_velocity_string(parameters_velocity: list[dict[str, Any]]) -> str:
     for entry in parameters_velocity:
         _options = generate_velocity_options(entry)
         if "create" in entry:
-            options += f'velocity {entry.get("group", "all")} create'
-            options += f' {entry["create"].get("temp")}'
+            options += f"velocity {entry.get('group', 'all')} create"
+            options += f" {entry['create'].get('temp')}"
             options += (
-                f' {entry["create"].get("seed", np.random.randint(10000))} {_options}\n'
+                f" {entry['create'].get('seed', np.random.randint(10000))} {_options}\n"
             )
         if "set" in entry:
-            options += f'velocity {entry.get("group", "all")} set'
-            options += f' {entry["set"].get("vx", "NULL")}'
-            options += f' {entry["set"].get("vy", "NULL")}'
-            options += f' {entry["set"].get("vz", "NULL")} {_options}\n'
+            options += f"velocity {entry.get('group', 'all')} set"
+            options += f" {entry['set'].get('vx', 'NULL')}"
+            options += f" {entry['set'].get('vy', 'NULL')}"
+            options += f" {entry['set'].get('vz', 'NULL')} {_options}\n"
         if "scale" in entry:
-            options += f'velocity {entry.get("group", "all")} scale'
-            options += f' {entry["scale"]} {_options}\n'
+            options += f"velocity {entry.get('group', 'all')} scale"
+            options += f" {entry['scale']} {_options}\n"
         if "ramp" in entry:
-            options += f'velocity {entry.get("group", "all")} ramp'
-            options += f' {entry["ramp"].get("vdim")} {entry["ramp"].get("vlo")}'
-            options += f' {entry["ramp"].get("vhi")} {entry["ramp"].get("dim")}'
+            options += f"velocity {entry.get('group', 'all')} ramp"
+            options += f" {entry['ramp'].get('vdim')} {entry['ramp'].get('vlo')}"
+            options += f" {entry['ramp'].get('vhi')} {entry['ramp'].get('dim')}"
             options += (
-                f' {entry["ramp"].get("clo")} {entry["ramp"].get("chi")} {_options}\n'
+                f" {entry['ramp'].get('clo')} {entry['ramp'].get('chi')} {_options}\n"
             )
         if "zero" in entry:
-            options += f'velocity {entry.get("group", "all")} zero'
-            options += f' {entry["zero"]} {_options}\n'
+            options += f"velocity {entry.get('group', 'all')} zero"
+            options += f" {entry['zero']} {_options}\n"
     return options
 
 
@@ -618,7 +618,7 @@ def generate_integration_options(
                 _value = integration_parameters.get(_option)
                 if _value:
                     _value = [str(val) for val in _value]
-                    options += f' {_option} {" ".join(_value) if isinstance(_value, list) else _value} '
+                    options += f" {_option} {' '.join(_value) if isinstance(_value, list) else _value} "
     # Set the options that depend on the pressure
     if style in pressure_dependent:
         for _option in pressure_options:
@@ -626,7 +626,7 @@ def generate_integration_options(
                 _value = integration_parameters.get(_option)
                 if _value:
                     _value = [str(val) for val in _value]
-                    options += f' {_option} {" ".join(_value) if isinstance(_value, list) else _value} '
+                    options += f" {_option} {' '.join(_value) if isinstance(_value, list) else _value} "
     # Set the options that depend on the 'uef' parameters
     if style in uef_dependent:
         for _option in uef_options:
@@ -634,15 +634,15 @@ def generate_integration_options(
                 _value = integration_parameters.get(_option)
                 if _value:
                     _value = [str(val) for val in _value]
-                    options += f' {_option} {" ".join(_value) if isinstance(_value, list) else _value} '
+                    options += f" {_option} {' '.join(_value) if isinstance(_value, list) else _value} "
     # Set the options that depend on the 'nve/limit' parameters
     if style in ["nve/limit"]:
-        options += f' {integration_parameters.get("xmax", 0.1)} '
+        options += f" {integration_parameters.get('xmax', 0.1)} "
     # Set the options that depend on the 'langevin' parameters
     if style in ["nve/dotc/langevin"]:
-        options += f' {integration_parameters.get("temp")}'
-        options += f' {integration_parameters.get("seed")}'
-        options += f' angmom {integration_parameters.get("angmom")}'
+        options += f" {integration_parameters.get('temp')}"
+        options += f" {integration_parameters.get('seed')}"
+        options += f" angmom {integration_parameters.get('angmom')}"
     return options
 
 
@@ -685,7 +685,7 @@ def write_fix_block(
                     f'group name "{_group}" is not the defined groups {[*group_names, "all"]}'
                 )
             fix_block += f"fix {generate_id_tag(key, _group)} {_group} {key} "
-            fix_block += f'{join_keywords(entry["type"])}\n'
+            fix_block += f"{join_keywords(entry['type'])}\n"
     fix_block += generate_header("End of the Fix information")
     return fix_block
 
@@ -721,7 +721,7 @@ def write_compute_block(
             if _group not in [*group_names, "all"]:
                 raise ValueError(f'group name "{_group}" is not the defined groups')
             compute_block += f"compute {generate_id_tag(key, _group)} {_group} {key} "
-            compute_block += f'{join_keywords(entry["type"])}\n'
+            compute_block += f"{join_keywords(entry['type'])}\n"
     compute_block += generate_header("End of the Compute information")
     return compute_block
 
@@ -780,12 +780,12 @@ def write_dump_block(
     if atom_style == "charge":
         num_double += 1
     dump_block = generate_header("Start of the Dump information")
-    dump_block += f'dump aiida all custom {parameters_dump.get("dump_rate", 10)} '
+    dump_block += f"dump aiida all custom {parameters_dump.get('dump_rate', 10)} "
     dump_block += f"{trajectory_filename} id type element x y z "
-    dump_block += f'{"q " if atom_style=="charge" else ""}'
-    dump_block += f'{" ".join(computes_list)}\n'
+    dump_block += f"{'q ' if atom_style == 'charge' else ''}"
+    dump_block += f"{' '.join(computes_list)}\n"
     dump_block += "dump_modify aiida sort id\n"
-    dump_block += f'dump_modify aiida element {" ".join(kind_symbols)}\n'
+    dump_block += f"dump_modify aiida element {' '.join(kind_symbols)}\n"
     dump_block += "dump_modify aiida format int ' %d ' \n"
     dump_block += "dump_modify aiida format float ' %16.10e ' \n"
     dump_block += generate_header("End of the Dump information")
@@ -855,9 +855,9 @@ def write_thermo_block(
 
     thermo_block = generate_header("Start of the Thermo information")
     thermo_block += (
-        f'thermo_style custom {" ".join(fixed_thermo)} {" ".join(computes_list)}\n'
+        f"thermo_style custom {' '.join(fixed_thermo)} {' '.join(computes_list)}\n"
     )
-    thermo_block += f'thermo {parameters_thermo.get("printing_rate", 1000)}\n'
+    thermo_block += f"thermo {parameters_thermo.get('printing_rate', 1000)}\n"
     thermo_block += generate_header("End of the Thermo information")
 
     printing_variables = fixed_thermo + list(
@@ -898,7 +898,7 @@ def write_restart_block(
             "Start of the intermediate write restart information"
         )
         restart_block["intermediate"] += (
-            f"restart {parameters_restart.get('num_steps', int(max_number_steps/10))} {restart_filename}\n"
+            f"restart {parameters_restart.get('num_steps', int(max_number_steps / 10))} {restart_filename}\n"
         )
         restart_block["intermediate"] += generate_header(
             "End of the intermediate write restart information"
@@ -1000,7 +1000,7 @@ def generate_id_tag(name: str, group: str) -> str:
     :rtype: str
     """
 
-    return f"{name.replace('/','_')}_{group}_aiida"
+    return f"{name.replace('/', '_')}_{group}_aiida"
 
 
 def join_keywords(value: list[Any]) -> str:
