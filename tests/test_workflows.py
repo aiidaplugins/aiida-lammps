@@ -422,9 +422,9 @@ def test_relax_workchain(
         )
     )
 
-    assert (
-        "time_dependent_computes" in results
-    ), 'the "time_dependent_computes" node is not present'
+    assert "time_dependent_computes" in results, (
+        'the "time_dependent_computes" node is not present'
+    )
 
     _msg = "No time dependent computes obtained even when expected"
     assert len(results["time_dependent_computes"].get_arraynames()) > 0, _msg
