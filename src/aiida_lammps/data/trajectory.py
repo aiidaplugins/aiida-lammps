@@ -195,7 +195,7 @@ class LammpsTrajectory(orm.Data):
     def get_step_string(self, step_idx):
         """Return the content string, for a specific trajectory step."""
         step_idx = list(range(self.number_steps))[step_idx]
-        zip_name = f'{self.base.attributes.get("zip_prefix")}{step_idx}'
+        zip_name = f"{self.base.attributes.get('zip_prefix')}{step_idx}"
         with (
             self.base.repository.open(
                 self.base.attributes.get("trajectory_filename"),
@@ -235,7 +235,7 @@ class LammpsTrajectory(orm.Data):
             ) as zip_file,
         ):
             for step_idx in steps:
-                zip_name = f'{self.base.attributes.get("zip_prefix")}{step_idx}'
+                zip_name = f"{self.base.attributes.get('zip_prefix')}{step_idx}"
                 with zip_file.open(zip_name) as step_file:
                     content = step_file.read()
                     yield content

@@ -147,9 +147,9 @@ def test_lammps_base(
         )
     )
 
-    assert (
-        "time_dependent_computes" in results
-    ), 'the "time_dependent_computes" node is not present'
+    assert "time_dependent_computes" in results, (
+        'the "time_dependent_computes" node is not present'
+    )
 
     _msg = "No time dependent computes obtained even when expected"
     assert len(results["time_dependent_computes"].get_arraynames()) > 0, _msg
@@ -232,9 +232,9 @@ def test_lammps_restart_generation(
             ), _msg
     else:
         # Check that if the file was not asked to be stored that it is not stored
-        assert (
-            "restartfile" not in results
-        ), "The restartfile is stored even when it was not requested"
+        assert "restartfile" not in results, (
+            "The restartfile is stored even when it was not requested"
+        )
         if restart_parameters.restart.get("print_final", False):
             _msg = "The restartfile is in the retrieved folder even when it was not requested"
             assert (

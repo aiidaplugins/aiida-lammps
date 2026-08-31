@@ -36,7 +36,7 @@ Then, load the code that was setup in AiiDA for `lmp` and get an instance of the
 ```python
 # Load the code configured for ``lmp``. Make sure to replace
 # this string with the label used in the code setup.
-code = load_code('lammps@localhost')
+code = load_code("lammps@localhost")
 builder = CalculationFactory("lammps.raw").get_builder()
 builder.code = code
 ```
@@ -90,7 +90,10 @@ As one can notice the script wants to read a file named `data.rhodo` via the [`r
 
 ```python
 import requests
-request = requests.get("https://raw.githubusercontent.com/lammps/lammps/develop/bench/data.rhodo")
+
+request = requests.get(
+    "https://raw.githubusercontent.com/lammps/lammps/develop/bench/data.rhodo"
+)
 data = SinglefileData(io.StringIO(request.text))
 builder.files = {"data": data}
 builder.filenames = {"data": "data.rhodo"}
@@ -105,11 +108,11 @@ Lastly one needs to define the computational resources needed to perform the cal
 # Run the calculation on 1 CPU and kill it if it runs longer than 1800 seconds.
 # Set ``withmpi`` to ``False`` if ``pw.x`` was compiled without MPI support.
 builder.metadata.options = {
-    'resources': {
-        'num_machines': 1,
+    "resources": {
+        "num_machines": 1,
     },
-    'max_wallclock_seconds': 1800,
-    'withmpi': False,
+    "max_wallclock_seconds": 1800,
+    "withmpi": False,
 }
 ```
 
@@ -145,21 +148,21 @@ The `results` node is a dictionary that will contain some basic parsed informati
 
 
 ```python
-print(outputs['results'].get_dict())
+print(outputs["results"].get_dict())
 {
-    'compute_variables': {
-        'bin': 'standard',
-        'bins': [10, 13, 13],
-        'errors': [],
-        'binsize': 6,
-        'warnings': [],
-        'units_style': 'real',
-        'total_wall_time': '0:00:20',
-        'steps_per_second': 5.046,
-        'ghost_atom_cutoff': 12,
-        'max_neighbors_atom': 2000,
-        'total_wall_time_seconds': 20,
-        'master_list_distance_cutoff': 12
+    "compute_variables": {
+        "bin": "standard",
+        "bins": [10, 13, 13],
+        "errors": [],
+        "binsize": 6,
+        "warnings": [],
+        "units_style": "real",
+        "total_wall_time": "0:00:20",
+        "steps_per_second": 5.046,
+        "ghost_atom_cutoff": 12,
+        "max_neighbors_atom": 2000,
+        "total_wall_time_seconds": 20,
+        "master_list_distance_cutoff": 12,
     }
 }
 ```
@@ -167,5 +170,5 @@ print(outputs['results'].get_dict())
 The complete output that was written by {{ LAMMPS }} to stdout, can be retrieved as follows:
 
 ```python
-results['retrieved'].base.repository.get_object_content('lammps.out')
+results["retrieved"].base.repository.get_object_content("lammps.out")
 ```

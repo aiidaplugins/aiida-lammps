@@ -99,11 +99,11 @@ from pathlib import Path
 
 # Create the node with the computer
 computer = Computer(
-    label='localhost',
-    hostname='localhost',
-    transport_type='core.local',
-    scheduler_type='core.direct',
-    workdir=Path('/home/my_username/aiida_workspace').resolve()
+    label="localhost",
+    hostname="localhost",
+    transport_type="core.local",
+    scheduler_type="core.direct",
+    workdir=Path("/home/my_username/aiida_workspace").resolve(),
 )
 # Store the node in the database
 computer.store()
@@ -143,14 +143,14 @@ To define the [InstalledCode](https://aiida.readthedocs.io/projects/aiida-core/e
 from aiida.orm import InstalledCode
 
 # Load the computer resource where LAMMPS is installed
-computer = load_computer('localhost')
+computer = load_computer("localhost")
 
 # Define the code node
 code = InstalledCode(
-    label='lammps',
+    label="lammps",
     computer=computer,
-    filepath_executable='/path/to/lammps/lmp',
-    default_calc_job_plugin='lammps.base'
+    filepath_executable="/path/to/lammps/lmp",
+    default_calc_job_plugin="lammps.base",
 )
 
 # Store the code node in the database
