@@ -150,6 +150,6 @@ nitpicky = True
 with open("nitpick-exceptions") as handle:
     nitpick_ignore = [
         tuple(line.strip().split(None, 1))
-        for line in handle.readlines()
+        for line in handle
         if line.strip() and not line.startswith("#")
     ]
