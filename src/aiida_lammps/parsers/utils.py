@@ -7,7 +7,7 @@ from aiida import orm
 import numpy as np
 
 
-def _transform_cell(cell) -> Union[np.array, np.array]:
+def _transform_cell(cell) -> np.array:
     """Transform the cell to an orientation, compatible with LAMMPS
 
     LAMMPS requires the simulation cell to be in the format of a
