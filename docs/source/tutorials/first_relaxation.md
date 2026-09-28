@@ -31,7 +31,7 @@ Then, load the code that was setup in AiiDA for `lmp` and get an instance of the
 ```python
 # Load the code configured for ``lmp``. Make sure to replace
 # this string with the label used in the code setup.
-code = load_code('lammps@localhost')
+code = load_code("lammps@localhost")
 builder = code.get_builder()
 ```
 
@@ -40,7 +40,8 @@ One can start by defining and assigning the structure to the builder:
 
 ```python
 from ase.build import bulk
-structure = StructureData(ase=bulk('Fe', 'bcc', 2.87, cubic=True))
+
+structure = StructureData(ase=bulk("Fe", "bcc", 2.87, cubic=True))
 builder.structure = structure
 ```
 
@@ -60,24 +61,28 @@ import requests
 import io
 
 # Download the potential from the repository and store it as a BytesIO object
-_stream = io.BytesIO(requests.get('https://openkim.org/files/MO_546673549085_000/Fe_2.eam.fs').text.encode('ascii'))
+_stream = io.BytesIO(
+    requests.get(
+        "https://openkim.org/files/MO_546673549085_000/Fe_2.eam.fs"
+    ).text.encode("ascii")
+)
 
 # Set the metadata for the potential
 potential_parameters = {
-    'species': ['Fe'],
-    'atom_style': 'atomic',
-    'pair_style': 'eam/fs',
-    'units': 'metal',
-    'extra_tags': {
-        'title': 'EAM potential (LAMMPS cubic hermite tabulation) for Fe developed by Mendelev et al. (2003) v000',
-        'content_origin': 'NIST IPRP: https: // www.ctcms.nist.gov/potentials/Fe.html',
-        'developer': ['Ronald E. Miller'],
-        'publication_year': 2018,
-    }
+    "species": ["Fe"],
+    "atom_style": "atomic",
+    "pair_style": "eam/fs",
+    "units": "metal",
+    "extra_tags": {
+        "title": "EAM potential (LAMMPS cubic hermite tabulation) for Fe developed by Mendelev et al. (2003) v000",
+        "content_origin": "NIST IPRP: https: // www.ctcms.nist.gov/potentials/Fe.html",
+        "developer": ["Ronald E. Miller"],
+        "publication_year": 2018,
+    },
 }
 
 # Store the potential in an AiiDA node
-potential = LammpsPotentialData.get_or_create(source=_stream,**potential_parameters)
+potential = LammpsPotentialData.get_or_create(source=_stream, **potential_parameters)
 
 builder.potential = potential
 ```
@@ -95,41 +100,38 @@ Then one needs to define the parameters which control how the input file for the
 For a structural minimization the minimal set of parameters is the following:
 
 ```python
-
 # Parameters to control the input file generation
-parameters = Dict({
-    "control": {
-        "units": "metal",
-        "timestep": 1e-5
-    },
-    "compute":{
-        "pe/atom": [{"type": [{"keyword": " ", "value": " "}], "group": "all"}],
-        "ke/atom": [{"type": [{"keyword": " ", "value": " "}], "group": "all"}],
-        "stress/atom": [{"type": ["NULL"], "group": "all"}],
-        "pressure": [{"type": ["thermo_temp"], "group": "all"}],
-    },
-
-    "structure":{"atom_style": "atomic"},
-    "thermo":{
-        "printing_rate": 100,
-        "thermo_printing": {
-            "step": True,
-            "pe": True,
-            "ke": True,
-            "press": True,
-            "pxx": True,
-            "pyy": True,
-            "pzz": True,
-        }
-    },
-    "minimize":{
-        "style": "cg",
-        "energy_tolerance": 1e-4,
-        "force_tolerance": 1e-4,
-        "max_iterations": 1000,
-        "max_evaluations": 1000,
-    },
-})
+parameters = Dict(
+    {
+        "control": {"units": "metal", "timestep": 1e-5},
+        "compute": {
+            "pe/atom": [{"type": [{"keyword": " ", "value": " "}], "group": "all"}],
+            "ke/atom": [{"type": [{"keyword": " ", "value": " "}], "group": "all"}],
+            "stress/atom": [{"type": ["NULL"], "group": "all"}],
+            "pressure": [{"type": ["thermo_temp"], "group": "all"}],
+        },
+        "structure": {"atom_style": "atomic"},
+        "thermo": {
+            "printing_rate": 100,
+            "thermo_printing": {
+                "step": True,
+                "pe": True,
+                "ke": True,
+                "press": True,
+                "pxx": True,
+                "pyy": True,
+                "pzz": True,
+            },
+        },
+        "minimize": {
+            "style": "cg",
+            "energy_tolerance": 1e-4,
+            "force_tolerance": 1e-4,
+            "max_iterations": 1000,
+            "max_evaluations": 1000,
+        },
+    }
+)
 builder.parameters = parameters
 ```
 The parameters have several sections which control different behavior of the calculation:
@@ -151,11 +153,11 @@ Lastly one needs to define the computational resources needed to perform the cal
 # Run the calculation on 1 CPU and kill it if it runs longer than 1800 seconds.
 # Set ``withmpi`` to ``False`` if ``pw.x`` was compiled without MPI support.
 builder.metadata.options = {
-    'resources': {
-        'num_machines': 1,
+    "resources": {
+        "num_machines": 1,
     },
-    'max_wallclock_seconds': 1800,
-    'withmpi': False,
+    "max_wallclock_seconds": 1800,
+    "withmpi": False,
 }
 ```
 
@@ -209,5 +211,5 @@ The `time_dependent_computes` contains a series of numpy arrays each one represe
 The complete output that was written by {{ LAMMPS }} to stdout, can be retrieved as follows:
 
 ```python
-results['retrieved'].base.repository.get_object_content('aiida_lammps.out')
+results["retrieved"].base.repository.get_object_content("aiida_lammps.out")
 ```

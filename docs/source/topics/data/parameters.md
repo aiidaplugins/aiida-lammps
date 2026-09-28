@@ -16,35 +16,35 @@ The behavior of the {{ aiida_lammps }} calculation can be controlled by collecti
 
 ```python
 parameters = {
-    'md': {
-        'velocity': [{'group': 'all', 'create': {'temp': 300}}],
-        'integration': {
-            'style': 'npt',
-            'constraints': {'iso': [0.0, 0.0, 1000.0], 'temp': [300, 300, 100]}
+    "md": {
+        "velocity": [{"group": "all", "create": {"temp": 300}}],
+        "integration": {
+            "style": "npt",
+            "constraints": {"iso": [0.0, 0.0, 1000.0], "temp": [300, 300, 100]},
         },
-        'max_number_steps': 5000
+        "max_number_steps": 5000,
     },
-    'dump': {'dump_rate': 1000},
-    'thermo': {
-        'printing_rate': 100,
-        'thermo_printing': {
-            'ke': True,
-            'pe': True,
-            'pxx': True,
-            'pyy': True,
-            'pzz': True,
-            'step': True,
-            'press': True
-        }
+    "dump": {"dump_rate": 1000},
+    "thermo": {
+        "printing_rate": 100,
+        "thermo_printing": {
+            "ke": True,
+            "pe": True,
+            "pxx": True,
+            "pyy": True,
+            "pzz": True,
+            "step": True,
+            "press": True,
+        },
     },
-    'compute': {
-        'ke/atom': [{'type': [{'value': ' ', 'keyword': ' '}], 'group': 'all'}],
-        'pe/atom': [{'type': [{'value': ' ', 'keyword': ' '}], 'group': 'all'}],
-        'pressure': [{'type': ['thermo_temp'], 'group': 'all'}],
-        'stress/atom': [{'type': ['NULL'], 'group': 'all'}]
+    "compute": {
+        "ke/atom": [{"type": [{"value": " ", "keyword": " "}], "group": "all"}],
+        "pe/atom": [{"type": [{"value": " ", "keyword": " "}], "group": "all"}],
+        "pressure": [{"type": ["thermo_temp"], "group": "all"}],
+        "stress/atom": [{"type": ["NULL"], "group": "all"}],
     },
-    'control': {'units': 'metal', 'timestep': 1e-05},
-    'structure': {'atom_style': 'atomic'}
+    "control": {"units": "metal", "timestep": 1e-05},
+    "structure": {"atom_style": "atomic"},
 }
 ```
 
