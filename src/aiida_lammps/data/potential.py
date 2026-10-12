@@ -68,7 +68,7 @@ def _validate_string_list(data: Union[str, list[str]]) -> list[str]:
     return data
 
 
-def _validate_datetime(data: Union[str, int, float, datetime.datetime]) -> int:
+def _validate_datetime(data: Union[str, float, datetime.datetime]) -> int:
     """
     Validate and transform dates into integers
 
