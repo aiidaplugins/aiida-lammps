@@ -3,14 +3,14 @@
 # pylint: disable=fixme
 import ast
 import re
-from typing import Optional, Union
+from typing import Optional
 
 import numpy as np
 
 
 def parse_outputfile(
     filename: Optional[str] = None, file_contents: Optional[str] = None
-) -> Union[dict, dict]:
+) -> dict:
     """
     Parse the lammps output file file, this is the redirected screen output.
 
